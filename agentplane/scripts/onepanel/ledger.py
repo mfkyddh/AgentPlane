@@ -205,7 +205,7 @@ def _ledger_payloads(repo_root: Path, target: str) -> dict[str, list[dict[str, A
     # not a raw runtime summary projection. Delegate row building to the app domain contract.
     from agentplane.domain.app.object_handlers import search_apps as search_formal_apps
 
-    apps_payload = search_formal_apps(repo_root, target)
+    apps_payload = search_formal_apps(repo_root, target, include_resolved_path=False)
     apps_rows = apps_payload.get("items") if isinstance(apps_payload, dict) else []
     apps_rows = [row for row in apps_rows if isinstance(row, dict)] if isinstance(apps_rows, list) else []
     return {

@@ -142,6 +142,14 @@ class AppObjectCliTests(unittest.TestCase):
             self.assertEqual("prod0-main", payload_json["target"])
             self.assertIn("items", payload_json["payload"])
             self.assertEqual("sub2api", payload_json["payload"]["items"][0]["app"])
+            self.assertEqual(
+                "apps/sub2api/contracts/prod0-main",
+                payload_json["payload"]["items"][0]["canonical_ref"],
+            )
+            self.assertEqual(
+                str((root / "sub2api" / "deploy" / "agentplane" / "contract.yaml").resolve()),
+                payload_json["payload"]["items"][0]["resolved_path"],
+            )
 
     def test_app_object_get_returns_named_app_payload(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -167,6 +175,11 @@ class AppObjectCliTests(unittest.TestCase):
             self.assertIn("app", payload_json["payload"])
             self.assertEqual("sub2api", payload_json["payload"]["app"]["app"])
             self.assertEqual("compose", payload_json["payload"]["app"]["control_plane"])
+            self.assertEqual("apps/sub2api/contracts/prod0-main", payload_json["payload"]["app"]["canonical_ref"])
+            self.assertEqual(
+                str((root / "sub2api" / "deploy" / "agentplane" / "contract.yaml").resolve()),
+                payload_json["payload"]["app"]["resolved_path"],
+            )
 
     def test_app_object_get_returns_summary_files_and_ledger_status(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -667,7 +680,11 @@ class AppObjectCliTests(unittest.TestCase):
                 [
                     {
                         "app": "sub2api",
+                        "target": "prod0-main",
+                        "repo_name": "sub2api.worktree",
                         "service_key": "sub2api",
+                        "canonical_ref": "apps/sub2api/contracts/prod0-main",
+                        "resolved_path": str((worktree_root / "deploy" / "agentplane" / "contract.yaml").resolve()),
                         "contract_file": str((worktree_root / "deploy" / "agentplane" / "contract.yaml").resolve()),
                         "control_plane": "compose",
                         "public_url": "https://token.zzzai.cloud:8443",
@@ -893,10 +910,14 @@ class AppObjectCliTests(unittest.TestCase):
                 payload_json["payload"]["inventory_pointer"],
             )
             inventory = json.loads((root / "inventory" / "servers" / "prod0-main" / "inventory.json").read_text(encoding="utf-8"))
+            ledger = json.loads((root / "inventory" / "servers" / "prod0-main" / "ledgers" / "apps.json").read_text(encoding="utf-8"))
             self.assertEqual(
                 "inventory/servers/prod0-main/ledgers/apps.json",
                 inventory["object_ledgers"]["ledgers"]["apps"],
             )
+            self.assertEqual("apps/sub2api/contracts/prod0-main", ledger["items"][0]["canonical_ref"])
+            self.assertNotIn("resolved_path", ledger["items"][0])
+            self.assertNotIn("contract_file", ledger["items"][0])
 
     def test_real_tracked_catalog_freezes_sub2api_only(self) -> None:
         catalog_file = REPO_ROOT / "inventory" / "apps" / "catalog.json"
@@ -909,12 +930,12 @@ class AppObjectCliTests(unittest.TestCase):
                     {
                         "app": "sub2api",
                         "repo_name": "sub2api",
-                        "repo_root": "/root/work/sub2api",
+                        "repo_ref": "apps/sub2api",
                         "service_key": "sub2api",
                         "contracts": {
-                            "wsl": "deploy/agentplane/contract.wsl.yaml",
-                            "prod0-main": "deploy/agentplane/contract.yaml",
-                            "prod2-main": "deploy/agentplane/contract.prod2.yaml",
+                            "wsl": "apps/sub2api/contracts/wsl",
+                            "prod0-main": "apps/sub2api/contracts/prod0-main",
+                            "prod2-main": "apps/sub2api/contracts/prod2-main",
                         },
                     },
                 ]
@@ -937,6 +958,10 @@ class AppObjectCliTests(unittest.TestCase):
         payload_json = json.loads(payload.stdout)
         self.assertEqual(["sub2api"], [item["app"] for item in payload_json["payload"]["items"]])
         self.assertEqual(
+            "apps/sub2api/contracts/prod0-main",
+            payload_json["payload"]["items"][0]["canonical_ref"],
+        )
+        self.assertEqual(
             "/root/work/sub2api/deploy/agentplane/contract.yaml",
             payload_json["payload"]["items"][0]["contract_file"],
         )
@@ -957,6 +982,10 @@ class AppObjectCliTests(unittest.TestCase):
         self.assertEqual(0, prod2_payload.returncode, msg=prod2_payload.stderr)
         prod2_json = json.loads(prod2_payload.stdout)
         self.assertEqual(
+            "apps/sub2api/contracts/prod2-main",
+            prod2_json["payload"]["app"]["canonical_ref"],
+        )
+        self.assertEqual(
             "/root/work/sub2api/deploy/agentplane/contract.prod2.yaml",
             prod2_json["payload"]["app"]["contract_file"],
         )
@@ -974,6 +1003,10 @@ class AppObjectCliTests(unittest.TestCase):
         self.assertEqual(0, wsl_payload.returncode, msg=wsl_payload.stderr)
         wsl_json = json.loads(wsl_payload.stdout)
         self.assertEqual(["sub2api"], [item["app"] for item in wsl_json["payload"]["items"]])
+        self.assertEqual(
+            "apps/sub2api/contracts/wsl",
+            wsl_json["payload"]["items"][0]["canonical_ref"],
+        )
         self.assertEqual(
             "/root/work/sub2api/deploy/agentplane/contract.wsl.yaml",
             wsl_json["payload"]["items"][0]["contract_file"],
@@ -1026,9 +1059,9 @@ class AppObjectCliTests(unittest.TestCase):
         self.assertNotIn("sub2apipay", [item["app"] for item in payload_json["payload"]["items"]])
 
     def test_real_tracked_apps_ledgers_only_include_sub2api(self) -> None:
-        for target, contract_file in (
-            ("prod0-main", "/root/work/sub2api/deploy/agentplane/contract.yaml"),
-            ("prod2-main", "/root/work/sub2api/deploy/agentplane/contract.prod2.yaml"),
+        for target, canonical_ref in (
+            ("prod0-main", "apps/sub2api/contracts/prod0-main"),
+            ("prod2-main", "apps/sub2api/contracts/prod2-main"),
         ):
             with self.subTest(target=target):
                 ledger_json = json.loads(
@@ -1036,7 +1069,9 @@ class AppObjectCliTests(unittest.TestCase):
                 )
                 items = ledger_json["items"]
                 self.assertEqual(["sub2api"], [item["app"] for item in items])
-                self.assertEqual(contract_file, items[0]["contract_file"])
+                self.assertEqual(canonical_ref, items[0]["canonical_ref"])
+                self.assertNotIn("resolved_path", items[0])
+                self.assertNotIn("contract_file", items[0])
                 ledger_markdown = (
                     REPO_ROOT / "inventory" / "servers" / target / "ledgers" / "apps.md"
                 ).read_text(encoding="utf-8")

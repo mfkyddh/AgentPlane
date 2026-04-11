@@ -5,7 +5,7 @@
     {
       "app": "sub2api",
       "service_key": "sub2api",
-      "contract_file": "/root/work/sub2api/deploy/agentplane/contract.wsl.yaml",
+      "canonical_ref": "apps/sub2api/contracts/wsl",
       "control_plane": "compose",
       "public_url": "http://127.0.0.1:18080"
     }

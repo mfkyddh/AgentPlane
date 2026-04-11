@@ -8,12 +8,14 @@ DOCS_TO_CHECK = (
     REPO_ROOT / "README.md",
     REPO_ROOT / "AGENTS.md",
     REPO_ROOT / "docs" / "architecture" / "README.md",
+    REPO_ROOT / "docs" / "architecture" / "agent-first-template-truth-model.md",
     REPO_ROOT / "docs" / "history" / "index.md",
     REPO_ROOT / "docs" / "archive" / "README.md",
     REPO_ROOT / "docs" / "architecture" / "control-plane.md",
     REPO_ROOT / "docs" / "architecture" / "linux-governance.md",
     REPO_ROOT / "docs" / "architecture" / "agentplane-app-collaboration.md",
     REPO_ROOT / "docs" / "maintainers" / "control-plane-authoring.md",
+    REPO_ROOT / "docs" / "reference" / "control-plane-path-policy.md",
     REPO_ROOT / "docs" / "runbooks" / "app-project-delivery-workflow.md",
     REPO_ROOT / "docs" / "runbooks" / "bootstrap-secrets.md",
     REPO_ROOT / "docs" / "runbooks" / "control-plane-agent-execution-flow.md",
@@ -161,6 +163,20 @@ class DocsNoLegacyTermsTests(unittest.TestCase):
             for pattern in FORBIDDEN_PORT_PATTERNS:
                 with self.subTest(path=str(path), pattern=pattern.pattern):
                     self.assertNotRegex(text, pattern)
+
+    def test_truth_model_docs_define_canonical_ref_boundaries(self) -> None:
+        truth_model = (
+            REPO_ROOT / "docs" / "architecture" / "agent-first-template-truth-model.md"
+        ).read_text(encoding="utf-8")
+        path_policy = (
+            REPO_ROOT / "docs" / "reference" / "control-plane-path-policy.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("truth` 只保存 canonical ref", truth_model)
+        self.assertIn("ledger` 可以保存稳定、可消费的摘要字段", truth_model)
+        self.assertIn("verification` 才允许出现宿主观察值", truth_model)
+        self.assertIn("apps/<app>/contracts/<target>", path_policy)
+        self.assertIn("写回时必须收敛到 canonical refs", path_policy)
 
     def test_entry_indexes_point_to_unified_control_plane_sources(self) -> None:
         readme_text = (REPO_ROOT / "README.md").read_text(encoding="utf-8")

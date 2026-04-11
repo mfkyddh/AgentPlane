@@ -149,6 +149,20 @@ class InventoryGenerationTests(unittest.TestCase):
                 self.assertIn("Markdown 摘要投影", content)
                 self.assertIn("机器真源：", content)
 
+    def test_real_app_ledgers_keep_canonical_refs_only(self) -> None:
+        for target, expected_ref in (
+            ("wsl", "apps/sub2api/contracts/wsl"),
+            ("prod0-main", "apps/sub2api/contracts/prod0-main"),
+            ("prod2-main", "apps/sub2api/contracts/prod2-main"),
+        ):
+            with self.subTest(target=target):
+                ledger_json = json.loads(
+                    (REPO_ROOT / "inventory" / "servers" / target / "ledgers" / "apps.json").read_text(encoding="utf-8")
+                )
+                self.assertEqual(expected_ref, ledger_json["items"][0]["canonical_ref"])
+                self.assertNotIn("contract_file", ledger_json["items"][0])
+                self.assertNotIn("resolved_path", ledger_json["items"][0])
+
     def test_inventory_separates_managed_and_unmanaged_containers(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

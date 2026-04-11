@@ -5,13 +5,14 @@ import os
 from pathlib import Path
 
 from agentplane.domain.app.models import AppCatalogEntry
+from agentplane.domain.app.resource_paths import (
+    canonical_app_repo_ref,
+    canonical_contract_ref,
+    contract_relpath_for_target,
+    resolve_catalog_repo_root,
+)
+from agentplane.runtime.path_policy import assert_canonical_ref, is_canonical_ref
 from agentplane.runtime.wsl_bridge import wsl_posix_to_unc
-
-_TARGET_CONTRACT_PATHS = {
-    "wsl": Path("deploy/agentplane/contract.wsl.yaml"),
-    "prod0-main": Path("deploy/agentplane/contract.yaml"),
-    "prod2-main": Path("deploy/agentplane/contract.prod2.yaml"),
-}
 
 
 def _catalog_file(repo_root: Path) -> Path:
@@ -30,6 +31,41 @@ def _coerce_catalog_repo_root(repo_root_value: str) -> Path:
     return Path(_normalize_repo_root_for_current_host(repo_root_value)).expanduser()
 
 
+def _runtime_repo_root_from_item(
+    repo_root: Path,
+    *,
+    app: str,
+    repo_name: str,
+    repo_ref_value: str | None,
+    repo_root_value: str | None,
+) -> Path:
+    if isinstance(repo_ref_value, str) and repo_ref_value:
+        canonical_repo_ref = assert_canonical_ref(repo_ref_value)
+        expected_repo_ref = canonical_app_repo_ref(app)
+        if canonical_repo_ref != expected_repo_ref:
+            raise ValueError(f"app catalog repo_ref mismatch: expected {expected_repo_ref}, got {canonical_repo_ref}")
+        return resolve_catalog_repo_root(repo_root, repo_name=repo_name)
+    if isinstance(repo_root_value, str) and repo_root_value:
+        return _coerce_catalog_repo_root(repo_root_value)
+    raise ValueError(f"app catalog missing repo locator: app={app}")
+
+
+def _runtime_contract_relpaths(app: str, contracts: dict[str, str]) -> dict[str, str]:
+    normalized: dict[str, str] = {}
+    for target, value in contracts.items():
+        if not isinstance(target, str) or not target or not isinstance(value, str) or not value:
+            continue
+        if is_canonical_ref(value):
+            canonical_contract = assert_canonical_ref(value)
+            expected = canonical_contract_ref(app, target)
+            if canonical_contract != expected:
+                raise ValueError(f"app catalog contract ref mismatch: expected {expected}, got {canonical_contract}")
+            normalized[target] = contract_relpath_for_target(target)
+            continue
+        normalized[target] = value
+    return normalized
+
+
 def load_app_catalog(repo_root: Path) -> list[AppCatalogEntry]:
     catalog_file = _catalog_file(repo_root)
     if not catalog_file.exists():
@@ -45,22 +81,33 @@ def load_app_catalog(repo_root: Path) -> list[AppCatalogEntry]:
         app = item.get("app")
         repo_name = item.get("repo_name")
         repo_root_value = item.get("repo_root")
+        repo_ref_value = item.get("repo_ref")
         service_key = item.get("service_key")
         contracts = item.get("contracts")
-        if not all(isinstance(value, str) and value for value in (app, repo_name, repo_root_value, service_key)):
+        if not all(isinstance(value, str) and value for value in (app, repo_name, service_key)):
             continue
         if not isinstance(contracts, dict):
             continue
-        normalized_contracts = {
-            key: value
-            for key, value in contracts.items()
-            if isinstance(key, str) and key and isinstance(value, str) and value
-        }
+        runtime_repo_root = _runtime_repo_root_from_item(
+            repo_root,
+            app=app,
+            repo_name=repo_name,
+            repo_ref_value=repo_ref_value if isinstance(repo_ref_value, str) else None,
+            repo_root_value=repo_root_value if isinstance(repo_root_value, str) else None,
+        )
+        normalized_contracts = _runtime_contract_relpaths(
+            app,
+            {
+                key: value
+                for key, value in contracts.items()
+                if isinstance(key, str) and key and isinstance(value, str) and value
+            },
+        )
         entries.append(
             AppCatalogEntry(
                 app=app,
                 repo_name=repo_name,
-                repo_root=_coerce_catalog_repo_root(repo_root_value),
+                repo_root=runtime_repo_root,
                 service_key=service_key,
                 contracts=normalized_contracts,
             )
@@ -126,10 +173,7 @@ def resolve_app_contract_source(
     if not app_repo_root:
         return resolve_app_contract(repo_root, target=target, app=app)
     resolved_app_root = _coerce_catalog_repo_root(app_repo_root).resolve()
-    try:
-        contract_rel = _TARGET_CONTRACT_PATHS[target]
-    except KeyError as exc:
-        raise ValueError(f"Unsupported target for app_repo_root override: {target}") from exc
+    contract_rel = Path(contract_relpath_for_target(target))
     return (
         AppCatalogEntry(
             app=entry.app,
@@ -155,9 +199,14 @@ def write_app_catalog(repo_root: Path, entries: list[AppCatalogEntry]) -> Path:
         {
             "app": entry.app,
             "repo_name": entry.repo_name,
-            "repo_root": str(entry.repo_root),
+            "repo_ref": canonical_app_repo_ref(entry.app),
             "service_key": entry.service_key,
-            "contracts": dict(sorted(entry.contracts.items())),
+            "contracts": {
+                target: canonical_contract_ref(entry.app, target)
+                if entry.contracts.get(target) == contract_relpath_for_target(target)
+                else entry.contracts[target]
+                for target in sorted(entry.contracts)
+            },
         }
         for entry in sorted(entries, key=lambda it: (it.app, it.service_key))
     ]

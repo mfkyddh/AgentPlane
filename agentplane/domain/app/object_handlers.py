@@ -6,6 +6,7 @@ from typing import Any
 
 from agentplane.domain.app.catalog import load_app_catalog, resolve_app_contract_source
 from agentplane.domain.app.models import AppObject
+from agentplane.domain.app.resource_paths import canonical_contract_ref
 
 
 def _inventory_entry(repo_root: Path, target: str, service_key: str) -> dict[str, Any]:
@@ -34,6 +35,26 @@ def _object_from_entry(repo_root: Path, target: str, entry_app: str, app_repo_ro
         service_key=entry.service_key,
         contract_file=contract_file,
     )
+
+
+def _canonical_ref(obj: AppObject) -> str:
+    return canonical_contract_ref(obj.app, obj.target)
+
+
+def _object_payload(obj: AppObject, inventory_entry: dict[str, Any], *, include_resolved_path: bool) -> dict[str, Any]:
+    payload = {
+        "app": obj.app,
+        "target": obj.target,
+        "repo_name": obj.repo_name,
+        "service_key": obj.service_key,
+        "canonical_ref": _canonical_ref(obj),
+        "control_plane": inventory_entry.get("control_plane", ""),
+        "public_url": inventory_entry.get("public_url", ""),
+    }
+    if include_resolved_path:
+        payload["resolved_path"] = str(obj.contract_file)
+        payload["contract_file"] = str(obj.contract_file)
+    return payload
 
 
 def _contract_payload(contract_file: Path) -> dict[str, Any]:
@@ -119,6 +140,7 @@ def search_apps(
     *,
     app: str | None = None,
     app_repo_root: str | None = None,
+    include_resolved_path: bool = True,
 ) -> dict[str, Any]:
     items: list[dict[str, Any]] = []
     if app:
@@ -135,15 +157,7 @@ def search_apps(
         ]
     for entry in entries:
         inventory_entry = _inventory_entry(repo_root, target, entry.service_key)
-        items.append(
-            {
-                "app": entry.app,
-                "service_key": entry.service_key,
-                "contract_file": str(entry.contract_file),
-                "control_plane": inventory_entry.get("control_plane", ""),
-                "public_url": inventory_entry.get("public_url", ""),
-            }
-        )
+        items.append(_object_payload(entry, inventory_entry, include_resolved_path=include_resolved_path))
     return {"target": target, "items": items}
 
 
@@ -151,14 +165,7 @@ def get_app(repo_root: Path, target: str, app: str, app_repo_root: str | None = 
     obj = _object_from_entry(repo_root, target, app, app_repo_root=app_repo_root)
     inventory_entry = _inventory_entry(repo_root, target, obj.service_key)
     return {
-        "app": {
-            "app": obj.app,
-            "target": obj.target,
-            "repo_name": obj.repo_name,
-            "service_key": obj.service_key,
-            "contract_file": str(obj.contract_file),
-            "control_plane": inventory_entry.get("control_plane", ""),
-        },
+        "app": _object_payload(obj, inventory_entry, include_resolved_path=True),
         "inventory_entry": inventory_entry,
         "summary_files": _summary_files(obj),
         "ledger_status": _ledger_status(repo_root, target),
@@ -175,7 +182,12 @@ def verify_app_object(repo_root: Path, target: str, app: str, app_repo_root: str
     checks: dict[str, Any] = {}
 
     contract_exists = obj.contract_file.exists()
-    checks["contract_file"] = {"ok": contract_exists, "path": str(obj.contract_file)}
+    checks["contract_file"] = {
+        "ok": contract_exists,
+        "canonical_ref": _canonical_ref(obj),
+        "resolved_path": str(obj.contract_file),
+        "path": str(obj.contract_file),
+    }
     if not contract_exists:
         failures.append("contract_file")
 
@@ -212,12 +224,19 @@ def verify_app_object(repo_root: Path, target: str, app: str, app_repo_root: str
         "ok": not failures,
         "checks": checks,
         "failures": failures,
-        "evidence": {"app": obj.app, "target": target, "summary_files": summary_files, "ledger_status": ledger_status},
+        "evidence": {
+            "app": obj.app,
+            "target": target,
+            "canonical_ref": _canonical_ref(obj),
+            "resolved_path": str(obj.contract_file),
+            "summary_files": summary_files,
+            "ledger_status": ledger_status,
+        },
     }
 
 
 def refresh_app_ledger(repo_root: Path, target: str, write: bool) -> dict[str, Any]:
-    payload = search_apps(repo_root, target)
+    payload = search_apps(repo_root, target, include_resolved_path=False)
     server_root = repo_root / "inventory" / "servers" / target
     ledger_root = server_root / "ledgers"
     inventory_file = server_root / "inventory.json"
