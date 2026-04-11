@@ -201,6 +201,26 @@ class AppResourceObjectCliTests(unittest.TestCase):
             self.assertFalse(payload["checks"]["inventory_projection"]["ok"])
             self.assertEqual(["inventory_projection"], payload["failures"])
 
+    def test_resource_verify_separates_ledger_fields_and_observation(self) -> None:
+        from agentplane.domain.app.resource_handlers import verify_app_resource
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_inventory(root)
+            write_registry(root)
+            write_resource_secrets(root)
+
+            payload = verify_app_resource(root, "prod2-main", "sub2api")
+
+            self.assertTrue(payload["ok"])
+            self.assertEqual("targets/prod2-main/app-resources/sub2api", payload["canonical_ref"])
+            self.assertEqual("targets/prod2-main/app-resources/sub2api", payload["ledger_fields"]["canonical_ref"])
+            self.assertEqual("sub2api", payload["ledger_fields"]["app"])
+            self.assertNotIn("declared", payload["ledger_fields"])
+            self.assertIn("declared", payload["verification_fields"])
+            self.assertIn("projection", payload["verification_fields"])
+            self.assertIn("secret_files", payload["verification_fields"])
+
     def test_resource_verify_reports_secret_scope_and_missing_file_findings(self) -> None:
         from agentplane.domain.app.resource_handlers import verify_app_resource
 

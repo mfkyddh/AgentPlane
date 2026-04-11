@@ -7,6 +7,7 @@ from typing import Any
 from agentplane.domain.app.catalog import load_app_catalog, resolve_app_contract_source
 from agentplane.domain.app.models import AppObject
 from agentplane.domain.app.resource_paths import canonical_contract_ref
+from agentplane.runtime.observation import build_verification_payload
 
 
 def _inventory_entry(repo_root: Path, target: str, service_key: str) -> dict[str, Any]:
@@ -220,19 +221,32 @@ def verify_app_object(repo_root: Path, target: str, app: str, app_repo_root: str
     if not ledger_ok:
         failures.append("ledger_status")
 
-    return {
-        "ok": not failures,
-        "checks": checks,
-        "failures": failures,
-        "evidence": {
-            "app": obj.app,
-            "target": target,
-            "canonical_ref": _canonical_ref(obj),
+    evidence = {
+        "app": obj.app,
+        "target": target,
+        "canonical_ref": _canonical_ref(obj),
+        "resolved_path": str(obj.contract_file),
+        "inventory_entry": inventory_entry,
+        "summary_files": summary_files,
+        "ledger_status": ledger_status,
+    }
+    payload = build_verification_payload(
+        canonical_ref=_canonical_ref(obj),
+        ledger_fields=_object_payload(obj, inventory_entry, include_resolved_path=False),
+        verification_fields={
             "resolved_path": str(obj.contract_file),
+            "inventory_entry": inventory_entry,
             "summary_files": summary_files,
             "ledger_status": ledger_status,
         },
-    }
+        resolved_path=str(obj.contract_file),
+        evidence=evidence,
+        checks=checks,
+        failures=failures,
+        ok=not failures,
+    )
+    payload["evidence"] = evidence
+    return payload
 
 
 def refresh_app_ledger(repo_root: Path, target: str, write: bool) -> dict[str, Any]:

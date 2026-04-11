@@ -2,6 +2,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from agentplane.domain.service import lifecycle as service_lifecycle
 
@@ -90,6 +91,45 @@ class ServiceLifecycleTests(unittest.TestCase):
             self.assertTrue(offboard_result.changed)
             payload_after = json.loads(inventory_file.read_text(encoding="utf-8").strip())
             self.assertNotIn("newapi", payload_after["services"])
+
+    def test_service_verify_separates_ledger_fields_and_observation(self) -> None:
+        from agentplane.domain.service.handlers import verify_service
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo_root = Path(tmpdir)
+            self._write_inventory(
+                repo_root,
+                "prod0-main",
+                {
+                    "postgres": {
+                        "container_name": "postgres18-prod",
+                        "control_plane": "compose",
+                        "image": "postgres:18.3",
+                    }
+                },
+            )
+
+            with patch(
+                "agentplane.domain.service.handlers.verify_container_service",
+                return_value={
+                    "ok": True,
+                    "checks": {"running": {"ok": True, "actual": "running"}},
+                    "evidence": [{"kind": "probe", "value": "docker inspect postgres18-prod"}],
+                    "failures": [],
+                },
+            ):
+                payload = verify_service(repo_root, "prod0-main", "postgres")
+
+        self.assertTrue(payload["ok"])
+        self.assertEqual("targets/prod0-main/services/postgres", payload["canonical_ref"])
+        self.assertEqual("targets/prod0-main/services/postgres", payload["ledger_fields"]["canonical_ref"])
+        self.assertEqual("postgres", payload["ledger_fields"]["name"])
+        self.assertNotIn("evidence", payload["ledger_fields"])
+        self.assertIn("live", payload["verification_fields"])
+        self.assertEqual(
+            [{"kind": "probe", "value": "docker inspect postgres18-prod"}],
+            payload["verification_fields"]["live"]["evidence"],
+        )
 
     def _write_inventory(self, repo_root: Path, target: str, services: dict[str, dict[str, str]]) -> Path:
         server_dir = repo_root / "inventory" / "servers" / target

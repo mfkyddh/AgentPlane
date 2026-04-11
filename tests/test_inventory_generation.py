@@ -162,6 +162,8 @@ class InventoryGenerationTests(unittest.TestCase):
                 self.assertEqual(expected_ref, ledger_json["items"][0]["canonical_ref"])
                 self.assertNotIn("contract_file", ledger_json["items"][0])
                 self.assertNotIn("resolved_path", ledger_json["items"][0])
+                self.assertNotIn("verification_fields", ledger_json["items"][0])
+                self.assertNotIn("observation", ledger_json["items"][0])
 
     def test_inventory_separates_managed_and_unmanaged_containers(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -188,7 +190,10 @@ class InventoryGenerationTests(unittest.TestCase):
                 },
             ]
 
-            with patch("agentplane.cli.inventory._docker_container_rows", return_value=rows):
+            with patch("agentplane.cli.inventory._wsl_backend_type", return_value="linux-native"), patch(
+                "agentplane.cli.inventory._docker_container_rows",
+                return_value=rows,
+            ):
                 payload = generate_inventory_snapshot(root, "wsl")["payload"]
 
             self.assertEqual(["redis"], payload["compose_services"])

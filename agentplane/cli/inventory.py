@@ -12,6 +12,7 @@ from agentplane.runtime.backends import build_backend_runner
 from agentplane.runtime.execution import ExecutionBindings, ExecutionPlan
 from agentplane.runtime.host_profile import HostProfile, detect_host_profile
 from agentplane.runtime.target_resolver import TargetResolver
+from agentplane.runtime.wsl_bridge import windows_path_to_wsl_posix
 
 
 SUPPORTED_INVENTORY_TARGETS = ("wsl", "prod0-main", "prod2-main")
@@ -184,11 +185,13 @@ def _wsl_snapshot_via_backend(
     runner: Any | None = None,
 ) -> dict[str, Any]:
     effective_runner = runner or build_backend_runner()
+    module_root = Path(__file__).resolve().parents[2]
+    pythonpath = windows_path_to_wsl_posix(module_root) or str(module_root)
     plan = ExecutionPlan(
         backend_type=backend_type,  # type: ignore[arg-type]
         cwd_ref="workspace.control_root",
         argv=("python3", "-c", _WSL_SNAPSHOT_SCRIPT),
-        env_refs=(),
+        env_refs=("pythonpath",),
         input_refs=(),
         expected_outputs=("snapshot-json",),
         capabilities=("python3",),
@@ -196,7 +199,10 @@ def _wsl_snapshot_via_backend(
     )
     result = effective_runner.execute(
         plan,
-        bindings=ExecutionBindings(cwd_values={"workspace.control_root": repo_root}),
+        bindings=ExecutionBindings(
+            cwd_values={"workspace.control_root": repo_root},
+            env_values={"pythonpath": {"PYTHONPATH": pythonpath}},
+        ),
     )
     if not result.ok:
         raise ValueError(result.stdout or result.stderr or "failed to collect wsl inventory via backend runner")

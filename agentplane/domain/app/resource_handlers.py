@@ -15,6 +15,8 @@ from agentplane.domain.app.resource_registry import (
     available_app_resources,
     resolve_app_resource,
 )
+from agentplane.runtime.observation import build_verification_payload
+from agentplane.runtime.path_policy import assert_canonical_ref
 from agentplane.scripts.onepanel.ledger import refresh_ledgers
 
 
@@ -62,6 +64,10 @@ def _secret_file_statuses(repo_root: Path, definition: AppResourceDefinition) ->
     return statuses
 
 
+def _canonical_ref(target: str, app: str) -> str:
+    return assert_canonical_ref(f"targets/{target}/app-resources/{app}")
+
+
 def search_app_resources(repo_root: Path, target: str) -> dict[str, Any]:
     items = [_summary(definition) for definition, _ in available_app_resources(Path(repo_root).resolve(), target)]
     return {"items": items}
@@ -83,6 +89,8 @@ def verify_app_resource(repo_root: Path, target: str, app: str) -> dict[str, Any
     definition, raw_entry = resolve_app_resource(repo_root, target, app)
     projection = app_resource_inventory_projection(repo_root, target, app)
     expected_summary = _expected_app_resource_summary(raw_entry)
+    declared_payload = _declared_payload(raw_entry)
+    secret_statuses = _secret_file_statuses(repo_root, definition)
     secret_findings = validate_secret_files(repo_root, target, app, raw_entry)
     app_resource_summary_ok = bool(projection.get("found")) and projection.get("app_resource_summary") == expected_summary
     projection_check: dict[str, Any] = {
@@ -101,17 +109,27 @@ def verify_app_resource(repo_root: Path, target: str, app: str) -> dict[str, Any
         "inventory_projection": projection_check,
     }
     failures = [name for name in ("registry_owner", "secret_files", "inventory_projection") if not bool(checks[name].get("ok"))]
-    return {
-        "ok": not failures,
-        "resource": _summary(definition),
-        "checks": checks,
-        "failures": failures,
-        "evidence": [
-            {"kind": "declared", "value": _declared_payload(raw_entry)},
-            {"kind": "projection", "value": projection},
-            {"kind": "secret_files", "value": _secret_file_statuses(repo_root, definition)},
-        ],
+    verification_fields = {
+        "declared": declared_payload,
+        "projection": projection,
+        "secret_files": secret_statuses,
     }
+    payload = build_verification_payload(
+        canonical_ref=_canonical_ref(target, app),
+        ledger_fields=_summary(definition),
+        verification_fields=verification_fields,
+        evidence=verification_fields,
+        checks=checks,
+        failures=failures,
+        ok=not failures,
+    )
+    payload["resource"] = _summary(definition)
+    payload["evidence"] = [
+        {"kind": "declared", "value": declared_payload},
+        {"kind": "projection", "value": projection},
+        {"kind": "secret_files", "value": secret_statuses},
+    ]
+    return payload
 
 
 def refresh_app_resource_ledger(repo_root: Path, target: str, *, write: bool) -> dict[str, Any]:

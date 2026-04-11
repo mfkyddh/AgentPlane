@@ -9,6 +9,8 @@ from agentplane.adapters.service.systemd_runtime import plan_systemd_operation, 
 from agentplane.domain.service.materialize import materialize_service_artifact
 from agentplane.domain.service.models import ServiceDefinition
 from agentplane.domain.service.registry import available_services, resolve_service
+from agentplane.runtime.observation import build_verification_payload
+from agentplane.runtime.path_policy import assert_canonical_ref
 
 
 def _projection_handoff(
@@ -59,6 +61,17 @@ def _service_summary(definition: ServiceDefinition, declared: dict[str, Any] | N
     }
 
 
+def _service_canonical_ref(target: str, name: str) -> str:
+    return assert_canonical_ref(f"targets/{target}/services/{name}")
+
+
+def _service_ledger_fields(definition: ServiceDefinition, declared: dict[str, Any] | None, *, target: str) -> dict[str, Any]:
+    return {
+        "target": target,
+        **_service_summary(definition, declared),
+    }
+
+
 def search_services(repo_root: Path, target: str) -> dict[str, Any]:
     items = [_service_summary(definition, declared) for definition, declared in available_services(repo_root, target)]
     return {"items": items}
@@ -70,7 +83,18 @@ def get_service(repo_root: Path, target: str, name: str) -> dict[str, Any]:
         live = verify_container_service(repo_root, target, definition, declared)
     else:
         live = verify_systemd_service(repo_root, target, definition, declared)
-    return {"service": _service_summary(definition, declared), "live": live}
+    canonical_ref = _service_canonical_ref(target, definition.name)
+    service_summary = _service_summary(definition, declared)
+    return {
+        "canonical_ref": canonical_ref,
+        "ledger_fields": {
+            "canonical_ref": canonical_ref,
+            **_service_ledger_fields(definition, declared, target=target),
+        },
+        "verification_fields": {"live": live},
+        "service": service_summary,
+        "live": live,
+    }
 
 
 def verify_service(repo_root: Path, target: str, name: str) -> dict[str, Any]:
@@ -79,8 +103,26 @@ def verify_service(repo_root: Path, target: str, name: str) -> dict[str, Any]:
         payload = verify_container_service(repo_root, target, definition, declared)
     else:
         payload = verify_systemd_service(repo_root, target, definition, declared)
-    payload["projection_handoff"] = _projection_handoff(definition, declared, target=target, trigger="verify")
-    return payload
+    canonical_ref = _service_canonical_ref(target, definition.name)
+    live_payload = {
+        "ok": payload.get("ok", False),
+        "checks": payload.get("checks", {}),
+        "evidence": payload.get("evidence", []),
+        "failures": payload.get("failures", []),
+    }
+    wrapped = build_verification_payload(
+        canonical_ref=canonical_ref,
+        ledger_fields=_service_ledger_fields(definition, declared, target=target),
+        verification_fields={"live": live_payload},
+        evidence={"live": live_payload},
+        checks=payload.get("checks", {}),
+        failures=tuple(str(item) for item in payload.get("failures", [])),
+        ok=bool(payload.get("ok")),
+    )
+    wrapped["service"] = _service_summary(definition, declared)
+    wrapped["evidence"] = payload.get("evidence", [])
+    wrapped["projection_handoff"] = _projection_handoff(definition, declared, target=target, trigger="verify")
+    return wrapped
 
 
 def _plan_steps(repo_root: Path, target: str, definition: ServiceDefinition, declared: dict[str, Any] | None, operation: str) -> list[dict[str, object]]:
@@ -94,7 +136,13 @@ def _plan_steps(repo_root: Path, target: str, definition: ServiceDefinition, dec
 def plan_service_operation(repo_root: Path, target: str, name: str, operation: str) -> dict[str, Any]:
     definition, declared = resolve_service(repo_root, target, name)
     steps = _plan_steps(repo_root, target, definition, declared, operation)
+    canonical_ref = _service_canonical_ref(target, definition.name)
     return {
+        "canonical_ref": canonical_ref,
+        "ledger_fields": {
+            "canonical_ref": canonical_ref,
+            **_service_ledger_fields(definition, declared, target=target),
+        },
         "service": _service_summary(definition, declared),
         "operation": operation,
         "preflight": {"target": target, "service": name},
@@ -121,8 +169,16 @@ def apply_service_operation(repo_root: Path, target: str, name: str, operation: 
 
     verified = verify_service(repo_root, target, name) if ok else {"ok": False, "failures": ["apply_failed"]}
     handoff = _projection_handoff(definition, declared, target=target, trigger=operation)
+    canonical_ref = _service_canonical_ref(target, definition.name)
     return {
         "ok": ok and bool(verified.get("ok")),
+        "canonical_ref": canonical_ref,
+        "ledger_fields": {
+            "canonical_ref": canonical_ref,
+            **_service_ledger_fields(definition, declared, target=target),
+        },
+        "verification_fields": {"results": results, "verified": verified},
+        "observation": verified.get("observation"),
         "service": _service_summary(definition, declared),
         "operation": operation,
         "results": results,

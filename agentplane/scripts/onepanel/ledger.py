@@ -8,6 +8,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from agentplane.runtime.observation import extract_ledger_fields
+
 from .redaction import scrub_persisted_payload
 
 
@@ -179,7 +181,7 @@ def _annotate_rows(name: str, rows: list[dict[str, Any]], entries: list[dict[str
     scope = LEDGER_SCOPE_NAMES[name]
     annotated: list[dict[str, Any]] = []
     for row in rows:
-        item = dict(row)
+        item = extract_ledger_fields(row)
         last_operation = _latest_operation_for(scope, item, entries)
         if last_operation:
             item["last_cli_operation"] = last_operation
