@@ -3,25 +3,35 @@ import unittest
 from pathlib import Path
 
 from agentplane.cli.secrets import materialize_legacy_host_layout
-from agentplane.runtime.bootstrap import bootstrap_template_specs
+from agentplane.runtime.bootstrap import bootstrap_directory_specs, bootstrap_required_truth_specs
 
 
 class SecretsHostLayoutTests(unittest.TestCase):
-    def test_bootstrap_template_specs_keep_local_and_target_scopes_split(self) -> None:
+    def test_bootstrap_required_truth_specs_keep_takeover_truth_separate_from_projections(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
 
-            specs = bootstrap_template_specs(root)
+            specs = bootstrap_required_truth_specs(root)
             refs = {item["secret_ref"]: item["destination"] for item in specs}
 
             self.assertEqual(
-                str(root / "secrets" / "env" / "prod-jump.env").replace("\\", "/"),
-                str(refs["local/control-plane/prod-jump"]).replace("\\", "/"),
+                str(root / "secrets" / "ssh" / "config").replace("\\", "/"),
+                str(refs["local/control-plane/ssh-config"]).replace("\\", "/"),
             )
-            self.assertEqual(
-                str(root / "secrets" / "services" / "onepanel-login.prod0-main.env").replace("\\", "/"),
-                str(refs["targets/prod0-main/onepanel-login"]).replace("\\", "/"),
-            )
+            self.assertNotIn("local/control-plane/prod-jump", refs)
+
+    def test_bootstrap_directory_specs_follow_inventory_targets_instead_of_hardcoded_targets(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "inventory" / "servers" / "wsl").mkdir(parents=True, exist_ok=True)
+            (root / "inventory" / "servers" / "prod9-main").mkdir(parents=True, exist_ok=True)
+            (root / "inventory" / "servers" / "wsl" / "inventory.json").write_text("{}", encoding="utf-8")
+            (root / "inventory" / "servers" / "prod9-main" / "inventory.json").write_text("{}", encoding="utf-8")
+
+            specs = bootstrap_directory_specs(root)
+            targets = {item["scope"] for item in specs if item["scope"].startswith("targets/")}
+
+            self.assertEqual({"targets/wsl", "targets/prod9-main"}, targets)
 
     def test_materialize_legacy_host_layout_projects_host_truth_into_legacy_paths(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

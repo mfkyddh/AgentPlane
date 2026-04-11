@@ -41,6 +41,8 @@ class AppOnboardingStandardTests(unittest.TestCase):
         self.assertIn("bootstrap init-secrets", text)
         self.assertIn("bootstrap verify-secrets", text)
         self.assertIn("让 Agent 接管", text)
+        self.assertIn("invoke-agentplane-windows-uv.ps1", text)
+        self.assertNotIn("onepanel-login.<target>.env", text)
 
     def test_bootstrap_runbook_uses_bootstrap_surface_as_day_zero_entry(self) -> None:
         text = (REPO_ROOT / "docs" / "runbooks" / "bootstrap-secrets.md").read_text(encoding="utf-8")
@@ -49,6 +51,10 @@ class AppOnboardingStandardTests(unittest.TestCase):
         self.assertIn("bootstrap init-secrets", text)
         self.assertIn("bootstrap verify-secrets", text)
         self.assertIn("bootstrap doctor", text)
+        self.assertIn("invoke-agentplane-windows-uv.ps1", text)
+        self.assertIn("onepanel-login.<target>.env", text)
+        self.assertIn("不参与 bootstrap contract", text)
+        self.assertIn("projection", text)
 
     def test_codex_environment_contract_exists_and_points_to_repo_scripts(self) -> None:
         env_root = REPO_ROOT / ".codex" / "environments"

@@ -4,12 +4,13 @@ import argparse
 from pathlib import Path
 from typing import Any
 
-from agentplane.cli.secrets import copy_template_file, summarize_secret_file
+from agentplane.cli.secrets import copy_template_file
 from agentplane.runtime.bootstrap import (
     bootstrap_directory_specs,
     bootstrap_doctor_payload,
-    bootstrap_template_specs,
+    bootstrap_required_truth_specs,
     inspect_local_bootstrap,
+    verify_bootstrap_truths,
 )
 from agentplane.runtime.wsl_bridge import normalize_repo_root_for_current_host
 
@@ -54,7 +55,7 @@ def _init_secrets(repo_root: Path) -> dict[str, Any]:
     ssh_keys_dir.mkdir(parents=True, exist_ok=True)
     scaffold_dirs.add(str(ssh_keys_dir))
 
-    for item in bootstrap_template_specs(repo_root):
+    for item in bootstrap_required_truth_specs(repo_root):
         destination = Path(item["destination"])
         scaffold_dirs.add(str(destination.parent))
         files.append(copy_template_file(Path(item["template"]), destination))
@@ -68,20 +69,7 @@ def _init_secrets(repo_root: Path) -> dict[str, Any]:
 
 
 def _verify_secrets(repo_root: Path) -> dict[str, Any]:
-    checks: list[dict[str, Any]] = []
-    for item in bootstrap_template_specs(repo_root):
-        status = summarize_secret_file(
-            Path(item["destination"]),
-            placeholder_markers=tuple(item["placeholder_markers"]),
-            required_fragments=tuple(item["required_fragments"]),
-        )
-        status["secret_ref"] = item["secret_ref"]
-        checks.append(status)
-    return {
-        "ok": all(item["ok"] for item in checks),
-        "repo_root": str(repo_root),
-        "checks": checks,
-    }
+    return verify_bootstrap_truths(repo_root)
 
 
 def handle_bootstrap_command(args: argparse.Namespace) -> dict[str, Any]:
