@@ -34,6 +34,22 @@ class AppOnboardingStandardTests(unittest.TestCase):
         self.assertIn("[compat-retirement-ledger.md](../reference/compat-retirement-ledger.md)", architecture_index_text)
         self.assertIn("[control-plane-naming-registry.md](../reference/control-plane-naming-registry.md)", architecture_index_text)
 
+    def test_readme_prefers_bootstrap_first_startup_path(self) -> None:
+        text = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn("bootstrap inspect-local", text)
+        self.assertIn("bootstrap init-secrets", text)
+        self.assertIn("bootstrap verify-secrets", text)
+        self.assertIn("让 Agent 接管", text)
+
+    def test_bootstrap_runbook_uses_bootstrap_surface_as_day_zero_entry(self) -> None:
+        text = (REPO_ROOT / "docs" / "runbooks" / "bootstrap-secrets.md").read_text(encoding="utf-8")
+
+        self.assertIn("bootstrap inspect-local", text)
+        self.assertIn("bootstrap init-secrets", text)
+        self.assertIn("bootstrap verify-secrets", text)
+        self.assertIn("bootstrap doctor", text)
+
     def test_codex_environment_contract_exists_and_points_to_repo_scripts(self) -> None:
         env_root = REPO_ROOT / ".codex" / "environments"
         env_file = env_root / "environment.toml"

@@ -3,9 +3,26 @@ import unittest
 from pathlib import Path
 
 from agentplane.cli.secrets import materialize_legacy_host_layout
+from agentplane.runtime.bootstrap import bootstrap_template_specs
 
 
 class SecretsHostLayoutTests(unittest.TestCase):
+    def test_bootstrap_template_specs_keep_local_and_target_scopes_split(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+
+            specs = bootstrap_template_specs(root)
+            refs = {item["secret_ref"]: item["destination"] for item in specs}
+
+            self.assertEqual(
+                str(root / "secrets" / "env" / "prod-jump.env").replace("\\", "/"),
+                str(refs["local/control-plane/prod-jump"]).replace("\\", "/"),
+            )
+            self.assertEqual(
+                str(root / "secrets" / "services" / "onepanel-login.prod0-main.env").replace("\\", "/"),
+                str(refs["targets/prod0-main/onepanel-login"]).replace("\\", "/"),
+            )
+
     def test_materialize_legacy_host_layout_projects_host_truth_into_legacy_paths(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -51,4 +68,7 @@ class SecretsHostLayoutTests(unittest.TestCase):
             projected = root / "secrets" / "services" / "secrets-backup.r2.wsl.env"
             self.assertTrue(projected.is_file())
             projected_text = projected.read_text(encoding="utf-8")
-            self.assertIn(f"SECRETS_BACKUP_SOURCE_DIR={root}/secrets/hosts/wsl", projected_text)
+            self.assertIn(
+                f"SECRETS_BACKUP_SOURCE_DIR={root}/secrets/hosts/wsl".replace("\\", "/"),
+                projected_text.replace("\\", "/"),
+            )

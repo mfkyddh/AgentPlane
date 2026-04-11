@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from agentplane.cli.apps import add_app_parser, handle_app_command
+from agentplane.cli.bootstrap import add_bootstrap_parser, handle_bootstrap_command
 from agentplane.cli.host import add_host_parser, handle_host_command
 from agentplane.cli.onepanel import add_onepanel_parser, handle_onepanel_command, onepanel_error_payload, render_onepanel_text
 from agentplane.cli.projection import add_projection_parser, handle_projection_command
@@ -36,6 +37,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     add_onepanel_parser(subparsers)
 
+    add_bootstrap_parser(subparsers)
     add_host_parser(subparsers)
     add_service_parser(subparsers)
     add_website_parser(subparsers)
@@ -84,6 +86,15 @@ def main(argv: list[str] | None = None) -> int:
             if payload.get("action") == "local.migrate.verify":
                 return 0 if payload.get("payload", {}).get("ok", True) else 1
             return 0
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+
+    if args.command == "bootstrap":
+        try:
+            payload = handle_bootstrap_command(args)
+            _emit(payload)
+            return 0 if payload.get("payload", {}).get("ok", True) else 1
         except ValueError as exc:
             print(str(exc), file=sys.stderr)
             return 1

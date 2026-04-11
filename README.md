@@ -11,10 +11,14 @@
 
 ## 30 秒上手
 
-1. 按 [bootstrap-secrets.md](docs/runbooks/bootstrap-secrets.md) 初始化本地私有文件。
-2. 在仓库根目录验证统一入口：
-   `uv run python -m agentplane.cli --help`
-3. 按任务类型下钻文档：
+1. 先检查当前宿主和工作区绑定：
+   `uv run python -m agentplane.cli bootstrap inspect-local --repo-root <repo-root>`
+2. 生成本地 secrets 空壳：
+   `uv run python -m agentplane.cli bootstrap init-secrets --repo-root <repo-root>`
+3. 按 `secrets/local/control-plane/README.md` 和 `secrets/targets/<target>/README.md` 填写真实 secrets。
+4. 校验 secrets 是否已就绪：
+   `uv run python -m agentplane.cli bootstrap verify-secrets --repo-root <repo-root>`
+5. 让 Agent 接管后续 domain 动作，再按任务类型下钻文档：
    - WSL 本机治理看 [wsl-host-governance.md](docs/runbooks/wsl-host-governance.md)
    - Linux 基线规则看 [linux-governance.md](docs/architecture/linux-governance.md)
    - 应用仓库接入看 [agentplane-app-collaboration.md](docs/architecture/agentplane-app-collaboration.md)
@@ -123,4 +127,3 @@
 - Git 只跟踪模板，不跟踪真实 `.env`、`.pem`、私有 `config`。
 - 真实 secrets 真源默认放在 `secrets/hosts/<target>/...`；`secrets/services/...`、`secrets/app-resources/...`、`secrets/env/...` 如仍存在，只能作为投影文件或兼容入口；服务运行数据默认放在 `/data/<service>/...`。
 - WSL 测试环境容器名以 `-dev` 结尾；生产环境容器名以 `-prod` 结尾。
-

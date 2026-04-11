@@ -97,6 +97,45 @@ def _write_secret_file(path: Path, content: str, *, force: bool, role: str | Non
     return record
 
 
+def copy_template_file(
+    template_path: Path,
+    destination: Path,
+    *,
+    force: bool = False,
+    transform: Callable[[str], str] | None = None,
+) -> dict[str, str]:
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if destination.exists() and not force:
+        return {"template": str(template_path), "path": str(destination), "status": "kept"}
+    content = template_path.read_text(encoding="utf-8")
+    if transform is not None:
+        content = transform(content)
+    destination.write_text(content, encoding="utf-8")
+    return {
+        "template": str(template_path),
+        "path": str(destination),
+        "status": "written" if force else "created",
+    }
+
+
+def summarize_secret_file(
+    path: Path,
+    *,
+    placeholder_markers: tuple[str, ...] = (),
+    required_fragments: tuple[str, ...] = (),
+) -> dict[str, Any]:
+    if not path.is_file():
+        return {"path": str(path), "exists": False, "ok": False, "issues": ["missing"]}
+    text = path.read_text(encoding="utf-8")
+    issues: list[str] = []
+    if any(marker in text for marker in placeholder_markers):
+        issues.append("placeholder-values")
+    for fragment in required_fragments:
+        if fragment not in text:
+            issues.append(f"missing-fragment:{fragment}")
+    return {"path": str(path), "exists": True, "ok": not issues, "issues": issues}
+
+
 def _host_truth_root(repo_root: Path, target: str) -> Path:
     return repo_root / "secrets" / "hosts" / target
 

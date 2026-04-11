@@ -1,40 +1,35 @@
 # Bootstrap Secrets
 
-1. Create local directory skeleton:
-   `mkdir -p secrets/env secrets/ssh/keys secrets/services/{postgres,redis,minio}`
-2. Copy templates into `secrets/` and fill real values:
-   - `templates/env/prod-jump.env.example -> secrets/env/prod-jump.env`
-   - `templates/ssh/config.example -> secrets/ssh/config`
-   - `templates/services/postgres/admin.env.example -> secrets/services/postgres/admin.<target>.env`
-   - `templates/services/redis/admin.env.example -> derive secrets/services/redis/admin.<target>.conf`
-   - `templates/services/minio/admin.env.example -> secrets/services/minio/admin.<target>.env`
-   - `templates/services/onepanel-login.env.example -> secrets/services/onepanel-login.<target>.env`
-   - Legacy flat templates under `templates/services/*.example` are projection-only migration references, not canonical admin sources.
-3. Bootstrap target-scoped PostgreSQL / Redis / MinIO admin secrets:
-   - `uv run python -m agentplane.cli host secrets init-data-services wsl`
-   - `uv run python -m agentplane.cli host secrets init-data-services prod0-main`
-4. Put real PEM files in `secrets/ssh/keys/` with canonical names:
-   - `prod0-main.pem`
-   - `prod2-main.pem`
-5. Tighten permissions:
-   `chmod 700 secrets secrets/env secrets/ssh secrets/ssh/keys`
-   `find secrets/services -type d -exec chmod 755 {} +`
-   `chmod 600 secrets/env/prod-jump.env secrets/ssh/config secrets/ssh/keys/*.pem`
-   `find secrets/services -type f -exec chmod 600 {} +`
-   `find secrets/services/redis -type f -name "admin.*.conf" -exec chmod 644 {} +`
-6. Verify SSH connectivity:
-   - `ssh -F secrets/ssh/config prod0-main "hostname && whoami"` 期望 `prod0-main` 返回 `root`
-   - `ssh -F secrets/ssh/config prod2-main "hostname && whoami"` 期望 `prod2-main` 返回 `root`
-7. Switch to the unified daily entry after bootstrap:
-   - `uv run python -m agentplane.cli --help`
-   - `uv run python -m agentplane.cli host audit wsl --repo-root /root/work/AgentPlane`
-   - `uv run python -m agentplane.cli host inventory prod0-main --repo-root /root/work/AgentPlane`
+日零启动只保留四个正式动作：
+
+1. 检查当前宿主、backend 和工作区绑定：
+   `uv run python -m agentplane.cli bootstrap inspect-local --repo-root <repo-root>`
+2. 生成本地 secrets 空壳：
+   `uv run python -m agentplane.cli bootstrap init-secrets --repo-root <repo-root>`
+3. 由人类填写真实 secrets：
+   - `secrets/env/prod-jump.env`
+   - `secrets/ssh/config`
+   - `secrets/ssh/keys/*.pem`
+   - `secrets/services/onepanel-login.<target>.env`
+4. 校验 secrets 是否已就绪：
+   `uv run python -m agentplane.cli bootstrap verify-secrets --repo-root <repo-root>`
+5. 汇总当前仓库是否已具备 Agent 接管条件：
+   `uv run python -m agentplane.cli bootstrap doctor --repo-root <repo-root>`
+
+## Generated Scaffold
+
+`bootstrap init-secrets` 会创建以下空壳和说明文件，但不会写入真实敏感值：
+
+- `secrets/local/control-plane/README.md`
+- `secrets/targets/wsl/README.md`
+- `secrets/targets/prod0-main/README.md`
+- `secrets/targets/prod2-main/README.md`
+- `secrets/env/prod-jump.env`
+- `secrets/ssh/config`
+- `secrets/services/onepanel-login.<target>.env`
 
 ## Notes
 
-- Daily operations should start from `uv run python -m agentplane.cli ...`.
-- Direct script calls under `ops/scripts/` are compatibility or low-level debugging paths, not the primary workflow.
-- `prod0-main` data-service admin secrets now live only under `secrets/services/<service>/admin.<target>.*`; the old flat files `secrets/services/postgres.env`, `secrets/services/redis.conf`, `secrets/services/minio.env` are retired.
-- For stateful app resource cutovers, do not switch runtime `DATABASE_*` to a new app resource database until the source data has been migrated into that app resource DB and the app resource credentials have been verified with a real login.
-- On `prod0-main`, Redis app resource metadata remains useful for ledgers and ACL provisioning, but the active runtime credential model is shared runtime password plus DB/key-prefix partitioning unless a service-specific cutover plan explicitly says otherwise.
-- 1Panel 登录凭据（`secrets/services/onepanel-login.<target>.env`）也属于仓库 secrets 合同的一部分，文档中只保留模板与路径，不记录真实值。
+- 日常正式入口仍然是 `uv run python -m agentplane.cli ...`。
+- bootstrap 只负责本地 scaffold 与 secret readiness；target 级 data-service admin secrets、host truth 和 domain 操作交给 Agent 在后续 flow 里处理。
+- `bootstrap verify-secrets` 只报告缺项、占位值和 readiness，不打印 secret 明文。
