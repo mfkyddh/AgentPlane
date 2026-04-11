@@ -30,7 +30,7 @@ def _normalize_os_name(raw: str) -> str:
     if value.startswith("linux"):
         return "linux"
     if value.startswith("darwin"):
-        return "darwin"
+        return "macos"
     return value
 
 

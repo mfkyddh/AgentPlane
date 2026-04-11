@@ -12,6 +12,7 @@ from agentplane.domain.app.resource_paths import (
     resolve_catalog_repo_root,
 )
 from agentplane.runtime.path_policy import assert_canonical_ref, is_canonical_ref
+from agentplane.runtime.resolution import ResolvedReference, materialize_path
 from agentplane.runtime.wsl_bridge import wsl_posix_to_unc
 
 
@@ -64,6 +65,13 @@ def _runtime_contract_relpaths(app: str, contracts: dict[str, str]) -> dict[str,
             continue
         normalized[target] = value
     return normalized
+
+
+def _resolved_contract_reference(entry: AppCatalogEntry, *, target: str, contract_rel: str) -> ResolvedReference:
+    return ResolvedReference(
+        canonical_ref=canonical_contract_ref(entry.app, target),
+        resolved_path=materialize_path(entry.repo_root, contract_rel),
+    )
 
 
 def load_app_catalog(repo_root: Path) -> list[AppCatalogEntry]:
@@ -154,12 +162,35 @@ def resolve_app_entry_for_identifier(repo_root: Path, *, app_or_service_key: str
     raise ValueError(f"app catalog missing app entry: app={app_or_service_key}")
 
 
-def resolve_app_contract(repo_root: Path, *, target: str, app: str) -> tuple[AppCatalogEntry, Path]:
+def resolve_app_contract_reference(
+    repo_root: Path,
+    *,
+    target: str,
+    app: str,
+    app_repo_root: str | None = None,
+) -> tuple[AppCatalogEntry, ResolvedReference]:
     entry = resolve_app_entry(repo_root, app=app)
+    if app_repo_root:
+        resolved_app_root = materialize_path(_coerce_catalog_repo_root(app_repo_root))
+        contract_rel = Path(contract_relpath_for_target(target))
+        entry = AppCatalogEntry(
+            app=entry.app,
+            repo_name=resolved_app_root.name,
+            repo_root=resolved_app_root,
+            service_key=entry.service_key,
+            contracts=dict(entry.contracts),
+        )
+        return entry, _resolved_contract_reference(entry, target=target, contract_rel=str(contract_rel))
+
     contract_rel = entry.contracts.get(target)
     if not isinstance(contract_rel, str) or not contract_rel:
         raise ValueError(f"app catalog missing target mapping: target={target} app={app}")
-    return entry, (entry.repo_root / contract_rel).resolve()
+    return entry, _resolved_contract_reference(entry, target=target, contract_rel=contract_rel)
+
+
+def resolve_app_contract(repo_root: Path, *, target: str, app: str) -> tuple[AppCatalogEntry, Path]:
+    entry, resolved = resolve_app_contract_reference(repo_root, target=target, app=app)
+    return entry, resolved.resolved_path
 
 
 def resolve_app_contract_source(
@@ -169,21 +200,13 @@ def resolve_app_contract_source(
     app: str,
     app_repo_root: str | None = None,
 ) -> tuple[AppCatalogEntry, Path]:
-    entry = resolve_app_entry(repo_root, app=app)
-    if not app_repo_root:
-        return resolve_app_contract(repo_root, target=target, app=app)
-    resolved_app_root = _coerce_catalog_repo_root(app_repo_root).resolve()
-    contract_rel = Path(contract_relpath_for_target(target))
-    return (
-        AppCatalogEntry(
-            app=entry.app,
-            repo_name=resolved_app_root.name,
-            repo_root=resolved_app_root,
-            service_key=entry.service_key,
-            contracts=dict(entry.contracts),
-        ),
-        (resolved_app_root / contract_rel).resolve(),
+    entry, resolved = resolve_app_contract_reference(
+        repo_root,
+        target=target,
+        app=app,
+        app_repo_root=app_repo_root,
     )
+    return entry, resolved.resolved_path
 
 
 def write_app_catalog(repo_root: Path, entries: list[AppCatalogEntry]) -> Path:

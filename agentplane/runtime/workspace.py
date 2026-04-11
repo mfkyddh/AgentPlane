@@ -11,6 +11,11 @@ class WorkspaceContext:
     private_root: Path
     linux_backend_root: Path | None
 
+    @property
+    def artifact_staging_root(self) -> Path:
+        base_root = self.linux_backend_root or self.control_root
+        return base_root / ".agentplane" / "staging"
+
 
 def _as_path(value: Path | str | None) -> Path | None:
     if value is None:
@@ -23,6 +28,21 @@ def _as_path(value: Path | str | None) -> Path | None:
 def _looks_like_windows_root(path: Path) -> bool:
     rendered = str(path)
     return len(rendered) >= 2 and rendered[0].isalpha() and rendered[1] == ":"
+
+
+def _looks_like_unc_path(path: Path) -> bool:
+    rendered = str(path).replace("/", "\\")
+    lowered = rendered.lower()
+    return lowered.startswith("\\\\wsl.localhost\\") or lowered.startswith("\\\\wsl$\\")
+
+
+def _materialize_path(value: Path | str) -> Path:
+    path = _as_path(value)
+    if path is None:
+        raise ValueError("path is required")
+    if _looks_like_windows_root(path) or _looks_like_unc_path(path):
+        return path
+    return path.resolve()
 
 
 def git_common_root(repo_root: Path) -> Path | None:
@@ -72,7 +92,7 @@ def resolve_workspace(
 
 
 def resolve_workspace_from_repo(repo_root: Path | str) -> WorkspaceContext:
-    resolved_repo_root = Path(repo_root).resolve()
+    resolved_repo_root = _materialize_path(repo_root)
     control_root = git_common_root(resolved_repo_root) or resolved_repo_root
     return resolve_workspace(
         control_root=control_root,

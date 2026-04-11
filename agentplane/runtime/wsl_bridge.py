@@ -7,7 +7,11 @@ from dataclasses import dataclass
 from pathlib import Path, PureWindowsPath
 from typing import Any
 
+from agentplane.runtime.host_profile import host_profile_from_platform
 from agentplane.runtime.platform import HostPlatform, LinuxBackend, detect_host_platform, select_linux_backend
+from agentplane.runtime.resolution import PATH_POLICY_PAYLOAD, WorkspaceResolver
+from agentplane.runtime.secret_resolver import SecretResolver
+from agentplane.runtime.target_resolver import TargetResolver
 from agentplane.runtime.workspace import WorkspaceContext, resolve_workspace
 
 
@@ -176,13 +180,22 @@ def inspect_local_host(
     legacy_control_root: Path | str | None = None,
     host_platform: HostPlatform | None = None,
 ) -> dict[str, Any]:
+    facts = host_platform or detect_host_platform()
     workspace = resolve_local_workspace(
         repo_root,
         windows_root=windows_root,
         legacy_control_root=legacy_control_root,
-        host_platform=host_platform,
+        host_platform=facts,
     )
-    backend = detect_local_linux_backend(workspace, host_platform=host_platform)
+    profile_facts = facts
+    if is_windows_path(workspace.control_root):
+        profile_facts = HostPlatform(os_name="windows", has_wsl=shutil.which("wsl.exe") is not None, is_wsl=False)
+    profile = host_profile_from_platform(profile_facts)
+    backend = detect_local_linux_backend(workspace, host_platform=profile_facts)
+    repo_path = _coerce_path(repo_root) or Path(".").resolve()
+    workspace_resolver = WorkspaceResolver.from_workspace(repo_root=repo_path, workspace=workspace)
+    ssh_config = SecretResolver(workspace_resolver).resolve_ssh_config()
+    local_target = TargetResolver(profile).resolve("wsl")
     return {
         "control_root": render_host_path(workspace.control_root),
         "legacy_control_root": render_host_path(workspace.legacy_control_root),
@@ -190,6 +203,15 @@ def inspect_local_host(
         "linux_backend_root": render_host_path(workspace.linux_backend_root),
         "private_dirs": list(PRIVATE_DIR_NAMES),
         "linux_backend": backend.to_payload(),
+        "host_profile": profile.to_payload(),
+        "workspace": workspace_resolver.bindings.to_payload(render_path=render_host_path),
+        "path_policy": dict(PATH_POLICY_PAYLOAD),
+        "secret_bindings": {
+            "ssh_config": ssh_config.to_payload(render_path=render_host_path),
+        },
+        "targets": {
+            "wsl": local_target.to_payload(),
+        },
     }
 
 

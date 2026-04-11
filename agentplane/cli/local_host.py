@@ -10,7 +10,7 @@ def add_local_host_parser(host_subparsers: argparse._SubParsersAction[argparse.A
     local_parser = host_subparsers.add_parser("local", help="本机 Windows 主控制面与迁移入口")
     local_subparsers = local_parser.add_subparsers(dest="host_local_action", required=True)
 
-    inspect_parser = local_subparsers.add_parser("inspect", help="检查本机控制面与 Linux backend")
+    inspect_parser = local_subparsers.add_parser("inspect", help="检查本机 host profile、workspace bindings 与 Linux backend")
     inspect_parser.add_argument("--repo-root", default=".", help="当前仓库根目录或 Windows 主控制面根目录")
     inspect_parser.add_argument("--windows-root", help="覆盖 Windows 主控制面根目录")
     inspect_parser.add_argument("--legacy-control-root", help="覆盖旧 Linux 控制面根目录")

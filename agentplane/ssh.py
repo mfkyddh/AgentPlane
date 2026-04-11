@@ -6,7 +6,7 @@ import shlex
 from dataclasses import dataclass
 from pathlib import Path
 
-from agentplane.runtime.workspace import resolve_workspace_from_repo
+from agentplane.runtime.secret_resolver import SecretResolver
 
 
 @dataclass(frozen=True)
@@ -104,8 +104,7 @@ class SshTarget:
 
 
 def resolve_ssh_config_path(repo_root: Path) -> Path:
-    workspace = resolve_workspace_from_repo(repo_root)
-    return workspace.private_root / "ssh" / "config"
+    return SecretResolver.from_repo_root(repo_root).ssh_config_path()
 
 
 def resolve_ssh_target(repo_root: Path, alias: str) -> SshTarget:
