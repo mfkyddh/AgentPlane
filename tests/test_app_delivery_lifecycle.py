@@ -19,7 +19,7 @@ def _write_json(path: Path, payload: object) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-def _write_contract(app_root: Path, *, app_id: str) -> Path:
+def _write_contract(app_root: Path, *, app_id: str, container_name: str | None = None) -> Path:
     contract = {
         "schema_version": 1,
         "app_id": app_id,
@@ -30,7 +30,7 @@ def _write_contract(app_root: Path, *, app_id: str) -> Path:
         },
         "runtime": {
             "kind": "compose",
-            "container_name": f"{app_id}-dev",
+            "container_name": container_name or f"{app_id}-dev",
             "container_port": 8080,
             "host_binding": "127.0.0.1:18080",
             "healthcheck": {"path": "/health", "expected_status": 200},
@@ -58,7 +58,14 @@ def _write_contract(app_root: Path, *, app_id: str) -> Path:
     return contract_file
 
 
-def _write_catalog(repo_root: Path, *, app: str, app_root: Path, contract_file: Path) -> Path:
+def _write_catalog(
+    repo_root: Path,
+    *,
+    app: str,
+    app_root: Path,
+    contract_file: Path,
+    target: str = "wsl",
+) -> Path:
     catalog = {
         "apps": [
             {
@@ -66,7 +73,7 @@ def _write_catalog(repo_root: Path, *, app: str, app_root: Path, contract_file: 
                 "repo_name": app_root.name,
                 "repo_root": str(app_root),
                 "service_key": app,
-                "contracts": {"wsl": contract_file.name},
+                "contracts": {target: contract_file.name},
             }
         ]
     }
@@ -75,13 +82,22 @@ def _write_catalog(repo_root: Path, *, app: str, app_root: Path, contract_file: 
     return path
 
 
-def _write_inventory(repo_root: Path, *, target: str, include_app_service: bool, app_service_key: str) -> Path:
+def _write_inventory(
+    repo_root: Path,
+    *,
+    target: str,
+    include_app_service: bool,
+    app_service_key: str,
+    ssh_user: str | None = None,
+) -> Path:
     services: dict[str, object] = {
         "backend": {"container_name": "backend-prod"},
     }
     if include_app_service:
         services[app_service_key] = {"container_name": f"{app_service_key}-dev", "control_plane": "compose"}
-    payload = {"services": services}
+    payload: dict[str, object] = {"services": services}
+    if ssh_user is not None:
+        payload["ssh"] = {"aliases": [target], "user": ssh_user}
     path = repo_root / "inventory" / "servers" / target / "inventory.json"
     _write_json(path, payload)
     return path
@@ -160,6 +176,36 @@ class AppDeliveryLifecycleTests(unittest.TestCase):
             registry_text = (repo_root / "inventory" / "servers" / "wsl" / "app-resources.json").read_text(encoding="utf-8")
             self.assertNotIn(f"\"{app_id}\"", registry_text)
             self.assertTrue((repo_root / "inventory" / "servers" / "wsl" / "README.md").is_file())
+
+    def test_verify_dry_run_exposes_backend_execution_steps(self) -> None:
+        from agentplane.domain.app.delivery_handlers import verify_delivery_for_app
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            app_id = "demoapp"
+            contract_file = _write_contract(repo_root, app_id=app_id, container_name=f"{app_id}-prod")
+            _write_catalog(repo_root, app=app_id, app_root=repo_root, contract_file=contract_file, target="prod0-main")
+            _write_inventory(
+                repo_root,
+                target="prod0-main",
+                include_app_service=True,
+                app_service_key=app_id,
+                ssh_user="root",
+            )
+            _write_app_resources_registry(repo_root, target="prod0-main", app_id=app_id)
+
+            payload = verify_delivery_for_app(
+                repo_root,
+                target="prod0-main",
+                app=app_id,
+                dry_run=True,
+                execute=False,
+            )["payload"]
+
+            self.assertEqual("ssh-linux", payload["backend_type"])
+            self.assertEqual("ssh-linux", payload["execution_steps"][0]["plan"]["backend_type"])
+            self.assertEqual("ssh-linux", payload["execution_steps"][0]["backend"]["backend_type"])
+            self.assertIn("docker inspect demoapp-prod", payload["commands"][0])
 
 
 if __name__ == "__main__":

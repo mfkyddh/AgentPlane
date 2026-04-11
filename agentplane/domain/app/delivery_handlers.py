@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from pathlib import Path
+import shlex
 from typing import Any
 
 import yaml
@@ -10,8 +11,14 @@ from agentplane.domain.app.catalog import resolve_app_contract_source
 from agentplane.domain.app.lifecycle import (
     offboard_delivery_for_app,
     onboard_delivery_for_app,
+    plan_local_backend_step,
+    plan_remote_copy_step,
+    plan_remote_shell_step,
     run_delivery_post_actions,
 )
+from agentplane.runtime.backends import build_backend_runner
+from agentplane.runtime.execution import PlannedExecutionStep
+from agentplane.runtime.host_profile import detect_host_profile
 
 
 _OBSERVATION_WINDOW_NOTE = "旧 runtime 作为 rollback state 保留；只有 post-cutover verification 通过且 observation window 结束后才允许清理。"
@@ -115,7 +122,71 @@ def _candidate_runtime_material(
     }
 
 
-def _candidate_precheck_steps(app_cli: Any, repo_root: Path, *, target: str, material: dict[str, Any]) -> dict[str, list[tuple[list[str], str]]]:
+def _render_execution_steps(steps: list[PlannedExecutionStep]) -> list[dict[str, Any]]:
+    runner = build_backend_runner()
+    rendered_steps: list[dict[str, Any]] = []
+    for step in steps:
+        rendered = runner.render(step.plan, bindings=step.bindings)
+        rendered_steps.append(
+            {
+                "key": step.key,
+                "plan": step.plan.to_payload(),
+                "backend": rendered.to_payload(),
+            }
+        )
+    return rendered_steps
+
+
+def _execute_steps(steps: list[PlannedExecutionStep], *, stop_on_failure: bool) -> list[dict[str, Any]]:
+    runner = build_backend_runner()
+    results: list[dict[str, Any]] = []
+    for step in steps:
+        result = runner.execute(step.plan, bindings=step.bindings)
+        results.append({"key": step.key, **result.to_payload()})
+        if stop_on_failure and not result.ok:
+            break
+    return results
+
+
+def _display_commands(execution_steps: list[dict[str, Any]]) -> list[str]:
+    return [str(step["backend"]["display_command"]) for step in execution_steps]
+
+
+def _transition_step_to_execution(
+    app_cli: Any,
+    *,
+    repo_root: Path,
+    target: str,
+    key: str,
+    transition_step: tuple[list[str], str] | None,
+) -> PlannedExecutionStep | None:
+    if transition_step is None:
+        return None
+    argv, _display = transition_step
+    if argv and argv[0] == "ssh":
+        ssh_target = app_cli._target_ssh_target(repo_root, target)
+        remote_wrapped = str(argv[-1])
+        parsed = shlex.split(remote_wrapped)
+        shell_command = parsed[-1] if len(parsed) >= 3 and parsed[-2] == "-lc" else remote_wrapped
+        return plan_remote_shell_step(
+            key,
+            ssh_target=ssh_target,
+            cwd=None,
+            argv=("sh",),
+            shell_command=shell_command,
+            capabilities=("ssh",),
+        )
+    executable = str(argv[0]) if argv else "python3"
+    return plan_local_backend_step(
+        key,
+        backend_type=detect_host_profile().linux_backend,
+        cwd=repo_root,
+        argv=tuple(str(item) for item in argv),
+        capabilities=(executable,),
+    )
+
+
+def _candidate_precheck_steps(app_cli: Any, repo_root: Path, *, target: str, material: dict[str, Any]) -> dict[str, list[PlannedExecutionStep]]:
     ssh_target = app_cli._target_ssh_target(repo_root, target)
     local_env = Path(material["local_env"])
     remote_tmp_env = f"/tmp/{local_env.name}"
@@ -130,58 +201,281 @@ def _candidate_precheck_steps(app_cli: Any, repo_root: Path, *, target: str, mat
     cleanup_remote_command = f"rm -f {material['remote_compose']} {material['remote_env']}"
     origin_health_wait = app_cli._origin_health_wait_command(material["contract"], container_name=str(material["container_name"]))
     prepare = [
-        (
-            ssh_target.ssh_args_for_shell(f"mkdir -p {material['remote_compose_dir']} /opt/agentplane/secrets/services"),
-            ssh_target.display_ssh_command(f"mkdir -p {material['remote_compose_dir']} /opt/agentplane/secrets/services"),
+        plan_remote_shell_step(
+            "candidate.prepare.remote-dirs",
+            ssh_target=ssh_target,
+            cwd=None,
+            argv=("mkdir", "-p", material["remote_compose_dir"], "/opt/agentplane/secrets/services"),
+            capabilities=("ssh",),
         ),
-        (
-            ["scp", "-F", str(ssh_target.config_path), str(material["local_compose"]), ssh_target.scp_destination(str(material["remote_compose"]))],
-            ssh_target.display_scp_command(str(material["local_compose"]), str(material["remote_compose"])),
+        plan_remote_copy_step(
+            "candidate.prepare.copy-compose",
+            ssh_target=ssh_target,
+            local_path=Path(material["local_compose"]),
+            remote_path=str(material["remote_compose"]),
+            expected_outputs=("remote-compose",),
         ),
-        (
-            ["scp", "-F", str(ssh_target.config_path), str(local_env), ssh_target.scp_destination(remote_tmp_env)],
-            ssh_target.display_scp_command(str(local_env), remote_tmp_env),
+        plan_remote_copy_step(
+            "candidate.prepare.copy-env",
+            ssh_target=ssh_target,
+            local_path=local_env,
+            remote_path=remote_tmp_env,
+            expected_outputs=("remote-env-staging",),
         ),
-        (
-            ssh_target.ssh_args_for_shell(f"install -Dm600 {remote_tmp_env} {material['remote_env']} && rm -f {remote_tmp_env}"),
-            ssh_target.display_ssh_command(f"install -Dm600 {remote_tmp_env} {material['remote_env']} && rm -f {remote_tmp_env}"),
+        plan_remote_shell_step(
+            "candidate.prepare.install-env",
+            ssh_target=ssh_target,
+            cwd=None,
+            argv=("sh",),
+            shell_command=f"install -Dm600 {remote_tmp_env} {material['remote_env']} && rm -f {remote_tmp_env}",
+            capabilities=("ssh",),
         ),
-        (
-            ssh_target.ssh_args_for_shell(up_command),
-            ssh_target.display_ssh_command(up_command),
+        plan_remote_shell_step(
+            "candidate.prepare.compose-up",
+            ssh_target=ssh_target,
+            cwd=None,
+            argv=("sh",),
+            shell_command=up_command,
+            capabilities=("ssh", "docker"),
         ),
     ]
     verify = [
-        (
-            ssh_target.ssh_args_for_shell(f"docker inspect {material['container_name']}"),
-            ssh_target.display_ssh_command(f"docker inspect {material['container_name']}"),
+        plan_remote_shell_step(
+            "candidate.verify.inspect",
+            ssh_target=ssh_target,
+            cwd=None,
+            argv=("docker", "inspect", str(material["container_name"])),
+            capabilities=("ssh", "docker"),
         ),
-        (
-            ssh_target.ssh_args_for_shell(origin_health_wait),
-            ssh_target.display_ssh_command(origin_health_wait),
+        plan_remote_shell_step(
+            "candidate.verify.health",
+            ssh_target=ssh_target,
+            cwd=None,
+            argv=("sh",),
+            shell_command=origin_health_wait,
+            capabilities=("ssh", "docker", "curl"),
         ),
     ]
     cleanup = [
-        (
-            ssh_target.ssh_args_for_shell(down_command),
-            ssh_target.display_ssh_command(down_command),
+        plan_remote_shell_step(
+            "candidate.cleanup.compose-down",
+            ssh_target=ssh_target,
+            cwd=None,
+            argv=("sh",),
+            shell_command=down_command,
+            capabilities=("ssh", "docker"),
         ),
-        (
-            ssh_target.ssh_args_for_shell(cleanup_remote_command),
-            ssh_target.display_ssh_command(cleanup_remote_command),
+        plan_remote_shell_step(
+            "candidate.cleanup.remove-remote-files",
+            ssh_target=ssh_target,
+            cwd=None,
+            argv=("sh",),
+            shell_command=cleanup_remote_command,
+            capabilities=("ssh",),
         ),
     ]
     return {"prepare": prepare, "verify": verify, "cleanup": cleanup}
 
 
-def _run_steps(app_cli: Any, steps: list[tuple[list[str], str]], *, stop_on_failure: bool) -> list[dict[str, Any]]:
-    results: list[dict[str, Any]] = []
-    for argv, display in steps:
-        result = app_cli._execute_step(argv=argv, display=display)
-        results.append(result)
-        if stop_on_failure and not result["ok"]:
-            break
-    return results
+def _plan_wsl_deploy_steps(
+    app_cli: Any,
+    contract: dict[str, Any],
+    *,
+    repo_root: Path,
+    target: str,
+    image_ref: str | None,
+) -> tuple[list[PlannedExecutionStep], dict[str, Any]]:
+    rendered = app_cli.render_runtime(contract, repo_root=repo_root, target=target, image_ref=image_ref)
+    compose_path = Path(rendered["compose_file"])
+    step = plan_local_backend_step(
+        "deploy.wsl.compose-up",
+        backend_type=detect_host_profile().linux_backend,
+        cwd=repo_root,
+        argv=("docker", "compose", "-f", str(compose_path), "up", "-d", "--pull", "never"),
+        capabilities=("docker",),
+        expected_outputs=("compose-up",),
+    )
+    return [step], {"container_name": rendered["container_name"], "compose_file": str(compose_path)}
+
+
+def _plan_remote_deploy_steps(
+    app_cli: Any,
+    contract: dict[str, Any],
+    *,
+    repo_root: Path,
+    target: str,
+    image_ref: str | None,
+    rendered_compose_path: Path | None = None,
+) -> tuple[list[PlannedExecutionStep], dict[str, Any]]:
+    rendered = app_cli.render_runtime(contract, repo_root=repo_root, target=target, image_ref=image_ref)
+    ssh_target = app_cli._target_ssh_target(repo_root, target)
+    env_path = Path(app_cli._service_env_path(repo_root, str(contract["app_id"]), target))
+    rollback_entry = contract["rollback"]["previous_control_plane"]
+    remote_compose_name = app_cli._remote_compose_filename(target)
+    remote_compose = f"/opt/agentplane/infra/compose/{contract['app_id']}/{remote_compose_name}"
+    remote_env = f"/opt/agentplane/secrets/services/{contract['app_id']}.{app_cli._target_alias(target)}.env"
+    compose_source = rendered_compose_path or Path("<rendered-compose>")
+    steps = [
+        plan_remote_shell_step(
+            "deploy.remote.remote-dirs",
+            ssh_target=ssh_target,
+            cwd=None,
+            argv=("mkdir", "-p", f"/opt/agentplane/infra/compose/{contract['app_id']}", "/opt/agentplane/secrets/services"),
+            capabilities=("ssh",),
+        ),
+        plan_remote_copy_step(
+            "deploy.remote.copy-compose",
+            ssh_target=ssh_target,
+            local_path=compose_source,
+            remote_path=remote_compose,
+            expected_outputs=("remote-compose",),
+        ),
+        plan_remote_copy_step(
+            "deploy.remote.copy-env",
+            ssh_target=ssh_target,
+            local_path=env_path,
+            remote_path=f"/tmp/{env_path.name}",
+            expected_outputs=("remote-env-staging",),
+        ),
+        plan_remote_shell_step(
+            "deploy.remote.install-env",
+            ssh_target=ssh_target,
+            cwd=None,
+            argv=("sh",),
+            shell_command=f"install -Dm600 /tmp/{env_path.name} {remote_env} && rm -f /tmp/{env_path.name}",
+            capabilities=("ssh",),
+        ),
+    ]
+    transition_step = app_cli._control_plane_transition_step(repo_root, target=target, rollback_entry=rollback_entry, operate="stop")
+    transition_execution = _transition_step_to_execution(
+        app_cli,
+        repo_root=repo_root,
+        target=target,
+        key="deploy.remote.stop-previous-control-plane",
+        transition_step=transition_step,
+    )
+    if transition_execution is not None:
+        steps.append(transition_execution)
+    steps.append(
+        plan_remote_shell_step(
+            "deploy.remote.compose-up",
+            ssh_target=ssh_target,
+            cwd=None,
+            argv=("sh",),
+            shell_command=(
+                f"cd /opt/agentplane/infra/compose/{contract['app_id']} && "
+                f"docker compose -f {remote_compose_name} up -d --pull never"
+            ),
+            capabilities=("ssh", "docker"),
+        )
+    )
+    return steps, {
+        "container_name": rendered["container_name"],
+        "remote_compose": remote_compose,
+        "remote_env": remote_env,
+        "local_env": str(env_path),
+    }
+
+
+def _plan_delivery_verify_steps(
+    app_cli: Any,
+    contract: dict[str, Any],
+    *,
+    repo_root: Path,
+    target: str,
+    include_public: bool,
+) -> tuple[list[PlannedExecutionStep], str]:
+    container_name = app_cli._runtime_container_name(str(contract["app_id"]), contract["runtime"], target=target)
+    if target == "wsl":
+        healthcheck_url = app_cli._healthcheck_url(contract, target=target)
+        return [
+            plan_local_backend_step(
+                "verify.wsl.healthcheck",
+                backend_type=detect_host_profile().linux_backend,
+                cwd=repo_root,
+                argv=("curl", "-fsS", healthcheck_url),
+                capabilities=("curl",),
+            )
+        ], container_name
+
+    ssh_target = app_cli._target_ssh_target(repo_root, target)
+    origin_health_wait = app_cli._origin_health_wait_command(contract, container_name=container_name)
+    steps = [
+        plan_remote_shell_step(
+            "verify.remote.inspect",
+            ssh_target=ssh_target,
+            cwd=None,
+            argv=("docker", "inspect", container_name),
+            capabilities=("ssh", "docker"),
+        ),
+        plan_remote_shell_step(
+            "verify.remote.origin-health",
+            ssh_target=ssh_target,
+            cwd=None,
+            argv=("sh",),
+            shell_command=origin_health_wait,
+            capabilities=("ssh", "docker", "curl"),
+        ),
+    ]
+    if include_public and app_cli._has_public_ingress(contract):
+        public_root = str(app_cli._public_sites(contract)[0]["public_url"]).rstrip("/")
+        local_backend = detect_host_profile().linux_backend
+        steps.extend(
+            [
+                plan_local_backend_step(
+                    "verify.public.healthcheck",
+                    backend_type=local_backend,
+                    cwd=repo_root,
+                    argv=("curl", "-fsS", f"{public_root}{contract['runtime']['healthcheck']['path']}"),
+                    capabilities=("curl",),
+                ),
+                plan_local_backend_step(
+                    "verify.public.headers",
+                    backend_type=local_backend,
+                    cwd=repo_root,
+                    argv=("curl", "-fsSI", f"{public_root}/"),
+                    capabilities=("curl",),
+                ),
+            ]
+        )
+    return steps, container_name
+
+
+def _plan_delivery_rollback_steps(
+    app_cli: Any,
+    contract: dict[str, Any],
+    *,
+    repo_root: Path,
+    target: str,
+) -> tuple[list[PlannedExecutionStep], dict[str, Any]]:
+    rollback_entry = contract["rollback"]["previous_control_plane"]
+    if target == "wsl" or rollback_entry.get("kind") == "none":
+        return [], rollback_entry
+    ssh_target = app_cli._target_ssh_target(repo_root, target)
+    steps = [
+        plan_remote_shell_step(
+            "rollback.remote.compose-down",
+            ssh_target=ssh_target,
+            cwd=None,
+            argv=("sh",),
+            shell_command=(
+                f"cd /opt/agentplane/infra/compose/{contract['app_id']} && "
+                f"docker compose -f {app_cli._remote_compose_filename(target)} down || true"
+            ),
+            capabilities=("ssh", "docker"),
+        )
+    ]
+    transition_step = app_cli._control_plane_transition_step(repo_root, target=target, rollback_entry=rollback_entry, operate="start")
+    transition_execution = _transition_step_to_execution(
+        app_cli,
+        repo_root=repo_root,
+        target=target,
+        key="rollback.remote.start-previous-control-plane",
+        transition_step=transition_step,
+    )
+    if transition_execution is not None:
+        steps.append(transition_execution)
+    return steps, rollback_entry
 
 
 def _plan_production_verify(
@@ -192,38 +486,31 @@ def _plan_production_verify(
     target: str,
     include_public: bool,
 ) -> dict[str, Any]:
-    container_name = app_cli._runtime_container_name(str(contract["app_id"]), contract["runtime"], target=target)
-    ssh_target = app_cli._target_ssh_target(repo_root, target)
-    origin_health_wait = app_cli._origin_health_wait_command(contract, container_name=container_name)
-    commands = [
-        ssh_target.display_ssh_command(f"docker inspect {container_name}"),
-        ssh_target.display_ssh_command(origin_health_wait),
-    ]
-    if include_public and app_cli._has_public_ingress(contract):
-        public_root = str(app_cli._public_sites(contract)[0]["public_url"]).rstrip("/")
-        commands.extend(
-            [
-                f"curl -fsS {public_root}{contract['runtime']['healthcheck']['path']}",
-                f"curl -fsSI {public_root}/",
-            ]
-        )
-    return {"container_name": container_name, "commands": commands, "status": "planned"}
+    steps, container_name = _plan_delivery_verify_steps(
+        app_cli,
+        contract,
+        repo_root=repo_root,
+        target=target,
+        include_public=include_public,
+    )
+    execution_steps = _render_execution_steps(steps)
+    return {
+        "container_name": container_name,
+        "commands": [step["backend"]["display_command"] for step in execution_steps],
+        "execution_steps": execution_steps,
+        "status": "planned",
+    }
 
 
 def _execute_origin_verify(app_cli: Any, contract: dict[str, Any], *, repo_root: Path, target: str) -> dict[str, Any]:
-    container_name = app_cli._runtime_container_name(str(contract["app_id"]), contract["runtime"], target=target)
-    ssh_target = app_cli._target_ssh_target(repo_root, target)
-    origin_health_wait = app_cli._origin_health_wait_command(contract, container_name=container_name)
-    checks = [
-        app_cli._execute_step(
-            argv=ssh_target.ssh_args_for_shell(f"docker inspect {container_name}"),
-            display=ssh_target.display_ssh_command(f"docker inspect {container_name}"),
-        ),
-        app_cli._execute_step(
-            argv=ssh_target.ssh_args_for_shell(origin_health_wait),
-            display=ssh_target.display_ssh_command(origin_health_wait),
-        ),
-    ]
+    steps, container_name = _plan_delivery_verify_steps(
+        app_cli,
+        contract,
+        repo_root=repo_root,
+        target=target,
+        include_public=False,
+    )
+    checks = _execute_steps(steps, stop_on_failure=True)
     return {
         "container_name": container_name,
         "network_preflight": app_cli._production_network_preflight(repo_root, target),
@@ -234,24 +521,21 @@ def _execute_origin_verify(app_cli: Any, contract: dict[str, Any], *, repo_root:
 
 
 def _plan_production_rollback(app_cli: Any, contract: dict[str, Any], *, repo_root: Path, target: str) -> dict[str, Any]:
-    rollback_entry = contract["rollback"]["previous_control_plane"]
-    if rollback_entry.get("kind") == "none":
+    steps, rollback_entry = _plan_delivery_rollback_steps(app_cli, contract, repo_root=repo_root, target=target)
+    if not steps:
         return {
             "rollback_entry": rollback_entry,
             "commands": [],
             "warning": app_cli._render_rollback_entry(rollback_entry),
             "status": "not-applicable",
         }
-    ssh_target = app_cli._target_ssh_target(repo_root, target)
-    transition_step = app_cli._control_plane_transition_step(repo_root, target=target, rollback_entry=rollback_entry, operate="start")
-    commands = [
-        ssh_target.display_ssh_command(
-            f"cd /opt/agentplane/infra/compose/{contract['app_id']} && docker compose -f {app_cli._remote_compose_filename(target)} down || true"
-        )
-    ]
-    if transition_step:
-        commands.append(transition_step[1])
-    return {"rollback_entry": rollback_entry, "commands": commands, "status": "planned"}
+    execution_steps = _render_execution_steps(steps)
+    return {
+        "rollback_entry": rollback_entry,
+        "commands": [step["backend"]["display_command"] for step in execution_steps],
+        "execution_steps": execution_steps,
+        "status": "planned",
+    }
 
 
 def _delayed_cleanup_state(rollback_entry: dict[str, Any]) -> dict[str, Any]:
@@ -469,6 +753,18 @@ def deploy_for_app(
 
     if target == "wsl":
         payload = app_cli.deploy_app(contract, repo_root=repo_root, target=target, image_ref=image_ref, dry_run=dry_run, execute=execute)
+        if dry_run:
+            execution_steps, _metadata = _plan_wsl_deploy_steps(
+                app_cli,
+                contract,
+                repo_root=repo_root,
+                target=target,
+                image_ref=image_ref,
+            )
+            rendered_steps = _render_execution_steps(execution_steps)
+            payload["execution_steps"] = rendered_steps
+            payload["backend_type"] = execution_steps[0].plan.backend_type
+            payload["commands"] = [step["backend"]["display_command"] for step in rendered_steps]
         if payload.get("ok", False) and (dry_run or execute):
             payload["post_actions"] = _run_delivery_post_actions(
                 repo_root,
@@ -499,6 +795,7 @@ def deploy_for_app(
         persist_local_compose=execute,
     )
     candidate_steps = _candidate_precheck_steps(app_cli, repo_root, target=target, material=candidate_material)
+    candidate_rendered = {phase: _render_execution_steps(steps) for phase, steps in candidate_steps.items()}
 
     candidate_plan = {
         "status": "planned",
@@ -510,25 +807,44 @@ def deploy_for_app(
         "local_env": str(candidate_material["local_env"]),
         "remote_compose": candidate_material["remote_compose"],
         "remote_env": candidate_material["remote_env"],
-        "commands": [display for phase in ("prepare", "verify", "cleanup") for _, display in candidate_steps[phase]],
+        "commands": [
+            step["backend"]["display_command"]
+            for phase in ("prepare", "verify", "cleanup")
+            for step in candidate_rendered[phase]
+        ],
+        "execution_steps": candidate_rendered,
     }
     rollback_plan = _plan_production_rollback(app_cli, contract, repo_root=repo_root, target=target)
     delayed_cleanup = _delayed_cleanup_state(rollback_entry)
 
     if dry_run:
         cutover_plan = app_cli.deploy_app(contract, repo_root=repo_root, target=target, image_ref=image_ref, dry_run=True, execute=False)
+        cutover_steps, _cutover_metadata = _plan_remote_deploy_steps(
+            app_cli,
+            contract,
+            repo_root=repo_root,
+            target=target,
+            image_ref=image_ref,
+        )
+        cutover_execution_steps = _render_execution_steps(cutover_steps)
         verify_plan = _plan_production_verify(app_cli, contract, repo_root=repo_root, target=target, include_public=False)
+        cutover_plan["execution_steps"] = cutover_execution_steps
+        cutover_plan["backend_type"] = "ssh-linux"
         cutover_plan["rollback_state"] = _rollback_state_payload(
             previous_control_plane=rollback_entry,
             candidate=candidate_plan,
-            cutover={"status": "planned", "commands": cutover_plan["commands"]},
+            cutover={
+                "status": "planned",
+                "commands": [step["backend"]["display_command"] for step in cutover_execution_steps],
+                "execution_steps": cutover_execution_steps,
+            },
             post_cutover_verification=verify_plan,
             rollback_on_failure=rollback_plan,
             delayed_cleanup=delayed_cleanup,
         )
         cutover_plan["commands"] = [
             *candidate_plan["commands"],
-            *cutover_plan["commands"],
+            *[step["backend"]["display_command"] for step in cutover_execution_steps],
             *verify_plan["commands"],
             *rollback_plan["commands"],
         ]
@@ -553,11 +869,11 @@ def deploy_for_app(
     if not local_env.is_file():
         raise ValueError(f"缺少运行时 env 文件: {local_env}")
 
-    prepare_results = _run_steps(app_cli, candidate_steps["prepare"], stop_on_failure=True)
+    prepare_results = _execute_steps(candidate_steps["prepare"], stop_on_failure=True)
     prepare_ok = len(prepare_results) == len(candidate_steps["prepare"]) and all(item["ok"] for item in prepare_results)
-    verify_results = _run_steps(app_cli, candidate_steps["verify"], stop_on_failure=True) if prepare_ok else []
+    verify_results = _execute_steps(candidate_steps["verify"], stop_on_failure=True) if prepare_ok else []
     verify_ok = len(verify_results) == len(candidate_steps["verify"]) and all(item["ok"] for item in verify_results)
-    cleanup_results = _run_steps(app_cli, candidate_steps["cleanup"], stop_on_failure=False)
+    cleanup_results = _execute_steps(candidate_steps["cleanup"], stop_on_failure=False)
     cleanup_ok = len(cleanup_results) == len(candidate_steps["cleanup"]) and all(item["ok"] for item in cleanup_results)
 
     executed_candidate = {
@@ -697,6 +1013,18 @@ def verify_delivery_for_app(
 ) -> dict[str, Any]:
     app_cli, contract, _ = _load_validated_contract(repo_root, target=target, app=app, app_repo_root=app_repo_root)
     payload = app_cli.verify_app(contract, repo_root=repo_root, target=target, dry_run=dry_run, execute=execute)
+    if dry_run:
+        steps, _container_name = _plan_delivery_verify_steps(
+            app_cli,
+            contract,
+            repo_root=repo_root,
+            target=target,
+            include_public=True,
+        )
+        execution_steps = _render_execution_steps(steps)
+        payload["execution_steps"] = execution_steps
+        payload["backend_type"] = steps[0].plan.backend_type if steps else None
+        payload["commands"] = [step["backend"]["display_command"] for step in execution_steps]
     return {"command": "app", "action": "verify", "target": target, "payload": payload}
 
 
@@ -711,6 +1039,18 @@ def rollback_for_app(
 ) -> dict[str, Any]:
     app_cli, contract, _ = _load_validated_contract(repo_root, target=target, app=app, app_repo_root=app_repo_root)
     payload = app_cli.rollback_app(contract, repo_root=repo_root, target=target, dry_run=dry_run, execute=execute)
+    if dry_run:
+        steps, _rollback_entry = _plan_delivery_rollback_steps(
+            app_cli,
+            contract,
+            repo_root=repo_root,
+            target=target,
+        )
+        execution_steps = _render_execution_steps(steps)
+        payload["execution_steps"] = execution_steps
+        payload["backend_type"] = steps[0].plan.backend_type if steps else None
+        if steps:
+            payload["commands"] = [step["backend"]["display_command"] for step in execution_steps]
     payload["rollback_state"] = {
         "status": "planned" if dry_run or not execute else "executed" if payload.get("ok", True) else "failed",
         "previous_control_plane": contract["rollback"]["previous_control_plane"],

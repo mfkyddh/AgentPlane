@@ -49,6 +49,8 @@ from agentplane.domain.website.lifecycle import (
     plan_website_truth_onboard,
 )
 from agentplane.domain.website.models import WebsiteDefinition
+from agentplane.runtime.execution import ExecutionBindings, ExecutionPlan, PlannedExecutionStep
+from agentplane.ssh import SshTarget
 
 
 @dataclass(frozen=True)
@@ -62,6 +64,135 @@ class ValidatedDeliveryContract:
     app_root: Path
     contract_relpath: str
     catalog_entry: AppCatalogEntry | None
+
+
+def plan_local_backend_step(
+    key: str,
+    *,
+    backend_type: str,
+    cwd: Path | str,
+    argv: tuple[str, ...],
+    env: dict[str, str] | None = None,
+    stdin_text: str | None = None,
+    capabilities: tuple[str, ...] = (),
+    expected_outputs: tuple[str, ...] = (),
+    timeout: int = 300,
+) -> PlannedExecutionStep:
+    env_refs = ("step.env",) if env else ()
+    input_refs = ("step.stdin",) if stdin_text is not None else ()
+    return PlannedExecutionStep(
+        key=key,
+        plan=ExecutionPlan(
+            backend_type=backend_type,  # type: ignore[arg-type]
+            cwd_ref="step.cwd",
+            argv=argv,
+            env_refs=env_refs,
+            input_refs=input_refs,
+            expected_outputs=expected_outputs,
+            capabilities=capabilities,
+            timeout=timeout,
+        ),
+        bindings=ExecutionBindings(
+            cwd_values={"step.cwd": cwd},
+            env_values={"step.env": env or {}},
+            input_values={"step.stdin": stdin_text or ""},
+        ),
+    )
+
+
+def plan_remote_shell_step(
+    key: str,
+    *,
+    ssh_target: SshTarget,
+    cwd: str | None,
+    argv: tuple[str, ...],
+    shell_command: str | None = None,
+    env: dict[str, str] | None = None,
+    capabilities: tuple[str, ...] = (),
+    expected_outputs: tuple[str, ...] = (),
+    timeout: int = 300,
+) -> PlannedExecutionStep:
+    env_refs = ("step.env",) if env else ()
+    cwd_values = {"step.cwd": cwd} if cwd is not None else {}
+    return PlannedExecutionStep(
+        key=key,
+        plan=ExecutionPlan(
+            backend_type="ssh-linux",
+            cwd_ref="step.cwd" if cwd is not None else "",
+            argv=argv,
+            env_refs=env_refs,
+            input_refs=(),
+            expected_outputs=expected_outputs,
+            capabilities=capabilities,
+            timeout=timeout,
+        ),
+        bindings=ExecutionBindings(
+            cwd_values=cwd_values,
+            env_values={"step.env": env or {}},
+            metadata={"transport": "shell", "ssh_target": ssh_target, "shell_command": shell_command},
+        ),
+    )
+
+
+def plan_remote_bash_stdin_step(
+    key: str,
+    *,
+    ssh_target: SshTarget,
+    argv: tuple[str, ...],
+    stdin_text: str,
+    capabilities: tuple[str, ...] = (),
+    expected_outputs: tuple[str, ...] = (),
+    timeout: int = 300,
+) -> PlannedExecutionStep:
+    return PlannedExecutionStep(
+        key=key,
+        plan=ExecutionPlan(
+            backend_type="ssh-linux",
+            cwd_ref="",
+            argv=argv,
+            env_refs=(),
+            input_refs=("step.stdin",),
+            expected_outputs=expected_outputs,
+            capabilities=capabilities,
+            timeout=timeout,
+        ),
+        bindings=ExecutionBindings(
+            input_values={"step.stdin": stdin_text},
+            metadata={"transport": "bash-stdin", "ssh_target": ssh_target},
+        ),
+    )
+
+
+def plan_remote_copy_step(
+    key: str,
+    *,
+    ssh_target: SshTarget,
+    local_path: Path,
+    remote_path: str,
+    expected_outputs: tuple[str, ...] = (),
+    timeout: int = 300,
+) -> PlannedExecutionStep:
+    return PlannedExecutionStep(
+        key=key,
+        plan=ExecutionPlan(
+            backend_type="ssh-linux",
+            cwd_ref="",
+            argv=("scp", str(local_path), remote_path),
+            env_refs=(),
+            input_refs=(),
+            expected_outputs=expected_outputs,
+            capabilities=("scp",),
+            timeout=timeout,
+        ),
+        bindings=ExecutionBindings(
+            metadata={
+                "transport": "copy-to-remote",
+                "ssh_target": ssh_target,
+                "local_path": local_path,
+                "remote_path": remote_path,
+            }
+        ),
+    )
 
 
 def _resolve_contract_source(

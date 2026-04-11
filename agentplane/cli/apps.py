@@ -35,8 +35,8 @@ from agentplane.domain.app.artifacts import (
     require_artifact_first_contract,
     resolve_delivery_contract_spec,
 )
-from agentplane.runtime.wsl_bridge import normalize_wsl_posix_path, wsl_unc_to_posix
-from agentplane.ssh import SshTarget
+from agentplane.runtime.wsl_bridge import normalize_wsl_posix_path, windows_path_to_wsl_posix, wsl_unc_to_posix
+from agentplane.ssh import SshTarget, resolve_ssh_target
 
 
 PRODUCTION_APP_TARGETS = ("prod0-main", "prod2-main")
@@ -88,6 +88,21 @@ DELIVERY_EXECUTION_MODE_ACTIONS = ("deploy", "verify", "rollback")
 DELIVERY_WRITE_ACTIONS = ("inventory-refresh", "doc-sync")
 DELIVERY_LIFECYCLE_ACTIONS = ("onboard", "offboard")
 CLI_REPO_ROOT = git_common_root(Path(__file__).resolve().parents[2]) or Path(__file__).resolve().parents[2]
+
+
+def _normalize_repo_root(path: Path | str) -> Path:
+    posix_path = windows_path_to_wsl_posix(path)
+    if posix_path:
+        return Path(posix_path).resolve()
+    candidate = wsl_unc_to_posix(path)
+    if candidate is not None:
+        return candidate.resolve()
+    rendered = normalize_wsl_posix_path(path)
+    if rendered:
+        maybe_posix = Path(rendered)
+        if maybe_posix.is_absolute():
+            return maybe_posix.resolve()
+    return Path(path).expanduser().resolve()
 
 
 def _add_execute_flags(parser: argparse.ArgumentParser, *, required: bool) -> None:
@@ -280,7 +295,7 @@ def _ensure_formal_delivery_action_contract(args: argparse.Namespace) -> None:
 
 
 def handle_app_command(args: argparse.Namespace) -> dict[str, Any]:
-    repo_root = Path(getattr(args, "repo_root", ".")).resolve()
+    repo_root = _normalize_repo_root(getattr(args, "repo_root", "."))
     if args.app_surface == "object":
         from agentplane.domain.app.object_handlers import get_app, refresh_app_ledger, search_apps, verify_app_object
 
@@ -1779,23 +1794,7 @@ def package_runtime(
 
 
 def _target_ssh_target(repo_root: Path, target: str) -> SshTarget:
-    inventory_file, inventory = _load_inventory(repo_root, target)
-    ssh_section = inventory.get("ssh", {})
-    if not isinstance(ssh_section, dict):
-        raise ValueError(f"{inventory_file} 缺少 ssh 配置")
-    ssh_aliases = ssh_section.get("aliases", [])
-    if not isinstance(ssh_aliases, list) or not ssh_aliases:
-        raise ValueError(f"{inventory_file} 缺少 ssh.aliases")
-    ssh_user = ssh_section.get("user")
-    if ssh_user is not None and not isinstance(ssh_user, str):
-        raise ValueError(f"{inventory_file} 的 ssh.user 必须是字符串")
-    return SshTarget(
-        alias=str(ssh_aliases[0]),
-        config_path=_secrets_root(repo_root) / "ssh" / "config",
-        user=ssh_user,
-        os_family="linux",
-        environment="production",
-    )
+    return resolve_ssh_target(repo_root, target)
 
 
 def _service_env_path(repo_root: Path, app_id: str, target: str) -> Path:

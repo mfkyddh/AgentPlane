@@ -61,6 +61,24 @@ def normalize_wsl_posix_path(path: Path | str | None) -> str | None:
     return rendered
 
 
+def windows_path_to_wsl_posix(path: Path | str | None) -> str | None:
+    if path is None:
+        return None
+    posix = wsl_unc_to_posix(path)
+    if posix is not None:
+        return normalize_wsl_posix_path(posix)
+    rendered = str(path)
+    if rendered.startswith("/"):
+        return normalize_wsl_posix_path(rendered)
+    if not is_windows_path(rendered):
+        return normalize_wsl_posix_path(rendered)
+    drive = rendered[0].lower()
+    tail = rendered[2:].replace("\\", "/").lstrip("/")
+    if not tail:
+        return f"/mnt/{drive}"
+    return f"/mnt/{drive}/{tail}"
+
+
 def render_host_path(path: Path | str | None) -> str | None:
     if path is None:
         return None

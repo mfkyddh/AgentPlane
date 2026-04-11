@@ -20,6 +20,7 @@ from agentplane.cli.local_host import add_local_host_parser, handle_local_host_c
 from agentplane.cli.networks import SUPPORTED_NETWORK_TARGETS, audit_managed_bridge_networks, ensure_managed_bridge_networks
 from agentplane.cli.remote import execute_remote_bash
 from agentplane.cli.secrets import SUPPORTED_SECRET_TARGETS, init_data_services, materialize_legacy_host_layout
+from agentplane.runtime.wsl_bridge import normalize_wsl_posix_path, windows_path_to_wsl_posix, wsl_unc_to_posix
 
 
 SUPPORTED_HOST_TARGETS = SUPPORTED_SECRET_TARGETS
@@ -194,12 +195,27 @@ def _without_public_envelope(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _normalize_repo_root(path: Path | str) -> Path:
+    posix_path = windows_path_to_wsl_posix(path)
+    if posix_path:
+        return Path(posix_path).resolve()
+    candidate = wsl_unc_to_posix(path)
+    if candidate is not None:
+        return candidate.resolve()
+    rendered = normalize_wsl_posix_path(path)
+    if rendered:
+        maybe_posix = Path(rendered)
+        if maybe_posix.is_absolute():
+            return maybe_posix.resolve()
+    return Path(path).expanduser().resolve()
+
+
 def handle_host_command(args: argparse.Namespace) -> dict[str, Any]:
     if args.host_action == "local":
         action, payload = handle_local_host_command(args)
         return _wrap(action=action, target="local", payload=payload)
 
-    repo_root = Path(getattr(args, "repo_root", ".")).resolve()
+    repo_root = _normalize_repo_root(getattr(args, "repo_root", "."))
 
     if args.host_action == "inventory":
         result = generate_inventory_snapshot(repo_root, args.target, write=bool(args.write))

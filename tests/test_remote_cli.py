@@ -61,7 +61,7 @@ class RemoteCliTests(unittest.TestCase):
             stdin_mock.read.side_effect = AssertionError("sys.stdin.read should not be used when stdin_text is explicit")
 
             with (
-                patch("agentplane.cli.remote.subprocess.run", return_value=completed) as run_mock,
+                patch("agentplane.runtime.execution.subprocess.run", return_value=completed) as run_mock,
                 patch("agentplane.cli.remote.sys.stdin", stdin_mock),
             ):
                 payload = execute_remote_bash(
@@ -82,10 +82,13 @@ class RemoteCliTests(unittest.TestCase):
                     "root@prod0-main",
                     "bash -s -- echo",
                 ],
+                cwd=None,
+                env=None,
                 input="echo ok\n",
                 text=True,
                 capture_output=True,
                 check=False,
+                timeout=300,
             )
 
     def test_remote_bash_dry_run_writes_operation_ledger(self) -> None:
@@ -164,7 +167,7 @@ class RemoteCliTests(unittest.TestCase):
                     "agentplane.cli.remote.append_operation_ledger",
                     return_value={"ledger_file": str(ledger_file)},
                 ) as ledger_mock,
-                patch("agentplane.cli.remote.subprocess.run", side_effect=fake_run) as run_mock,
+                patch("agentplane.runtime.execution.subprocess.run", side_effect=fake_run) as run_mock,
             ):
                 payload = execute_remote_bash(
                     repo_root=root,
@@ -192,10 +195,13 @@ class RemoteCliTests(unittest.TestCase):
                     "root@prod0-main",
                     "bash -s -- echo",
                 ],
+                cwd=None,
+                env=None,
                 input="echo ok\n",
                 text=True,
                 capture_output=True,
                 check=False,
+                timeout=300,
             )
             ledger_mock.assert_called_once_with(
                 resolved_root,
@@ -210,6 +216,7 @@ class RemoteCliTests(unittest.TestCase):
                     "connection_target": "root@prod0-main",
                     "remote_command": "bash -s -- echo",
                     "script_file": None,
+                    "backend_type": "ssh-linux",
                 },
             )
 
@@ -239,6 +246,7 @@ class RemoteCliTests(unittest.TestCase):
         self.assertTrue(inner.get("ok"))
         self.assertEqual("prod0-main", payload.get("target"))
         self.assertEqual("script-file", inner.get("transport"))
+        self.assertEqual("ssh-linux", inner.get("backend_type"))
         self.assertEqual(str(script_file), inner.get("script_file"))
         self.assertEqual(
             str(MAIN_REPO_ROOT / "secrets" / "ssh" / "config"),
@@ -260,6 +268,8 @@ class RemoteCliTests(unittest.TestCase):
             ],
             inner.get("ssh_argv"),
         )
+        self.assertEqual("ssh-linux", inner.get("execution_plan", {}).get("backend_type"))
+        self.assertEqual("ssh-linux", inner.get("backend", {}).get("backend_type"))
         self.assertIn("ledger_file", inner.get("operation", {}))
 
     def test_host_remote_bash_rejects_non_formal_target(self) -> None:
