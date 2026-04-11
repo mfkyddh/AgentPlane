@@ -1,0 +1,6 @@
+# This tracked file is only a pointer.
+# The live runtime config for the repository-managed Docker deployment lives at:
+# /data/cliproxyapi/config/config.yaml
+#
+# To refresh that file, start from:
+# templates/services/cliproxyapi.config.yaml.example

@@ -1,0 +1,39 @@
+# Codex local environment contract for AgentPlane.
+# Field layout is intentionally thin: heavy logic stays in setup/actions scripts.
+
+[setup]
+default = "bash .codex/environments/setup/setup.sh"
+linux = "bash .codex/environments/setup/setup.linux.sh"
+windows = "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/setup/setup.windows.ps1"
+
+[[actions]]
+name = "Bootstrap"
+command = ".codex/environments/actions/bootstrap.sh"
+
+[[actions]]
+name = "Test"
+command = ".codex/environments/actions/test.sh"
+
+[[actions]]
+name = "Lint"
+command = ".codex/environments/actions/lint.sh"
+
+[[actions]]
+name = "Build"
+command = ".codex/environments/actions/build.sh"
+
+[[actions]]
+name = "Dev"
+command = ".codex/environments/actions/dev.sh"
+
+[[actions]]
+name = "Compose Up"
+command = ".codex/environments/actions/compose-up.sh"
+
+[[actions]]
+name = "Compose Logs"
+command = ".codex/environments/actions/compose-logs.sh"
+
+[[actions]]
+name = "Smoke"
+command = ".codex/environments/actions/smoke.sh"

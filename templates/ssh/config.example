@@ -1,0 +1,29 @@
+# Copy to secrets/ssh/config and keep the matching key files under secrets/ssh/keys/.
+
+Host prod1-backup
+  HostName REPLACE_WITH_BACKUP_IP
+  User ubuntu
+  IdentityFile /root/work/AgentPlane/secrets/ssh/keys/prod1-backup.pem
+  ProxyCommand nc -X connect -x REPLACE_WITH_PROXY_HOST:REPLACE_WITH_PROXY_PORT %h %p
+  IdentitiesOnly yes
+  ControlMaster auto
+  ControlPersist 10m
+  ControlPath /tmp/oplinux-ssh-%C
+  StreamLocalBindUnlink yes
+  StrictHostKeyChecking yes
+  BatchMode yes
+  ConnectTimeout 10
+
+Host prod0-main REPLACE_WITH_PRIMARY_DOMAIN
+  HostName REPLACE_WITH_PRIMARY_IP
+  User root
+  IdentityFile /root/work/AgentPlane/secrets/ssh/keys/prod0-main.pem
+  ProxyCommand nc -X connect -x REPLACE_WITH_PROXY_HOST:REPLACE_WITH_PROXY_PORT %h %p
+  IdentitiesOnly yes
+  ControlMaster auto
+  ControlPersist 10m
+  ControlPath /tmp/oplinux-ssh-%C
+  StreamLocalBindUnlink yes
+  StrictHostKeyChecking yes
+  BatchMode yes
+  ConnectTimeout 10

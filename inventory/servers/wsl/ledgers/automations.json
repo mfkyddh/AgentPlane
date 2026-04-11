@@ -1,0 +1,74 @@
+{
+  "items": [
+    {
+      "id": 1,
+      "name": "wsl-zzz-skills-sync",
+      "controller": "1panel-cronjob",
+      "schedule": "every 2 hours",
+      "spec": "0 */2 * * *",
+      "cwd": "/root/work/AgentPlane",
+      "command": "uv run python -m agentplane.cli host automation apply wsl --name wsl-zzz-skills-sync --operation run --execute",
+      "source_root": "/mnt/c/Users/Administrator/.codex/skills",
+      "target_repo": "/root/work/zzz-skills",
+      "target_branch": "main",
+      "docs": [
+        "docs/runbooks/wsl-zzz-skills-sync.md"
+      ],
+      "task_truth": {
+        "purpose": "以 WSL automation 任务为参考实现，把 Windows 侧 /mnt/c/Users/Administrator/.codex/skills 中所有 zzz-* 技能同步到 /root/work/zzz-skills 的 main 分支，保持技能仓库与 Windows 侧一致。",
+        "entrypoint": "uv run python -m agentplane.cli host automation apply wsl --name wsl-zzz-skills-sync --operation run --execute",
+        "source_root": "/mnt/c/Users/Administrator/.codex/skills",
+        "target_repo": "/root/work/zzz-skills",
+        "target_branch": "main"
+      },
+      "schedule_truth": {
+        "cron": "0 */2 * * *",
+        "interval": "每两小时整点触发",
+        "executor": "WSL 本机 1Panel cronjob"
+      },
+      "verification": [
+        "env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation verify wsl --name wsl-zzz-skills-sync --repo-root /root/work/AgentPlane",
+        "env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation apply wsl --name wsl-zzz-skills-sync --operation run --execute",
+        "env -C /root/work/AgentPlane uv run python -m agentplane.cli onepanel --env wsl cronjob search --info wsl-zzz-skills-sync"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "wsl-agentplane-secrets-backup",
+      "controller": "1panel-cronjob",
+      "schedule": "every 5 hours",
+      "spec": "0 */5 * * *",
+      "cwd": "/root/work/AgentPlane",
+      "command": "uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute",
+      "env_file": "secrets/services/secrets-backup.r2.wsl.env",
+      "source_root": "/root/work/AgentPlane/secrets",
+      "state_file": "/data/agentplane/secrets-backup/state.json",
+      "bucket": "AgentPlane_Backups",
+      "prefix": "backups/agentplane/secrets-main",
+      "docs": [
+        "docs/runbooks/wsl-secrets-backup.md"
+      ],
+      "task_truth": {
+        "purpose": "以 WSL automation 任务为参考实现，定期将 /root/work/AgentPlane/secrets 的加密备份打包并上传到 R2，保持最近五份历史并与本机 state.json 一致。",
+        "entrypoint": "uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute",
+        "source_root": "/root/work/AgentPlane/secrets",
+        "state_file": "/data/agentplane/secrets-backup/state.json",
+        "bucket": "AgentPlane_Backups",
+        "prefix": "backups/agentplane/secrets-main"
+      },
+      "schedule_truth": {
+        "cron": "0 */5 * * *",
+        "interval": "每五小时整点触发",
+        "executor": "WSL 本机 1Panel cronjob"
+      },
+      "verification": [
+        "env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation verify wsl --name wsl-agentplane-secrets-backup --repo-root /root/work/AgentPlane",
+        "env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute",
+        "env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation reconcile --execute --repo-root /root/work/AgentPlane",
+        "env -C /root/work/AgentPlane uv run python -m agentplane.cli onepanel --env wsl cronjob search --info wsl-agentplane-secrets-backup"
+      ]
+    }
+  ],
+  "count": 2
+}
+

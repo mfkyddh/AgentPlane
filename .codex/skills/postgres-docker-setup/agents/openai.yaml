@@ -1,0 +1,4 @@
+interface:
+  display_name: "Postgres Docker Setup"
+  short_description: "Install fixed PostgreSQL 18.3 via Docker Compose."
+  default_prompt: "Install or upgrade PostgreSQL 18.x in Docker for this repository, store files under infra/compose/postgres, persist data under /data/postgres/data, use a fixed image tag, connect to zqf_network, verify health/version/connectivity, and summarize the result."

@@ -1,0 +1,24 @@
+services:
+  newapi:
+    image: ${NEWAPI_IMAGE_REF:-newapi-prod:latest}
+    container_name: newapi-prod
+    restart: unless-stopped
+
+    command: ["--log-dir", "/app/logs"]
+
+    env_file:
+      - ../../../secrets/services/newapi.prod2.env
+
+    ports:
+      - "127.0.0.1:3000:3000"
+
+    volumes:
+      - /data/newapi/data:/data
+      - /data/newapi/logs:/app/logs
+
+    networks:
+      - zqf_network
+
+networks:
+  zqf_network:
+    external: true

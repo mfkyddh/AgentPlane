@@ -1,0 +1,247 @@
+{
+  "label": "WSL 跳板机",
+  "target": "wsl",
+  "hostname": "ZQF-WIN",
+  "os": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "runtime_user": "root",
+  "repo_root": "/root/work/AgentPlane",
+  "compose_services": [
+    "chatgpt-register-v2",
+    "chatgpt-register-v2-prod2",
+    "cliproxyapi",
+    "minio",
+    "newapi",
+    "openclaw",
+    "postgres",
+    "redis",
+    "sub2api",
+    "sub2apipay",
+    "vmail"
+  ],
+  "docker_containers": [
+    {
+      "name": "redis7-dev",
+      "image": "redis:7.4.7",
+      "ports": "0.0.0.0:6379->6379/tcp",
+      "status": "Up 56 minutes"
+    },
+    {
+      "name": "postgres18-dev",
+      "image": "postgres:18.3",
+      "ports": "0.0.0.0:5432->5432/tcp",
+      "status": "Up 56 minutes (healthy)"
+    }
+  ],
+  "unmanaged_docker_containers": [
+    {
+      "name": "sub2api-dev",
+      "image": "sub2api-prod:0.1.106-zzz.20260330.v1.g2552ff5e",
+      "ports": "0.0.0.0:18080->8080/tcp",
+      "status": "Up 55 minutes (healthy)"
+    },
+    {
+      "name": "1Panel-openresty-wOeD",
+      "image": "1panel/openresty:1.27.1.2-5-1-focal",
+      "ports": "",
+      "status": "Up 56 minutes"
+    }
+  ],
+  "governance": {
+    "secrets_root": "secrets/",
+    "repo_tmp": "/root/work/AgentPlane/tmp",
+    "ssh_config": {
+      "path": "/root/.ssh/config",
+      "exists": false,
+      "is_symlink": false,
+      "target": null
+    },
+    "openclaw_home": {
+      "path": "/root/.openclaw",
+      "exists": true,
+      "is_symlink": true,
+      "target": "/data/openclaw/config/home"
+    },
+    "openclaw_share": {
+      "path": "/root/.local/share/openclaw-feishu-uat",
+      "exists": true,
+      "is_symlink": true,
+      "target": "/data/openclaw/config/openclaw-feishu-uat"
+    },
+    "data_paths": {
+      "openclaw_home": "/data/openclaw/config/home",
+      "openclaw_share": "/data/openclaw/config/openclaw-feishu-uat"
+    },
+    "forbidden_paths_present": {
+      "/root/.cli-proxy-api": false,
+      "/root/8443-cutover": false,
+      "/tmp/1panel-src": false
+    }
+  },
+  "automations": [
+    {
+      "id": 1,
+      "name": "wsl-zzz-skills-sync",
+      "controller": "1panel-cronjob",
+      "schedule": "every 2 hours",
+      "spec": "0 */2 * * *",
+      "cwd": "/root/work/AgentPlane",
+      "command": "uv run python -m agentplane.cli host automation apply wsl --name wsl-zzz-skills-sync --operation run --execute",
+      "source_root": "/mnt/c/Users/Administrator/.codex/skills",
+      "target_repo": "/root/work/zzz-skills",
+      "target_branch": "main",
+      "docs": [
+        "docs/runbooks/wsl-zzz-skills-sync.md"
+      ],
+      "task_truth": {
+        "purpose": "以 WSL automation 任务为参考实现，把 Windows 侧 /mnt/c/Users/Administrator/.codex/skills 中所有 zzz-* 技能同步到 /root/work/zzz-skills 的 main 分支，保持技能仓库与 Windows 侧一致。",
+        "entrypoint": "uv run python -m agentplane.cli host automation apply wsl --name wsl-zzz-skills-sync --operation run --execute",
+        "source_root": "/mnt/c/Users/Administrator/.codex/skills",
+        "target_repo": "/root/work/zzz-skills",
+        "target_branch": "main"
+      },
+      "schedule_truth": {
+        "cron": "0 */2 * * *",
+        "interval": "每两小时整点触发",
+        "executor": "WSL 本机 1Panel cronjob"
+      },
+      "verification": [
+        "env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation verify wsl --name wsl-zzz-skills-sync --repo-root /root/work/AgentPlane",
+        "env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation apply wsl --name wsl-zzz-skills-sync --operation run --execute",
+        "env -C /root/work/AgentPlane uv run python -m agentplane.cli onepanel --env wsl cronjob search --info wsl-zzz-skills-sync"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "wsl-agentplane-secrets-backup",
+      "controller": "1panel-cronjob",
+      "schedule": "every 5 hours",
+      "spec": "0 */5 * * *",
+      "cwd": "/root/work/AgentPlane",
+      "command": "uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute",
+      "env_file": "secrets/services/secrets-backup.r2.wsl.env",
+      "source_root": "/root/work/AgentPlane/secrets",
+      "state_file": "/data/agentplane/secrets-backup/state.json",
+      "bucket": "AgentPlane_Backups",
+      "prefix": "backups/agentplane/secrets-main",
+      "docs": [
+        "docs/runbooks/wsl-secrets-backup.md"
+      ],
+      "task_truth": {
+        "purpose": "以 WSL automation 任务为参考实现，定期将 /root/work/AgentPlane/secrets 的加密备份打包并上传到 R2，保持最近五份历史并与本机 state.json 一致。",
+        "entrypoint": "uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute",
+        "source_root": "/root/work/AgentPlane/secrets",
+        "state_file": "/data/agentplane/secrets-backup/state.json",
+        "bucket": "AgentPlane_Backups",
+        "prefix": "backups/agentplane/secrets-main"
+      },
+      "schedule_truth": {
+        "cron": "0 */5 * * *",
+        "interval": "每五小时整点触发",
+        "executor": "WSL 本机 1Panel cronjob"
+      },
+      "verification": [
+        "env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation verify wsl --name wsl-agentplane-secrets-backup --repo-root /root/work/AgentPlane",
+        "env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute",
+        "env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation reconcile --execute --repo-root /root/work/AgentPlane",
+        "env -C /root/work/AgentPlane uv run python -m agentplane.cli onepanel --env wsl cronjob search --info wsl-agentplane-secrets-backup"
+      ]
+    }
+  ],
+  "services": {
+    "chatgpt-register-v2": {
+      "container_name": "chatgpt-register-v2-dev"
+    },
+    "sub2api": {
+      "control_plane": "compose",
+      "container_name": "sub2api-dev",
+      "depends_on_containers": [
+        "postgres18-dev",
+        "redis7-dev"
+      ],
+      "runtime_root": "/data/sub2api/app/current",
+      "config_files": [
+        "/root/work/AgentPlane/secrets/services/sub2api.wsl.env"
+      ],
+      "data_dir": "/data/sub2api/data",
+      "host_binding": "0.0.0.0:18080",
+      "container_port": 8080,
+      "public_url": "http://127.0.0.1:18080",
+      "rollback_entry": {
+        "kind": "none",
+        "note": "wsl dev target 无独立旧控制面"
+      },
+      "docker_networks": [
+        "zqf_network"
+      ],
+      "app_resource_summary": {
+        "postgres": {
+          "database": "sub2api_wsl",
+          "user": "sub2api_wsl",
+          "secret_file": "secrets/hosts/wsl/apps/sub2api/resources/postgres.env"
+        },
+        "redis": {
+          "db": 1,
+          "key_prefix": "sub2api:wsl:",
+          "secret_file": "secrets/hosts/wsl/apps/sub2api/resources/redis.env"
+        }
+      }
+    },
+    "postgres": {
+      "container_name": "postgres18-dev"
+    },
+    "redis": {
+      "container_name": "redis7-dev"
+    }
+  },
+  "object_ledgers": {
+    "generated_at": "2026-04-08T07:08:17.832760+00:00",
+    "counts": {
+      "websites": 0,
+      "containers": 4,
+      "firewall": 0,
+      "cronjobs": 2,
+      "apps": 1,
+      "app_resources": 2,
+      "automations": 2
+    },
+    "ledgers": {
+      "websites": "inventory/servers/wsl/ledgers/websites.json",
+      "containers": "inventory/servers/wsl/ledgers/containers.json",
+      "firewall": "inventory/servers/wsl/ledgers/firewall.json",
+      "cronjobs": "inventory/servers/wsl/ledgers/cronjobs.json",
+      "apps": "inventory/servers/wsl/ledgers/apps.json",
+      "app_resources": "inventory/servers/wsl/ledgers/app_resources.json",
+      "automations": "inventory/servers/wsl/ledgers/automations.json"
+    },
+    "last_operations": {}
+  },
+  "host_truth": {
+    "control_plane_inventory": "uv run python -m agentplane.cli host inventory wsl --repo-root /root/work/AgentPlane",
+    "control_plane_audit": "uv run python -m agentplane.cli host audit wsl --repo-root /root/work/AgentPlane",
+    "ledgers_dir": "inventory/servers/wsl/ledgers",
+    "categories": [
+      "host",
+      "services",
+      "containers",
+      "websites",
+      "firewall",
+      "cronjobs",
+      "apps",
+      "app_resources",
+      "automations"
+    ],
+    "runbooks": [
+      "docs/runbooks/wsl-host-governance.md",
+      "docs/runbooks/prod0-main-governance.md",
+      "docs/runbooks/prod2-main-1panel-public-access.md"
+    ],
+    "last_ledger_refresh": "2026-04-02T12:04:12.394460+00:00",
+    "automation_reference": {
+      "note": "WSL automation 条目是参考实现，任何自动化任务更新都应以此为准，然后向其他主机对齐。",
+      "search_command": "env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation search wsl --repo-root /root/work/AgentPlane",
+      "verify_template": "env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation verify wsl --name <name> --repo-root /root/work/AgentPlane",
+      "run_template": "env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation apply wsl --name <name> --operation run --execute",
+      "onepanel_check": "env -C /root/work/AgentPlane uv run python -m agentplane.cli onepanel --env wsl cronjob search --info <name>"
+    }
+  }
+}

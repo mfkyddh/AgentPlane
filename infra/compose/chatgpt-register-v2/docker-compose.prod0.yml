@@ -1,0 +1,47 @@
+services:
+  chatgpt-register-v2:
+    image: ${CHATGPT_REGISTER_V2_IMAGE_REF:-chatgpt-register-v2-prod:latest}
+    container_name: chatgpt-register-v2-prod
+    restart: unless-stopped
+
+    env_file:
+      - ../../../secrets/services/chatgpt-register-v2.prod0.env
+
+    command:
+      - --profile
+      - ${CHATGPT_REGISTER_PROFILE:-prod0}
+      - --config-path
+      - ${CHATGPT_REGISTER_CONFIG_PATH:-/run/chatgpt-register/config/active.json}
+      - --import-target
+      - ${CHATGPT_REGISTER_IMPORT_TARGET:-sub2api-local}
+      - --workers
+      - ${CHATGPT_REGISTER_WORKERS:-1}
+      - --interval
+      - ${CHATGPT_REGISTER_INTERVAL:-60}
+
+    ports:
+      - "127.0.0.1:18081:18081"
+
+    volumes:
+      - /data/chatgpt-register-v2/data:/data
+      - ${CHATGPT_REGISTER_CONFIG_HOST_PATH:-/opt/agentplane/secrets/services/chatgpt-register-v2.prod0.config.json}:${CHATGPT_REGISTER_CONFIG_PATH:-/run/chatgpt-register/config/active.json}:ro
+
+    init: true
+
+    healthcheck:
+      test:
+        - CMD
+        - /app/.venv/bin/python
+        - -c
+        - import urllib.request; urllib.request.urlopen("http://127.0.0.1:18081/healthz", timeout=5).read()
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+    networks:
+      - zqf_network
+
+networks:
+  zqf_network:
+    external: true

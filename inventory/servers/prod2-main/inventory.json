@@ -1,0 +1,565 @@
+{
+  "label": "2号生产机（主力）",
+  "provider": "朝晞云",
+  "region": "美国洛杉矶",
+  "public_ip": "38.12.32.94",
+  "public_ipv6": null,
+  "public_domain": "zzzai.fun",
+  "cloudflare_managed": true,
+  "hostname": "zzzzaifun",
+  "resource_policy": "primary-production-host",
+  "ssh": {
+    "host": "38.12.32.94",
+    "aliases": [
+      "prod2-main"
+    ],
+    "port": 44222,
+    "user": "root",
+    "auth": "ssh-key+password",
+    "key_file_name": "prod2-main.pem",
+    "strict_host_key_checking": "yes",
+    "control_master": "auto",
+    "control_persist": "10m",
+    "control_path": "/tmp/oplinux-ssh-%C",
+    "password_authentication": true,
+    "password_authentication_exception": "enabled on 2026-03-28 per现场运维要求；fresh password-only login re-verified on port 44222",
+    "permit_root_login": true,
+    "permit_root_login_exception": "yes (effective value re-verified on 2026-03-28 after ssh policy change)",
+    "pubkey_authentication": true,
+    "authentication_methods": "any",
+    "max_auth_tries": 10,
+    "proxy_command": "nc -X connect -x 172.25.240.1:7890 %h %p",
+    "host_key_fingerprint_rsa": "SHA256:3mHnoJFW5GJu7shq63DifkgoQ5lVhZEsnJ7uk3jflsM"
+  },
+  "security": {
+    "firewall": {
+      "tool": "ufw",
+      "status": "inactive",
+      "default_incoming": "unknown",
+      "allowed_tcp_ports": [],
+      "note": "当前仍未启用 UFW；正式公网入口由 Cloudflare + OpenResty 承载，主机侧防火墙策略待后续统一收口。"
+    },
+    "fail2ban": {
+      "status": "active",
+      "enabled_on_boot": true,
+      "jail": "sshd",
+      "backend": "systemd",
+      "mode": "aggressive",
+      "maxretry": 10,
+      "findtime": "10m",
+      "bantime": "24h",
+      "effective_config_files": [
+        "/etc/fail2ban/jail.d/defaults-debian.conf",
+        "/etc/fail2ban/jail.local",
+        "/etc/fail2ban/jail.d/sshd.local"
+      ],
+      "drift_file": "/etc/fail2ban/jail.local",
+      "note": "2026-03-28 先执行 fail2ban-client unban --all 清空历史封禁，再完成 enable + restart 核验；当前 sshd jail 对 44222 生效，公网扫描会在恢复后继续即时产生新的封禁记录，属预期。"
+    },
+    "ssh": {
+      "listen": [
+        "0.0.0.0:44222",
+        "[::]:44222"
+      ],
+      "password_authentication_before_hardening": true,
+      "pubkey_authentication_before_hardening": false,
+      "hardened_on": "2026-03-27",
+      "reverified_on": "2026-03-28",
+      "drift_note": "现场存在 /etc/ssh/sshd_config.d/99-oplinux-prod2-keyonly.conf 但主 /etc/ssh/sshd_config 缺少 Include，导致 drop-in 未生效；2026-03-28 已直接修正主配置，并按现场要求切换为 44222 + 密码/公钥双开。",
+      "current_note": "当前由 sshd 直接监听 44222，ssh.socket 已停用；root 允许密码和公钥登录，AuthenticationMethods any，MaxAuthTries 10。"
+    },
+    "openresty_public_listen": {
+      "ports": [
+        443
+      ],
+      "stack": "dual-stack",
+      "verified_on": "2026-03-27",
+      "note": "1panel-openresty-prod 使用 host 网络承载 prod2-main 正式公网 HTTPS 入口。"
+    }
+  },
+  "managed_bridge_networks": [
+    {
+      "name": "zqf_network",
+      "driver": "bridge",
+      "subnet": "172.19.0.0/16",
+      "gateway_ip": "172.19.0.1/16",
+      "required_for": [
+        "postgres18-prod",
+        "redis7-prod",
+        "minio-prod",
+        "sub2api-prod",
+        "newapi-prod",
+        "chatgpt-register-v2-prod2"
+      ]
+    }
+  ],
+  "services": {
+    "docker": {
+      "version": "Docker version 29.3.1, build c2be9cc",
+      "data_root": "/data/docker",
+      "status": "running",
+      "containerd_on_data_disk": true,
+      "shared_networks": [
+        "zqf_network"
+      ],
+      "shared_network_subnets": [
+        "172.19.0.0/16"
+      ]
+    },
+    "postgres": {
+      "image": "postgres:18.3",
+      "container_name": "postgres18-prod",
+      "status": "running",
+      "host_binding": "0.0.0.0:5432",
+      "data_dir": "/data/postgres/data",
+      "docker_networks": [
+        "zqf_network"
+      ]
+    },
+    "redis": {
+      "image": "redis:7.4.7",
+      "container_name": "redis7-prod",
+      "status": "running",
+      "host_binding": "0.0.0.0:6379",
+      "data_dir": "/data/redis/data",
+      "docker_networks": [
+        "zqf_network"
+      ]
+    },
+    "minio": {
+      "image": "minio/minio:RELEASE.2025-04-22T22-12-26Z",
+      "container_name": "minio-prod",
+      "status": "running",
+      "host_bindings": [
+        "0.0.0.0:9000",
+        "0.0.0.0:9001"
+      ],
+      "data_dir": "/data/minio/data",
+      "config_dir": "/data/minio/config",
+      "docker_networks": [
+        "zqf_network"
+      ]
+    },
+    "onepanel": {
+      "version": "v2.1.7",
+      "mode": "host install",
+      "status": "running",
+      "data_dir": "/data/1panel",
+      "panel_port": 2096,
+      "safe_entrance": "/p2panel443",
+      "listen": "0.0.0.0:2096",
+      "local_url": "http://127.0.0.1:2096/p2panel443",
+      "public_url": "https://1panel.zzzai.fun/p2panel443",
+      "public_via": "1panel-openresty-prod on 443",
+      "api_env_local": "secrets/services/onepanel-api.prod2.env",
+      "api_env_remote": "/opt/agentplane/secrets/services/onepanel-api.env",
+      "api_origin_url": "https://1panel.zzzai.fun",
+      "api_connect_url": "http://127.0.0.1:2096",
+      "api_ip_whitelist": "127.0.0.1",
+      "certificate_mode": "Let's Encrypt via Cloudflare DNS-01"
+    },
+    "onepanel_openresty": {
+      "provider": "1Panel official app",
+      "app_name": "openresty",
+      "app_version": "1.27.1.2-5-1-focal",
+      "container_name": "1panel-openresty-prod",
+      "status": "running",
+      "network_mode": "host",
+      "listen_ports": [
+        443
+      ],
+      "listen_stack": "dual-stack",
+      "certificates": [
+        {
+          "id": 2,
+          "name": "1panel-zzzai-fun",
+          "dir": "/data/1panel/www/certs/1panel-zzzai-fun",
+          "mode": "Let's Encrypt via Cloudflare DNS-01"
+        }
+      ]
+    },
+    "public_websites": [
+      {
+        "alias": "1panel",
+        "primary_domain": "1panel.zzzai.fun",
+        "public_url": "https://1panel.zzzai.fun/p2panel443",
+        "proxy": "http://127.0.0.1:2096",
+        "config_file": "/data/1panel/www/conf.d/1panel.conf",
+        "ssl_id": 2,
+        "certificate_mode": "Let's Encrypt via Cloudflare DNS-01",
+        "status": "Running"
+      },
+      {
+        "alias": "token",
+        "primary_domain": "token.zzzai.fun",
+        "public_url": "https://token.zzzai.fun",
+        "proxy": "http://127.0.0.1:18080",
+        "config_file": "/data/1panel/www/conf.d/token.conf",
+        "ssl_id": 4,
+        "status": "Running"
+      }
+    ],
+    "sub2api": {
+      "control_plane": "compose",
+      "container_name": "sub2api-prod",
+      "depends_on_containers": [
+        "postgres18-prod",
+        "redis7-prod"
+      ],
+      "runtime_root": "/data/sub2api/app/current",
+      "config_files": [
+        "/opt/agentplane/secrets/services/sub2api.prod2.env"
+      ],
+      "data_dir": "/data/sub2api/data",
+      "host_binding": "127.0.0.1:18080",
+      "container_port": 8080,
+      "public_url": "https://token.zzzai.fun",
+      "rollback_entry": {
+        "kind": "none",
+        "note": "prod2-main 首次上线无旧控制面"
+      },
+      "docker_networks": [
+        "zqf_network"
+      ],
+      "app_resource_summary": {
+        "postgres": {
+          "database": "sub2api_prod2",
+          "user": "sub2api_prod2",
+          "secret_file": "secrets/hosts/prod2-main/apps/sub2api/resources/postgres.env"
+        },
+        "redis": {
+          "db": 1,
+          "key_prefix": "sub2api:",
+          "secret_file": "secrets/hosts/prod2-main/apps/sub2api/resources/redis.env"
+        },
+        "minio": {
+          "bucket": "prod2-sub2api",
+          "access_key": "sub2api_prod2",
+          "policy_name": "prod2-sub2api-rw",
+          "policy_scope": "bucket-only",
+          "isolation_level": "bucket-scoped-rw",
+          "secret_file": "secrets/hosts/prod2-main/apps/sub2api/resources/minio.env"
+        }
+      }
+    },
+    "newapi": {
+      "control_plane": "compose",
+      "container_name": "newapi-prod",
+      "depends_on_containers": [
+        "postgres18-prod",
+        "redis7-prod",
+        "minio-prod"
+      ],
+      "runtime_root": "/data/newapi/app/current",
+      "config_files": [
+        "/opt/agentplane/secrets/services/newapi.prod2.env"
+      ],
+      "data_dir": "/data/newapi/data",
+      "host_binding": "127.0.0.1:3000",
+      "container_port": 3000,
+      "public_url": "https://newapi.zzzai.fun",
+      "rollback_entry": {
+        "kind": "none",
+        "note": "prod2-main 首次上线无旧控制面",
+        "service_name": "newapi"
+      },
+      "docker_networks": [
+        "zqf_network"
+      ],
+      "app_resource_summary": {
+        "postgres": {
+          "database": "newapi_prod2",
+          "user": "newapi_prod2",
+          "secret_file": "secrets/hosts/prod2-main/apps/newapi/resources/postgres.env"
+        },
+        "redis": {
+          "db": 2,
+          "key_prefix": "newapi:",
+          "secret_file": "secrets/hosts/prod2-main/apps/newapi/resources/redis.env"
+        },
+        "minio": {
+          "bucket": "prod2-newapi",
+          "access_key": "newapi_prod2",
+          "policy_name": "prod2-newapi-rw",
+          "policy_scope": "bucket-only",
+          "isolation_level": "bucket-scoped-rw",
+          "secret_file": "secrets/hosts/prod2-main/apps/newapi/resources/minio.env"
+        }
+      }
+    },
+    "chatgpt-register-v2-prod2": {
+      "control_plane": "compose",
+      "container_name": "chatgpt-register-v2-prod2",
+      "depends_on_containers": [
+        "sub2api-prod"
+      ],
+      "runtime_root": "/data/chatgpt-register-v2-prod2/app/current",
+      "config_files": [
+        "/opt/agentplane/secrets/services/chatgpt-register-v2-prod2.prod2.env"
+      ],
+      "data_dir": "/data/chatgpt-register-v2-prod2/data",
+      "host_binding": "127.0.0.1:18082",
+      "container_port": 18082,
+      "public_url": "internal://127.0.0.1:18082",
+      "rollback_entry": {
+        "kind": "none",
+        "note": "prod2 为并行新实例，不复用 prod0 容器回滚面。",
+        "service_name": "chatgpt-register-v2-prod2"
+      },
+      "docker_networks": [
+        "zqf_network"
+      ]
+    },
+    "relay-trojan": {
+      "control_plane": "compose",
+      "container_name": "relay-trojan-prod",
+      "runtime_root": "/data/relay-trojan",
+      "config_files": [
+        "/opt/agentplane/secrets/services/relay-trojan.prod2.env",
+        "/data/relay-trojan/config/config.json"
+      ],
+      "data_dir": "/data/relay-trojan",
+      "host_binding": "0.0.0.0:24443",
+      "container_port": 24443,
+      "public_endpoint": {
+        "domain": "relay.zzzai.fun",
+        "scheme": "trojan+tls",
+        "port": 24443,
+        "dns": {
+          "provider": "cloudflare",
+          "zone_name": "zzzai.fun",
+          "record_type": "A",
+          "record_content": "38.12.32.94",
+          "proxied": false
+        },
+        "certificate": {
+          "fullchain_path": "/data/relay-trojan/certs/fullchain.pem",
+          "privkey_path": "/data/relay-trojan/certs/privkey.pem",
+          "renew_script_path": "/usr/local/bin/renew-relay-trojan-cert.sh",
+          "renew_cron": "17 3 1 * * /usr/local/bin/renew-relay-trojan-cert.sh >> /var/log/relay-trojan-cert-renew.log 2>&1"
+        }
+      },
+      "client_profile": {
+        "format": "clash-local-profile",
+        "node_name": "Prod2|Relay",
+        "sni": "relay.zzzai.fun"
+      },
+      "rollback_entry": {
+        "kind": "none",
+        "note": "prod2-main 首次上线独立 relay，无历史控制面",
+        "service_name": "relay-trojan"
+      },
+      "docker_networks": [
+        "zqf_network"
+      ]
+    },
+    "vmail": {
+      "control_plane": "compose",
+      "container_name": "vmail-prod",
+      "depends_on_containers": [
+        "1panel-openresty-prod"
+      ],
+      "runtime_root": "/data/vmail/app/current",
+      "config_files": [
+        "/data/vmail/config/vmail-compose.prod.env"
+      ],
+      "data_dir": "/data/vmail/data",
+      "host_binding": "127.0.0.1:3001",
+      "container_port": 3001,
+      "public_url": "https://vmail.zzzai.fun",
+      "rollback_entry": {
+        "kind": "none",
+        "note": "prod2-main 首次上线无旧控制面",
+        "service_name": "vmail"
+      },
+      "docker_networks": [
+        "zqf_network"
+      ]
+    }
+  },
+  "storage": {
+    "data_disk": {
+      "device": "/dev/vdb1",
+      "filesystem": "ext4",
+      "mountpoint": "/data",
+      "uuid": "a718b0bf-0381-44b2-8b23-0cd6184faeb7",
+      "mounted_on": "2026-03-27",
+      "fstab_entry": "UUID=a718b0bf-0381-44b2-8b23-0cd6184faeb7 /data ext4 defaults,nofail 0 2"
+    },
+    "docker_runtime": {
+      "data_root": "/data/docker",
+      "containerd_on_data_disk": true,
+      "status": "active"
+    }
+  },
+  "probe": {
+    "time": "2026-03-28T16:19:35+08:00",
+    "os": "Ubuntu 24.04.1 LTS",
+    "kernel": "Linux 6.8.0-106-generic x86_64 GNU/Linux",
+    "arch": "x86_64",
+    "cpu_cores": 4,
+    "memory": "7.8Gi total, 913Mi used, 6.2Gi free",
+    "disk_root": "29G total, 5.2G used, 24G avail",
+    "disk_data": "69G total, 3.0G used, 62G avail",
+    "listen_ssh": "LISTEN 0.0.0.0:44222 / [::]:44222",
+    "listen_panel": "LISTEN 0.0.0.0:2096",
+    "listen_https": "LISTEN 0.0.0.0:443 / [::]:443",
+    "internal_ips": [
+      "38.12.32.94"
+    ],
+    "global_ipv6_addrs": [],
+    "ipv6_routes": [],
+    "ipv6_note": "现场复核未发现全局 IPv6 地址或路由，本机当前无可用 IPv6。"
+  },
+  "files": {
+    "readme": "inventory/servers/prod2-main/README.md",
+    "probe_output": "inventory/servers/prod2-main/probe-output.txt",
+    "app_resources_json": "inventory/servers/prod2-main/app-resources.json",
+    "app_resources_md": "inventory/servers/prod2-main/app_resources.md"
+  },
+  "automations": [
+    {
+      "id": 1,
+      "name": "prod2-main-inventory-refresh",
+      "controller": "1panel-cronjob",
+      "schedule": "daily at 04:00",
+      "spec": "0 4 * * *",
+      "cwd": "/root/work/AgentPlane",
+      "command": "uv run python -m agentplane.cli host inventory prod2-main --repo-root /root/work/AgentPlane --write",
+      "docs": [
+        "docs/runbooks/prod2-main-1panel-public-access.md"
+      ],
+      "task_truth": {
+        "purpose": "以 host inventory 定期收口 prod2-main 的结构化主机状态，确保仓库看得见的真源与 live baseline 对齐。",
+        "entrypoint": "uv run python -m agentplane.cli host inventory prod2-main --repo-root /root/work/AgentPlane --write",
+        "write_target": "inventory/servers/prod2-main/inventory.json"
+      },
+      "schedule_truth": {
+        "cron": "0 4 * * *",
+        "interval": "每天 04:00（UTC）由 prod2-main 1Panel cronjob 触发",
+        "executor": "prod2-main 1Panel cronjob"
+      },
+      "verification": [
+        "env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation verify prod2-main --name prod2-main-inventory-refresh --repo-root /root/work/AgentPlane",
+        "env -C /root/work/AgentPlane uv run python -m agentplane.cli host inventory prod2-main --repo-root /root/work/AgentPlane --write"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "prod2-main-host-audit",
+      "controller": "1panel-cronjob",
+      "schedule": "daily at 04:15",
+      "spec": "15 4 * * *",
+      "cwd": "/root/work/AgentPlane",
+      "command": "uv run python -m agentplane.cli host audit prod2-main --repo-root /root/work/AgentPlane",
+      "docs": [
+        "docs/runbooks/prod2-main-1panel-public-access.md"
+      ],
+      "task_truth": {
+        "purpose": "每天核对 prod2-main host baseline，尽早捕获 ssh、firewall、bridge、docker 等 drift。",
+        "entrypoint": "uv run python -m agentplane.cli host audit prod2-main --repo-root /root/work/AgentPlane"
+      },
+      "schedule_truth": {
+        "cron": "15 4 * * *",
+        "interval": "每天 04:15（UTC）",
+        "executor": "prod2-main 1Panel cronjob"
+      },
+      "verification": [
+        "env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation verify prod2-main --name prod2-main-host-audit --repo-root /root/work/AgentPlane",
+        "env -C /root/work/AgentPlane uv run python -m agentplane.cli host audit prod2-main --repo-root /root/work/AgentPlane"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "prod2-main-network-audit",
+      "controller": "1panel-cronjob",
+      "schedule": "daily at 04:30",
+      "spec": "30 4 * * *",
+      "cwd": "/root/work/AgentPlane",
+      "command": "uv run python -m agentplane.cli host network audit prod2-main --repo-root /root/work/AgentPlane",
+      "docs": [
+        "docs/runbooks/prod2-main-1panel-public-access.md"
+      ],
+      "task_truth": {
+        "purpose": "以 host network audit 监测 zqf_network 172.19.0.0/16 以及 docker bridge 状态，防止 2026-03-28 那种 bridge 漂移重演。",
+        "entrypoint": "uv run python -m agentplane.cli host network audit prod2-main --repo-root /root/work/AgentPlane"
+      },
+      "schedule_truth": {
+        "cron": "30 4 * * *",
+        "interval": "每天 04:30（UTC）",
+        "executor": "prod2-main 1Panel cronjob"
+      },
+      "verification": [
+        "env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation verify prod2-main --name prod2-main-network-audit --repo-root /root/work/AgentPlane",
+        "env -C /root/work/AgentPlane uv run python -m agentplane.cli host network audit prod2-main --repo-root /root/work/AgentPlane"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "prod2-main-projection-ledger-refresh",
+      "controller": "1panel-cronjob",
+      "schedule": "daily at 05:00",
+      "spec": "0 5 * * *",
+      "cwd": "/root/work/AgentPlane",
+      "command": "uv run python -m agentplane.cli projection ledger refresh --target prod2-main --repo-root /root/work/AgentPlane --write",
+      "docs": [
+        "docs/runbooks/prod2-main-1panel-public-access.md",
+        "docs/runbooks/onepanel-cli-validation-workflow.md"
+      ],
+      "task_truth": {
+        "purpose": "把 prod2-main 的 projection ledgers 写回仓库，为后续 verification 与 runbooks 提供最新枚举。",
+        "entrypoint": "uv run python -m agentplane.cli projection ledger refresh --target prod2-main --repo-root /root/work/AgentPlane --write",
+        "targets": [
+          "inventory/servers/prod2-main/ledgers/*.json",
+          "inventory/servers/prod2-main/ledgers/*.md"
+        ]
+      },
+      "schedule_truth": {
+        "cron": "0 5 * * *",
+        "interval": "每天 05:00（UTC）",
+        "executor": "prod2-main 1Panel cronjob"
+      },
+      "verification": [
+        "env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation verify prod2-main --name prod2-main-projection-ledger-refresh --repo-root /root/work/AgentPlane",
+        "env -C /root/work/AgentPlane uv run python -m agentplane.cli projection ledger refresh --target prod2-main --repo-root /root/work/AgentPlane --write"
+      ]
+    }
+  ],
+  "notes": [
+    "prod2-main 循环治理任务（inventory refresh / host audit / network audit / projection ledger refresh）由 1Panel cronjob automation 记录，以保持 ledger 和 inventory truth 持续新鲜。",
+    "2026-03-27 首次纳管时，远端原始状态为 PermitRootLogin yes、PasswordAuthentication yes、PubkeyAuthentication no；2026-03-28 按现场要求切换为 root 公钥+密码登录，SSH 端口改为 44222，MaxAuthTries 调整为 10。",
+    "控制面私钥已正式托管在 secrets/ssh/keys/prod2-main.pem，SSH alias 为 prod2-main。",
+    "已启用 fail2ban sshd jail：当前对 44222 执行 maxretry=10、findtime=10m、bantime=24h、banaction=nftables；2026-03-28 先清空历史封禁后完成恢复核验。",
+    "2026-03-27 台账曾记为 zzzaifun；2026-03-28 现场复核 hostname 实际为 zzzzaifun，已更正。",
+    "2026-03-28 SSH host key 漂移为 RSA SHA256:3mHnoJFW5GJu7shq63DifkgoQ5lVhZEsnJ7uk3jflsM，本地 known_hosts 已按现场更新。",
+    "2026-03-28 发现 /etc/ssh/sshd_config.d/99-oplinux-prod2-keyonly.conf 未被主配置 Include；已直接修正 /etc/ssh/sshd_config，并按现场要求改为 44222 + 密码/公钥双开。",
+    "2026-03-28 发现 /etc/fail2ban/jail.local 仍保留 1Panel 的旧口径；已改为与当前 sshd 策略一致的 44222/10/600/86400/nftables，并完成 enable + restart 核验。",
+    "2026-03-28 现场复核 `ip -6 addr show scope global` 与 `ip -6 route show` 均为空，本机当前无全局 IPv6 地址或路由。",
+    "2026-03-27 已将 /dev/vdb1 挂载到 /data，并将 Docker data-root 收口到 /data/docker。",
+    "containerd 运行时随 Docker 一并收口到数据盘口径。",
+    "zqf_network 已创建并作为 PostgreSQL、Redis、MinIO 的共享基础网络；prod2-main 台账统一按现场子网 172.19.0.0/16 记载。",
+    "prod2-main 当前正式公网面板入口为 https://1panel.zzzai.fun/p2panel443，由 1panel-openresty-prod 在 443/tcp 承载。"
+  ],
+  "object_ledgers": {
+    "generated_at": "2026-04-10T06:39:10.665847+00:00",
+    "counts": {
+      "websites": 2,
+      "containers": 9,
+      "firewall": 1,
+      "cronjobs": 4,
+      "apps": 1,
+      "app_resources": 2,
+      "automations": 4
+    },
+    "ledgers": {
+      "websites": "inventory/servers/prod2-main/ledgers/websites.json",
+      "containers": "inventory/servers/prod2-main/ledgers/containers.json",
+      "firewall": "inventory/servers/prod2-main/ledgers/firewall.json",
+      "cronjobs": "inventory/servers/prod2-main/ledgers/cronjobs.json",
+      "apps": "inventory/servers/prod2-main/ledgers/apps.json",
+      "app_resources": "inventory/servers/prod2-main/ledgers/app_resources.json",
+      "automations": "inventory/servers/prod2-main/ledgers/automations.json"
+    },
+    "last_operations": {}
+  }
+}

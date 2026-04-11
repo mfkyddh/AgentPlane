@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tencent Cloud Service Migration"
+  short_description: "Migrate host-local services between this repo's Tencent hosts."
+  default_prompt: "Use $tencent-cloud-service-migration to move selected services from prod0-main to another active host, keep the source host unchanged, validate the destination host, and summarize any remaining cutover work."

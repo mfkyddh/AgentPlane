@@ -1,0 +1,4 @@
+interface:
+  display_name: "Redis Docker Setup"
+  short_description: "Install Redis 7.x in Docker with commented local-dev config."
+  default_prompt: "Install or upgrade Redis 7.x in Docker for this repository, store files under infra/compose/redis, persist data under /data/redis/data, keep redis.conf fully commented, verify auth and persistence, and summarize the result."

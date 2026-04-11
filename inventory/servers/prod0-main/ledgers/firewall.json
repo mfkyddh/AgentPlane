@@ -1,0 +1,16 @@
+{
+  "items": [
+    {
+      "tool": "ufw",
+      "status": "active",
+      "default_incoming": "deny",
+      "allowed_tcp_ports": [
+        22,
+        8443
+      ],
+      "source": "0.0.0.0/0",
+      "acme_note": "80/tcp 当前未放行；OpenResty 侧证书由 1Panel + Cloudflare DNS-01 签发并写入 /data/1panel/www/certs"
+    }
+  ],
+  "count": 1
+}

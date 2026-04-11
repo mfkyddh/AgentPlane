@@ -1,0 +1,31 @@
+# 这是一份 0号生产机 CLIProxyAPI 编排文件。
+# 所有部署参数由 secrets/services/cliproxyapi.prod0.env 提供，运行时数据统一落到 /data/cliproxyapi。
+
+services:
+  cli-proxy-api:
+    image: ${CLI_PROXY_IMAGE}
+    container_name: ${CLI_PROXY_CONTAINER_NAME}
+    restart: unless-stopped
+
+    environment:
+      TZ: Asia/Shanghai
+
+    ports:
+      - "${CLI_PROXY_BIND_IP}:${CLI_PROXY_API_PORT}:8318"
+      - "${CLI_PROXY_BIND_IP}:${CLI_PROXY_GEMINI_CALLBACK_PORT}:1455"
+      - "${CLI_PROXY_BIND_IP}:${CLI_PROXY_CODEX_CALLBACK_PORT}:54545"
+      - "${CLI_PROXY_BIND_IP}:${CLI_PROXY_QWEN_CALLBACK_PORT}:51121"
+      - "${CLI_PROXY_BIND_IP}:${CLI_PROXY_IFLOW_CALLBACK_PORT}:11451"
+
+    volumes:
+      - "${CLI_PROXY_CONFIG_PATH}:/CLIProxyAPI/config.yaml"
+      - "${CLI_PROXY_AUTH_PATH}:/root/.cli-proxy-api"
+      - "${CLI_PROXY_LOG_PATH}:/CLIProxyAPI/logs"
+      - "${CLI_PROXY_STATIC_PATH}:/CLIProxyAPI/static"
+
+    networks:
+      - zqf_network
+
+networks:
+  zqf_network:
+    external: true

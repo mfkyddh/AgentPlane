@@ -1,0 +1,24 @@
+{
+  "items": [
+    {
+      "alias": "1panel",
+      "primary_domain": "1panel.zzzai.fun",
+      "public_url": "https://1panel.zzzai.fun/p2panel443",
+      "proxy": "http://127.0.0.1:2096",
+      "config_file": "/data/1panel/www/conf.d/1panel.conf",
+      "ssl_id": 2,
+      "certificate_mode": "Let's Encrypt via Cloudflare DNS-01",
+      "status": "Running"
+    },
+    {
+      "alias": "token",
+      "primary_domain": "token.zzzai.fun",
+      "public_url": "https://token.zzzai.fun",
+      "proxy": "http://127.0.0.1:18080",
+      "config_file": "/data/1panel/www/conf.d/token.conf",
+      "ssl_id": 4,
+      "status": "Running"
+    }
+  ],
+  "count": 2
+}

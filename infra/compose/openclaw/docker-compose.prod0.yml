@@ -1,0 +1,89 @@
+# 这是一份 0号生产机 OpenClaw 编排文件。
+# 文件保存在 infra/compose/openclaw 目录下。
+
+services:
+  openclaw-gateway:
+    image: openclaw:local
+
+    build:
+      context: /opt/openclaw
+      dockerfile: Dockerfile
+
+    container_name: openclaw-gateway-prod
+    restart: unless-stopped
+
+    env_file:
+      - ../../../secrets/services/openclaw.env
+
+    environment:
+      HOME: /home/node
+      TERM: xterm-256color
+
+    ports:
+      - "0.0.0.0:18789:18789"
+      - "0.0.0.0:18790:18790"
+
+    volumes:
+      - /data/openclaw/config:/home/node/.openclaw
+      - /data/openclaw/workspace:/home/node/.openclaw/workspace
+
+    command:
+      - node
+      - dist/index.js
+      - gateway
+      - --bind
+      - lan
+      - --port
+      - "18789"
+      - --verbose
+
+    init: true
+
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:18789/healthz').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+    networks:
+      - openclaw_network
+
+  openclaw-cli:
+    image: openclaw:local
+    network_mode: "service:openclaw-gateway"
+
+    cap_drop:
+      - NET_RAW
+      - NET_ADMIN
+
+    security_opt:
+      - no-new-privileges:true
+
+    env_file:
+      - ../../../secrets/services/openclaw.env
+
+    environment:
+      HOME: /home/node
+      TERM: xterm-256color
+      BROWSER: echo
+
+    volumes:
+      - /data/openclaw/config:/home/node/.openclaw
+      - /data/openclaw/workspace:/home/node/.openclaw/workspace
+
+    stdin_open: true
+    tty: true
+    init: true
+    entrypoint: ["node", "dist/index.js"]
+
+    depends_on:
+      - openclaw-gateway
+
+networks:
+  openclaw_network:
+    name: openclaw_network

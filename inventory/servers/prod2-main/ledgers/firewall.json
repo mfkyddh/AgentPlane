@@ -1,0 +1,12 @@
+{
+  "items": [
+    {
+      "tool": "ufw",
+      "status": "inactive",
+      "default_incoming": "unknown",
+      "allowed_tcp_ports": [],
+      "note": "当前仍未启用 UFW；正式公网入口由 Cloudflare + OpenResty 承载，主机侧防火墙策略待后续统一收口。"
+    }
+  ],
+  "count": 1
+}

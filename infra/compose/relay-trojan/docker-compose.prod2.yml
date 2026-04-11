@@ -1,0 +1,21 @@
+# 这是 prod2-main 的 relay-trojan 正式编排。
+
+services:
+  relay-trojan:
+    image: ghcr.io/xtls/xray-core:25.3.6
+    container_name: relay-trojan-prod
+    restart: unless-stopped
+    command: run -config /data/relay-trojan/config/config.json
+
+    ports:
+      - "0.0.0.0:24443:24443"
+
+    volumes:
+      - /data/relay-trojan:/data/relay-trojan
+
+    networks:
+      - zqf_network
+
+networks:
+  zqf_network:
+    external: true

@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "agentplane-cli"
+version = "0.1.0"
+description = "Minimal governance CLI for AgentPlane"
+requires-python = ">=3.12"
+dependencies = [
+  "PyYAML>=6.0",
+]
+
+[project.scripts]
+agentplane = "agentplane.cli.app:main"
+
+[dependency-groups]
+dev = [
+  "pytest>=8.4.2",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["agentplane"]

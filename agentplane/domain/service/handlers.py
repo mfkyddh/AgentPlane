@@ -1,0 +1,164 @@
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any
+
+from agentplane.adapters.service.common import run_command_argv
+from agentplane.adapters.service.docker_runtime import plan_container_operation, verify_container_service
+from agentplane.adapters.service.systemd_runtime import plan_systemd_operation, verify_systemd_service
+from agentplane.domain.service.materialize import materialize_service_artifact
+from agentplane.domain.service.models import ServiceDefinition
+from agentplane.domain.service.registry import available_services, resolve_service
+
+
+def _projection_handoff(
+    definition: ServiceDefinition,
+    declared: dict[str, Any] | None,
+    *,
+    target: str,
+    trigger: str,
+) -> dict[str, Any]:
+    projection_app = ""
+    if isinstance(declared, dict):
+        raw_app = declared.get("app_id")
+        if isinstance(raw_app, str):
+            projection_app = raw_app.strip()
+    if not projection_app:
+        meta_app = definition.metadata.get("projection_app")
+        if isinstance(meta_app, str):
+            projection_app = meta_app.strip()
+
+    required = trigger == "reconcile" and definition.control_plane in {"compose", "onepanel-compose"}
+    steps: list[dict[str, Any]] = [
+        {
+            "command": "projection",
+            "action": "ledger.refresh",
+            "args": {"target": target, "write": required},
+            "reason": "service inventory reconciliation follow-through",
+        }
+    ]
+    if projection_app:
+        steps.append(
+            {
+                "command": "projection",
+                "action": "runtime-env.verify",
+                "args": {"target": target, "app": projection_app},
+                "reason": "runtime env projection drift check",
+            }
+        )
+    return {"required": required, "trigger": trigger, "steps": steps}
+
+
+def _service_summary(definition: ServiceDefinition, declared: dict[str, Any] | None) -> dict[str, Any]:
+    return {
+        "name": definition.name,
+        "kind": definition.runtime_kind,
+        "control_plane": definition.control_plane,
+        "supported_operations": list(definition.supported_operations),
+        "declared": declared or {},
+    }
+
+
+def search_services(repo_root: Path, target: str) -> dict[str, Any]:
+    items = [_service_summary(definition, declared) for definition, declared in available_services(repo_root, target)]
+    return {"items": items}
+
+
+def get_service(repo_root: Path, target: str, name: str) -> dict[str, Any]:
+    definition, declared = resolve_service(repo_root, target, name)
+    if definition.runtime_kind == "docker":
+        live = verify_container_service(repo_root, target, definition, declared)
+    else:
+        live = verify_systemd_service(repo_root, target, definition, declared)
+    return {"service": _service_summary(definition, declared), "live": live}
+
+
+def verify_service(repo_root: Path, target: str, name: str) -> dict[str, Any]:
+    definition, declared = resolve_service(repo_root, target, name)
+    if definition.runtime_kind == "docker":
+        payload = verify_container_service(repo_root, target, definition, declared)
+    else:
+        payload = verify_systemd_service(repo_root, target, definition, declared)
+    payload["projection_handoff"] = _projection_handoff(definition, declared, target=target, trigger="verify")
+    return payload
+
+
+def _plan_steps(repo_root: Path, target: str, definition: ServiceDefinition, declared: dict[str, Any] | None, operation: str) -> list[dict[str, object]]:
+    if operation not in definition.supported_operations:
+        raise ValueError(f"unsupported operation for {definition.name}: {operation}")
+    if definition.runtime_kind == "docker":
+        return plan_container_operation(repo_root, target, definition, declared, operation)
+    return plan_systemd_operation(repo_root, target, definition, operation)
+
+
+def plan_service_operation(repo_root: Path, target: str, name: str, operation: str) -> dict[str, Any]:
+    definition, declared = resolve_service(repo_root, target, name)
+    steps = _plan_steps(repo_root, target, definition, declared, operation)
+    return {
+        "service": _service_summary(definition, declared),
+        "operation": operation,
+        "preflight": {"target": target, "service": name},
+        "steps": steps,
+        "verify_after_apply": {"service": name, "action": "verify"},
+        "projection_handoff": _projection_handoff(definition, declared, target=target, trigger=operation),
+    }
+
+
+def apply_service_operation(repo_root: Path, target: str, name: str, operation: str, *, execute: bool) -> dict[str, Any]:
+    if not execute:
+        raise ValueError("service apply requires --execute")
+
+    definition, declared = resolve_service(repo_root, target, name)
+    steps = _plan_steps(repo_root, target, definition, declared, operation)
+    results: list[dict[str, object]] = []
+    ok = True
+    for step in steps:
+        result = run_command_argv(list(step["argv"]), str(step["display"]))
+        results.append(result)
+        if not result["ok"]:
+            ok = False
+            break
+
+    verified = verify_service(repo_root, target, name) if ok else {"ok": False, "failures": ["apply_failed"]}
+    handoff = _projection_handoff(definition, declared, target=target, trigger=operation)
+    return {
+        "ok": ok and bool(verified.get("ok")),
+        "service": _service_summary(definition, declared),
+        "operation": operation,
+        "results": results,
+        "verified": verified,
+        "projection_handoff": handoff,
+    }
+
+
+def materialize_service(
+    repo_root: Path,
+    target: str,
+    name: str,
+    artifact: str,
+    *,
+    source: Path,
+    merge_template: Path | None,
+    output: Path,
+    password: str,
+    node_name: str = "",
+    server: str = "",
+    port: int | None = None,
+    sni: str = "",
+) -> dict[str, Any]:
+    definition, declared = resolve_service(repo_root, target, name)
+    payload = materialize_service_artifact(
+        definition,
+        declared,
+        artifact=artifact,
+        source=source,
+        merge_template=merge_template,
+        output=output,
+        password=password,
+        node_name=node_name,
+        server=server,
+        port=port,
+        sni=sni,
+    )
+    payload["service"] = _service_summary(definition, declared)
+    return payload

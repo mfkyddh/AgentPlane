@@ -1,0 +1,36 @@
+# 这是一份 0号生产机 PostgreSQL 编排文件。
+# 文件保存在 infra/compose/postgres 目录下。
+
+services:
+  postgres:
+    image: postgres:18.3
+    container_name: postgres18-prod
+    restart: unless-stopped
+    shm_size: 256mb
+
+    env_file:
+      - ../../../secrets/services/postgres/admin.prod0.env
+
+    environment:
+      TZ: Asia/Shanghai
+      PGDATA: /var/lib/postgresql/18/docker
+
+    ports:
+      - "0.0.0.0:5432:5432"
+
+    volumes:
+      - /data/postgres/data:/var/lib/postgresql
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+    networks:
+      - zqf_network
+
+networks:
+  zqf_network:
+    external: true

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Windows Mihomo Cloudflare Latency Debug"
+  short_description: "Debug Windows host latency across Mihomo, DNS, Cloudflare, and origin paths."
+  default_prompt: "Use $windows-mihomo-cloudflare-latency-debug to diagnose why a domain is slow from the Windows host, separate DNS, TUN, IPv4 or IPv6, Cloudflare edge, and origin latency, and apply the least invasive verified fix."

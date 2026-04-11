@@ -1,0 +1,4 @@
+interface:
+  display_name: "Node.js LTS Setup"
+  short_description: "Install latest Node LTS and switch npm mirror."
+  default_prompt: "Install or upgrade Node.js to the latest LTS with nvm, set npm registry to https://npm.aliyun.com, verify the result, and summarize the work."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "nginxWebUI Docker Setup"
+  short_description: "Deploy nginxWebUI with /data persistence and a public UI port."
+  default_prompt: "Deploy or redeploy nginxWebUI on Ubuntu with Docker, persist its data under /data when requested, expose only the chosen management port to the public internet, verify the container and HTTP endpoint, and summarize the result."

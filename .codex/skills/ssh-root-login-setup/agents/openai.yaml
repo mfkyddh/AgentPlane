@@ -1,0 +1,4 @@
+interface:
+  display_name: "SSH Root Login Setup"
+  short_description: "Enable sshd, root login, and optional password auth."
+  default_prompt: "Install and configure OpenSSH Server in Ubuntu or WSL, listen on port 22, allow root login, enable password authentication if requested, verify the root account is unlocked, and summarize the verified result."

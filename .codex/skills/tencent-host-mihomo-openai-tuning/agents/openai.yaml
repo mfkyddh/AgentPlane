@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tencent Host Mihomo OpenAI Tuning"
+  short_description: "Tune Mihomo GPT selector on Tencent Cloud hosts for faster OpenAI access."
+  default_prompt: "Use $tencent-host-mihomo-openai-tuning to diagnose slow OpenAI or ChatGPT egress on prod0-main or another active Tencent host, benchmark the Mihomo GPT selector candidates, switch to a faster stable node through the controller, and verify the improvement with real API and web endpoints."

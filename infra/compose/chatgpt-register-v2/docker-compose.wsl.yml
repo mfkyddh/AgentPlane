@@ -1,0 +1,57 @@
+services:
+  chatgpt-register-v2:
+    image: ${CHATGPT_REGISTER_V2_IMAGE_REF:-chatgpt-register-v2-dev:latest}
+    container_name: chatgpt-register-v2-dev
+    restart: unless-stopped
+
+    build:
+      context: ${CHATGPT_REGISTER_V2_BUILD_CONTEXT}
+      dockerfile: ${CHATGPT_REGISTER_V2_DOCKERFILE}
+      args:
+        UV_DEFAULT_INDEX: ${UV_BUILD_INDEX}
+        HTTP_PROXY: ${BUILD_PROXY}
+        HTTPS_PROXY: ${BUILD_PROXY}
+        ALL_PROXY: ${BUILD_PROXY}
+        NO_PROXY: ${NO_PROXY}
+
+    env_file:
+      - ../../../secrets/services/chatgpt-register-v2.wsl.env
+
+    command:
+      - --profile
+      - ${CHATGPT_REGISTER_PROFILE:-dev}
+      - --config-path
+      - ${CHATGPT_REGISTER_CONFIG_PATH:-/run/chatgpt-register/config/active.json}
+      - --import-target
+      - ${CHATGPT_REGISTER_IMPORT_TARGET:-sub2api-wsl}
+      - --workers
+      - ${CHATGPT_REGISTER_WORKERS:-1}
+      - --interval
+      - ${CHATGPT_REGISTER_INTERVAL:-60}
+
+    ports:
+      - "0.0.0.0:18081:18081"
+
+    volumes:
+      - /data/chatgpt-register-v2/data:/data
+      - ${CHATGPT_REGISTER_CONFIG_HOST_PATH:-/root/work/AgentPlane/secrets/services/chatgpt-register-v2.wsl.config.json}:${CHATGPT_REGISTER_CONFIG_PATH:-/run/chatgpt-register/config/active.json}:ro
+
+    init: true
+
+    healthcheck:
+      test:
+        - CMD
+        - /app/.venv/bin/python
+        - -c
+        - import urllib.request; urllib.request.urlopen("http://127.0.0.1:18081/healthz", timeout=5).read()
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+    networks:
+      - zqf_network
+
+networks:
+  zqf_network:
+    external: true

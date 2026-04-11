@@ -1,0 +1,4 @@
+interface:
+  display_name: "CLIProxyAPI Docker Setup"
+  short_description: "Install, upgrade, or repair CLIProxyAPI in Docker."
+  default_prompt: "Install, upgrade, or redeploy router-for-me/CLIProxyAPI in Docker under infra/compose/cliproxyapi, verify the latest official release, pull and pin the verified image digest, preserve existing secrets when upgrading, fix Docker mirror or daemon proxy issues if image pulls fail in WSL, persist auths and logs under /data/cliproxyapi, verify the running version and /v1/models, and summarize the configured management password and client API key."

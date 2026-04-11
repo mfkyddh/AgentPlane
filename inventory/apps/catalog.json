@@ -1,0 +1,15 @@
+{
+  "apps": [
+    {
+      "app": "sub2api",
+      "repo_name": "sub2api",
+      "repo_root": "/root/work/sub2api",
+      "service_key": "sub2api",
+      "contracts": {
+        "wsl": "deploy/agentplane/contract.wsl.yaml",
+        "prod0-main": "deploy/agentplane/contract.yaml",
+        "prod2-main": "deploy/agentplane/contract.prod2.yaml"
+      }
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+# Repository-local secrets and private credentials.
+secrets/
+
+# Environment files stay local; only templates are tracked.
+**/.env
+**/*.env
+!**/.env.example
+!templates/**
+!**/*.example
+
+# Common secret key and certificate formats.
+**/*.pem
+**/*.key
+**/*.p12
+**/*.crt
+
+# Local tool state and caches.
+.firecrawl/**
+!.firecrawl/.gitkeep
+.playwright-cli/
+.worktrees/
+.cache/
+tmp/
+
+# Python and Node runtime caches.
+__pycache__/
+*.pyc
+.pytest_cache/
+node_modules/

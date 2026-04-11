@@ -1,0 +1,56 @@
+{
+  "items": [
+    {
+      "id": 1,
+      "name": "prod0-main-inventory-refresh",
+      "controller": "1panel-cronjob",
+      "schedule": "daily at 05:00",
+      "spec": "0 5 * * *",
+      "cwd": "/root/work/AgentPlane",
+      "command": "uv run python -m agentplane.cli host inventory prod0-main --repo-root /root/work/AgentPlane",
+      "docs": [
+        "docs/runbooks/prod0-main-governance.md"
+      ],
+      "notes": "Keeps the tracked inventory snapshot in sync with prod0-main governance assertions."
+    },
+    {
+      "id": 2,
+      "name": "prod0-main-host-audit",
+      "controller": "1panel-cronjob",
+      "schedule": "daily at 05:15",
+      "spec": "15 5 * * *",
+      "cwd": "/root/work/AgentPlane",
+      "command": "uv run python -m agentplane.cli host audit prod0-main --repo-root /root/work/AgentPlane",
+      "docs": [
+        "docs/runbooks/prod0-main-governance.md"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "prod0-main-network-audit",
+      "controller": "1panel-cronjob",
+      "schedule": "daily at 05:30",
+      "spec": "30 5 * * *",
+      "cwd": "/root/work/AgentPlane",
+      "command": "uv run python -m agentplane.cli host network audit prod0-main --repo-root /root/work/AgentPlane",
+      "docs": [
+        "docs/runbooks/prod0-main-governance.md"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "prod0-main-projection-ledger-refresh",
+      "controller": "1panel-cronjob",
+      "schedule": "daily at 06:00",
+      "spec": "0 6 * * *",
+      "cwd": "/root/work/AgentPlane",
+      "command": "uv run python -m agentplane.cli projection ledger refresh --target prod0-main --repo-root /root/work/AgentPlane --write",
+      "docs": [
+        "docs/runbooks/prod0-main-governance.md",
+        "docs/runbooks/onepanel-cli-validation-workflow.md"
+      ],
+      "notes": "Refreshes projection-ledger artifacts so verification/ledger references remain current for upgrade prechecks."
+    }
+  ],
+  "count": 4
+}

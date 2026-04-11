@@ -1,0 +1,26 @@
+services:
+  vmail:
+    image: ${VMAIL_IMAGE_REF:-vmail-prod:latest}
+    container_name: vmail-prod
+    restart: unless-stopped
+
+    env_file:
+      - ../../../secrets/services/vmail.prod2.env
+
+    ports:
+      - "127.0.0.1:3001:3001"
+
+    volumes:
+      - /data/vmail/data:/app/data
+      - /data/vmail/runtime:/app/runtime
+
+    environment:
+      HTTP_HOST: 0.0.0.0
+      ENABLE_CLEANUP: "true"
+
+    networks:
+      - zqf_network
+
+networks:
+  zqf_network:
+    external: true

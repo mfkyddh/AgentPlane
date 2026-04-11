@@ -1,0 +1,20 @@
+# Legacy transitional projection-only template.
+# Canonical source moved to templates/services/redis/admin.env.example.
+# Keep this file only when migration scripts still expect redis.conf projection output.
+# Copy to secrets/services/redis/admin.<target>.conf and replace the password.
+bind 0.0.0.0
+protected-mode yes
+requirepass replace-with-redis-password
+port 6379
+daemonize no
+dir /data
+save 900 1
+save 300 10
+save 60 10000
+rdbcompression yes
+dbfilename dump.rdb
+appendonly yes
+appendfilename "appendonly.aof"
+appendfsync everysec
+loglevel notice
+logfile ""

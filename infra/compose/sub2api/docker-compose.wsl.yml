@@ -1,0 +1,35 @@
+# 这是一份 Sub2API 的 WSL 测试环境编排文件。
+# 文件保存在 infra/compose/sub2api 目录下。
+
+services:
+  sub2api:
+    image: ${SUB2API_IMAGE_REF:-sub2api-prod:0.1.105-wsl.20260328.g3468f10f74af}
+    container_name: sub2api-dev
+    restart: unless-stopped
+
+    env_file:
+      - ../../../secrets/services/sub2api.wsl.env
+
+    ports:
+      - "0.0.0.0:18080:8080"
+
+    volumes:
+      - /data/sub2api/data:/app/data
+
+    environment:
+      DATABASE_HOST: postgres18-dev
+      REDIS_HOST: redis7-dev
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/health >/dev/null"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+    networks:
+      - zqf_network
+
+networks:
+  zqf_network:
+    external: true

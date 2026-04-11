@@ -1,0 +1,197 @@
+{
+  "items": [
+    {
+      "image": "redis:7.4.7",
+      "container_name": "redis7-prod",
+      "status": "running",
+      "host_binding": "0.0.0.0:6379",
+      "data_dir": "/data/redis/data",
+      "service_key": "redis"
+    },
+    {
+      "image": "minio/minio:RELEASE.2025-04-22T22-12-26Z",
+      "container_name": "minio-prod",
+      "status": "running",
+      "host_bindings": [
+        "0.0.0.0:9000",
+        "0.0.0.0:9001"
+      ],
+      "data_dir": "/data/minio/data",
+      "config_dir": "/data/minio/config",
+      "service_key": "minio"
+    },
+    {
+      "image": "postgres:18.3",
+      "container_name": "postgres18-prod",
+      "status": "running",
+      "host_binding": "0.0.0.0:5432",
+      "data_dir": "/data/postgres/data",
+      "service_key": "postgres"
+    },
+    {
+      "provider": "1Panel official app",
+      "app_name": "openresty",
+      "app_version": "1.27.1.2-5-1-focal",
+      "container_name": "1panel-openresty-prod",
+      "status": "running",
+      "network_mode": "host",
+      "listen_ports": [
+        8443
+      ],
+      "listen_stack": "dual-stack",
+      "certificates": [
+        {
+          "id": 4,
+          "name": "zzzai-cloud",
+          "dir": "/data/1panel/www/certs/zzzai-cloud"
+        },
+        {
+          "id": 5,
+          "name": "1panel-zzzai-cloud",
+          "dir": "/data/1panel/www/certs/1panel-zzzai-cloud"
+        }
+      ],
+      "service_key": "onepanel_openresty"
+    },
+    {
+      "control_plane": "compose",
+      "container_name": "newapi-prod",
+      "depends_on_containers": [
+        "postgres18-prod",
+        "redis7-prod"
+      ],
+      "runtime_root": "/data/newapi/app/current",
+      "config_files": [
+        "/opt/agentplane/secrets/services/newapi.prod0.env"
+      ],
+      "data_dir": "/data/newapi/data",
+      "host_binding": "127.0.0.1:3000",
+      "container_port": 3000,
+      "public_url": "https://newapi.zzzai.cloud:8443",
+      "rollback_entry": {
+        "kind": "none",
+        "note": "当前运行已切到 compose，回退需手工恢复上一镜像"
+      },
+      "docker_networks": [
+        "zqf_network"
+      ],
+      "app_resource_summary": {
+        "postgres": {
+          "database": "newapi_prod0",
+          "user": "newapi_prod0",
+          "secret_file": "secrets/hosts/prod0-main/apps/newapi/resources/postgres.env"
+        },
+        "redis": {
+          "db": 2,
+          "key_prefix": "newapi:",
+          "secret_file": "secrets/hosts/prod0-main/apps/newapi/resources/redis.env"
+        },
+        "minio": {
+          "bucket": "prod0-newapi",
+          "access_key": "newapi_prod0",
+          "policy_name": "prod0-newapi-rw",
+          "policy_scope": "bucket-only",
+          "isolation_level": "bucket-scoped-rw",
+          "secret_file": "secrets/hosts/prod0-main/apps/newapi/resources/minio.env"
+        }
+      },
+      "service_key": "newapi"
+    },
+    {
+      "control_plane": "compose",
+      "container_name": "sub2apipay-prod",
+      "depends_on_containers": [
+        "postgres18-prod"
+      ],
+      "runtime_root": "/data/sub2apipay/app/current",
+      "config_files": [
+        "/opt/agentplane/secrets/services/sub2apipay.prod0.env"
+      ],
+      "data_dir": "/data/sub2apipay/data",
+      "host_binding": "127.0.0.1:18091",
+      "container_port": 3000,
+      "public_url": "https://pay.zzzai.cloud:8443",
+      "rollback_entry": {
+        "kind": "none"
+      },
+      "docker_networks": [
+        "zqf_network"
+      ],
+      "app_resource_summary": {
+        "postgres": {
+          "database": "sub2apipay",
+          "user": "sub2apipay_prod0",
+          "secret_file": "secrets/hosts/prod0-main/apps/sub2apipay/resources/postgres.env"
+        }
+      },
+      "service_key": "sub2apipay"
+    },
+    {
+      "control_plane": "compose",
+      "container_name": "sub2api-prod",
+      "depends_on_containers": [
+        "postgres18-prod",
+        "redis7-prod"
+      ],
+      "runtime_root": "/data/sub2api/app/current",
+      "config_files": [
+        "/opt/agentplane/secrets/services/sub2api.prod0.env"
+      ],
+      "data_dir": "/data/sub2api/data",
+      "host_binding": "127.0.0.1:18080",
+      "container_port": 8080,
+      "public_url": "https://token.zzzai.cloud:8443",
+      "rollback_entry": {
+        "kind": "none"
+      },
+      "docker_networks": [
+        "zqf_network"
+      ],
+      "app_resource_summary": {
+        "postgres": {
+          "database": "sub2api_prod0",
+          "user": "sub2api_prod0",
+          "secret_file": "secrets/hosts/prod0-main/apps/sub2api/resources/postgres.env"
+        },
+        "redis": {
+          "db": 1,
+          "key_prefix": "sub2api:",
+          "secret_file": "secrets/hosts/prod0-main/apps/sub2api/resources/redis.env"
+        },
+        "minio": {
+          "bucket": "prod0-sub2api",
+          "access_key": "sub2api_prod0",
+          "policy_name": "prod0-sub2api-rw",
+          "policy_scope": "bucket-only",
+          "isolation_level": "bucket-scoped-rw",
+          "secret_file": "secrets/hosts/prod0-main/apps/sub2api/resources/minio.env"
+        }
+      },
+      "service_key": "sub2api"
+    },
+    {
+      "control_plane": "compose",
+      "container_name": "chatgpt-register-v2-prod",
+      "depends_on_containers": [
+        "sub2api-prod"
+      ],
+      "runtime_root": "/data/chatgpt-register-v2/app/current",
+      "config_files": [
+        "/opt/agentplane/secrets/services/chatgpt-register-v2.prod0.env"
+      ],
+      "data_dir": "/data/chatgpt-register-v2/data",
+      "host_binding": "127.0.0.1:18081",
+      "container_port": 18081,
+      "public_url": "internal://127.0.0.1:18081",
+      "rollback_entry": {
+        "kind": "none",
+        "note": "旧版 chatgpt-register-v2-prod 容器与 /data/apps/chatgpt-register-v2-prod 已在切换前清理，不保留自动回滚入口。"
+      },
+      "docker_networks": [
+        "zqf_network"
+      ],
+      "service_key": "chatgpt-register-v2"
+    }
+  ],
+  "count": 8
+}

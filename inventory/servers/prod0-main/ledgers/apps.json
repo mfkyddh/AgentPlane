@@ -1,0 +1,13 @@
+{
+  "target": "prod0-main",
+  "count": 1,
+  "items": [
+    {
+      "app": "sub2api",
+      "service_key": "sub2api",
+      "contract_file": "/root/work/sub2api/deploy/agentplane/contract.yaml",
+      "control_plane": "compose",
+      "public_url": "https://token.zzzai.cloud:8443"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "1Panel Host Setup"
+  short_description: "Install and repair 1Panel hosts"
+  default_prompt: "Use $onepanel-host-setup to install or repair 1Panel on Ubuntu, WSL, or a remote Ubuntu host with persistent data under /data/1panel."

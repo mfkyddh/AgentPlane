@@ -1,0 +1,85 @@
+# Probe Time
+2026-03-28T16:19:35+08:00
+
+## identity
+zzzzaifun
+root
+Ubuntu 24.04.1 LTS
+Linux 6.8.0-106-generic x86_64 GNU/Linux
+
+## resources
+4
+               total        used        free      shared  buff/cache   available
+Mem:           7.8Gi       913Mi       6.2Gi        27Mi       923Mi       6.9Gi
+Swap:             0B          0B          0B
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/vda1        29G  5.2G   24G  18% /
+/dev/vdb1        69G  3.0G   62G   5% /data
+
+## network
+38.12.32.94
+LISTEN 0      128          0.0.0.0:44222      0.0.0.0:*    users:(("sshd",pid=28823,fd=3))
+LISTEN 0      4096         0.0.0.0:2096       0.0.0.0:*    users:(("1panel-core",pid=780,fd=23))
+LISTEN 0      511          0.0.0.0:443        0.0.0.0:*    users:(("openresty",pid=1888,fd=14),("openresty",pid=1887,fd=14),("openresty",pid=1885,fd=14),("openresty",pid=1884,fd=14),("openresty",pid=1664,fd=14))
+LISTEN 0      128             [::]:44222         [::]:*    users:(("sshd",pid=28823,fd=4))
+LISTEN 0      511             [::]:443           [::]:*    users:(("openresty",pid=1888,fd=15),("openresty",pid=1887,fd=15),("openresty",pid=1885,fd=15),("openresty",pid=1884,fd=15),("openresty",pid=1664,fd=15))
+
+## ipv6
+(no global IPv6 address)
+(no IPv6 route)
+
+## ssh-effective
+host_key_rsa_sha256=3mHnoJFW5GJu7shq63DifkgoQ5lVhZEsnJ7uk3jflsM
+permitrootlogin=yes
+passwordauthentication=yes
+pubkeyauthentication=yes
+kbdinteractiveauthentication=no
+authenticationmethods=any
+maxauthtries=10
+fresh_publickey_login=pass
+fresh_password_only_login=pass
+drift_note=/etc/ssh/sshd_config.d/99-oplinux-prod2-keyonly.conf existed but was not included by /etc/ssh/sshd_config; base file was repaired on 2026-03-28, then ssh policy was switched to 44222 + password/publickey dual-auth and ssh.socket was disabled
+
+## fail2ban-effective
+service_active=active
+service_enabled=enabled
+jail=sshd
+backend=systemd
+mode=aggressive
+maxretry=10
+findtime=600
+bantime=86400
+effective_files=/etc/fail2ban/jail.d/defaults-debian.conf,/etc/fail2ban/jail.local,/etc/fail2ban/jail.d/sshd.local
+drift_file=/etc/fail2ban/jail.local
+recovery_action=fail2ban-client unban --all executed before service enable+restart verification
+status_snapshot=Currently banned: 0 after final unban --all on 2026-03-28 (ambient internet scans may repopulate bans immediately afterward)
+
+## fail2ban-drift-files
+### /etc/fail2ban/jail.local
+#DEFAULT-START
+[DEFAULT]
+bantime = 86400
+findtime = 600
+maxretry = 10
+banaction = nftables
+#DEFAULT-END
+
+[sshd]
+ignoreip = 127.0.0.1/8
+enabled = true
+filter = sshd
+port = 44222
+maxretry = 10
+findtime = 600
+bantime = 86400
+banaction = nftables
+logpath = /var/log/auth.log
+
+### /etc/fail2ban/jail.d/sshd.local
+[sshd]
+enabled = true
+port = 44222
+mode = aggressive
+maxretry = 10
+findtime = 10m
+bantime = 24h
