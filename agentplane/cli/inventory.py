@@ -8,8 +8,24 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from agentplane.runtime.backends import build_backend_runner
+from agentplane.runtime.execution import ExecutionBindings, ExecutionPlan
+from agentplane.runtime.host_profile import HostProfile, detect_host_profile
+from agentplane.runtime.target_resolver import TargetResolver
+
 
 SUPPORTED_INVENTORY_TARGETS = ("wsl", "prod0-main", "prod2-main")
+_WSL_SNAPSHOT_SCRIPT = """
+import json
+import pathlib
+import sys
+
+repo_root = pathlib.Path.cwd()
+sys.path.insert(0, str(repo_root))
+from agentplane.cli.inventory import _wsl_snapshot
+
+print(json.dumps(_wsl_snapshot(repo_root), ensure_ascii=False))
+""".strip()
 
 
 def _run_command(command: list[str]) -> subprocess.CompletedProcess[str]:
@@ -156,6 +172,40 @@ def _wsl_snapshot(repo_root: Path) -> dict[str, Any]:
     return payload
 
 
+def _wsl_backend_type(host_profile: HostProfile | None = None) -> str:
+    profile = host_profile or detect_host_profile()
+    return str(TargetResolver(profile).resolve("wsl").execution_backend)
+
+
+def _wsl_snapshot_via_backend(
+    repo_root: Path,
+    *,
+    backend_type: str,
+    runner: Any | None = None,
+) -> dict[str, Any]:
+    effective_runner = runner or build_backend_runner()
+    plan = ExecutionPlan(
+        backend_type=backend_type,  # type: ignore[arg-type]
+        cwd_ref="workspace.control_root",
+        argv=("python3", "-c", _WSL_SNAPSHOT_SCRIPT),
+        env_refs=(),
+        input_refs=(),
+        expected_outputs=("snapshot-json",),
+        capabilities=("python3",),
+        timeout=300,
+    )
+    result = effective_runner.execute(
+        plan,
+        bindings=ExecutionBindings(cwd_values={"workspace.control_root": repo_root}),
+    )
+    if not result.ok:
+        raise ValueError(result.stdout or result.stderr or "failed to collect wsl inventory via backend runner")
+    payload = json.loads(result.stdout)
+    if not isinstance(payload, dict):
+        raise ValueError("wsl inventory backend payload must be an object")
+    return payload
+
+
 def _load_json_file(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {"status": "missing", "inventory_file": str(path)}
@@ -168,10 +218,22 @@ def _load_json_file(path: Path) -> dict[str, Any]:
     return payload
 
 
-def generate_inventory_snapshot(repo_root: Path, target: str, *, write: bool = False) -> dict[str, Any]:
+def generate_inventory_snapshot(
+    repo_root: Path,
+    target: str,
+    *,
+    write: bool = False,
+    host_profile: HostProfile | None = None,
+    runner: Any | None = None,
+) -> dict[str, Any]:
     resolved_root = repo_root.resolve()
+    backend_type = None
     if target == "wsl":
-        payload = _wsl_snapshot(resolved_root)
+        backend_type = _wsl_backend_type(host_profile)
+        if backend_type == "windows-wsl":
+            payload = _wsl_snapshot_via_backend(resolved_root, backend_type=backend_type, runner=runner)
+        else:
+            payload = _wsl_snapshot(resolved_root)
         inventory_file = _wsl_inventory_file(resolved_root)
     elif target == "prod0-main":
         inventory_file = _prod0_inventory_file(resolved_root)
@@ -191,4 +253,5 @@ def generate_inventory_snapshot(repo_root: Path, target: str, *, write: bool = F
         "target": target,
         "inventory_file": str(inventory_file),
         "payload": payload,
+        "backend_type": backend_type,
     }

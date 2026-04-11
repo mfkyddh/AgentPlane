@@ -5,7 +5,10 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 
+from agentplane.cli.inventory import generate_inventory_snapshot
+from agentplane.runtime.host_profile import HostProfile
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -118,6 +121,29 @@ class HostCliTests(unittest.TestCase):
         self.assertEqual("inventory", payload["action"])
         self.assertEqual("wsl", payload["target"])
         self.assertIsInstance(payload["payload"], dict)
+
+    def test_host_inventory_wsl_uses_backend_runner_contract_on_windows_host(self) -> None:
+        fake_snapshot = {"label": "WSL jump host", "target": "wsl"}
+
+        class _FakeRunner:
+            def __init__(self) -> None:
+                self.plan = None
+
+            def execute(self, plan, *, bindings=None):
+                self.plan = plan
+                return SimpleNamespace(ok=True, stdout=json.dumps(fake_snapshot), stderr="")
+
+        runner = _FakeRunner()
+        payload = generate_inventory_snapshot(
+            REPO_ROOT,
+            "wsl",
+            host_profile=HostProfile(os_name="windows", linux_backend="windows-wsl", supports_docker=True),
+            runner=runner,
+        )
+
+        self.assertEqual("windows-wsl", payload["backend_type"])
+        self.assertEqual("windows-wsl", runner.plan.backend_type)
+        self.assertEqual(fake_snapshot, payload["payload"])
 
     def test_host_local_inspect_wraps_payload(self) -> None:
         result = run_cli("host", "local", "inspect", "--repo-root", "D:/Projects/AgentPlane")

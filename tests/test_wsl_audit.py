@@ -2,11 +2,36 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 
 from agentplane.cli.audit import audit_filesystem
+from agentplane.runtime.host_profile import HostProfile
 
 
 class WslAuditTests(unittest.TestCase):
+    def test_windows_host_uses_backend_exec_for_wsl_path_checks(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+
+            class _FakeRunner:
+                def __init__(self) -> None:
+                    self.plan = None
+
+                def execute(self, plan, *, bindings=None):
+                    self.plan = plan
+                    return SimpleNamespace(ok=True, stdout="[]", stderr="")
+
+            runner = _FakeRunner()
+            result = audit_filesystem(
+                root,
+                "wsl",
+                host_profile=HostProfile(os_name="windows", linux_backend="windows-wsl", supports_docker=True),
+                runner=runner,
+            )
+
+            self.assertEqual("backend-exec", result["path_check_mode"])
+            self.assertEqual("windows-wsl", runner.plan.backend_type)
+
     def test_detects_legacy_compose_entrypoints_and_env_files(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

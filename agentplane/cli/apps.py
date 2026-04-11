@@ -35,6 +35,9 @@ from agentplane.domain.app.artifacts import (
     require_artifact_first_contract,
     resolve_delivery_contract_spec,
 )
+from agentplane.runtime.backends import build_backend_runner
+from agentplane.runtime.execution import ExecutionBindings, ExecutionPlan
+from agentplane.runtime.host_profile import detect_host_profile
 from agentplane.runtime.wsl_bridge import normalize_wsl_posix_path, windows_path_to_wsl_posix, wsl_unc_to_posix
 from agentplane.ssh import SshTarget, resolve_ssh_target
 
@@ -474,6 +477,10 @@ def handle_app_command(args: argparse.Namespace) -> dict[str, Any]:
 
 def _run(command: list[str], *, cwd: Path | None = None, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(command, cwd=cwd, env=env, text=True, capture_output=True, check=False)
+
+
+def _local_backend_type() -> str:
+    return str(detect_host_profile().linux_backend)
 
 
 def _run_linux_backend_command(
@@ -1578,7 +1585,30 @@ def _execute_step(
     display: str,
     cwd: Path | None = None,
     env: dict[str, str] | None = None,
+    backend_type: str | None = None,
+    capabilities: tuple[str, ...] | None = None,
+    timeout: int = 300,
 ) -> dict[str, Any]:
+    if backend_type is not None:
+        runner = build_backend_runner()
+        plan = ExecutionPlan(
+            backend_type=backend_type,  # type: ignore[arg-type]
+            cwd_ref="step.cwd" if cwd is not None else "",
+            argv=tuple(str(item) for item in argv),
+            env_refs=("step.env",) if env else (),
+            input_refs=(),
+            expected_outputs=(),
+            capabilities=capabilities or ((str(argv[0]),) if argv else ()),
+            timeout=timeout,
+        )
+        result = runner.execute(
+            plan,
+            bindings=ExecutionBindings(
+                cwd_values={"step.cwd": cwd} if cwd is not None else {},
+                env_values={"step.env": env or {}},
+            ),
+        )
+        return result.to_payload()
     result = _run(argv, cwd=cwd, env=env)
     return {
         "argv": argv,
@@ -1882,6 +1912,7 @@ def deploy_app(
     contract: dict[str, Any], *, repo_root: Path, target: str, image_ref: str | None, dry_run: bool, execute: bool
 ) -> dict[str, Any]:
     op_id = next_operation_id("deploy-app")
+    local_backend = _local_backend_type()
     if execute and dry_run:
         raise ValueError("deploy 不允许同时传 --dry-run 和 --execute")
     rendered = render_runtime(contract, repo_root=repo_root, target=target, image_ref=image_ref)
@@ -1924,6 +1955,8 @@ def deploy_app(
             argv=["docker", "compose", "-f", str(rendered_compose), "up", "-d", "--pull", "never"],
             display=f"docker compose -f {rendered_compose} up -d --pull never",
             cwd=repo_root,
+            backend_type=local_backend,
+            capabilities=("docker",),
         )
         ok = step["ok"]
         operation = _record_app_operation(
@@ -1942,6 +1975,7 @@ def deploy_app(
             "operation": operation,
             "ok": ok,
             "dry_run": False,
+            "backend_type": local_backend,
         }
 
     ssh_target = _target_ssh_target(repo_root, target)
@@ -2037,7 +2071,15 @@ def deploy_app(
             ),
         )
     )
-    step_results = [_execute_step(argv=argv, display=display) for argv, display in steps]
+    step_results = [
+        _execute_step(
+            argv=argv,
+            display=display,
+            backend_type=local_backend if argv and argv[0] == "python3" else None,
+            capabilities=("python3",) if argv and argv[0] == "python3" else None,
+        )
+        for argv, display in steps
+    ]
     ok = all(item["ok"] for item in step_results)
     operation = _record_app_operation(
         repo_root,
@@ -2063,6 +2105,7 @@ def deploy_app(
 
 def verify_app(contract: dict[str, Any], *, repo_root: Path, target: str, dry_run: bool, execute: bool) -> dict[str, Any]:
     op_id = next_operation_id("verify-app")
+    local_backend = _local_backend_type()
     if execute and dry_run:
         raise ValueError("verify 不允许同时传 --dry-run 和 --execute")
     healthcheck_url = _healthcheck_url(contract, target=target)
@@ -2088,6 +2131,8 @@ def verify_app(contract: dict[str, Any], *, repo_root: Path, target: str, dry_ru
             argv=["curl", "-fsS", healthcheck_url],
             display=commands[0],
             cwd=repo_root,
+            backend_type=local_backend,
+            capabilities=("curl",),
         )
         ok = result["ok"]
         operation = _record_app_operation(
@@ -2105,6 +2150,7 @@ def verify_app(contract: dict[str, Any], *, repo_root: Path, target: str, dry_ru
             "operation": operation,
             "dry_run": False,
             "ok": ok,
+            "backend_type": local_backend,
         }
     ssh_target = _target_ssh_target(repo_root, target)
     origin_health_wait = _origin_health_wait_command(contract, container_name=container_name)
@@ -2148,10 +2194,14 @@ def verify_app(contract: dict[str, Any], *, repo_root: Path, target: str, dry_ru
             _execute_step(
                 argv=["curl", "-fsS", f"{public_root}{contract['runtime']['healthcheck']['path']}"],
                 display=f"curl -fsS {public_root}{contract['runtime']['healthcheck']['path']}",
+                backend_type=local_backend,
+                capabilities=("curl",),
             ),
             _execute_step(
                 argv=["curl", "-fsSI", f"{public_root}/"],
                 display=f"curl -fsSI {public_root}/",
+                backend_type=local_backend,
+                capabilities=("curl",),
             ),
         ]
     ok = all(item["ok"] for item in origin_checks + public_checks)
@@ -2177,6 +2227,7 @@ def verify_app(contract: dict[str, Any], *, repo_root: Path, target: str, dry_ru
 def rollback_app(contract: dict[str, Any], *, repo_root: Path, target: str, dry_run: bool, execute: bool) -> dict[str, Any]:
     op_id = next_operation_id("rollback-app")
     rollback_entry = contract["rollback"]["previous_control_plane"]
+    local_backend = _local_backend_type()
     if target == "wsl":
         operation = _record_app_operation(
             repo_root,
@@ -2245,7 +2296,15 @@ def rollback_app(contract: dict[str, Any], *, repo_root: Path, target: str, dry_
     ]
     if transition_step:
         steps.append(transition_step)
-    step_results = [_execute_step(argv=argv, display=display) for argv, display in steps]
+    step_results = [
+        _execute_step(
+            argv=argv,
+            display=display,
+            backend_type=local_backend if argv and argv[0] == "python3" else None,
+            capabilities=("python3",) if argv and argv[0] == "python3" else None,
+        )
+        for argv, display in steps
+    ]
     ok = all(item["ok"] for item in step_results)
     operation = _record_app_operation(
         repo_root,

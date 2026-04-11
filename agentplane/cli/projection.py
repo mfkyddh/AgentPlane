@@ -15,6 +15,7 @@ from agentplane.scripts.onepanel.executor import TargetExecutor
 from agentplane.scripts.onepanel.fixture_manager import apply_fixture, cleanup_fixture, plan_fixture, resolve_fixture_spec
 from agentplane.scripts.onepanel.ledger import refresh_ledgers
 from agentplane.scripts.onepanel.verification import run_verification_suite
+from agentplane.runtime.wsl_bridge import normalize_wsl_posix_path, windows_path_to_wsl_posix, wsl_unc_to_posix
 
 FORMAL_PROJECTION_SURFACES = ("runtime-env", "verification", "fixture", "ledger")
 FORMAL_RUNTIME_ENV_ACTIONS = ("plan", "apply", "verify")
@@ -78,6 +79,21 @@ def _wrap(action: str, payload: dict[str, Any]) -> dict[str, Any]:
     return {"command": "projection", "action": action, **payload}
 
 
+def _normalize_repo_root(path: Path | str) -> Path:
+    posix_path = windows_path_to_wsl_posix(path)
+    if posix_path:
+        return Path(posix_path).resolve()
+    candidate = wsl_unc_to_posix(path)
+    if candidate is not None:
+        return candidate.resolve()
+    rendered = normalize_wsl_posix_path(path)
+    if rendered:
+        maybe_posix = Path(rendered)
+        if maybe_posix.is_absolute():
+            return maybe_posix.resolve()
+    return Path(path).expanduser().resolve()
+
+
 def _executor_for_target(target: str) -> TargetExecutor:
     return TargetExecutor(get_target(target))
 
@@ -94,7 +110,7 @@ def _require_formal_action(surface: str, action: str, allowed: tuple[str, ...]) 
 
 def handle_projection_command(args: argparse.Namespace) -> dict[str, Any]:
     _require_formal_surface(args.projection_surface)
-    repo_root = Path(args.repo_root).resolve()
+    repo_root = _normalize_repo_root(args.repo_root)
     if args.projection_surface == "runtime-env" and args.projection_action == "plan":
         _require_formal_action(args.projection_surface, args.projection_action, FORMAL_RUNTIME_ENV_ACTIONS)
         return _wrap("runtime-env.plan", plan_runtime_env_projection(repo_root, args.target, args.app))

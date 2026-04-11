@@ -7,10 +7,13 @@ import unittest
 from datetime import UTC, datetime
 from pathlib import Path
 import re
+from types import SimpleNamespace
+from unittest.mock import patch
 
 import yaml
 
 from agentplane.domain.app.resource_paths import app_resource_secret_dir
+from agentplane.runtime.host_profile import HostProfile
 from tests.app_resource_path_fixtures import resource_relative, resource_root
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -23,6 +26,7 @@ ERROR_ID_TENANT_RESOURCES_REQUIRED = "app.resource.resources_required"
 ERROR_ID_TENANT_SECRET_FILE_SCOPE = "app.resource.secret_file_scope"
 ERROR_ID_TENANT_SECRET_FILE_MISSING = "app.resource.secret_file_missing"
 ERROR_ID_TENANT_REGISTRY_MISMATCH = "app.resource.registry_mismatch"
+PROJECT_LIFECYCLE_SCRIPT = str(REPO_ROOT / "agentplane" / "scripts" / "onepanel" / "project_lifecycle.py")
 
 
 def run_cli(*args: str, cwd: Path | None = None, env_overrides: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
@@ -2792,6 +2796,79 @@ class AppCliTests(unittest.TestCase):
             self.assertIn("docker compose -f", payload["commands"][0])
             self.assertIn("docker compose -f", log_file.read_text(encoding="utf-8"))
 
+    def test_deploy_app_execute_uses_backend_runner_for_wsl_target_on_windows_host(self) -> None:
+        import agentplane.cli.apps as app_cli
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_inventory(root)
+            write_app_resource_registry(
+                root,
+                {
+                    "newapi": {
+                        "owner_app": "newapi",
+                        "postgres": {"database": "newapi_wsl", "user": "newapi_wsl"},
+                        "redis": {"user": "", "db": 2, "key_prefix": "newapi:wsl:"},
+                        "secret_files": [
+                            resource_relative("wsl", "newapi", "postgres"),
+                            resource_relative("wsl", "newapi", "redis"),
+                        ],
+                    }
+                },
+                target="wsl",
+            )
+            write_newapi_tenant_files(root, target="wsl")
+            write_newapi_compose_templates(root)
+            service_env = root / "secrets" / "services" / "newapi.wsl.env"
+            service_env.parent.mkdir(parents=True, exist_ok=True)
+            service_env.write_text("APP_DATABASE_URL=postgresql://newapi_wsl:secret@postgres18-dev:5432/newapi_wsl\n", encoding="utf-8")
+            contract_file = write_newapi_contract(root, target="wsl")
+            contract = app_cli.validate_contract(contract_file, repo_root=root, target="wsl")
+
+            class _FakeExecutionResult:
+                def __init__(self, plan) -> None:
+                    self.plan = plan
+                    self.ok = True
+
+                def to_payload(self) -> dict[str, object]:
+                    return {
+                        "backend_type": self.plan.backend_type,
+                        "argv": list(self.plan.argv),
+                        "display": "wsl.exe -e bash -lc docker compose",
+                        "cwd": None,
+                        "returncode": 0,
+                        "stdout": "",
+                        "stderr": "",
+                        "ok": True,
+                    }
+
+            class _FakeRunner:
+                def __init__(self) -> None:
+                    self.plan = None
+
+                def execute(self, plan, *, bindings=None):
+                    self.plan = plan
+                    return _FakeExecutionResult(plan)
+
+            runner = _FakeRunner()
+            with patch(
+                "agentplane.cli.apps.detect_host_profile",
+                return_value=HostProfile(os_name="windows", linux_backend="windows-wsl", supports_docker=True),
+            ), patch("agentplane.cli.apps.build_backend_runner", return_value=runner):
+                payload = app_cli.deploy_app(
+                    contract,
+                    repo_root=root,
+                    target="wsl",
+                    image_ref="newapi-dev:test",
+                    dry_run=False,
+                    execute=True,
+                )
+
+            self.assertEqual("windows-wsl", runner.plan.backend_type)
+            self.assertEqual("windows-wsl", payload["backend_type"])
+            self.assertEqual("windows-wsl", payload["results"][0]["backend_type"])
+            self.assertEqual(["docker", "compose"], payload["results"][0]["argv"][:2])
+
     def test_deploy_app_execute_uses_canonical_service_env_for_wsl_worktree(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             outer_root = Path(tmp) / "repo-root"
@@ -4177,7 +4254,7 @@ class AppCliTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             commands = "\n".join(json.loads(result.stdout)["payload"]["commands"])
             self.assertIn(
-                "python3 /root/work/AgentPlane/agentplane/scripts/onepanel/project_lifecycle.py --env prod0-main operate --name sub2apipay-prod --operation stop",
+                f"python3 {PROJECT_LIFECYCLE_SCRIPT} --env prod0-main operate --name sub2apipay-prod --operation stop",
                 commands,
             )
             self.assertNotIn("systemctl stop", commands)
@@ -4209,7 +4286,7 @@ class AppCliTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             commands = "\n".join(json.loads(result.stdout)["payload"]["commands"])
             self.assertIn(
-                "python3 /root/work/AgentPlane/agentplane/scripts/onepanel/project_lifecycle.py --env prod0-main operate --name sub2apipay-prod --operation up",
+                f"python3 {PROJECT_LIFECYCLE_SCRIPT} --env prod0-main operate --name sub2apipay-prod --operation up",
                 commands,
             )
             self.assertNotIn("systemctl start", commands)
@@ -4268,7 +4345,7 @@ class AppCliTests(unittest.TestCase):
             self.assertTrue(payload["ok"])
             log_text = log_file.read_text(encoding="utf-8")
             self.assertIn(
-                "python3 /root/work/AgentPlane/agentplane/scripts/onepanel/project_lifecycle.py --env prod0-main operate --name sub2apipay-prod --operation stop",
+                f"python3 {PROJECT_LIFECYCLE_SCRIPT} --env prod0-main operate --name sub2apipay-prod --operation stop",
                 log_text,
             )
             self.assertNotIn("systemctl stop", log_text)
@@ -4321,7 +4398,7 @@ class AppCliTests(unittest.TestCase):
             self.assertTrue(payload["ok"])
             log_text = log_file.read_text(encoding="utf-8")
             self.assertIn(
-                "python3 /root/work/AgentPlane/agentplane/scripts/onepanel/project_lifecycle.py --env prod0-main operate --name sub2apipay-prod --operation up",
+                f"python3 {PROJECT_LIFECYCLE_SCRIPT} --env prod0-main operate --name sub2apipay-prod --operation up",
                 log_text,
             )
             self.assertNotIn("systemctl start", log_text)

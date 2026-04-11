@@ -225,6 +225,7 @@ def handle_host_command(args: argparse.Namespace) -> dict[str, Any]:
             payload={
                 "snapshot": result["payload"],
                 "inventory_file": result["inventory_file"],
+                "backend_type": result.get("backend_type"),
             },
         )
 
@@ -236,6 +237,7 @@ def handle_host_command(args: argparse.Namespace) -> dict[str, Any]:
             payload={
                 "ok": result["ok"],
                 "violations": result["violations"],
+                "path_check_mode": result.get("path_check_mode"),
             },
         )
 

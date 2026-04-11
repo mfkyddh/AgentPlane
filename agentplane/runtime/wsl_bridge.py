@@ -182,12 +182,15 @@ def detect_local_linux_backend(
         return LocalLinuxBackendStatus(backend=backend, available=True)
 
     backend_root = normalize_wsl_posix_path(workspace.linux_backend_root) or str(workspace.linux_backend_root)
-    probe = subprocess.run(
-        backend.shell_argv(f"test -d {shlex.quote(backend_root)}"),
-        text=True,
-        capture_output=True,
-        check=False,
-    )
+    try:
+        probe = subprocess.run(
+            backend.shell_argv(f"test -d {shlex.quote(backend_root)}"),
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+    except OSError:
+        return LocalLinuxBackendStatus(backend=backend, available=False)
     return LocalLinuxBackendStatus(backend=backend, available=probe.returncode == 0)
 
 

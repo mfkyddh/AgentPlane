@@ -6,6 +6,10 @@ from pathlib import Path
 from typing import Any
 
 from agentplane.cli.app_resource_state import APP_RESOURCE_SUMMARY_FIELDS, registry_secret_file
+from agentplane.runtime.backends import build_backend_runner
+from agentplane.runtime.execution import ExecutionBindings, ExecutionPlan
+from agentplane.runtime.host_profile import HostProfile, detect_host_profile
+from agentplane.runtime.target_resolver import TargetResolver
 
 
 LEGACY_PORTS = {2053, 2054}
@@ -25,6 +29,17 @@ LEGACY_FLAT_SECRET_FILES = (
     "secrets/services/redis.conf",
     "secrets/services/minio.env",
 )
+_WSL_HOST_AUDIT_SCRIPT = """
+import json
+import pathlib
+import sys
+
+repo_root = pathlib.Path.cwd()
+sys.path.insert(0, str(repo_root))
+from agentplane.cli.audit import _audit_wsl_host_state
+
+print(json.dumps(_audit_wsl_host_state(), ensure_ascii=False))
+""".strip()
 
 
 class _TrackedJsonObject(dict):
@@ -228,6 +243,40 @@ def _audit_wsl_host_state() -> list[dict[str, Any]]:
                 )
             )
     return violations
+
+
+def _wsl_backend_type(host_profile: HostProfile | None = None) -> str:
+    profile = host_profile or detect_host_profile()
+    return str(TargetResolver(profile).resolve("wsl").execution_backend)
+
+
+def _audit_wsl_host_state_via_backend(
+    repo_root: Path,
+    *,
+    backend_type: str,
+    runner: Any | None = None,
+) -> list[dict[str, Any]]:
+    effective_runner = runner or build_backend_runner()
+    plan = ExecutionPlan(
+        backend_type=backend_type,  # type: ignore[arg-type]
+        cwd_ref="workspace.control_root",
+        argv=("python3", "-c", _WSL_HOST_AUDIT_SCRIPT),
+        env_refs=(),
+        input_refs=(),
+        expected_outputs=("violations-json",),
+        capabilities=("python3",),
+        timeout=300,
+    )
+    result = effective_runner.execute(
+        plan,
+        bindings=ExecutionBindings(cwd_values={"workspace.control_root": repo_root}),
+    )
+    if not result.ok:
+        raise ValueError(result.stdout or result.stderr or "failed to audit wsl host state via backend runner")
+    payload = json.loads(result.stdout)
+    if not isinstance(payload, list):
+        raise ValueError("wsl audit backend payload must be a list")
+    return [item for item in payload if isinstance(item, dict)]
 
 
 def _load_json(path: Path, scope: str) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
@@ -756,10 +805,23 @@ def _audit_prod2_inventory(repo_root: Path) -> list[dict[str, Any]]:
     )
 
 
-def audit_filesystem(repo_root: Path, target_env: str) -> dict[str, Any]:
+def audit_filesystem(
+    repo_root: Path,
+    target_env: str,
+    *,
+    host_profile: HostProfile | None = None,
+    runner: Any | None = None,
+) -> dict[str, Any]:
     resolved_root = repo_root.resolve()
+    path_check_mode = "local-path"
     if target_env == "wsl":
-        violations = _audit_wsl_templates(resolved_root) + _audit_wsl_host_state()
+        backend_type = _wsl_backend_type(host_profile)
+        if backend_type == "windows-wsl":
+            path_check_mode = "backend-exec"
+            host_violations = _audit_wsl_host_state_via_backend(resolved_root, backend_type=backend_type, runner=runner)
+        else:
+            host_violations = _audit_wsl_host_state()
+        violations = _audit_wsl_templates(resolved_root) + host_violations
     elif target_env == "prod0-main":
         violations = _audit_prod0_inventory(resolved_root)
     elif target_env == "prod2-main":
@@ -772,4 +834,5 @@ def audit_filesystem(repo_root: Path, target_env: str) -> dict[str, Any]:
         "repo_root": str(resolved_root),
         "ok": not violations,
         "violations": violations,
+        "path_check_mode": path_check_mode,
     }
