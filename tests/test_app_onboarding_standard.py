@@ -56,21 +56,44 @@ class AppOnboardingStandardTests(unittest.TestCase):
         self.assertTrue((env_root / "lib" / "invoke-agentplane-windows-uv.ps1").is_file())
 
         expected_actions = {
-            "Bootstrap": ".codex/environments/actions/bootstrap.sh",
-            "Test": ".codex/environments/actions/test.sh",
-            "Lint": ".codex/environments/actions/lint.sh",
-            "Build": ".codex/environments/actions/build.sh",
-            "Dev": ".codex/environments/actions/dev.sh",
-            "Compose Up": ".codex/environments/actions/compose-up.sh",
-            "Compose Logs": ".codex/environments/actions/compose-logs.sh",
-            "Smoke": ".codex/environments/actions/smoke.sh",
+            "Bootstrap": "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/actions/bootstrap.ps1",
+            "Test": "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/actions/test.ps1",
+            "Lint": "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/actions/lint.ps1",
+            "Build": "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/actions/build.ps1",
+            "Dev": "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/actions/dev.ps1",
+            "Compose Up": "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/actions/compose-up.ps1",
+            "Compose Logs": "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/actions/compose-logs.ps1",
+            "Smoke": "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/actions/smoke.ps1",
         }
 
         actual_actions = {entry["name"]: entry["command"] for entry in payload["actions"]}
         self.assertEqual(expected_actions, actual_actions)
         for relative_path in expected_actions.values():
-            with self.subTest(action=relative_path):
-                self.assertTrue((REPO_ROOT / relative_path).is_file(), f"missing action script: {relative_path}")
+            action_path = relative_path.split(" -File ", 1)[1]
+            with self.subTest(action=action_path):
+                self.assertTrue((REPO_ROOT / action_path).is_file(), f"missing action script: {action_path}")
+
+    def test_windows_actions_split_pwsh_entry_from_linux_backend_actions(self) -> None:
+        actions_root = REPO_ROOT / ".codex" / "environments" / "actions"
+        test_script = (actions_root / "test.ps1").read_text(encoding="utf-8")
+        lint_script = (actions_root / "lint.ps1").read_text(encoding="utf-8")
+        compose_up_script = (actions_root / "compose-up.ps1").read_text(encoding="utf-8")
+        compose_up_sh = (actions_root / "compose-up.sh").read_text(encoding="utf-8")
+        compose_logs_script = (actions_root / "compose-logs.ps1").read_text(encoding="utf-8")
+        smoke_script = (actions_root / "smoke.ps1").read_text(encoding="utf-8")
+
+        self.assertIn("invoke-agentplane-windows-uv.ps1", test_script)
+        self.assertIn('"python", "-m", "pytest"', test_script)
+        self.assertIn("invoke-agentplane-windows-uv.ps1", lint_script)
+        self.assertIn('"python", "-m", "compileall", "agentplane", "tests"', lint_script)
+        self.assertIn("wsl.exe", compose_up_script)
+        self.assertIn("Get-AgentPlaneLocalInspect", compose_up_script)
+        self.assertIn("compose-up.sh", compose_up_script)
+        self.assertIn("docker-compose.wsl.yml", compose_up_sh)
+        self.assertIn("wsl.exe", compose_logs_script)
+        self.assertIn("compose-logs.sh", compose_logs_script)
+        self.assertIn("invoke-agentplane-windows-uv.ps1", smoke_script)
+        self.assertIn('"tests/test_docs_no_legacy_terms.py"', smoke_script)
 
     def test_windows_setup_contract_probes_wsl_and_formal_local_cli(self) -> None:
         windows_setup = (REPO_ROOT / ".codex" / "environments" / "setup" / "setup.windows.ps1").read_text(
@@ -99,6 +122,7 @@ class AppOnboardingStandardTests(unittest.TestCase):
         self.assertIn("LOCALAPPDATA", wrapper)
         self.assertIn("\\\\wsl.localhost\\", wrapper)
         self.assertIn("D:\\Projects\\AgentPlane", wrapper)
+        self.assertIn("Set-StrictMode -Version Latest", wrapper)
         self.assertIn('& $uv.Source "run" @UvArgs', wrapper)
 
     def test_windows_uv_wrapper_executes_host_local_inspect_from_unc_repo(self) -> None:

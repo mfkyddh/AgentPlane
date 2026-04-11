@@ -2,4 +2,4 @@
 set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/../../.."
-uv run python -m compileall ops tests
+uv run python -m compileall agentplane tests

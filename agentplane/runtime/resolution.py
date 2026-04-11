@@ -60,6 +60,8 @@ class WorkspaceBindings:
     legacy_control_root: Path | None
     private_root: Path
     linux_backend_root: Path | None
+    source_root: Path
+    local_command_root: Path
     artifact_staging_root: Path
 
     def to_payload(
@@ -74,6 +76,8 @@ class WorkspaceBindings:
             "legacy_control_root": render(self.legacy_control_root),
             "private_root": render(self.private_root),
             "linux_backend_root": render(self.linux_backend_root),
+            "source_root": render(self.source_root),
+            "local_command_root": render(self.local_command_root),
             "artifact_staging_root": render(self.artifact_staging_root),
         }
 
@@ -105,6 +109,8 @@ class WorkspaceResolver:
             legacy_control_root=self._workspace.legacy_control_root,
             private_root=self._workspace.private_root,
             linux_backend_root=self._workspace.linux_backend_root,
+            source_root=self._workspace.source_root,
+            local_command_root=self._workspace.local_command_root,
             artifact_staging_root=self._workspace.artifact_staging_root,
         )
 

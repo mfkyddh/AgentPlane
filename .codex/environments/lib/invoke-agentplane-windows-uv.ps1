@@ -3,10 +3,12 @@ param(
     [string]$RepoRoot,
     [string]$WindowsControlRoot = "D:\Projects\AgentPlane",
     [string]$UvProjectEnvironment,
+    [switch]$PreferRepoRoot,
     [Parameter(Mandatory = $true, ValueFromRemainingArguments = $true)]
     [string[]]$UvArgs
 )
 
+Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 function Test-IsWslUncPath {
@@ -40,16 +42,24 @@ if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
 
 $effectiveRoot = (Resolve-Path $RepoRoot).ProviderPath
 if (
+    -not $PreferRepoRoot -and
     (Test-Path -LiteralPath $WindowsControlRoot) -and
     (Test-Path -LiteralPath (Join-Path $WindowsControlRoot "pyproject.toml"))
 ) {
     $effectiveRoot = (Resolve-Path $WindowsControlRoot).ProviderPath
 }
 
-if (Test-IsWslUncPath $effectiveRoot) {
-    if ([string]::IsNullOrWhiteSpace($UvProjectEnvironment)) {
-        $UvProjectEnvironment = Resolve-DefaultUvProjectEnvironment -RootPath $WindowsControlRoot
+if ([string]::IsNullOrWhiteSpace($UvProjectEnvironment) -and ($IsWindows -or (Test-IsWslUncPath $effectiveRoot))) {
+    $projectEnvironmentRoot = if ([string]::IsNullOrWhiteSpace($WindowsControlRoot)) {
+        $effectiveRoot
     }
+    else {
+        $WindowsControlRoot
+    }
+    $UvProjectEnvironment = Resolve-DefaultUvProjectEnvironment -RootPath $projectEnvironmentRoot
+}
+
+if (-not [string]::IsNullOrWhiteSpace($UvProjectEnvironment)) {
     $null = New-Item -ItemType Directory -Force -Path $UvProjectEnvironment
     $env:UV_PROJECT_ENVIRONMENT = $UvProjectEnvironment
 }

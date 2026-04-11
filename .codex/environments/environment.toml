@@ -8,32 +8,32 @@ windows = "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/set
 
 [[actions]]
 name = "Bootstrap"
-command = ".codex/environments/actions/bootstrap.sh"
+command = "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/actions/bootstrap.ps1"
 
 [[actions]]
 name = "Test"
-command = ".codex/environments/actions/test.sh"
+command = "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/actions/test.ps1"
 
 [[actions]]
 name = "Lint"
-command = ".codex/environments/actions/lint.sh"
+command = "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/actions/lint.ps1"
 
 [[actions]]
 name = "Build"
-command = ".codex/environments/actions/build.sh"
+command = "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/actions/build.ps1"
 
 [[actions]]
 name = "Dev"
-command = ".codex/environments/actions/dev.sh"
+command = "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/actions/dev.ps1"
 
 [[actions]]
 name = "Compose Up"
-command = ".codex/environments/actions/compose-up.sh"
+command = "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/actions/compose-up.ps1"
 
 [[actions]]
 name = "Compose Logs"
-command = ".codex/environments/actions/compose-logs.sh"
+command = "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/actions/compose-logs.ps1"
 
 [[actions]]
 name = "Smoke"
-command = ".codex/environments/actions/smoke.sh"
+command = "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/actions/smoke.ps1"

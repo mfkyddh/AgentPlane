@@ -2,7 +2,7 @@
 
 ## Scope
 
-- These rules apply to `/root/work/AgentPlane`.
+- These rules apply to the AgentPlane control roots, with `D:\Projects\AgentPlane` as the formal Windows host entry and `/root/work/AgentPlane` retained as the WSL/Linux backend path during migration.
 - Default to Chinese when replying to the repository owner unless explicitly requested otherwise.
 - Keep root `AGENTS.md` short and durable; place operational details in `docs/` runbooks and reference docs.
 - Child `AGENTS.md` files override this file when they are closer to the working directory.
@@ -37,10 +37,15 @@
 
 ## Working Rules
 
-- Default to running development, debugging, build, test, git, Python, Node.js, and deployment commands directly inside the current WSL shell.
-- If the current shell is not already inside WSL, enter WSL first and then run the same Linux command examples from this repository.
-- Use `sh -lc` or `bash -lc` only when the WSL side truly needs shell features such as `cd`, pipelines, globbing, or heredoc.
-- Desktop-browser validation is the main companion exception; use the host browser when a real GUI browser is required, but keep the project command flow in WSL.
+- Default to a host-entry-first, backend-aware workflow.
+- On Windows hosts, use `pwsh` as the default local entry shell.
+- If the control plane and source tree both live on Windows, run `git`, `uv`, `pnpm`, tests, and other host-native commands directly in `pwsh`.
+- If the control plane is on Windows but the source tree lives in WSL, keep `pwsh` as the entry shell and route build, test, package-manager, and other source-bound commands to the matching WSL source root.
+- On Windows, Linux-only actions should prefer `wsl.exe -e <program> <args...>`; only fall back to `sh -lc` or `bash -lc` when WSL-side shell features are required.
+- Remote Linux operations should prefer `pwsh -> agentplane.cli -> WSL/SSH backend`; do not hand-build multi-layer shell commands.
+- On Linux/macOS, continue using the native POSIX shell for local execution.
+- Desktop-browser validation is the main companion exception; use the host browser when a real GUI browser is required.
+- Control plane location determines the entry host; source location determines the local execution host.
 - Use `root` by default; switch user only when user-scoped environment or ownership constraints require it.
 - Verify `whoami`, `$HOME`, and repository root before installing tools or writing runtime files.
 - Real secrets stay in `secrets/`; tracked examples stay in `templates/`.

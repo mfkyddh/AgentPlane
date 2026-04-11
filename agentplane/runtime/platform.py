@@ -18,9 +18,13 @@ class HostPlatform:
 class LinuxBackend:
     backend_type: Literal["native-posix", "wsl-linux", "ssh-linux"]
     executable: tuple[str, ...]
+    shell_executable: tuple[str, ...]
+
+    def program_argv(self, *args: str) -> list[str]:
+        return [*self.executable, *args]
 
     def shell_argv(self, command: str) -> list[str]:
-        return [*self.executable, command]
+        return [*self.shell_executable, command]
 
 
 def _normalize_os_name(raw: str) -> str:
@@ -51,9 +55,17 @@ def detect_host_platform(
 def select_linux_backend(facts: HostPlatform) -> LinuxBackend:
     if facts.os_name == "windows":
         if facts.has_wsl and not facts.is_wsl:
-            return LinuxBackend(backend_type="wsl-linux", executable=("wsl.exe", "-e", "bash", "-lc"))
+            return LinuxBackend(
+                backend_type="wsl-linux",
+                executable=("wsl.exe", "-e"),
+                shell_executable=("wsl.exe", "-e", "bash", "-lc"),
+            )
         raise ValueError("Windows host requires WSL to provide a local Linux backend")
-    return LinuxBackend(backend_type="native-posix", executable=("bash", "-lc"))
+    return LinuxBackend(
+        backend_type="native-posix",
+        executable=(),
+        shell_executable=("bash", "-lc"),
+    )
 
 
 def default_linux_backend() -> LinuxBackend:

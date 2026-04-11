@@ -10,6 +10,11 @@ class WorkspaceContext:
     legacy_control_root: Path | None
     private_root: Path
     linux_backend_root: Path | None
+    source_root: Path
+
+    @property
+    def local_command_root(self) -> Path:
+        return self.source_root
 
     @property
     def artifact_staging_root(self) -> Path:
@@ -69,12 +74,14 @@ def resolve_workspace(
     legacy_control_root: Path | str | None = None,
     private_root: Path | str | None = None,
     linux_backend_root: Path | str | None = None,
+    source_root: Path | str | None = None,
 ) -> WorkspaceContext:
     resolved_control_root = _as_path(control_root)
     resolved_legacy_control_root = _as_path(legacy_control_root)
     if resolved_control_root is None:
         raise ValueError("control_root is required")
     resolved_private_root = _as_path(private_root) or (resolved_control_root / "secrets")
+    resolved_source_root = _as_path(source_root) or resolved_control_root
     if linux_backend_root is not None:
         resolved_linux_backend_root = _as_path(linux_backend_root)
     elif resolved_legacy_control_root is not None:
@@ -88,6 +95,7 @@ def resolve_workspace(
         legacy_control_root=resolved_legacy_control_root,
         private_root=resolved_private_root,
         linux_backend_root=resolved_linux_backend_root,
+        source_root=resolved_source_root,
     )
 
 
@@ -98,4 +106,5 @@ def resolve_workspace_from_repo(repo_root: Path | str) -> WorkspaceContext:
         control_root=control_root,
         private_root=control_root / "secrets",
         linux_backend_root=control_root,
+        source_root=resolved_repo_root,
     )

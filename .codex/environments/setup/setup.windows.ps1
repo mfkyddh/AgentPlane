@@ -1,3 +1,4 @@
+Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..\..")
@@ -14,8 +15,10 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "Repo root: $repoRoot"
 Write-Host "Windows control root: $windowsControlRoot"
 Write-Host "Windows control root exists: $(Test-Path -LiteralPath $windowsControlRoot)"
+Write-Host "Windows host entry shell: pwsh"
 Write-Host "Linux backend: WSL"
 Write-Host "WSL backend probe root: $backendProbe"
 Write-Host "Formal local CLI: $formalCli"
 Write-Host "UNC-safe UV_PROJECT_ENVIRONMENT: $uvProjectEnvironment"
 Write-Host "Windows uv wrapper: $windowsUvHelper"
+Write-Host "Linux-only actions should route through WSL backend."

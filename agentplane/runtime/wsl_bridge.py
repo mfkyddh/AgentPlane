@@ -31,6 +31,7 @@ class LocalLinuxBackendStatus:
         return {
             "backend_type": self.backend.backend_type,
             "executable": list(self.backend.executable),
+            "shell_executable": list(self.backend.shell_executable),
             "available": self.available,
         }
 
@@ -151,17 +152,20 @@ def resolve_local_workspace(
             resolved_legacy_root = repo_path
         if resolved_legacy_root is None:
             resolved_legacy_root = DEFAULT_LEGACY_CONTROL_ROOT
+        source_root = repo_path if is_windows_path(repo_path) else resolved_legacy_root
         return resolve_workspace(
             control_root=control_root,
             legacy_control_root=resolved_legacy_root,
             private_root=control_root / "secrets",
             linux_backend_root=resolved_legacy_root,
+            source_root=source_root,
         )
 
     return resolve_workspace(
         control_root=control_root,
         private_root=control_root / "secrets",
         linux_backend_root=control_root,
+        source_root=repo_path,
     )
 
 

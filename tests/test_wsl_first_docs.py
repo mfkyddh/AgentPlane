@@ -3,36 +3,42 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-CORE_WSL_FIRST_DOCS = (
-    REPO_ROOT / "README.md",
+CORE_WINDOWS_ENTRY_DOCS = (
     REPO_ROOT / "AGENTS.md",
-    REPO_ROOT / "docs" / "architecture" / "linux-governance.md",
-    REPO_ROOT / "docs" / "runbooks" / "wsl-host-governance.md",
+    REPO_ROOT / "docs" / "maintainers" / "control-plane-authoring.md",
+    REPO_ROOT / "docs" / "runbooks" / "powershell-wsl-remote-bash.md",
 )
-FORBIDDEN_DEFAULT_FLOW_TERMS = (
-    "wsl.exe",
+FORBIDDEN_WINDOWS_SHELL_TERMS = (
     "powershell.exe",
-    "pwsh.exe",
     "Windows PowerShell",
 )
 
 
 class WslFirstDocsTests(unittest.TestCase):
-    def test_core_wsl_first_docs_do_not_default_to_windows_wrappers(self) -> None:
-        for path in CORE_WSL_FIRST_DOCS:
+    def test_core_windows_entry_docs_standardize_on_pwsh_not_legacy_powershell(self) -> None:
+        for path in CORE_WINDOWS_ENTRY_DOCS:
             text = path.read_text(encoding="utf-8")
-            for term in FORBIDDEN_DEFAULT_FLOW_TERMS:
+            for term in FORBIDDEN_WINDOWS_SHELL_TERMS:
                 with self.subTest(path=str(path), term=term):
                     self.assertNotIn(term, text)
 
-    def test_readme_prefers_formal_cli_over_direct_script_entrypoint(self) -> None:
-        text = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    def test_repo_agents_doc_declares_pwsh_entry_and_backend_aware_routing(self) -> None:
+        text = (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")
 
-        self.assertNotIn("python3 agentplane/scripts/onepanel/project_lifecycle.py", text)
-        self.assertNotIn("uv run python -m agentplane.cli onepanel --env prod0-main project search", text)
-        self.assertIn("`onepanel` 只用于 provider/debug 低层对象核对与排障，不作为日常默认入口。", text)
+        self.assertIn("On Windows hosts, use `pwsh` as the default local entry shell.", text)
+        self.assertIn("`wsl.exe -e <program> <args...>`", text)
+        self.assertIn("Control plane location determines the entry host; source location determines the local execution host.", text)
 
-    def test_phase4_runbooks_mark_remote_wrapper_as_compat_only(self) -> None:
+    def test_remote_bash_runbook_promotes_pwsh_to_formal_windows_entry(self) -> None:
+        text = (REPO_ROOT / "docs" / "runbooks" / "powershell-wsl-remote-bash.md").read_text(encoding="utf-8")
+
+        self.assertIn("Windows 主控制面正式入口", text)
+        self.assertIn("`pwsh`", text)
+        self.assertIn("`wsl.exe -e <program> <args...>`", text)
+        self.assertNotIn("补充入口", text)
+        self.assertNotIn("默认工作流仍然是先进入 WSL", text)
+
+    def test_runbook_keeps_compat_helper_scripts_out_of_active_execution_path(self) -> None:
         text = (REPO_ROOT / "docs" / "runbooks" / "powershell-wsl-remote-bash.md").read_text(encoding="utf-8")
         self.assertIn("兼容层", text)
         self.assertIn("不再作为长期主命令面", text)
@@ -41,6 +47,14 @@ class WslFirstDocsTests(unittest.TestCase):
         self.assertIn("project_lifecycle.py", text)
         self.assertIn("compat helper", text)
         self.assertIn("Formal catalog apps with `schema_version: 1` must use", text)
+
+    def test_authoring_rules_switch_shared_baseline_to_pwsh_entry_plus_backend_awareness(self) -> None:
+        text = (REPO_ROOT / "docs" / "maintainers" / "control-plane-authoring.md").read_text(encoding="utf-8")
+
+        self.assertIn("Windows 上 `pwsh` 优先", text)
+        self.assertIn("backend-aware", text)
+        self.assertNotIn("| 共享 skill | WSL-first、正式入口基线、真源优先级、写后验证纪律 |", text)
+        self.assertNotIn("每个 skill 都重复 WSL-first、`repo-root`、验证纪律", text)
 
     def test_onepanel_lifecycle_runbook_keeps_compat_helpers_out_of_active_execution_path(self) -> None:
         text = (REPO_ROOT / "docs" / "runbooks" / "onepanel-app-lifecycle.md").read_text(encoding="utf-8")

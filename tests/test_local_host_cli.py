@@ -35,6 +35,8 @@ class LocalHostCliTests(unittest.TestCase):
         self.assertEqual("/root/work/AgentPlane", payload["linux_backend_root"])
         self.assertEqual("windows-wsl", payload["host_profile"]["linux_backend"])
         self.assertEqual("/root/work/AgentPlane/.agentplane/staging", payload["workspace"]["artifact_staging_root"])
+        self.assertEqual("/root/work/AgentPlane", payload["workspace"]["source_root"])
+        self.assertEqual("/root/work/AgentPlane", payload["workspace"]["local_command_root"])
 
     def test_host_local_inspect_reports_windows_control_root(self) -> None:
         payload = run_cli_json("host", "local", "inspect", "--repo-root", "D:/Projects/AgentPlane")
@@ -47,6 +49,8 @@ class LocalHostCliTests(unittest.TestCase):
         self.assertEqual("windows", payload["payload"]["host_profile"]["os_name"])
         self.assertEqual("windows-wsl", payload["payload"]["host_profile"]["linux_backend"])
         self.assertEqual("/root/work/AgentPlane/.agentplane/staging", payload["payload"]["workspace"]["artifact_staging_root"])
+        self.assertTrue(payload["payload"]["workspace"]["source_root"].endswith("D:\\Projects\\AgentPlane"))
+        self.assertTrue(payload["payload"]["workspace"]["local_command_root"].endswith("D:\\Projects\\AgentPlane"))
         self.assertEqual("canonical-ref-only", payload["payload"]["path_policy"]["truth"])
 
     def test_host_local_migration_plan_includes_private_dirs(self) -> None:

@@ -54,7 +54,7 @@ superseded_by: null
 
 | 层级 | 责任 | 不应承载什么 |
 | --- | --- | --- |
-| 共享 skill | WSL-first、正式入口基线、真源优先级、写后验证纪律 | 不要把所有领域细节重复一遍 |
+| 共享 skill | Windows 上 `pwsh` 优先、backend-aware 正式入口基线、真源优先级、写后验证纪律 | 不要把所有领域细节重复一遍 |
 | 领域 skill | 围绕对象域做意图路由，如 `host`、`app-resource`、`onepanel`、`app-delivery` | 不要把专题流程塞成正文 |
 | workflow skill | 编排多个领域、阶段顺序、失败回退点、人工确认点 | 不要替代领域 skill 的原子规范 |
 | reference 文档 | 补充单个正式动作或单个稳定流程的细节 | 不要复制整份 runbook 或架构合同 |
@@ -187,7 +187,7 @@ runbook 负责专题流程、风险边界、人工接力点与最小验证；需
 
 ## 反模式
 
-- 每个 skill 都重复 WSL-first、`repo-root`、验证纪律，导致共享规则漂移。
+- 每个 skill 都重复 Windows / WSL 入口细节、`repo-root`、验证纪律，导致共享规则漂移。
 - 把专题流程写成第二份 runbook，或者把 runbook 写成第二实现。
 - 只列命令，不交代触发条件、边界和最小验证。
 - 只改代码，不同步检查模板、索引、skill、文档或测试。
