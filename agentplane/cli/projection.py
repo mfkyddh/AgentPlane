@@ -15,7 +15,7 @@ from agentplane.scripts.onepanel.executor import TargetExecutor
 from agentplane.scripts.onepanel.fixture_manager import apply_fixture, cleanup_fixture, plan_fixture, resolve_fixture_spec
 from agentplane.scripts.onepanel.ledger import refresh_ledgers
 from agentplane.scripts.onepanel.verification import run_verification_suite
-from agentplane.runtime.wsl_bridge import normalize_wsl_posix_path, windows_path_to_wsl_posix, wsl_unc_to_posix
+from agentplane.runtime.wsl_bridge import normalize_repo_root_for_current_host
 
 FORMAL_PROJECTION_SURFACES = ("runtime-env", "verification", "fixture", "ledger")
 FORMAL_RUNTIME_ENV_ACTIONS = ("plan", "apply", "verify")
@@ -80,18 +80,7 @@ def _wrap(action: str, payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _normalize_repo_root(path: Path | str) -> Path:
-    posix_path = windows_path_to_wsl_posix(path)
-    if posix_path:
-        return Path(posix_path).resolve()
-    candidate = wsl_unc_to_posix(path)
-    if candidate is not None:
-        return candidate.resolve()
-    rendered = normalize_wsl_posix_path(path)
-    if rendered:
-        maybe_posix = Path(rendered)
-        if maybe_posix.is_absolute():
-            return maybe_posix.resolve()
-    return Path(path).expanduser().resolve()
+    return normalize_repo_root_for_current_host(path)
 
 
 def _executor_for_target(target: str) -> TargetExecutor:

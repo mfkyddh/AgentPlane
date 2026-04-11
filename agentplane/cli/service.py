@@ -8,7 +8,7 @@ from agentplane.domain.service.handlers import apply_service_operation, get_serv
 from agentplane.domain.service.materialize import SUPPORTED_SERVICE_ARTIFACTS
 from agentplane.domain.service.public_endpoint import apply_service_public_endpoint, plan_service_public_endpoint, verify_service_public_endpoint
 from agentplane.domain.service.registry import SUPPORTED_SERVICE_TARGETS
-from agentplane.runtime.wsl_bridge import normalize_wsl_posix_path, windows_path_to_wsl_posix, wsl_unc_to_posix
+from agentplane.runtime.wsl_bridge import normalize_repo_root_for_current_host
 
 
 def add_service_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
@@ -65,18 +65,7 @@ def _wrap(action: str, target: str, payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _normalize_repo_root(path: Path | str) -> Path:
-    posix_path = windows_path_to_wsl_posix(path)
-    if posix_path:
-        return Path(posix_path).resolve()
-    candidate = wsl_unc_to_posix(path)
-    if candidate is not None:
-        return candidate.resolve()
-    rendered = normalize_wsl_posix_path(path)
-    if rendered:
-        maybe_posix = Path(rendered)
-        if maybe_posix.is_absolute():
-            return maybe_posix.resolve()
-    return Path(path).expanduser().resolve()
+    return normalize_repo_root_for_current_host(path)
 
 
 def handle_service_command(args: argparse.Namespace) -> dict[str, Any]:

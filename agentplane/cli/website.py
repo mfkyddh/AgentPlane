@@ -14,7 +14,7 @@ from agentplane.domain.website.handlers import (
     verify_website,
 )
 from agentplane.domain.website.registry import SUPPORTED_WEBSITE_TARGETS
-from agentplane.runtime.wsl_bridge import normalize_wsl_posix_path, windows_path_to_wsl_posix, wsl_unc_to_posix
+from agentplane.runtime.wsl_bridge import normalize_repo_root_for_current_host
 from agentplane.scripts.onepanel.public_ingress import ensure_public_ingress, plan_public_ingress, verify_public_ingress
 
 
@@ -63,18 +63,7 @@ def _wrap(action: str, target: str, payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _normalize_repo_root(path: Path | str) -> Path:
-    posix_path = windows_path_to_wsl_posix(path)
-    if posix_path:
-        return Path(posix_path).resolve()
-    candidate = wsl_unc_to_posix(path)
-    if candidate is not None:
-        return candidate.resolve()
-    rendered = normalize_wsl_posix_path(path)
-    if rendered:
-        maybe_posix = Path(rendered)
-        if maybe_posix.is_absolute():
-            return maybe_posix.resolve()
-    return Path(path).expanduser().resolve()
+    return normalize_repo_root_for_current_host(path)
 
 
 def _resolve_publish_path(repo_root: Path, raw_path: str) -> Path:

@@ -1,5 +1,6 @@
 from agentplane.runtime.host_profile import host_profile_from_platform
 from agentplane.runtime.platform import HostPlatform, select_linux_backend
+from agentplane.runtime.wsl_bridge import normalize_repo_root_for_current_host, windows_path_to_wsl_posix
 
 
 def test_selects_wsl_linux_backend_for_windows_host() -> None:
@@ -42,3 +43,16 @@ def test_host_profile_maps_wsl_linux_to_linux_native_backend() -> None:
     assert profile.os_name == "linux"
     assert profile.linux_backend == "linux-native"
     assert profile.is_wsl is True
+
+
+def test_repo_root_normalization_keeps_windows_drive_path_on_windows_host() -> None:
+    normalized = normalize_repo_root_for_current_host(
+        "D:/Projects/AgentPlane",
+        host_platform=HostPlatform(os_name="windows", has_wsl=True, is_wsl=False),
+    )
+
+    assert str(normalized).replace("\\", "/") == "D:/Projects/AgentPlane"
+
+
+def test_windows_path_to_wsl_posix_maps_drive_path_to_mnt_mount() -> None:
+    assert windows_path_to_wsl_posix("D:/Projects/AgentPlane") == "/mnt/d/Projects/AgentPlane"

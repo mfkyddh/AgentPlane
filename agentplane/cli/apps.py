@@ -38,7 +38,7 @@ from agentplane.domain.app.artifacts import (
 from agentplane.runtime.backends import build_backend_runner
 from agentplane.runtime.execution import ExecutionBindings, ExecutionPlan
 from agentplane.runtime.host_profile import detect_host_profile
-from agentplane.runtime.wsl_bridge import normalize_wsl_posix_path, windows_path_to_wsl_posix, wsl_unc_to_posix
+from agentplane.runtime.wsl_bridge import normalize_repo_root_for_current_host
 from agentplane.ssh import SshTarget, resolve_ssh_target
 
 
@@ -94,18 +94,7 @@ CLI_REPO_ROOT = git_common_root(Path(__file__).resolve().parents[2]) or Path(__f
 
 
 def _normalize_repo_root(path: Path | str) -> Path:
-    posix_path = windows_path_to_wsl_posix(path)
-    if posix_path:
-        return Path(posix_path).resolve()
-    candidate = wsl_unc_to_posix(path)
-    if candidate is not None:
-        return candidate.resolve()
-    rendered = normalize_wsl_posix_path(path)
-    if rendered:
-        maybe_posix = Path(rendered)
-        if maybe_posix.is_absolute():
-            return maybe_posix.resolve()
-    return Path(path).expanduser().resolve()
+    return normalize_repo_root_for_current_host(path)
 
 
 def _add_execute_flags(parser: argparse.ArgumentParser, *, required: bool) -> None:

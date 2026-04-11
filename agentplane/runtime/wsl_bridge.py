@@ -80,6 +80,34 @@ def windows_path_to_wsl_posix(path: Path | str | None) -> str | None:
     return f"/mnt/{drive}/{tail}"
 
 
+def normalize_repo_root_for_current_host(
+    path: Path | str,
+    *,
+    host_platform: HostPlatform | None = None,
+) -> Path:
+    facts = host_platform or detect_host_platform()
+    rendered = str(path)
+    if facts.os_name == "windows" and not facts.is_wsl:
+        if is_windows_path(rendered) or is_wsl_unc_path(rendered):
+            return Path(rendered).expanduser()
+        if rendered.startswith("/"):
+            unc_path = wsl_posix_to_unc(rendered)
+            if unc_path is not None:
+                return Path(unc_path)
+    posix_path = windows_path_to_wsl_posix(path)
+    if posix_path:
+        return Path(posix_path).resolve()
+    candidate = wsl_unc_to_posix(path)
+    if candidate is not None:
+        return candidate.resolve()
+    normalized = normalize_wsl_posix_path(path)
+    if normalized:
+        maybe_posix = Path(normalized)
+        if maybe_posix.is_absolute():
+            return maybe_posix.resolve()
+    return Path(path).expanduser().resolve()
+
+
 def render_host_path(path: Path | str | None) -> str | None:
     if path is None:
         return None

@@ -170,6 +170,8 @@ class BackendRunner:
             env=dict(rendered.env) if rendered.env else None,
             input=rendered.stdin_text,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             capture_output=True,
             check=False,
             timeout=plan.timeout if plan.timeout > 0 else None,
