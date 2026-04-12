@@ -4,7 +4,6 @@ from pathlib import Path
 
 from agentplane.runtime.path_policy import assert_canonical_ref, is_canonical_ref
 from agentplane.runtime.wsl_bridge import (
-    DEFAULT_LEGACY_CONTROL_ROOT,
     is_windows_path,
     resolve_local_workspace,
     wsl_posix_to_unc,
@@ -96,6 +95,8 @@ def resolve_catalog_repo_root(repo_root: Path, *, repo_name: str) -> Path:
     repo_root = Path(repo_root)
     workspace = resolve_local_workspace(repo_root)
     candidates: list[Path] = []
+    control_sibling = Path(workspace.control_root).parent / repo_name
+    candidates.append(control_sibling)
 
     if workspace.linux_backend_root is not None:
         linux_candidate = Path(workspace.linux_backend_root).parent / repo_name
@@ -106,15 +107,11 @@ def resolve_catalog_repo_root(repo_root: Path, *, repo_name: str) -> Path:
         else:
             candidates.append(linux_candidate)
 
-    control_sibling = Path(workspace.control_root).parent / repo_name
-    if control_sibling not in candidates:
-        candidates.append(control_sibling)
-
-    legacy_sibling = DEFAULT_LEGACY_CONTROL_ROOT.parent / repo_name
-    if legacy_sibling not in candidates:
-        candidates.append(legacy_sibling)
-
     for candidate in candidates:
-        if candidate.exists():
+        try:
+            exists = candidate.exists()
+        except OSError:
+            exists = False
+        if exists:
             return candidate.resolve(strict=False)
     return candidates[0].resolve(strict=False) if candidates else (repo_root.parent / repo_name).resolve(strict=False)

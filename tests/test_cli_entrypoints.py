@@ -222,7 +222,7 @@ class CliEntrypointsTests(unittest.TestCase):
 
     def test_required_subcommands_emit_json(self) -> None:
         cases = [
-            ("host", "local", "inspect", "--repo-root", "D:/Projects/AgentPlane"),
+            ("host", "local", "inspect", "--repo-root", "C:/repos/agentplane"),
             ("host", "inventory", "wsl", "--repo-root", str(REPO_ROOT)),
             ("host", "inventory", "prod0-main", "--repo-root", str(REPO_ROOT)),
             ("host", "audit", "wsl", "--repo-root", str(REPO_ROOT)),

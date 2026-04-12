@@ -1,7 +1,7 @@
 [CmdletBinding(PositionalBinding = $false)]
 param(
     [string]$RepoRoot,
-    [string]$WindowsControlRoot = "D:\Projects\AgentPlane",
+    [string]$WindowsControlRoot,
     [string]$UvProjectEnvironment,
     [switch]$PreferRepoRoot,
     [Parameter(Mandatory = $true, ValueFromRemainingArguments = $true)]
@@ -41,8 +41,10 @@ if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
 }
 
 $effectiveRoot = (Resolve-Path $RepoRoot).ProviderPath
+$hasWindowsControlRoot = -not [string]::IsNullOrWhiteSpace($WindowsControlRoot)
 if (
     -not $PreferRepoRoot -and
+    $hasWindowsControlRoot -and
     (Test-Path -LiteralPath $WindowsControlRoot) -and
     (Test-Path -LiteralPath (Join-Path $WindowsControlRoot "pyproject.toml"))
 ) {
@@ -50,11 +52,11 @@ if (
 }
 
 if ([string]::IsNullOrWhiteSpace($UvProjectEnvironment) -and ($IsWindows -or (Test-IsWslUncPath $effectiveRoot))) {
-    $projectEnvironmentRoot = if ([string]::IsNullOrWhiteSpace($WindowsControlRoot)) {
-        $effectiveRoot
+    $projectEnvironmentRoot = if ($hasWindowsControlRoot) {
+        $WindowsControlRoot
     }
     else {
-        $WindowsControlRoot
+        $effectiveRoot
     }
     $UvProjectEnvironment = Resolve-DefaultUvProjectEnvironment -RootPath $projectEnvironmentRoot
 }

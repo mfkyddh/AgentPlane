@@ -278,7 +278,7 @@ def _render_readme_projection(target: str, counts: dict[str, int], latest_operat
         "## 1Panel 对象台帐投影",
         "",
         f"- 生成时间：`{datetime.now(UTC).isoformat()}`",
-        f"- 刷新命令：`uv run python -m agentplane.cli onepanel --env {target} ledger refresh --repo-root /root/work/AgentPlane --write`",
+        f"- 刷新命令：`uv run python -m agentplane.cli onepanel --env {target} ledger refresh --repo-root <repo-root> --write`",
         "",
         "### 对象计数",
         "",

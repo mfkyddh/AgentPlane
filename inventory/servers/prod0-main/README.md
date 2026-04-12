@@ -44,7 +44,7 @@
 ## 1Panel 对象台帐投影
 
 - 生成时间：`2026-04-10T06:39:10.665204+00:00`
-- 刷新命令：`uv run python -m agentplane.cli onepanel --env prod0-main ledger refresh --repo-root /root/work/AgentPlane --write`
+- 刷新命令：`uv run python -m agentplane.cli onepanel --env prod0-main ledger refresh --repo-root <repo-root> --write`
 
 ### 对象计数
 

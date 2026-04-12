@@ -12,11 +12,14 @@ from agentplane.runtime.platform import HostPlatform, LinuxBackend, detect_host_
 from agentplane.runtime.resolution import PATH_POLICY_PAYLOAD, WorkspaceResolver
 from agentplane.runtime.secret_resolver import SecretResolver
 from agentplane.runtime.target_resolver import TargetResolver
-from agentplane.runtime.workspace import WorkspaceContext, resolve_workspace
+from agentplane.runtime.workspace import (
+    WorkspaceContext,
+    _windows_path_to_wsl_posix,
+    _wsl_unc_to_posix,
+    resolve_workspace,
+)
 
 
-DEFAULT_WINDOWS_CONTROL_ROOT = Path("D:/Projects/AgentPlane")
-DEFAULT_LEGACY_CONTROL_ROOT = Path("/root/work/AgentPlane")
 DEFAULT_WSL_DISTRO = "Ubuntu"
 PRIVATE_DIR_NAMES = ("secrets",)
 MIGRATION_EXCLUDES = (".git", ".venv", "tmp", "__pycache__")
@@ -65,19 +68,8 @@ def normalize_wsl_posix_path(path: Path | str | None) -> str | None:
 def windows_path_to_wsl_posix(path: Path | str | None) -> str | None:
     if path is None:
         return None
-    posix = wsl_unc_to_posix(path)
-    if posix is not None:
-        return normalize_wsl_posix_path(posix)
-    rendered = str(path)
-    if rendered.startswith("/"):
-        return normalize_wsl_posix_path(rendered)
-    if not is_windows_path(rendered):
-        return normalize_wsl_posix_path(rendered)
-    drive = rendered[0].lower()
-    tail = rendered[2:].replace("\\", "/").lstrip("/")
-    if not tail:
-        return f"/mnt/{drive}"
-    return f"/mnt/{drive}/{tail}"
+    posix = _windows_path_to_wsl_posix(Path(path))
+    return normalize_wsl_posix_path(posix) if posix is not None else None
 
 
 def normalize_repo_root_for_current_host(
@@ -123,7 +115,7 @@ def _coerce_path(path: Path | str | None) -> Path | None:
     if path is None:
         return None
     resolved = path if isinstance(path, Path) else Path(path)
-    if is_windows_path(resolved) or is_wsl_unc_path(resolved):
+    if is_windows_path(resolved) or is_wsl_unc_path(resolved) or str(path).startswith("/"):
         return resolved
     return resolved.resolve()
 
@@ -131,16 +123,7 @@ def _coerce_path(path: Path | str | None) -> Path | None:
 def wsl_unc_to_posix(path: Path | str | None) -> Path | None:
     if path is None:
         return None
-    rendered = str(path).replace("/", "\\")
-    lowered = rendered.lower()
-    prefixes = ("\\\\wsl.localhost\\", "\\\\wsl$\\")
-    if not any(lowered.startswith(prefix) for prefix in prefixes):
-        return None
-    parts = [part for part in rendered.split("\\") if part]
-    if len(parts) < 3:
-        return None
-    posix_parts = parts[2:]
-    return Path("/") / Path(*posix_parts)
+    return _wsl_unc_to_posix(Path(path))
 
 
 def wsl_posix_to_unc(path: Path | str | None, *, distro: str = DEFAULT_WSL_DISTRO) -> str | None:
@@ -164,11 +147,7 @@ def resolve_local_workspace(
     facts = host_platform or detect_host_platform()
 
     if windows_root is not None:
-        control_root = _coerce_path(windows_root) or DEFAULT_WINDOWS_CONTROL_ROOT
-    elif is_windows_path(repo_path):
-        control_root = repo_path
-    elif facts.os_name == "windows" and not facts.is_wsl:
-        control_root = DEFAULT_WINDOWS_CONTROL_ROOT
+        control_root = _coerce_path(windows_root) or repo_path
     else:
         control_root = repo_path
 
@@ -176,24 +155,26 @@ def resolve_local_workspace(
         resolved_legacy_root = _coerce_path(legacy_control_root)
         if resolved_legacy_root is None:
             resolved_legacy_root = wsl_unc_to_posix(repo_path)
-        if resolved_legacy_root is None and not is_windows_path(repo_path) and str(repo_path).startswith("/"):
-            resolved_legacy_root = repo_path
         if resolved_legacy_root is None:
-            resolved_legacy_root = DEFAULT_LEGACY_CONTROL_ROOT
-        source_root = repo_path if is_windows_path(repo_path) else resolved_legacy_root
+            posix_root = windows_path_to_wsl_posix(control_root)
+            resolved_legacy_root = _coerce_path(posix_root)
+        source_root = repo_path if is_windows_path(repo_path) else (resolved_legacy_root or repo_path)
         return resolve_workspace(
             control_root=control_root,
             legacy_control_root=resolved_legacy_root,
             private_root=control_root / "secrets",
-            linux_backend_root=resolved_legacy_root,
             source_root=source_root,
         )
 
+    resolved_legacy_root = _coerce_path(legacy_control_root)
+    if resolved_legacy_root is None:
+        resolved_legacy_root = wsl_unc_to_posix(control_root)
+    source_root = resolved_legacy_root or repo_path
     return resolve_workspace(
         control_root=control_root,
+        legacy_control_root=resolved_legacy_root,
         private_root=control_root / "secrets",
-        linux_backend_root=control_root,
-        source_root=repo_path,
+        source_root=source_root,
     )
 
 

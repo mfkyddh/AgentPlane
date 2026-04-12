@@ -182,8 +182,9 @@ def _wsl_required_compose_targets(repo_root: Path) -> dict[str, set[str]]:
     }
 
 
-def _audit_wsl_host_state() -> list[dict[str, Any]]:
+def _audit_wsl_host_state(repo_root: Path | None = None) -> list[dict[str, Any]]:
     violations: list[dict[str, Any]] = []
+    resolved_repo_root = (repo_root or Path.cwd()).resolve(strict=False)
     forbidden_paths = (
         Path("/root/.cli-proxy-api"),
         Path("/root/8443-cutover"),
@@ -201,7 +202,7 @@ def _audit_wsl_host_state() -> list[dict[str, Any]]:
             )
 
     expected_symlinks = {
-        Path("/root/.ssh/config"): Path("/root/work/AgentPlane/secrets/ssh/config"),
+        Path("/root/.ssh/config"): resolved_repo_root / "secrets" / "ssh" / "config",
         Path("/root/.openclaw"): Path("/data/openclaw/config/home"),
         Path("/root/.local/share/openclaw-feishu-uat"): Path("/data/openclaw/config/openclaw-feishu-uat"),
     }
@@ -820,7 +821,7 @@ def audit_filesystem(
             path_check_mode = "backend-exec"
             host_violations = _audit_wsl_host_state_via_backend(resolved_root, backend_type=backend_type, runner=runner)
         else:
-            host_violations = _audit_wsl_host_state()
+            host_violations = _audit_wsl_host_state(resolved_root)
         violations = _audit_wsl_templates(resolved_root) + host_violations
     elif target_env == "prod0-main":
         violations = _audit_prod0_inventory(resolved_root)

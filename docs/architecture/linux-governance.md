@@ -3,6 +3,7 @@
 ## 目标
 
 定义本仓库在 Linux/WSL 环境下的统一治理约束，确保自动化可复用、可验证、可审计。
+本页只定义 Linux / WSL backend 约束，不改变宿主入口选择。
 
 ## 治理边界
 
@@ -16,8 +17,9 @@
 
 ## 执行模型
 
-- 默认在当前 WSL shell 中直接执行 Linux 命令，不为普通开发和运维命令再包一层宿主机入口。
-- 如果当前不在 WSL，会先进入 WSL，再执行与仓库文档相同的 Linux 命令示例。
+- 默认采用 `host-entry-first, backend-aware`。
+- Windows 宿主场景固定走 `pwsh -> formal CLI -> WSL/SSH backend`；Linux/macOS 继续使用原生 POSIX shell。
+- 当前已经处于 WSL/Linux 源码根时，源码绑定动作直接在该 backend 内执行，不再重复包一层宿主入口。
 - 只有 WSL 内确实需要 shell 特性时才使用 `sh -lc` / `bash -lc`。
 - 默认以 `root` 在 WSL 本地执行；仅在需要用户态环境或文件归属控制时切换用户。
 - 远端 Linux 生产机默认走 `root` 直连 SSH；只有尚未完成 root 直连准备的目标，才临时走具备 sudo 权限账户。
@@ -68,7 +70,7 @@
 - 模板统一放在 `templates/`。
 - 新 PEM 文件在使用前必须 `chmod 600`。
 - 本地 secrets 初始化统一参考：
-  [bootstrap-secrets.md](/root/work/AgentPlane/docs/runbooks/bootstrap-secrets.md)
+  [bootstrap-secrets.md](../runbooks/bootstrap-secrets.md)
 
 ## 变更与验证基线
 

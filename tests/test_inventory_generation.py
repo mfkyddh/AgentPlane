@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 from agentplane.cli.apps import _render_server_readme
 from agentplane.cli.inventory import generate_inventory_snapshot
-from agentplane.scripts.onepanel.ledger import _markdown_for, _tenant_rows
+from agentplane.scripts.onepanel.ledger import _markdown_for, _render_readme_projection, _tenant_rows
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -95,6 +95,13 @@ class InventoryGenerationTests(unittest.TestCase):
                 content = path.read_text(encoding="utf-8")
                 self.assertIn("机器真源：", content)
                 self.assertIn("README 只保留非敏感摘要", content)
+
+    def test_onepanel_readme_projection_uses_repo_root_placeholder(self) -> None:
+        rendered = _render_readme_projection("prod0-main", {"websites": 1}, {})
+
+        self.assertIn("--repo-root <repo-root> --write", rendered)
+        self.assertNotIn("/root/work/AgentPlane", rendered)
+        self.assertIn("--repo-root <repo-root> --write", (REPO_ROOT / "inventory" / "servers" / "prod0-main" / "README.md").read_text(encoding="utf-8"))
 
     def test_tenant_rows_skip_registry_scaffolding_keys(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

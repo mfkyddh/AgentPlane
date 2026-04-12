@@ -47,12 +47,12 @@ def test_host_profile_maps_wsl_linux_to_linux_native_backend() -> None:
 
 def test_repo_root_normalization_keeps_windows_drive_path_on_windows_host() -> None:
     normalized = normalize_repo_root_for_current_host(
-        "D:/Projects/AgentPlane",
+        "C:/repos/agentplane",
         host_platform=HostPlatform(os_name="windows", has_wsl=True, is_wsl=False),
     )
 
-    assert str(normalized).replace("\\", "/") == "D:/Projects/AgentPlane"
+    assert str(normalized).replace("\\", "/") == "C:/repos/agentplane"
 
 
 def test_windows_path_to_wsl_posix_maps_drive_path_to_mnt_mount() -> None:
-    assert windows_path_to_wsl_posix("D:/Projects/AgentPlane") == "/mnt/d/Projects/AgentPlane"
+    assert windows_path_to_wsl_posix("C:/repos/agentplane") == "/mnt/c/repos/agentplane"

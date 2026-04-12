@@ -354,25 +354,24 @@ uv run python -m agentplane.cli <domain> <surface> <verb> [flags]
 
 ```bash
 uv run python -m agentplane.cli --help
-uv run python -m agentplane.cli host inventory prod0-main --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli host audit wsl --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli host automation search wsl --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli host network audit prod2-main --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli host remote bash prod0-main -- whoami
-uv run python -m agentplane.cli host secrets sync-layout wsl --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli service search --target prod0-main --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli service verify --target prod0-main --name postgres --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli service verify --target prod0-main --name newapi --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli website search --target prod0-main --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli website verify --target prod0-main --alias token --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli website publish plan --target prod0-main --config-file /root/work/AgentPlane/secrets/services/token-public-ingress.env --cloudflare-env-file /root/work/AgentPlane/secrets/env/prod-jump.env --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli app resource search --target prod0-main --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli app resource verify --target prod0-main --app sub2api --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli projection runtime-env plan --target prod0-main --app sub2api --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli projection verification run --target prod0-main --profile prod0-readonly --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli projection fixture plan --target wsl --profile wsl-fixture --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli projection ledger refresh --target prod0-main --repo-root /root/work/AgentPlane --write
-uv run python -m agentplane.cli onepanel --env prod0-main panel get --json
+uv run python -m agentplane.cli host inventory <target> --repo-root <repo-root>
+uv run python -m agentplane.cli host audit <target> --repo-root <repo-root>
+uv run python -m agentplane.cli host automation search <target> --repo-root <repo-root>
+uv run python -m agentplane.cli host network audit <target> --repo-root <repo-root>
+uv run python -m agentplane.cli host remote bash <target> -- whoami
+uv run python -m agentplane.cli host secrets sync-layout <target> --repo-root <repo-root>
+uv run python -m agentplane.cli service search --target <target> --repo-root <repo-root>
+uv run python -m agentplane.cli service verify --target <target> --name <service> --repo-root <repo-root>
+uv run python -m agentplane.cli website search --target <target> --repo-root <repo-root>
+uv run python -m agentplane.cli website verify --target <target> --alias <alias> --repo-root <repo-root>
+uv run python -m agentplane.cli website publish plan --target <target> --config-file <config-file> --cloudflare-env-file <cloudflare-env-file> --repo-root <repo-root>
+uv run python -m agentplane.cli app resource search --target <target> --repo-root <repo-root>
+uv run python -m agentplane.cli app resource verify --target <target> --app <app> --repo-root <repo-root>
+uv run python -m agentplane.cli projection runtime-env plan --target <target> --app <app> --repo-root <repo-root>
+uv run python -m agentplane.cli projection verification run --target <target> --profile <profile> --repo-root <repo-root>
+uv run python -m agentplane.cli projection fixture plan --target <target> --profile <profile> --repo-root <repo-root>
+uv run python -m agentplane.cli projection ledger refresh --target <target> --repo-root <repo-root> --write
+uv run python -m agentplane.cli onepanel --env <target> panel get --json
 ```
 
 说明：
@@ -391,15 +390,15 @@ uv run python -m agentplane.cli onepanel --env prod0-main panel get --json
 目标命令形态示例：
 
 ```bash
-uv run python -m agentplane.cli website verify --target prod0-main --alias token --json
-uv run python -m agentplane.cli website plan --target prod0-main --alias token --operation reconcile --json
-uv run python -m agentplane.cli website publish plan --target prod0-main --config-file /root/work/AgentPlane/secrets/services/token-public-ingress.env --cloudflare-env-file /root/work/AgentPlane/secrets/env/prod-jump.env --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli app object get --target prod0-main --app sub2api --repo-root /root/work/AgentPlane --json
-uv run python -m agentplane.cli app delivery deploy --target prod0-main --app sub2api --repo-root /root/work/AgentPlane --dry-run --json
-uv run python -m agentplane.cli app delivery verify --target prod0-main --app sub2api --repo-root /root/work/AgentPlane --execute --json
-uv run python -m agentplane.cli projection verification run --target prod0-main --profile prod0-readonly --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli projection fixture plan --target wsl --profile wsl-fixture --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli projection ledger refresh --target prod0-main --repo-root /root/work/AgentPlane --write
+uv run python -m agentplane.cli website verify --target <target> --alias <alias> --json
+uv run python -m agentplane.cli website plan --target <target> --alias <alias> --operation reconcile --json
+uv run python -m agentplane.cli website publish plan --target <target> --config-file <config-file> --cloudflare-env-file <cloudflare-env-file> --repo-root <repo-root>
+uv run python -m agentplane.cli app object get --target <target> --app <app> --repo-root <repo-root> --json
+uv run python -m agentplane.cli app delivery deploy --target <target> --app <app> --repo-root <repo-root> --dry-run --json
+uv run python -m agentplane.cli app delivery verify --target <target> --app <app> --repo-root <repo-root> --execute --json
+uv run python -m agentplane.cli projection verification run --target <target> --profile <profile> --repo-root <repo-root>
+uv run python -m agentplane.cli projection fixture plan --target <target> --profile <profile> --repo-root <repo-root>
+uv run python -m agentplane.cli projection ledger refresh --target <target> --repo-root <repo-root> --write
 ```
 
 ## Related Documents

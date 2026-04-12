@@ -173,9 +173,9 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
         catalog_text = CATALOG_FILE.read_text(encoding="utf-8")
 
         self.assertIn("uv run python -m agentplane.cli website search --target <target>", repo_skill_text)
-        self.assertIn("uv run python -m agentplane.cli website get --target <target> --alias token", repo_skill_text)
+        self.assertIn("uv run python -m agentplane.cli website get --target <target> --alias <alias>", repo_skill_text)
         self.assertIn(
-            "uv run python -m agentplane.cli website publish plan --target <target> --config-file <file> --cloudflare-env-file <file>",
+            "uv run python -m agentplane.cli website publish plan --target <target> --config-file <config-file> --cloudflare-env-file <cloudflare-env-file> --repo-root <repo-root>",
             repo_skill_text,
         )
         self.assertIn("uv run python -m agentplane.cli website ...", plugin_skill_text)
@@ -191,10 +191,10 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
         catalog_text = CATALOG_FILE.read_text(encoding="utf-8")
 
         self.assertIn("uv run python -m agentplane.cli service search --target <target>", repo_skill_text)
-        self.assertIn("uv run python -m agentplane.cli service get --target <target> --name newapi", repo_skill_text)
-        self.assertIn("uv run python -m agentplane.cli service verify --target <target> --name newapi", repo_skill_text)
+        self.assertIn("uv run python -m agentplane.cli service get --target <target> --name <service>", repo_skill_text)
+        self.assertIn("uv run python -m agentplane.cli service verify --target <target> --name <service>", repo_skill_text)
         self.assertIn(
-            "uv run python -m agentplane.cli service plan --target <target> --name newapi --operation restart",
+            "uv run python -m agentplane.cli service plan --target <target> --name <service> --operation restart",
             repo_skill_text,
         )
         self.assertIn("uv run python -m agentplane.cli service ...", plugin_skill_text)
@@ -232,6 +232,22 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
                 "--repo-root <repo-root>",
                 "projection verification run --target <target> --profile <profile> --repo-root <repo-root>",
             ),
+            "onepanel-app-ops": (
+                "--repo-root <repo-root>",
+                "app delivery validate-contract --target <target> --app <app> --repo-root <repo-root>",
+            ),
+            "onepanel-container-ops": (
+                "--repo-root <repo-root>",
+                "service apply --target <target> --name <service> --operation restart --execute --repo-root <repo-root>",
+            ),
+            "onepanel-firewall-ops": (
+                "--repo-root <repo-root>",
+                "onepanel --env <target> ledger refresh --repo-root <repo-root> --write --json",
+            ),
+            "onepanel-website-ops": (
+                "--repo-root <repo-root>",
+                "website refresh-ledger --target <target> --repo-root <repo-root> --write",
+            ),
         }
 
         for skill_name, expected_snippets in cases.items():
@@ -259,7 +275,7 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
 
         self.assertIn("uv run python -m agentplane.cli app object search --target <target>", repo_skill_text)
         self.assertIn("uv run python -m agentplane.cli app object get --target <target> --app <app>", repo_skill_text)
-        self.assertIn("uv run python -m agentplane.cli service get --target <target> --name newapi", repo_skill_text)
+        self.assertIn("uv run python -m agentplane.cli service get --target <target> --name <service>", repo_skill_text)
         self.assertIn(
             "uv run python -m agentplane.cli app delivery validate-contract --target <target> --app <app>",
             repo_skill_text,

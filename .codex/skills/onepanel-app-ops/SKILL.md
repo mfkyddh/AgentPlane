@@ -12,13 +12,13 @@ Use `app` for catalog/object truth, `service` for runtime restart/reconcile, and
 ## Commands
 
 ```bash
-uv run python -m agentplane.cli app object search --target <target> --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli app object get --target <target> --app <app> --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli app object verify --target <target> --app <app> --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli service get --target <target> --name newapi --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli service plan --target <target> --name newapi --operation restart --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli service apply --target <target> --name newapi --operation restart --execute --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli app delivery validate-contract --target <target> --app <app> --repo-root /root/work/AgentPlane
+uv run python -m agentplane.cli app object search --target <target> --repo-root <repo-root>
+uv run python -m agentplane.cli app object get --target <target> --app <app> --repo-root <repo-root>
+uv run python -m agentplane.cli app object verify --target <target> --app <app> --repo-root <repo-root>
+uv run python -m agentplane.cli service get --target <target> --name <service> --repo-root <repo-root>
+uv run python -m agentplane.cli service plan --target <target> --name <service> --operation restart --repo-root <repo-root>
+uv run python -m agentplane.cli service apply --target <target> --name <service> --operation restart --execute --repo-root <repo-root>
+uv run python -m agentplane.cli app delivery validate-contract --target <target> --app <app> --repo-root <repo-root>
 ```
 
 ## Rules

@@ -30,9 +30,9 @@
 ## 最小命令闭环（示例）
 
 ```bash
-uv run python -m agentplane.cli host automation search wsl --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli projection verification run --target prod0-main --profile prod0-readonly --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli projection ledger refresh --target prod0-main --repo-root /root/work/AgentPlane --write
+uv run python -m agentplane.cli host automation search <target> --repo-root <repo-root>
+uv run python -m agentplane.cli projection verification run --target <target> --profile <profile> --repo-root <repo-root>
+uv run python -m agentplane.cli projection ledger refresh --target <target> --repo-root <repo-root> --write
 ```
 
 ## 引用规则

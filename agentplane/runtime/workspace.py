@@ -41,6 +41,32 @@ def _looks_like_unc_path(path: Path) -> bool:
     return lowered.startswith("\\\\wsl.localhost\\") or lowered.startswith("\\\\wsl$\\")
 
 
+def _wsl_unc_to_posix(path: Path) -> Path | None:
+    rendered = str(path).replace("/", "\\")
+    lowered = rendered.lower()
+    prefixes = ("\\\\wsl.localhost\\", "\\\\wsl$\\")
+    if not any(lowered.startswith(prefix) for prefix in prefixes):
+        return None
+    parts = [part for part in rendered.split("\\") if part]
+    if len(parts) < 3:
+        return None
+    return Path("/") / Path(*parts[2:])
+
+
+def _windows_path_to_wsl_posix(path: Path) -> Path | None:
+    unc_posix = _wsl_unc_to_posix(path)
+    if unc_posix is not None:
+        return unc_posix
+    rendered = str(path)
+    if rendered.startswith("/"):
+        return Path(rendered)
+    if not _looks_like_windows_root(path):
+        return None
+    drive = rendered[0].lower()
+    tail = rendered[2:].replace("\\", "/").lstrip("/")
+    return Path(f"/mnt/{drive}/{tail}") if tail else Path(f"/mnt/{drive}")
+
+
 def _materialize_path(value: Path | str) -> Path:
     path = _as_path(value)
     if path is None:
@@ -87,7 +113,9 @@ def resolve_workspace(
     elif resolved_legacy_control_root is not None:
         resolved_linux_backend_root = resolved_legacy_control_root
     elif _looks_like_windows_root(resolved_control_root):
-        resolved_linux_backend_root = None
+        resolved_linux_backend_root = _windows_path_to_wsl_posix(resolved_control_root)
+    elif _looks_like_unc_path(resolved_control_root):
+        resolved_linux_backend_root = _wsl_unc_to_posix(resolved_control_root)
     else:
         resolved_linux_backend_root = resolved_control_root
     return WorkspaceContext(
@@ -105,6 +133,5 @@ def resolve_workspace_from_repo(repo_root: Path | str) -> WorkspaceContext:
     return resolve_workspace(
         control_root=control_root,
         private_root=control_root / "secrets",
-        linux_backend_root=control_root,
         source_root=resolved_repo_root,
     )

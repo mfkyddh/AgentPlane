@@ -1,13 +1,13 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..\..")
-$windowsControlRoot = "D:\Projects\AgentPlane"
-$windowsUvHelper = Resolve-Path (Join-Path $PSScriptRoot "..\lib\invoke-agentplane-windows-uv.ps1")
-$formalCli = "pwsh -NoProfile -ExecutionPolicy Bypass -File $windowsUvHelper python -m agentplane.cli host local inspect --repo-root D:\Projects\AgentPlane"
-$uvProjectEnvironment = Join-Path $env:LOCALAPPDATA "AgentPlane\uv\AgentPlane"
+$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).ProviderPath
+$windowsControlRoot = $repoRoot
+$windowsUvHelper = (Resolve-Path (Join-Path $PSScriptRoot "..\lib\invoke-agentplane-windows-uv.ps1")).ProviderPath
+$formalCli = "pwsh -NoProfile -ExecutionPolicy Bypass -File $windowsUvHelper -RepoRoot $repoRoot -PreferRepoRoot python -m agentplane.cli host local inspect --repo-root $repoRoot"
+$uvProjectEnvironment = Join-Path $env:LOCALAPPDATA "AgentPlane\uv\$(Split-Path -Leaf $repoRoot)"
 $wsl = Get-Command wsl.exe -ErrorAction Stop
-$backendProbe = & $wsl.Source -e bash -lc "if [ -d /root/work/AgentPlane ]; then printf '/root/work/AgentPlane'; else pwd; fi"
+$backendProbe = & $wsl.Source -e pwd
 if ($LASTEXITCODE -ne 0) {
     throw "WSL backend probe failed."
 }

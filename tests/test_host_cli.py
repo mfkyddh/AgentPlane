@@ -146,7 +146,7 @@ class HostCliTests(unittest.TestCase):
         self.assertEqual(fake_snapshot, payload["payload"])
 
     def test_host_local_inspect_wraps_payload(self) -> None:
-        result = run_cli("host", "local", "inspect", "--repo-root", "D:/Projects/AgentPlane")
+        result = run_cli("host", "local", "inspect", "--repo-root", "C:/repos/agentplane")
         self.assertEqual(result.returncode, 0, msg=result.stderr)
         payload = json.loads(result.stdout)
         self.assertEqual({"command", "action", "target", "payload"}, set(payload))

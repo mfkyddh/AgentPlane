@@ -7,9 +7,19 @@ ACTIVE_TEMPLATE_DOCS = (
     REPO_ROOT / "README.md",
     REPO_ROOT / "AGENTS.md",
     REPO_ROOT / "docs" / "architecture" / "README.md",
+    REPO_ROOT / "docs" / "architecture" / "control-plane.md",
+    REPO_ROOT / "docs" / "architecture" / "agentplane-app-collaboration.md",
+    REPO_ROOT / "docs" / "architecture" / "linux-governance.md",
+    REPO_ROOT / "docs" / "architecture" / "automation-stack.md",
     REPO_ROOT / "docs" / "reference" / "app-repository-standard.md",
     REPO_ROOT / "docs" / "runbooks" / "control-plane-domain-onboarding.md",
     REPO_ROOT / "docs" / "runbooks" / "control-plane-agent-execution-flow.md",
+)
+ACTIVE_TEMPLATE_SKILLS = (
+    REPO_ROOT / ".codex" / "skills" / "onepanel-app-ops" / "SKILL.md",
+    REPO_ROOT / ".codex" / "skills" / "onepanel-container-ops" / "SKILL.md",
+    REPO_ROOT / ".codex" / "skills" / "onepanel-firewall-ops" / "SKILL.md",
+    REPO_ROOT / ".codex" / "skills" / "onepanel-website-ops" / "SKILL.md",
 )
 README_CORE_CONTRACT_LINKS = (
     "[control-plane.md](docs/architecture/control-plane.md)",
@@ -36,9 +46,14 @@ def collect_active_docs() -> str:
     return "\n".join(path.read_text(encoding="utf-8") for path in ACTIVE_TEMPLATE_DOCS)
 
 
+def collect_active_template_surface() -> str:
+    files = (*ACTIVE_TEMPLATE_DOCS, *ACTIVE_TEMPLATE_SKILLS)
+    return "\n".join(path.read_text(encoding="utf-8") for path in files)
+
+
 class DocsNoLegacyTermsTests(unittest.TestCase):
     def test_template_docs_do_not_reintroduce_author_site_defaults(self) -> None:
-        text = collect_active_docs()
+        text = collect_active_template_surface()
         for forbidden in FORBIDDEN_TEMPLATE_DEFAULTS:
             with self.subTest(forbidden=forbidden):
                 self.assertNotIn(forbidden, text)
@@ -130,6 +145,46 @@ class DocsNoLegacyTermsTests(unittest.TestCase):
         self.assertIn("plan -> apply -> verify -> ledger -> inventory -> doc-sync", flow_text)
         self.assertIn("`pwsh`", flow_text)
         self.assertNotIn("确认当前在 WSL 环境执行", flow_text)
+
+    def test_core_contract_docs_use_template_placeholders(self) -> None:
+        control_plane = (REPO_ROOT / "docs" / "architecture" / "control-plane.md").read_text(
+            encoding="utf-8"
+        )
+        collaboration = (
+            REPO_ROOT / "docs" / "architecture" / "agentplane-app-collaboration.md"
+        ).read_text(encoding="utf-8")
+        governance = (REPO_ROOT / "docs" / "architecture" / "linux-governance.md").read_text(
+            encoding="utf-8"
+        )
+        automation = (REPO_ROOT / "docs" / "architecture" / "automation-stack.md").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("host inventory <target> --repo-root <repo-root>", control_plane)
+        self.assertIn("service search --target <target> --repo-root <repo-root>", control_plane)
+        self.assertIn(
+            "website publish plan --target <target> --config-file <config-file> --cloudflare-env-file <cloudflare-env-file> --repo-root <repo-root>",
+            control_plane,
+        )
+        self.assertIn(
+            "app delivery validate-contract --target <target> --app <app> --repo-root <repo-root>",
+            collaboration,
+        )
+        self.assertIn(
+            "app delivery deploy --target <target> --app <app> --repo-root <repo-root> --image-ref <image:tag> --dry-run",
+            collaboration,
+        )
+        self.assertIn("本页只定义 Linux / WSL backend 约束，不改变宿主入口选择。", governance)
+        self.assertIn("[bootstrap-secrets.md](../runbooks/bootstrap-secrets.md)", governance)
+        self.assertIn("host automation search <target> --repo-root <repo-root>", automation)
+        self.assertIn(
+            "projection verification run --target <target> --profile <profile> --repo-root <repo-root>",
+            automation,
+        )
+        self.assertIn(
+            "projection ledger refresh --target <target> --repo-root <repo-root> --write",
+            automation,
+        )
 
 
 if __name__ == "__main__":

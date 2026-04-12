@@ -6,6 +6,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 CORE_TEMPLATE_ENTRY_DOCS = (
     REPO_ROOT / "README.md",
     REPO_ROOT / "AGENTS.md",
+    REPO_ROOT / "docs" / "architecture" / "linux-governance.md",
     REPO_ROOT / "docs" / "reference" / "app-repository-standard.md",
     REPO_ROOT / "docs" / "runbooks" / "control-plane-agent-execution-flow.md",
 )
@@ -37,6 +38,17 @@ class WslFirstDocsTests(unittest.TestCase):
             "Control plane location determines the entry host; source location determines the local execution host.",
             text,
         )
+
+    def test_linux_governance_declares_backend_role_not_wsl_first_entry(self) -> None:
+        text = (REPO_ROOT / "docs" / "architecture" / "linux-governance.md").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("本页只定义 Linux / WSL backend 约束，不改变宿主入口选择。", text)
+        self.assertIn("host-entry-first, backend-aware", text)
+        self.assertIn("`pwsh -> formal CLI -> WSL/SSH backend`", text)
+        self.assertNotIn("默认在当前 WSL shell 中直接执行 Linux 命令", text)
+        self.assertNotIn("如果当前不在 WSL，会先进入 WSL", text)
 
     def test_readme_and_flow_promote_backend_split_instead_of_wsl_first(self) -> None:
         readme_text = (REPO_ROOT / "README.md").read_text(encoding="utf-8")

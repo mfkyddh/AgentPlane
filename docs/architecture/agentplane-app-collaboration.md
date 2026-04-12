@@ -298,17 +298,17 @@ Docker 类应用的推荐正式路径：
 所有正式动作都从 AgentPlane 执行，公开稳定输入统一是 `target + app`：
 
 ```bash
-uv run python -m agentplane.cli app object search --target prod0-main --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli app object get --target prod0-main --app sub2api --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli app delivery validate-contract --target prod0-main --app sub2api --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli app delivery build-artifact --target prod0-main --app sub2api --repo-root /root/work/AgentPlane --image-tag <tag>
-uv run python -m agentplane.cli app delivery ship-image --target prod0-main --app sub2api --repo-root /root/work/AgentPlane --image-ref <image:tag>
-uv run python -m agentplane.cli app delivery render-runtime --target prod0-main --app sub2api --repo-root /root/work/AgentPlane --image-ref <image:tag>
-uv run python -m agentplane.cli app delivery deploy --target prod0-main --app sub2api --repo-root /root/work/AgentPlane --image-ref <image:tag> --dry-run
-uv run python -m agentplane.cli app delivery deploy --target prod0-main --app sub2api --repo-root /root/work/AgentPlane --image-ref <image:tag> --execute
-uv run python -m agentplane.cli app delivery verify --target prod0-main --app sub2api --repo-root /root/work/AgentPlane --execute
-uv run python -m agentplane.cli app delivery inventory-refresh --target prod0-main --app sub2api --repo-root /root/work/AgentPlane --write
-uv run python -m agentplane.cli app delivery doc-sync --target prod0-main --app sub2api --repo-root /root/work/AgentPlane --write
+uv run python -m agentplane.cli app object search --target <target> --repo-root <repo-root>
+uv run python -m agentplane.cli app object get --target <target> --app <app> --repo-root <repo-root>
+uv run python -m agentplane.cli app delivery validate-contract --target <target> --app <app> --repo-root <repo-root>
+uv run python -m agentplane.cli app delivery build-artifact --target <target> --app <app> --repo-root <repo-root> --image-tag <tag>
+uv run python -m agentplane.cli app delivery ship-image --target <target> --app <app> --repo-root <repo-root> --image-ref <image:tag>
+uv run python -m agentplane.cli app delivery render-runtime --target <target> --app <app> --repo-root <repo-root> --image-ref <image:tag>
+uv run python -m agentplane.cli app delivery deploy --target <target> --app <app> --repo-root <repo-root> --image-ref <image:tag> --dry-run
+uv run python -m agentplane.cli app delivery deploy --target <target> --app <app> --repo-root <repo-root> --image-ref <image:tag> --execute
+uv run python -m agentplane.cli app delivery verify --target <target> --app <app> --repo-root <repo-root> --execute
+uv run python -m agentplane.cli app delivery inventory-refresh --target <target> --app <app> --repo-root <repo-root> --write
+uv run python -m agentplane.cli app delivery doc-sync --target <target> --app <app> --repo-root <repo-root> --write
 ```
 
 ## 10. 1Panel 与网站入口规则

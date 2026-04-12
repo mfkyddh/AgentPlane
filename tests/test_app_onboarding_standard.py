@@ -127,10 +127,14 @@ class AppOnboardingStandardTests(unittest.TestCase):
         )
 
         self.assertIn("wsl.exe", windows_setup)
-        self.assertIn("D:\\Projects\\AgentPlane", windows_setup)
         self.assertIn("host local inspect", windows_setup)
         self.assertIn("invoke-agentplane-windows-uv.ps1", windows_setup)
         self.assertIn("UV_PROJECT_ENVIRONMENT", windows_setup)
+        self.assertIn("-RepoRoot $repoRoot", windows_setup)
+        self.assertIn("--repo-root $repoRoot", windows_setup)
+        self.assertIn("-PreferRepoRoot", windows_setup)
+        self.assertNotIn("D:\\Projects\\AgentPlane", windows_setup)
+        self.assertNotIn("/root/work/AgentPlane", windows_setup)
         self.assertIn("setup.windows.ps1", setup_sh)
         self.assertIn("Windows_NT", setup_sh)
         self.assertIn("host local inspect", linux_setup)
@@ -143,9 +147,9 @@ class AppOnboardingStandardTests(unittest.TestCase):
         self.assertIn("UV_PROJECT_ENVIRONMENT", wrapper)
         self.assertIn("LOCALAPPDATA", wrapper)
         self.assertIn("\\\\wsl.localhost\\", wrapper)
-        self.assertIn("D:\\Projects\\AgentPlane", wrapper)
         self.assertIn("Set-StrictMode -Version Latest", wrapper)
         self.assertIn('& $uv.Source "run" @UvArgs', wrapper)
+        self.assertNotIn("D:\\Projects\\AgentPlane", wrapper)
 
     def test_windows_uv_wrapper_executes_host_local_inspect_from_unc_repo(self) -> None:
         script = r"\\wsl.localhost\Ubuntu\root\work\AgentPlane\.codex\environments\lib\invoke-agentplane-windows-uv.ps1"
@@ -176,6 +180,8 @@ class AppOnboardingStandardTests(unittest.TestCase):
         payload = json.loads(result.stdout)
         self.assertEqual("local.inspect", payload["action"])
         self.assertEqual("wsl-linux", payload["payload"]["linux_backend"]["backend_type"])
+        self.assertTrue(payload["payload"]["control_root"])
+        self.assertTrue(payload["payload"]["linux_backend_root"].startswith("/"))
 
     def test_windows_host_plan_hardens_unc_commands_for_future_tasks(self) -> None:
         plan = (
