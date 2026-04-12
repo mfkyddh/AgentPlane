@@ -2,7 +2,7 @@
 
 ## 目的
 
-本文定义新控制面领域接入 `AgentPlane` 的正式流程，确保新增领域不会绕开统一 CLI、skill、runbook、inventory 与测试合同。
+本文定义新控制面领域接入 Agent-first 模板仓库的正式流程，确保新增领域不会绕开统一 CLI、skill、runbook、inventory 与测试合同。
 
 ## 适用范围
 
@@ -10,12 +10,14 @@
 
 - 新的基础设施服务
 - 新的网站入口治理域
-- 新的租户资源域
+- 新的应用资源域
 - 新的应用交付子域
 
-## 正式入口
+## 开场规则
 
-新增领域必须以 `uv run python -m agentplane.cli ...` 为正式入口。
+- 先跑 `uv run python -m agentplane.cli bootstrap inspect-local --repo-root <repo-root>`，确认当前 control root、workspace binding 与 backend 绑定。
+- 如果是 fresh fork，再补 `bootstrap verify-secrets` 或 `bootstrap doctor`，确认 humans 只需要填 `secrets` 与少量 `identity`。
+- 领域设计只写 formal CLI、skill、runbook 与测试合同，不写第二控制面脚本。
 
 ## 接入顺序
 
@@ -29,6 +31,7 @@
 - 面向 Agent 的 `task-entry` 是什么
 - 哪些动作属于对象域
 - 哪些动作属于工作流域
+- 哪些差异必须留在 `resolver / backend` 层
 
 ### 2. 定义 CLI 合同
 
@@ -37,7 +40,7 @@
 至少明确：
 
 - 命令路径
-- 输入参数
+- 输入参数与 `<repo-root>` / `<target>` / `<app>` 占位符
 - 输出 envelope
 - 计划阶段
 - 验证阶段
@@ -51,7 +54,7 @@
 - 该域 skill 的触发条件
 - 标准命令
 - 最小验证
-- `inventory/ledger` 对齐要求
+- `inventory / ledger` 对齐要求
 - 下钻 runbook
 
 ### 4. 定义 runbook
@@ -97,8 +100,8 @@
 
 ```bash
 uv run python -m agentplane.cli --help
-uv run python -m agentplane.cli onepanel --env wsl --help
-uv run python -m agentplane.cli host inventory wsl --repo-root /root/work/AgentPlane
+uv run python -m agentplane.cli bootstrap inspect-local --repo-root <repo-root>
+uv run python -m agentplane.cli host inventory <target> --repo-root <repo-root>
 ```
 
 ## 禁止事项

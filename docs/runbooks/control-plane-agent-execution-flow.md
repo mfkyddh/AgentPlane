@@ -2,52 +2,60 @@
 
 ## 目的
 
-本文定义 Agent 在 `AgentPlane` 仓库中的正式执行顺序，确保正式命令面、验证、ledger 回写与文档对齐形成稳定流程。
+本文定义 Agent 在 Agent-first 控制面模板仓库中的正式执行顺序，确保正式命令面、验证、ledger 回写与文档对齐形成稳定闭环。
 
 ## 适用范围
 
 - 主机治理
-- 1Panel provider/debug 对象核对
+- provider/debug 对象核对
 - 运行服务操作
 - 公网入口发布
 - 应用交付
-- 租户验证
-- projection 验证 / fixture / ledger 刷新
+- 应用资源与 projection 验证
 
-## Automation / Projection 职责真源
+## 真源与平台分工
 
-`automation` 与 `projection` 的职责边界只在 [automation-stack.md](../architecture/automation-stack.md) 定义。
-本文只描述执行顺序中的调用点，不重复定义职责所有权。
+- 真源模型固定为 `Git tracked truth + local secrets`。
+- 人类输入面只剩 `secrets` 和少量 `identity`。
+- Windows / Linux / macOS 只在 `resolver / backend` 层分叉。
+- 正式闭环固定为 `plan -> apply -> verify -> ledger -> inventory -> doc-sync`。
 
 ## 正式入口
 
-所有正式操作都从 `uv run python -m agentplane.cli ...` 进入。`onepanel` 公开面只剩 `panel`、`firewall`、`cronjob`、`task`。`service` 只面向 inventory 中已声明的 tracked runtime service，不接受 raw 1Panel install id / project id / container id。`website` 当前默认入口已经开放到 `uv run python -m agentplane.cli website ...`；`website publish` 是 Cloudflare + 1Panel 公网入口的正式任务入口，不公开 raw onepanel / cloudflare 参数。运行服务、公网入口发布、fixture、verification、ledger 已分别归入 `service`、`website`、`projection`。
+- 所有正式操作都从 `uv run python -m agentplane.cli ...` 进入。
+- Windows 主机以 `pwsh` 为入口；Linux / macOS 继续使用原生 shell。
+- `onepanel` 公开面只剩 `panel`、`firewall`、`cronjob`、`task`。
+- `service`、`website`、`app`、`projection` 是对外默认 domain；不要把 provider/debug helper 当默认入口。
 
 ## 标准执行顺序
 
-### 1. 前置检查
+### 1. 入口检查
 
-1. 确认当前在 WSL 环境执行。
-2. 确认 `whoami`、`$HOME`、仓库根目录。
-3. 确认目标 `target` 或 `env`。
-4. 明确这是只读动作还是写动作。
+先确认当前模板仓库已经具备可执行上下文：
+
+```bash
+uv run python -m agentplane.cli bootstrap inspect-local --repo-root <repo-root>
+uv run python -m agentplane.cli bootstrap doctor --repo-root <repo-root>
+```
+
+如果是在 Windows 宿主执行，正式入口仍然是 `pwsh`，只是后续 source-bound 或 remote 动作会落到对应 backend。
 
 ### 2. 命令发现
 
 优先顺序：
 
 1. `uv run python -m agentplane.cli --help`
-2. 对应 domain/object 的 `--help`
-3. 对应 architecture / runbook
+2. 对应 domain / object 的 `--help`
+3. 对应 architecture / runbook / skill
 
 ### 3. 计划阶段
 
 对副作用动作，优先运行计划或 dry-run：
 
 ```bash
-uv run python -m agentplane.cli service plan --target prod0-main --name newapi --operation reconcile --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli website publish plan --target prod0-main --config-file /root/work/AgentPlane/secrets/services/token-public-ingress.env --cloudflare-env-file /root/work/AgentPlane/secrets/env/prod-jump.env --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli app delivery deploy --target prod0-main --app sub2api --repo-root /root/work/AgentPlane --dry-run
+uv run python -m agentplane.cli service plan --target <target> --name <service> --operation reconcile --repo-root <repo-root>
+uv run python -m agentplane.cli website publish plan --target <target> --config-file <file> --cloudflare-env-file <file> --repo-root <repo-root>
+uv run python -m agentplane.cli app delivery deploy --target <target> --app <app> --repo-root <repo-root> --dry-run
 ```
 
 ### 4. 执行阶段
@@ -55,30 +63,30 @@ uv run python -m agentplane.cli app delivery deploy --target prod0-main --app su
 只有在前置检查与计划阶段通过后，才进入正式执行：
 
 ```bash
-uv run python -m agentplane.cli service apply --target prod0-main --name newapi --operation reconcile --repo-root /root/work/AgentPlane --execute
-uv run python -m agentplane.cli website publish apply --target prod0-main --config-file /root/work/AgentPlane/secrets/services/token-public-ingress.env --cloudflare-env-file /root/work/AgentPlane/secrets/env/prod-jump.env --repo-root /root/work/AgentPlane --execute
-uv run python -m agentplane.cli app delivery deploy --target prod0-main --app sub2api --repo-root /root/work/AgentPlane --execute
+uv run python -m agentplane.cli service apply --target <target> --name <service> --operation reconcile --repo-root <repo-root> --execute
+uv run python -m agentplane.cli website publish apply --target <target> --config-file <file> --cloudflare-env-file <file> --repo-root <repo-root> --execute
+uv run python -m agentplane.cli app delivery deploy --target <target> --app <app> --repo-root <repo-root> --execute
 ```
 
 ### 5. 验证阶段
 
-执行后必须验证 `live state`：
+执行后必须验证 live state：
 
 ```bash
-uv run python -m agentplane.cli service verify --target prod0-main --name newapi --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli website publish verify --target prod0-main --config-file /root/work/AgentPlane/secrets/services/token-public-ingress.env --cloudflare-env-file /root/work/AgentPlane/secrets/env/prod-jump.env --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli app delivery verify --target prod0-main --app sub2api --repo-root /root/work/AgentPlane --execute
-uv run python -m agentplane.cli projection verification run --target prod0-main --profile prod0-readonly --repo-root /root/work/AgentPlane
+uv run python -m agentplane.cli service verify --target <target> --name <service> --repo-root <repo-root>
+uv run python -m agentplane.cli website publish verify --target <target> --config-file <file> --cloudflare-env-file <file> --repo-root <repo-root>
+uv run python -m agentplane.cli app delivery verify --target <target> --app <app> --repo-root <repo-root> --execute
+uv run python -m agentplane.cli projection verification run --target <target> --profile <profile> --repo-root <repo-root>
 ```
 
-### 6. Ledger / Inventory 回写
+### 6. 回写阶段
 
-当动作影响正式状态或正式摘要时，继续回写。职责归属与边界解释统一见 [automation-stack.md](../architecture/automation-stack.md)：
+当动作影响正式状态或摘要时，继续回写：
 
 ```bash
-uv run python -m agentplane.cli projection ledger refresh --target prod0-main --repo-root /root/work/AgentPlane --write
-uv run python -m agentplane.cli app delivery inventory-refresh --target prod0-main --app sub2api --repo-root /root/work/AgentPlane --write
-uv run python -m agentplane.cli app delivery doc-sync --target prod0-main --app sub2api --repo-root /root/work/AgentPlane --write
+uv run python -m agentplane.cli projection ledger refresh --target <target> --repo-root <repo-root> --write
+uv run python -m agentplane.cli app delivery inventory-refresh --target <target> --app <app> --repo-root <repo-root> --write
+uv run python -m agentplane.cli app delivery doc-sync --target <target> --app <app> --repo-root <repo-root> --write
 ```
 
 ## 人工接力点
@@ -98,7 +106,7 @@ Agent 在结束时应至少明确：
 
 - 执行了什么正式命令
 - 哪些验证通过或失败
-- 是否刷新了 `ledger`
+- 是否刷新了 `ledger` / `inventory` / `doc-sync`
 - 是否需要补充人工 follow-up
 
 ## 禁止事项
@@ -106,7 +114,7 @@ Agent 在结束时应至少明确：
 1. 不要跳过计划阶段直接进入写操作。
 2. 不要把文档说明当成现场验证结果。
 3. 不要执行后不做验证。
-4. 不要刷新 `ledger` 但不核对其内容是否与现场一致。
+4. 不要把 OS 差异重新抬回 truth、runbook 或 skill 层。
 
 ## 关联文档
 
@@ -114,4 +122,3 @@ Agent 在结束时应至少明确：
 - [control-plane.md](../architecture/control-plane.md#cli-contract)
 - [onepanel-cli-validation-workflow.md](onepanel-cli-validation-workflow.md)
 - [app-project-delivery-workflow.md](app-project-delivery-workflow.md)
-- [automation-stack.md](../architecture/automation-stack.md)

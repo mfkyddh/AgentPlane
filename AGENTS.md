@@ -2,14 +2,14 @@
 
 ## Scope
 
-- These rules apply to the AgentPlane control roots, with `D:\Projects\AgentPlane` as the formal Windows host entry and `/root/work/AgentPlane` retained as the WSL/Linux backend path during migration.
+- This repository is an Agent-first control plane template repository.
 - Default to Chinese when replying to the repository owner unless explicitly requested otherwise.
 - Keep root `AGENTS.md` short and durable; place operational details in `docs/` runbooks and reference docs.
 - Child `AGENTS.md` files override this file when they are closer to the working directory.
 
 ## Repo Map
 
-- `README.md`: repository entry, common commands, active navigation.
+- `README.md`: repository entry, bootstrap path, active navigation.
 - `docs/architecture/`: long-term control-plane contracts.
 - `docs/runbooks/`: active operating procedures.
 - `docs/reference/`: stable lookup docs such as app repo standards, versioning, naming, and compat ledgers.
@@ -46,22 +46,18 @@
 - On Linux/macOS, continue using the native POSIX shell for local execution.
 - Desktop-browser validation is the main companion exception; use the host browser when a real GUI browser is required.
 - Control plane location determines the entry host; source location determines the local execution host.
-- Use `root` by default; switch user only when user-scoped environment or ownership constraints require it.
-- Verify `whoami`, `$HOME`, and repository root before installing tools or writing runtime files.
 - Real secrets stay in `secrets/`; tracked examples stay in `templates/`.
-- Use project SSH aliases in `secrets/ssh/config`: `prod0-main`, `prod2-main`.
+- Template bootstrap truth lives under `secrets/local/control-plane/` and `secrets/targets/<target>/`.
+- Use target SSH aliases from `secrets/ssh/config`; avoid hard-coding environment-specific aliases in shared docs.
 - New PEM files must be `chmod 600` before use.
-- Keep repository ownership aligned with the working Linux user.
 - Configure `user.name` and `user.email` before commit if absent.
-- If Git reports dubious ownership, fix ownership first and add `safe.directory` only when necessary.
 - Avoid parallel writes to Git config files.
 - For AgentPlane-managed application repositories, default Git worktrees must live under `<repo>/.worktrees/`.
 - Before creating a project-local worktree, the application repository `.gitignore` must ignore `.worktrees/`; do not default to `~/.config/superpowers/worktrees/...` unless the repository explicitly documents an override.
 - Service assets live under `infra/compose/<service>/`; local runtime secrets under `secrets/services/`; templates under `templates/services/`.
-- Repository-managed compose services keep both `docker-compose.wsl.yml` and `docker-compose.prod0.yml`.
-- Container naming rule: WSL test containers end with `-dev`; production containers end with `-prod`.
-- In production, project-managed containers and 1Panel app containers must attach to `zqf_network`; dedicated networks can only be additive.
-- Exception: `openresty`-related 1Panel containers must use Docker `host` networking.
+- Repository-managed compose services may keep `docker-compose.wsl.yml` and `docker-compose.<target>.yml` when backend-specific variants are required.
+- Container naming rule: test containers end with `-dev`; production containers end with `-prod`.
+- In production, project-managed containers and 1Panel app containers should attach to the intended shared network declared by tracked truth; dedicated networks can only be additive.
 - Persistent host data should prefer `/data/<service>/...`.
 - Complex or behavior-changing work should be planned before implementation.
 
@@ -69,8 +65,6 @@
 
 - Run the smallest relevant verification after each change.
 - Prefer live state checks such as `docker ps`, `docker inspect`, direct file reads, and CLI verify commands over stale docs.
-- For Cloudflare-fronted services, benchmark loopback/direct IP paths before proxy or fake-IP/TUN paths.
-- For IPv6 verification, confirm both IPv4/IPv6 `listen` directives and validate with forced IPv6 requests.
 - When work changes docs, skills, or repo-owned Codex configuration, run the matching doc or contract tests.
 - If something cannot be verified, state exactly what was not verified and why.
 

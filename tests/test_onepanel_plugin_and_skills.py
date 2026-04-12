@@ -210,6 +210,46 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
         self.assertIn("uv run python -m agentplane.cli host ...", plugin_skill_text)
         self.assertNotIn("uv run python -m agentplane.cli ...`", plugin_skill_text)
 
+    def test_template_surface_skills_use_repo_root_placeholders(self) -> None:
+        cases = {
+            "host-ops": (
+                "--repo-root <repo-root>",
+                "host automation get <target> --name <automation-name>",
+            ),
+            "app-delivery-ops": (
+                "--repo-root <repo-root>",
+                "app delivery deploy --target <target> --app <app> --repo-root <repo-root> --dry-run",
+            ),
+            "app-resource-ops": (
+                "--repo-root <repo-root>",
+                "app resource refresh-ledger --target <target> --repo-root <repo-root> --write",
+            ),
+            "inventory-ledger-ops": (
+                "--repo-root <repo-root>",
+                "app delivery doc-sync --target <target> --app <app> --repo-root <repo-root> --write",
+            ),
+            "projection-ops": (
+                "--repo-root <repo-root>",
+                "projection verification run --target <target> --profile <profile> --repo-root <repo-root>",
+            ),
+        }
+
+        for skill_name, expected_snippets in cases.items():
+            text = (REPO_ROOT / ".codex" / "skills" / skill_name / "SKILL.md").read_text(encoding="utf-8")
+            with self.subTest(skill=skill_name):
+                self.assertNotIn("/root/work/AgentPlane", text)
+                self.assertNotIn("ops.cli", text)
+                for snippet in expected_snippets:
+                    self.assertIn(snippet, text)
+
+    def test_host_skill_drops_author_site_specific_automation_names(self) -> None:
+        text = (REPO_ROOT / ".codex" / "skills" / "host-ops" / "SKILL.md").read_text(encoding="utf-8")
+
+        self.assertIn("host automation search <target> --repo-root <repo-root>", text)
+        self.assertIn("host automation verify <target> --name <automation-name> --repo-root <repo-root>", text)
+        self.assertNotIn("wsl-agentplane-secrets-backup", text)
+        self.assertNotIn("wsl-zzz-skills-sync", text)
+
     def test_app_skill_routes_catalog_to_app_and_runtime_to_service(self) -> None:
         repo_skill_text = (REPO_ROOT / ".codex" / "skills" / "onepanel-app-ops" / "SKILL.md").read_text(encoding="utf-8")
         plugin_skill_text = (

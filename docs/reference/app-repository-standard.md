@@ -1,39 +1,39 @@
 ---
 status: active
 owner: AgentPlane maintainers
-last_verified: 2026-04-08
+last_verified: 2026-04-12
 superseded_by: null
 ---
 
 # 应用仓库统一接入规范
 
-本文是新项目与开源二开项目的通用接入标准真源。目标是让应用仓库只负责“把自己打包好”，把正式生产控制面统一收口到 `AgentPlane`。
+本文是 Agent-first 控制面模板下的新项目与开源二开项目通用接入标准。应用仓库只负责代码、构建资产、合同与非敏感模板；控制面模板仓库负责 bootstrap、正式执行、验证、回写与对外 runbook。
 
 ## 0. 唯一正式入口与生命周期闭环
 
-本规范只定义“标准与边界”，不定义“执行步骤”。执行步骤以 active workflow 为准：见 [应用项目接入 AgentPlane 工作流](../runbooks/app-project-delivery-workflow.md)。
+本规范只定义标准与边界，不定义具体执行步骤。执行步骤以 active workflow 为准：见 [应用项目接入 AgentPlane 工作流](../runbooks/app-project-delivery-workflow.md)。
 
 唯一正式入口：
 
-- 所有 onboarding/offboarding 的正式动作都必须从 `AgentPlane` 发起，入口固定为 `uv run python -m agentplane.cli ...`。
-- 应用仓库不得维护第二套正式入口脚本（包括但不限于 deploy/rollback/website/inventory/doc-sync）。
+- 所有 onboarding / offboarding 的正式动作都必须从 `AgentPlane` 发起，入口固定为 `uv run python -m agentplane.cli ...`。
+- 应用仓库不得维护第二套正式入口脚本；不要再维护第二控制面。
 
-生命周期闭环的目标是：新增项目和移除项目都能通过同一条 formal 路径把“真源对象域”和“派生投影”同步到一致状态，避免留下无人认领的 tracked truth。
+生命周期闭环的目标是：新增项目和移除项目都能通过同一条 formal 路径把真源对象域与派生投影同步到一致状态，避免留下无人认领的 tracked truth。
 
-闭环涉及的对象域与派生链（只给语义，不重复命令细节）：
+闭环涉及的对象域与派生链：
 
 | 主题 | Add（Onboarding）必须完成 | Remove（Offboarding）必须完成 |
 | --- | --- | --- |
 | catalog | 把 `target + app` 纳入 `inventory/apps/catalog.json` 的正式映射 | 从 `inventory/apps/catalog.json` 移除映射，确保后续不会被 formal workflow 继续识别 |
-| app object | 能被 `ops.cli app object ...` 检索/校验，且台账可刷新 | 在移除映射后，台账刷新不再出现该对象；若仍出现，必须先处理残留引用再继续 |
-| app resource | 能被 `ops.cli app resource ...` 检索/校验，且台账可刷新 | 台账刷新后不再出现残留资源引用；如有残留，必须先完成资源退役或解绑 |
-| service | 运行服务对象能被 `ops.cli service ...` 计划/核验并与 live state 对齐 | 先确保服务不再承载正式流量与关键任务，再完成服务退役；退役后不得继续出现在受管对象检索里 |
-| website | 公网入口对象能被 `ops.cli website ...` 核验并与 1Panel/OpenResty 对齐 | 先完成入口撤销或下线（证书、反代、域名解析等），再刷新网站台账避免“入口已死但对象仍在” |
-| projection | `ops.cli projection runtime-env ...` 与 `ops.cli projection ledger refresh` 能把派生物写回到一致状态 | 在对象移除后，projection 必须重新生成或清理派生物，避免旧派生物继续影响 inventory 或验证 |
+| app object | 能被 `agentplane.cli app object ...` 检索/校验，且台账可刷新 | 在移除映射后，台账刷新不再出现该对象；若仍出现，必须先处理残留引用再继续 |
+| app resource | 能被 `agentplane.cli app resource ...` 检索/校验，且台账可刷新 | 台账刷新后不再出现残留资源引用；如有残留，必须先完成资源退役或解绑 |
+| service | 运行服务对象能被 `agentplane.cli service ...` 计划/核验并与 live state 对齐 | 先确保服务不再承载正式流量与关键任务，再完成服务退役；退役后不得继续出现在受管对象检索里 |
+| website | 公网入口对象能被 `agentplane.cli website ...` 核验并与 provider 对齐 | 先完成入口撤销或下线（证书、反代、域名解析等），再刷新网站台账避免“入口已死但对象仍在” |
+| projection | `agentplane.cli projection runtime-env ...` 与 `agentplane.cli projection ledger refresh` 能把派生物写回到一致状态 | 在对象移除后，projection 必须重新生成或清理派生物，避免旧派生物继续影响 inventory 或验证 |
 | inventory | `app delivery inventory-refresh` 后，`inventory/servers/<target>/inventory.json` 反映新增对象 | `inventory-refresh` 后，inventory 不再包含已移除对象的状态残影 |
-| docs | `app delivery doc-sync` 后，AgentPlane 与应用仓库摘要一致 | `doc-sync` 后，人类可读摘要不再宣称该项目仍受管或仍有公网入口 |
+| docs | `app delivery doc-sync` 后，控制面模板仓库与应用仓库摘要一致 | `doc-sync` 后，人类可读摘要不再宣称该项目仍受管或仍有公网入口 |
 
-上述“必须完成”的含义是：同一次 lifecycle 变更必须把所有域走完闭环；不允许只改一半（例如只删容器，不删 catalog；或只关入口，不更新 inventory/doc）。
+上述“必须完成”的含义是：同一次 lifecycle 变更必须把所有域走完闭环；不允许只改一半。
 
 ## 1. Git 远程与版本治理
 
@@ -65,14 +65,12 @@ deploy/
   docker-entrypoint.sh
   prod/
     app-prod.env.example
-  op/
+  agentplane/
     contract.yaml
 docs/
-  AGENTPLANE_DEPLOYMENT.wsl.md
-  AGENTPLANE_DEPLOYMENT.prod0-main.md
+  AGENTPLANE_DEPLOYMENT.<target>.md
 scripts/                 # 只放本地开发辅助脚本
 dist/
-  oplinux/
 tmp/
 .worktrees/
 ```
@@ -81,20 +79,20 @@ tmp/
 
 - `deploy/` 固定承载交付资产。
 - `scripts/` 不得承载正式部署、正式回滚、正式入口发布逻辑。
-- `dist/oplinux/` 是正式打包唯一制品目录。
-- `tmp/`、`.worktrees/`、真实 `.env`、构建产物必须进入 `.gitignore`。
+- 真实 `.env`、构建产物、`tmp/`、`.worktrees/` 必须进入 `.gitignore`。
+- `deploy/agentplane/contract.yaml` 是应用仓库交给控制面模板仓库的正式交接点。
 
 ## 3. Secrets 与模板边界
 
-| 内容 | 放在 `AgentPlane` | 放在应用仓库 |
+| 内容 | 放在控制面模板仓库 | 放在应用仓库 |
 | --- | --- | --- |
 | 真实 secrets、SSH、`.pem`、管理凭据 | 是 | 否 |
 | 应用运行时非敏感模板 | 否 | 是 |
 | 正式 inventory、正式回滚材料 | 是 | 否 |
 | `deploy/agentplane/contract.yaml` | 否 | 是 |
-| 非敏感部署摘要 | 由 `AgentPlane` 回写 | 是 |
+| 非敏感部署摘要 | 由控制面模板仓库回写 | 是 |
 
-模板注释统一优先回答 3 个问题：
+模板注释优先回答 3 个问题：
 
 1. 复制到哪里
 2. 是否真实敏感
@@ -118,25 +116,15 @@ Codex 本地环境固定放在 `.codex/environments/`：
 - `actions/`：常用手动动作
 - `lib/`：公用探测逻辑
 
-默认 actions：
+## 5. Host Entry / Backend-Aware 规则
 
-- `Bootstrap`
-- `Test`
-- `Lint`
-- `Build`
-- `Dev`
-- `Compose Up`
-- `Compose Logs`
-- `Smoke`
+- 默认采用 host-entry-first, backend-aware。
+- 如果控制面和源码都在同一宿主，直接使用宿主原生命令。
+- 如果控制面在 Windows、源码在 Linux backend，入口仍是 `pwsh`，源码绑定动作委托到对应 backend。
+- Windows 上的 Linux-only 动作优先 `wsl.exe -e <program> <args...>`；只有确实需要 shell 特性时才退回 `bash -lc`。
+- 远端 Linux 正式任务统一走 `uv run python -m agentplane.cli ...`，不要在应用仓库里自建远端执行旁路。
 
-## 5. Win + WSL + 远程 Linux
-
-- 默认 `WSL-first`。
-- Git、构建、测试、`uv`、`pnpm`、`docker compose`、`ssh`、远端 Linux 操作都在 WSL 执行。
-- 人在宿主机侧时，只负责把命令送进 WSL，不重写 Linux 命令。
-- 远端多语句任务统一先落成 Linux 脚本，再走正式 CLI 执行。
-
-## 6. 与 `AgentPlane` 的职责边界
+## 6. 与控制面模板仓库的职责边界
 
 应用仓库负责：
 
@@ -146,14 +134,15 @@ Codex 本地环境固定放在 `.codex/environments/`：
 - 非敏感模板
 - `deploy/agentplane/contract.yaml`
 
-`AgentPlane` 负责：
+控制面模板仓库负责：
 
+- bootstrap
 - 正式部署
 - 正式切换
 - 正式回滚
-- 正式入口
 - 正式验证
-- `inventory / ledger / doc-sync`
+- `ledger / inventory / doc-sync`
+- 对外 runbook 与 repo-owned skills
 
 应用仓库禁止存在第二控制面脚本，例如：
 
