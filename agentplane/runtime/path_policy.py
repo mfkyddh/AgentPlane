@@ -11,7 +11,8 @@ HOST_PATH_PREFIXES = (
     r"\\wsl.localhost\\",
     r"\\wsl$\\",
 )
-_CANONICAL_REF_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]*(?:/[a-z0-9][a-z0-9-]*)+$")
+_CANONICAL_SEGMENT = r"[a-z0-9][a-z0-9_-]*"
+_CANONICAL_REF_PATTERN = re.compile(rf"^{_CANONICAL_SEGMENT}(?:/{_CANONICAL_SEGMENT})+$")
 
 
 def normalize_path_value(value: str) -> str:

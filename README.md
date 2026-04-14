@@ -10,6 +10,19 @@
 - 应用仓库只负责代码、构建资产、合同与非敏感模板；正式部署、验证、回写由控制面模板仓库负责。
 - 本模板不再默认引用作者现场目录；所有示例统一使用 `<repo-root>`、`<target>`、`<app>` 之类占位符。
 
+## 当前现状
+
+这份 README 既是模板入口，也反映当前仓库自己的运行现实：
+
+- 当前控制面源码位于 Windows：`D:\Projects\AgentPlane`
+- 当前 Linux backend 源码根位于：`/mnt/d/Projects/AgentPlane`
+- 当前重点审查目标：`wsl`、`prod0-main`
+- 当前应用层正式样板：`sub2api`
+
+如果你要直接了解这份仓库在 `2026-04-14` 的真实状态、验证结果和待改造项，优先看：
+
+- [current-state-and-validation.md](docs/runbooks/current-state-and-validation.md)
+
 ## 30 秒上手
 
 1. `fork / clone` 本仓库，保留它作为你的正式控制面模板仓库。
@@ -73,11 +86,14 @@
 
 ### Active Runbooks
 
+- [current-state-and-validation.md](docs/runbooks/current-state-and-validation.md)
 - [bootstrap-secrets.md](docs/runbooks/bootstrap-secrets.md)
 - [wsl-host-governance.md](docs/runbooks/wsl-host-governance.md)
+- [prod0-main-governance.md](docs/runbooks/prod0-main-governance.md)
 - [control-plane-agent-execution-flow.md](docs/runbooks/control-plane-agent-execution-flow.md)
 - [control-plane-domain-onboarding.md](docs/runbooks/control-plane-domain-onboarding.md)
 - [app-project-delivery-workflow.md](docs/runbooks/app-project-delivery-workflow.md)
+- [onepanel-cli-validation-workflow.md](docs/runbooks/onepanel-cli-validation-workflow.md)
 
 ### Reference / History / Archive
 

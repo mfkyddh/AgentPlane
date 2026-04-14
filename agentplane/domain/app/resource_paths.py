@@ -91,21 +91,43 @@ def contract_ref_target(contract_ref: str) -> str | None:
     return target if target in _TARGET_CONTRACT_PATHS else None
 
 
+def _append_candidate(candidates: list[Path], candidate: Path | None) -> None:
+    if candidate is None:
+        return
+    if candidate not in candidates:
+        candidates.append(candidate)
+
+
+def _catalog_repo_candidates(workspace_control_root: Path, linux_backend_root: Path | None, *, repo_name: str) -> list[Path]:
+    candidates: list[Path] = []
+    _append_candidate(candidates, workspace_control_root.parent / repo_name)
+
+    if linux_backend_root is not None:
+        linux_sibling = linux_backend_root.parent / repo_name
+        if is_windows_path(workspace_control_root):
+            unc_candidate = wsl_posix_to_unc(linux_sibling)
+            _append_candidate(candidates, Path(unc_candidate) if unc_candidate else None)
+        else:
+            _append_candidate(candidates, linux_sibling)
+
+    legacy_posix_candidate = Path("/root/work") / repo_name
+    if is_windows_path(workspace_control_root):
+        unc_candidate = wsl_posix_to_unc(legacy_posix_candidate)
+        _append_candidate(candidates, Path(unc_candidate) if unc_candidate else None)
+    else:
+        _append_candidate(candidates, legacy_posix_candidate)
+
+    return candidates
+
+
 def resolve_catalog_repo_root(repo_root: Path, *, repo_name: str) -> Path:
     repo_root = Path(repo_root)
     workspace = resolve_local_workspace(repo_root)
-    candidates: list[Path] = []
-    control_sibling = Path(workspace.control_root).parent / repo_name
-    candidates.append(control_sibling)
-
-    if workspace.linux_backend_root is not None:
-        linux_candidate = Path(workspace.linux_backend_root).parent / repo_name
-        if is_windows_path(workspace.control_root):
-            unc_candidate = wsl_posix_to_unc(linux_candidate)
-            if unc_candidate:
-                candidates.append(Path(unc_candidate))
-        else:
-            candidates.append(linux_candidate)
+    candidates = _catalog_repo_candidates(
+        Path(workspace.control_root),
+        Path(workspace.linux_backend_root) if workspace.linux_backend_root is not None else None,
+        repo_name=repo_name,
+    )
 
     for candidate in candidates:
         try:

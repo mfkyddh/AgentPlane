@@ -9,7 +9,7 @@
 - 与 `AgentPlane` 同级目录下的业务应用仓库
 - 使用 `1Panel`、`OpenResty`、`Docker`、`PostgreSQL`、`Redis`、`MinIO` 等基础设施的项目
 - 当前正式样板：`sub2api`
-- 当前正式 schema：仅 `schema_version: 1`，且只覆盖 Docker / Compose 应用
+- 当前正式 schema：仅 `schema_version: 2`，且只覆盖 Docker / Compose 应用
 
 ## 2. 核心原则
 
@@ -162,12 +162,18 @@ Remove（Offboarding）最小闭环语义：
 最小字段：
 
 ```yaml
-schema_version: 1
+schema_version: 2
 app_id: sub2api
 artifact:
-  build_command: bash deploy/package-runtime-image.sh
+  build_command: bash deploy/build-runtime-artifacts.sh
+  output_path: dist/oplinux
+  runtime_os: linux
+  runtime_arch: amd64
+packaging:
+  backend: wsl-linux
   image_name: sub2api-prod
   image_tag_rule: <upstream>-zzz.<yyyymmdd>.v<n>.g<gitsha>
+  package_command: bash deploy/package-runtime-image.sh
 runtime:
   kind: compose
   container_name: sub2api-prod
@@ -195,20 +201,20 @@ rollback:
   previous_control_plane:
     kind: none
 docs:
-  app_summary_files:
-    prod0-main: docs/AGENTPLANE_DEPLOYMENT.prod0-main.md
-    wsl: docs/AGENTPLANE_DEPLOYMENT.wsl.md
+  app_summary_file: docs/AGENTPLANE_DEPLOYMENT.prod0-main.md
 inventory:
   service_key: sub2api
 ```
 
 字段规则：
 
-- `schema_version`：当前必须是 `1`。没有该字段的旧合同视为 legacy，只做 Docker / Compose 兼容，不扩展新类型。
+- `schema_version`：当前必须是 `2`。没有该字段或仍停在旧结构的合同视为 legacy，只做兼容读取，不再扩展新类型。
 - `app_id`：仓库级唯一应用标识。
-- `artifact.build_command`：WSL 内可直接执行的构建命令。Docker 类应用优先指向仓库内的打包脚本，例如 `bash deploy/package-runtime-image.sh`。
-- `artifact.image_name`：镜像名，通常与生产容器名同族。
-- `artifact.image_tag_rule`：当前正式规范固定为 `<upstream>-zzz.<yyyymmdd>.v<n>.g<gitsha>`，详见 [应用交付版本规范](../reference/app-delivery-versioning.md)。
+- `artifact.build_command`：WSL/backend 内可直接执行的构建命令，用于产出 runtime artifacts。
+- `artifact.output_path`、`runtime_os`、`runtime_arch`：固定交付物边界。
+- `packaging.image_name`：镜像名，通常与生产容器名同族。
+- `packaging.package_command`：把已生成 artifacts 打包成 runtime image 的命令。
+- `packaging.image_tag_rule`：当前正式规范固定为 `<upstream>-zzz.<yyyymmdd>.v<n>.g<gitsha>`，详见 [应用交付版本规范](../reference/app-delivery-versioning.md)。
 - `runtime.container_name`：正式稳定容器名，必须以 `-prod` 结尾。
 - `runtime.host_binding`：宿主机对外暴露到哪个回环或端口。
 - `runtime.healthcheck.path`：供部署后健康检查使用。
@@ -350,7 +356,7 @@ uv run python -m agentplane.cli app delivery doc-sync --target <target> --app <a
 
 `sub2api` 是当前正式样板，其目标状态如下：
 
-- 应用合同：`/root/work/sub2api/deploy/agentplane/contract.yaml`
+- 应用合同：应用仓库内的 `deploy/agentplane/contract.yaml`
 - AgentPlane Compose 模板：`infra/compose/sub2api/docker-compose.prod0.yml`
 - 正式容器名：`sub2api-prod`
 - 依赖容器：`postgres18-prod`、`redis7-prod`

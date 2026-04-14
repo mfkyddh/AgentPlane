@@ -35,8 +35,7 @@ def test_workspace_from_repo_uses_common_root_for_private_materials(tmp_path: Pa
     assert workspace.control_root == main_root
     assert workspace.private_root == main_root / "secrets"
     assert workspace.linux_backend_root is not None
-    assert workspace.linux_backend_root.as_posix().startswith("/mnt/")
-    assert workspace.linux_backend_root.as_posix().endswith("/main")
+    assert workspace.linux_backend_root == main_root
     assert workspace.source_root == worktree_root
     assert workspace.local_command_root == worktree_root
 

@@ -12,18 +12,18 @@
 - `onepanel` 公开面只剩 provider/debug 对象：`panel`、`firewall`、`cronjob`、`task`
 
 `ops/scripts/onepanel/*.py`、`api_request.py` 与内部 object API 继续保留为 substrate，只用于 compat、troubleshooting 或实现复用。
-Formal catalog apps with `schema_version: 1` must use `uv run python -m agentplane.cli app object ...`, `app delivery ...`, `service ...`, and `website ...`; these compat helpers are not the active execution path.
+Formal catalog apps with `schema_version: 2` must use `uv run python -m agentplane.cli app object ...`, `app delivery ...`, `service ...`, and `website ...`; these compat helpers are not the active execution path.
 
 ## 当前边界
 
 | 需求 | 正式入口 | 说明 |
 | --- | --- | --- |
-| 应用 catalog 核验 | `uv run python -m agentplane.cli app object verify --target prod0-main --app sub2api --repo-root /root/work/AgentPlane` | 只接受 catalog 中已登记 app。 |
-| 应用交付合同校验 | `uv run python -m agentplane.cli app delivery validate-contract --target prod0-main --app sub2api --repo-root /root/work/AgentPlane` | 交付真源在应用合同，不在 1Panel installed-app CRUD。 |
-| 运行态服务核验 | `uv run python -m agentplane.cli service verify --target prod0-main --name sub2api --repo-root /root/work/AgentPlane` | formal service 只接受 inventory 中已声明的受管运行服务对象。 |
-| 运行态服务操作 | `uv run python -m agentplane.cli service plan --target prod0-main --name legacy_runtime --operation restart --repo-root /root/work/AgentPlane` | 1Panel-backed runtime 也通过 `service` 暴露稳定操作。 |
-| 公网入口发布 | `uv run python -m agentplane.cli website publish plan --target prod0-main --config-file /root/work/AgentPlane/secrets/services/token-public-ingress.env --cloudflare-env-file /root/work/AgentPlane/secrets/env/prod-jump.env --repo-root /root/work/AgentPlane` | `website publish` 是 Cloudflare + 1Panel 公网入口的正式任务入口。 |
-| 验证与台账 | `uv run python -m agentplane.cli projection verification run --target prod0-main --profile prod0-readonly --repo-root /root/work/AgentPlane` | `projection` 负责 verification / fixture / ledger。 |
+| 应用 catalog 核验 | `uv run python -m agentplane.cli app object verify --target prod0-main --app sub2api --repo-root <repo-root>` | 只接受 catalog 中已登记 app。 |
+| 应用交付合同校验 | `uv run python -m agentplane.cli app delivery validate-contract --target prod0-main --app sub2api --repo-root <repo-root>` | 交付真源在应用合同，不在 1Panel installed-app CRUD。 |
+| 运行态服务核验 | `uv run python -m agentplane.cli service verify --target prod0-main --name sub2api --repo-root <repo-root>` | formal service 只接受 inventory 中已声明的受管运行服务对象。 |
+| 运行态服务操作 | `uv run python -m agentplane.cli service plan --target prod0-main --name legacy_runtime --operation restart --repo-root <repo-root>` | 1Panel-backed runtime 也通过 `service` 暴露稳定操作。 |
+| 公网入口发布 | `uv run python -m agentplane.cli website publish plan --target prod0-main --config-file <config-file> --cloudflare-env-file <cloudflare-env-file> --repo-root <repo-root>` | `website publish` 是 Cloudflare + 1Panel 公网入口的正式任务入口。 |
+| 验证与台账 | `uv run python -m agentplane.cli projection verification run --target prod0-main --profile prod0-readonly --repo-root <repo-root>` | `projection` 负责 verification / fixture / ledger。 |
 
 ## 运行态操作示例
 

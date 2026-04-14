@@ -24,10 +24,10 @@ superseded_by: null
 
 ## 应用合同
 
-`deploy/agentplane/contract.yaml` 中的 `artifact.image_tag_rule` 统一写为：
+`deploy/agentplane/contract.yaml` 中的 `packaging.image_tag_rule` 统一写为：
 
 ```yaml
-artifact:
+packaging:
   image_tag_rule: <upstream>-zzz.<yyyymmdd>.v<n>.g<gitsha>
 ```
 
@@ -35,11 +35,11 @@ artifact:
 
 ## CLI 行为
 
-- `uv run python -m agentplane.cli app build-artifact --dry-run` 会尽量输出推荐的：
+- `uv run python -m agentplane.cli app delivery build-artifact --dry-run` 会尽量输出推荐的：
   - `fork_version`
   - `delivery_version`
   - `image_tag`
-- `uv run python -m agentplane.cli app build-artifact --auto-version` 会使用这套规则自动生成本次构建的 `IMAGE_TAG`
+- `uv run python -m agentplane.cli app delivery build-artifact --auto-version` 会使用这套规则自动生成本次构建的 `IMAGE_TAG`
 - 若应用仓库无法提供上游版本或 git short SHA，CLI 不会伪造版本号；自动生成会直接失败
 
 ## 序号来源
@@ -52,6 +52,6 @@ artifact:
 
 本节用于 Phase 4 / Lane 12 的 focused acceptance 资产约束。验收命令仅允许只读或 dry-run，不在该车道执行写入型流程。
 
-- `uv run python -m agentplane.cli host automation search wsl --repo-root /root/work/AgentPlane`
-- `uv run python -m agentplane.cli projection ledger refresh --target wsl --repo-root /root/work/AgentPlane`
-- `uv run python -m agentplane.cli app delivery build-artifact --target <target> --app <app> --repo-root /root/work/AgentPlane --dry-run`
+- `uv run python -m agentplane.cli host automation search wsl --repo-root <repo-root>`
+- `uv run python -m agentplane.cli projection ledger refresh --target wsl --repo-root <repo-root>`
+- `uv run python -m agentplane.cli app delivery build-artifact --target <target> --app <app> --repo-root <repo-root> --dry-run`

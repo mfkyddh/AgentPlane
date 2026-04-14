@@ -18,7 +18,7 @@
 - 正式远端 Bash 入口统一为 `uv run python -m agentplane.cli host remote bash ...`。
 - `agentplane/scripts/internal/` 下脚本只作为仓库内部实现与示例，属于兼容层，不再作为长期主命令面。
 - `agentplane/scripts/onepanel/api_request.py`、`app_lifecycle.py`、`project_lifecycle.py` 这类 compat helper 仅用于 compat、troubleshooting 与 provider/debug 低层核对，不进入 active execution path。
-- Formal catalog apps with `schema_version: 1` must use `uv run python -m agentplane.cli app object ...`, `app delivery ...`, `service ...`, and `website ...`; lower-level helper surfaces are not the active execution path.
+- Formal catalog apps with `schema_version: 2` must use `uv run python -m agentplane.cli app object ...`, `app delivery ...`, `service ...`, and `website ...`; lower-level helper surfaces are not the active execution path.
 - 从 `pwsh` 发起远端多语句 Bash 时，优先把脚本保存成 Linux 路径文件；stdin 只推荐在纯 Linux shell 内使用。
 
 ## Official CLI
@@ -32,15 +32,15 @@ uv run python -m agentplane.cli host remote bash <target> [--repo-root <linux-pa
 Windows 主控制面正式入口：
 
 ```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli host remote bash prod0-main --dry-run --script-file /root/work/AgentPlane/agentplane/scripts/internal/remote/example.sh
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli host remote bash prod0-main --dry-run --script-file /mnt/d/Projects/AgentPlane/agentplane/scripts/internal/remote/example.sh
 ```
 
 如果当前已经在 WSL/Linux shell，直接执行正式 CLI：
 
 ```bash
-cd /root/work/AgentPlane
+cd /mnt/d/Projects/AgentPlane
 uv run python -m agentplane.cli host remote bash prod0-main \
-  --script-file /root/work/AgentPlane/agentplane/scripts/internal/remote/example.sh
+  --script-file /mnt/d/Projects/AgentPlane/agentplane/scripts/internal/remote/example.sh
 ```
 
 行为：
@@ -73,7 +73,7 @@ docker ps --format 'table {{.Names}}\t{{.Status}}' | sed -n '1,10p'
 再执行：
 
 ```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli host remote bash prod0-main --script-file /root/work/AgentPlane/agentplane/scripts/internal/remote/example.sh
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli host remote bash prod0-main --script-file /mnt/d/Projects/AgentPlane/agentplane/scripts/internal/remote/example.sh
 ```
 
 ### 2. 纯 Linux shell 内部直接 pipe
@@ -93,7 +93,7 @@ printf '%s\n' \
 Windows 宿主：
 
 ```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli host remote bash prod0-main --script-file /root/work/AgentPlane/agentplane/scripts/internal/remote/example-arg.sh -- postgres18-prod
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli host remote bash prod0-main --script-file /mnt/d/Projects/AgentPlane/agentplane/scripts/internal/remote/example-arg.sh -- postgres18-prod
 ```
 
 远端脚本：
@@ -142,13 +142,13 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-a
 最小 dry-run 验证：
 
 ```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli host remote bash prod0-main --dry-run --script-file /root/work/AgentPlane/agentplane/scripts/internal/remote/example.sh
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli host remote bash prod0-main --dry-run --script-file /mnt/d/Projects/AgentPlane/agentplane/scripts/internal/remote/example.sh
 ```
 
 最小远端连通性验证：
 
 ```bash
-wsl.exe -u root -e sh -lc 'cd /root/work/AgentPlane && printf "%s\n" "set -euo pipefail" "echo remote_ok" | uv run python -m agentplane.cli host remote bash prod0-main'
+wsl.exe -u root -e sh -lc 'cd /mnt/d/Projects/AgentPlane && printf "%s\n" "set -euo pipefail" "echo remote_ok" | uv run python -m agentplane.cli host remote bash prod0-main'
 ```
 
 ## Cutover Guidance

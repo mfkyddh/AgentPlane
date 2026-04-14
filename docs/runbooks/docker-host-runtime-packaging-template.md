@@ -149,12 +149,18 @@ docker build \
 Docker 类项目的 `deploy/agentplane/contract.yaml` 推荐写法：
 
 ```yaml
-schema_version: 1
+schema_version: 2
 app_id: demo
 artifact:
-  build_command: bash deploy/package-runtime-image.sh
+  build_command: bash deploy/build-runtime-artifacts.sh
+  output_path: dist/oplinux
+  runtime_os: linux
+  runtime_arch: amd64
+packaging:
+  backend: wsl-linux
   image_name: demo-prod
   image_tag_rule: <upstream>-zzz.<yyyymmdd>.v<n>.g<gitsha>
+  package_command: bash deploy/package-runtime-image.sh
 runtime:
   kind: compose
   container_name: demo-prod
@@ -176,20 +182,18 @@ rollback:
   previous_control_plane:
     kind: none
 docs:
-  app_summary_files:
-    prod0-main: docs/AGENTPLANE_DEPLOYMENT.prod0-main.md
-    wsl: docs/AGENTPLANE_DEPLOYMENT.wsl.md
+  app_summary_file: docs/AGENTPLANE_DEPLOYMENT.prod0-main.md
 inventory:
   service_key: demo
 ```
 
 重点：
 
-- `artifact.build_command` 应指向脚本，不要直接裸写长串 `docker build`
-- `image_name` 与正式容器名建议同族
+- `artifact.build_command` 应指向宿主机构建脚本，不要直接裸写长串 `docker build`
+- `packaging.image_name` 与正式容器名建议同族
 - 正式镜像 tag 仍由 `IMAGE_TAG` 注入，规则固定为 `<upstream>-zzz.<yyyymmdd>.v<n>.g<gitsha>`
-- `agentplane.cli app build-artifact --dry-run` 会尽量给出推荐的 `fork_version`、`delivery_version` 和 `image_tag`
-- `agentplane.cli app build-artifact --auto-version` 会按正式规则自动生成 `IMAGE_TAG`
+- `agentplane.cli app delivery build-artifact --dry-run` 会尽量给出推荐的 `fork_version`、`delivery_version` 和 `image_tag`
+- `agentplane.cli app delivery build-artifact --auto-version` 会按正式规则自动生成 `IMAGE_TAG`
 
 ## 7. .dockerignore 模板
 
@@ -227,9 +231,10 @@ docker image inspect <image-name>:test >/dev/null
 在 `AgentPlane` 中再验证：
 
 ```bash
-uv run python -m agentplane.cli app build-artifact \
-  --contract /root/work/<app>/deploy/agentplane/contract.yaml \
-  --repo-root /root/work/AgentPlane \
+uv run python -m agentplane.cli app delivery build-artifact \
+  --target <target> \
+  --app <app> \
+  --repo-root <repo-root> \
   --image-tag test \
   --dry-run
 ```
