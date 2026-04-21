@@ -20,6 +20,7 @@
 - 默认采用 `host-entry-first, backend-aware`。
 - Windows 宿主场景固定走 `pwsh -> formal CLI -> WSL/SSH backend`；Linux/macOS 继续使用原生 POSIX shell。
 - Windows 与 WSL 禁止共享同一个工作目录；WSL/Linux 源码绑定动作只能在 Linux 文件系统 checkout 内执行，不能使用 `/mnt/<drive>/...` 作为仓库根。
+- 真实 WSL/SSH/Docker live integration gate 必须通过 `host live-gate` 单独执行；默认本地 `pytest` 不触发真实 backend。
 - 当前已经处于 Linux 文件系统源码根时，源码绑定动作直接在该 backend 内执行，不再重复包一层宿主入口。
 - 只有 WSL 内确实需要 shell 特性时才使用 `sh -lc` / `bash -lc`。
 - 默认以 `root` 在 WSL 本地执行；仅在需要用户态环境或文件归属控制时切换用户。
@@ -46,6 +47,7 @@
 - 旧 Bash 流程改造时，优先变更为“Bash 调 Python CLI”，而不是继续扩展 Bash 业务逻辑。
 - 新增或重构自动化能力时，优先落到 Python 模块并由 `agentplane.cli` 暴露命令入口。
 - 仅在 Python 不可行或代价显著过高时，才引入新的 Bash/Node 常驻逻辑。
+- live gate 正式入口为 `uv run python -m agentplane.cli host live-gate ...`；`plan` 可在任意 checkout 查看，`run --execute` 只允许在 Linux 文件系统 checkout 执行。
 - WSL 本机 `1Panel` 计划任务只负责按周期触发，不在面板页面中保存业务逻辑。
 - 新增 WSL 本机自动化任务时，必须同时提供：
   - 稳定的 `agentplane.cli` 命令入口

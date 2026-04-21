@@ -43,7 +43,7 @@
 
 - Windows 侧执行 `.ps1` 时，一律使用 `pwsh -NoProfile -ExecutionPolicy Bypass -File ...`；不要在 `\\wsl.localhost\...` 上直接 `.\script.ps1`。
 - Windows 侧在 `\\wsl.localhost\...` 工作树里跑 Python 正式入口时，一律经由 `.codex/environments/lib/invoke-agentplane-windows-uv.ps1`；不要直接在 UNC 路径上执行 `uv run ...`。
-- `invoke-agentplane-windows-uv.ps1` 必须把 `UV_PROJECT_ENVIRONMENT` 放到 Windows 本地目录（默认 `%LOCALAPPDATA%\AgentPlane\uv\<project>`），消除 UNC 下 `.venv` 失效问题。
+- `invoke-agentplane-windows-uv.ps1` 必须固定使用 checkout-local `.venv`，并拒绝在 WSL UNC checkout 中启动 Windows 侧 Python 入口。
 - 迁移完成后，Windows 正式命令优先在 `D:\Projects\AgentPlane` 执行；wrapper 仍作为统一正式入口保留，避免后续回归到 UNC 直跑。
 
 ## File Structure Map

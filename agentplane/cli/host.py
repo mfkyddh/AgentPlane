@@ -20,6 +20,7 @@ from agentplane.cli.local_host import add_local_host_parser, handle_local_host_c
 from agentplane.cli.networks import SUPPORTED_NETWORK_TARGETS, audit_managed_bridge_networks, ensure_managed_bridge_networks
 from agentplane.cli.remote import execute_remote_bash
 from agentplane.cli.secrets import SUPPORTED_SECRET_TARGETS, init_data_services, materialize_legacy_host_layout
+from agentplane.domain.host.live_gate import DEFAULT_APP, DEFAULT_WSL_PROJECTION_PROFILE, LIVE_GATE_PROFILES, plan_live_gate, run_live_gate
 from agentplane.domain.targets import SUPPORTED_HOST_TARGETS
 from agentplane.runtime.wsl_bridge import normalize_repo_root_for_current_host
 
@@ -30,6 +31,7 @@ HOST_ACTION_SCOPE_HELP = (
     "三正式目标通用动作: inventory / audit / remote bash / "
     "secrets init-data-services|sync-layout\n"
     "local: inspect / migrate plan|copy|verify\n"
+    "live-gate: plan / run isolated WSL/SSH/Docker integration gates\n"
     "target-specific: cleanup= wsl|prod0-main; automation= wsl|prod0-main|prod2-main; network= prod0-main|prod2-main"
 )
 
@@ -70,6 +72,25 @@ def add_host_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentPars
         help=_target_help(scope="三正式目标通用", targets=FORMAL_HOST_TARGETS),
     )
     audit_parser.add_argument("--repo-root", default=".", help="仓库根目录")
+
+    live_gate_parser = host_subparsers.add_parser(
+        "live-gate",
+        help="独立真实 WSL/SSH/Docker live integration gate",
+        description="真实 live gate 与默认 pytest 分离；run --execute 只能在 Linux filesystem checkout 执行。",
+    )
+    live_gate_subparsers = live_gate_parser.add_subparsers(dest="host_live_gate_action", required=True)
+    for action in ("plan", "run"):
+        parser = live_gate_subparsers.add_parser(action, help=f"{action} live integration gate")
+        parser.add_argument("--profile", required=True, choices=LIVE_GATE_PROFILES, help="live gate profile")
+        parser.add_argument("--repo-root", default=".", help="仓库根目录")
+        parser.add_argument("--app", default=DEFAULT_APP, help="应用验证样板 app")
+        parser.add_argument(
+            "--projection-profile",
+            default=DEFAULT_WSL_PROJECTION_PROFILE,
+            help="WSL projection verification profile",
+        )
+        if action == "run":
+            parser.add_argument("--execute", action="store_true", help="执行真实 WSL/SSH/Docker live gate")
 
     cleanup_parser = host_subparsers.add_parser("cleanup", help="执行主机级清理流程")
     cleanup_subparsers = cleanup_parser.add_subparsers(dest="host_cleanup_action", required=True)
@@ -228,6 +249,31 @@ def handle_host_command(args: argparse.Namespace) -> dict[str, Any]:
                 "violations": result["violations"],
                 "path_check_mode": result.get("path_check_mode"),
             },
+        )
+
+    if args.host_action == "live-gate" and args.host_live_gate_action == "plan":
+        return _wrap(
+            action="live-gate.plan",
+            target=args.profile,
+            payload=plan_live_gate(
+                repo_root,
+                profile=args.profile,
+                app=args.app,
+                projection_profile=args.projection_profile,
+            ),
+        )
+
+    if args.host_action == "live-gate" and args.host_live_gate_action == "run":
+        return _wrap(
+            action="live-gate.run",
+            target=args.profile,
+            payload=run_live_gate(
+                repo_root,
+                profile=args.profile,
+                app=args.app,
+                projection_profile=args.projection_profile,
+                execute=bool(args.execute),
+            ),
         )
 
     if args.host_action == "cleanup" and args.host_cleanup_action == "plan":

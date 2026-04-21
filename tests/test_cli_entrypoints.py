@@ -161,9 +161,13 @@ class CliEntrypointsTests(unittest.TestCase):
         _assert_help_commands(
             self,
             host_help.stdout,
-            expected={"inventory", "audit", "cleanup", "automation", "network", "remote", "secrets", "local"},
+            expected={"inventory", "audit", "live-gate", "cleanup", "automation", "network", "remote", "secrets", "local"},
             absent={"secrets-layout"},
         )
+
+        host_live_gate_help = run_cli("host", "live-gate", "--help")
+        self.assertEqual(host_live_gate_help.returncode, 0, msg=host_live_gate_help.stderr)
+        _assert_help_commands(self, host_live_gate_help.stdout, expected={"plan", "run"})
 
         host_cleanup_help = run_cli("host", "cleanup", "--help")
         self.assertEqual(host_cleanup_help.returncode, 0, msg=host_cleanup_help.stderr)
@@ -227,6 +231,7 @@ class CliEntrypointsTests(unittest.TestCase):
             ("host", "inventory", "prod0-main", "--repo-root", str(REPO_ROOT)),
             ("host", "audit", "wsl", "--repo-root", str(REPO_ROOT)),
             ("host", "audit", "prod0-main", "--repo-root", str(REPO_ROOT)),
+            ("host", "live-gate", "plan", "--profile", "wsl", "--repo-root", str(REPO_ROOT)),
             ("host", "cleanup", "plan", "wsl", "--repo-root", str(REPO_ROOT)),
             ("host", "automation", "search", "wsl", "--repo-root", str(REPO_ROOT)),
             ("onepanel", "--env", "wsl", "--json"),
@@ -301,6 +306,21 @@ class CliEntrypointsTests(unittest.TestCase):
 
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("invalid choice", result.stderr)
+
+    def test_host_live_gate_execute_is_not_allowed_from_windows_checkout(self) -> None:
+        result = run_cli(
+            "host",
+            "live-gate",
+            "run",
+            "--profile",
+            "wsl",
+            "--repo-root",
+            "D:/Projects/AgentPlane",
+            "--execute",
+        )
+
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("live integration gate", result.stderr)
 
 
 if __name__ == "__main__":

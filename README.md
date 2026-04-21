@@ -68,6 +68,7 @@
 常用模板化示例：
 
 - `uv run python -m agentplane.cli host inventory <target> --repo-root <repo-root>`
+- `uv run python -m agentplane.cli host live-gate plan --profile <target> --repo-root <repo-root>`
 - `uv run python -m agentplane.cli service verify --target <target> --name <service> --repo-root <repo-root>`
 - `uv run python -m agentplane.cli website publish plan --target <target> --config-file <file> --cloudflare-env-file <file> --repo-root <repo-root>`
 - `uv run python -m agentplane.cli app delivery validate-contract --target <target> --app <app> --repo-root <repo-root>`
@@ -97,6 +98,7 @@
 - [control-plane-agent-execution-flow.md](docs/runbooks/control-plane-agent-execution-flow.md)
 - [control-plane-domain-onboarding.md](docs/runbooks/control-plane-domain-onboarding.md)
 - [app-project-delivery-workflow.md](docs/runbooks/app-project-delivery-workflow.md)
+- [live-integration-gate.md](docs/runbooks/live-integration-gate.md)
 - [onepanel-cli-validation-workflow.md](docs/runbooks/onepanel-cli-validation-workflow.md)
 
 ### Reference / History / Archive

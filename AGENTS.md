@@ -29,6 +29,7 @@
 - Formal host-scoped network governance must prefer `uv run python -m agentplane.cli host network ...`; do not route active workflows through a top-level `uv run python -m agentplane.cli network ...` entry.
 - Formal host-scoped remote execution must prefer `uv run python -m agentplane.cli host remote bash ...`.
 - Formal host-scoped secrets operations must prefer `uv run python -m agentplane.cli host secrets ...`.
+- Formal live WSL/SSH/Docker integration gates must prefer `uv run python -m agentplane.cli host live-gate ...` and run only from a Linux filesystem checkout.
 - Daily automation entry must prefer `uv run python -m agentplane.cli ...`.
 - Python projects managed by AgentPlane should prefer `uv` for dependency installation, virtualenv management, and command execution.
 - Each physical checkout must keep exactly one project virtualenv at `.venv`; do not create platform-suffixed variants such as `.venv-win` or `.venv-wsl`.

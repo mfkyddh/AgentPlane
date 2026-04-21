@@ -37,6 +37,7 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-a
 cd /root/work/AgentPlane
 uv run python -m agentplane.cli host inventory wsl --repo-root /root/work/AgentPlane
 uv run python -m agentplane.cli host audit wsl --repo-root /root/work/AgentPlane
+uv run python -m agentplane.cli host live-gate plan --profile wsl --repo-root /root/work/AgentPlane
 ```
 
 ## WSL 最小治理检查
@@ -66,6 +67,13 @@ cd /root/work/AgentPlane
 uv run python -m agentplane.cli host inventory wsl --repo-root /root/work/AgentPlane
 uv run python -m agentplane.cli host audit wsl --repo-root /root/work/AgentPlane
 uv run python -m agentplane.cli projection verification run --target wsl --profile wsl-fixture --repo-root /root/work/AgentPlane
+```
+
+真实 live gate 只在这个 Linux 文件系统 checkout 中显式执行：
+
+```bash
+cd /root/work/AgentPlane
+uv run python -m agentplane.cli host live-gate run --profile wsl --repo-root /root/work/AgentPlane --execute
 ```
 
 ### 4. `sub2api` 应用面

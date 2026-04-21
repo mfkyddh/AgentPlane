@@ -29,6 +29,7 @@
 
 - `bootstrap inspect-local`、`host local inspect` 在当前 Windows 控制面 + WSL backend 组合下可正常返回路径绑定结果。
 - 当前本轮修复后，仓库 `pytest` 已恢复到全绿；之前卡住的 10 个失败都已收口。
+- 默认 `pytest` 不执行真实 WSL/SSH/Docker live gate；真实验证已收口到 `host live-gate`，并要求独立 Linux 文件系统 checkout。
 - 本地 Python 环境统一使用当前 checkout 根目录 `.venv`；不再维护 `.venv-win` / `.venv-wsl` 分叉。
 
 ### WSL

@@ -81,6 +81,8 @@ def main(argv: list[str] | None = None) -> int:
                 return 0 if payload.get("payload", {}).get("ok", True) else 1
             if payload.get("action") == "network.ensure":
                 return 0 if payload.get("payload", {}).get("ok", True) else 1
+            if payload.get("action") == "live-gate.run":
+                return 0 if payload.get("payload", {}).get("ok", True) else 1
             if payload.get("action") in {"automation.verify", "automation.apply"}:
                 return 0 if payload.get("payload", {}).get("ok", True) else 1
             if payload.get("action") == "local.migrate.verify":
