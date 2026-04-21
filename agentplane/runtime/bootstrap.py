@@ -250,6 +250,11 @@ def inspect_bootstrap_projections(repo_root: Path, *, inspect_payload: dict[str,
             prod_ssh_key = values.get("PROD_SSH_KEY")
             if prod_ssh_key and not prod_ssh_key.replace("\\", "/").startswith(f"{legacy_root}/secrets/ssh/keys/"):
                 issues.append("drift:PROD_SSH_KEY")
+        elif project_ssh_config:
+            issues.append("unbound:PROJECT_SSH_CONFIG")
+            prod_ssh_key = values.get("PROD_SSH_KEY")
+            if prod_ssh_key:
+                issues.append("unbound:PROD_SSH_KEY")
 
         checks.append(
             {

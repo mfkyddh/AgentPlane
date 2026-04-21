@@ -20,7 +20,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from agentplane.cli.apps import _secrets_root
+from agentplane.domain.app.runtime import _secrets_root
 
 ERROR_ID_TENANT_RESOURCES_REQUIRED = "app.resource.resources_required"
 ERROR_ID_TENANT_SECRET_FILE_SCOPE = "app.resource.secret_file_scope"
@@ -2800,7 +2800,7 @@ class AppCliTests(unittest.TestCase):
             self.assertIn("docker compose -f", log_file.read_text(encoding="utf-8"))
 
     def test_deploy_app_execute_uses_backend_runner_for_wsl_target_on_windows_host(self) -> None:
-        import agentplane.cli.apps as app_cli
+        import agentplane.domain.app.runtime as app_runtime
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -2826,7 +2826,7 @@ class AppCliTests(unittest.TestCase):
             service_env.parent.mkdir(parents=True, exist_ok=True)
             service_env.write_text("APP_DATABASE_URL=postgresql://newapi_wsl:secret@postgres18-dev:5432/newapi_wsl\n", encoding="utf-8")
             contract_file = write_newapi_contract(root, target="wsl")
-            contract = app_cli.validate_contract(contract_file, repo_root=root, target="wsl")
+            contract = app_runtime.validate_contract(contract_file, repo_root=root, target="wsl")
 
             class _FakeExecutionResult:
                 def __init__(self, plan) -> None:
@@ -2855,10 +2855,10 @@ class AppCliTests(unittest.TestCase):
 
             runner = _FakeRunner()
             with patch(
-                "agentplane.cli.apps.detect_host_profile",
+                "agentplane.domain.app.runtime.detect_host_profile",
                 return_value=HostProfile(os_name="windows", linux_backend="windows-wsl", supports_docker=True),
-            ), patch("agentplane.cli.apps.build_backend_runner", return_value=runner):
-                payload = app_cli.deploy_app(
+            ), patch("agentplane.domain.app.runtime.build_backend_runner", return_value=runner):
+                payload = app_runtime.deploy_app(
                     contract,
                     repo_root=root,
                     target="wsl",

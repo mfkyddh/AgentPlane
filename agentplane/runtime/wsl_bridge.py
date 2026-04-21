@@ -153,12 +153,7 @@ def resolve_local_workspace(
 
     if is_windows_path(control_root):
         resolved_legacy_root = _coerce_path(legacy_control_root)
-        if resolved_legacy_root is None:
-            resolved_legacy_root = wsl_unc_to_posix(repo_path)
-        if resolved_legacy_root is None:
-            posix_root = windows_path_to_wsl_posix(control_root)
-            resolved_legacy_root = _coerce_path(posix_root)
-        source_root = repo_path if is_windows_path(repo_path) else (resolved_legacy_root or repo_path)
+        source_root = repo_path
         return resolve_workspace(
             control_root=control_root,
             legacy_control_root=resolved_legacy_root,

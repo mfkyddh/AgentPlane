@@ -9,13 +9,15 @@
 - 人类输入面只剩 `secrets` 和少量 `identity`；其余正式动作统一从 `uv run python -m agentplane.cli ...` 进入。
 - 应用仓库只负责代码、构建资产、合同与非敏感模板；正式部署、验证、回写由控制面模板仓库负责。
 - 本模板不再默认引用作者现场目录；所有示例统一使用 `<repo-root>`、`<target>`、`<app>` 之类占位符。
+- Windows 与 WSL 禁止共享同一个工作目录；WSL 不能把 `/mnt/<drive>/...` 当成本仓库源码根。
+- 每个物理 checkout 只保留一个项目虚拟环境：根目录 `.venv`。
 
 ## 当前现状
 
 这份 README 既是模板入口，也反映当前仓库自己的运行现实：
 
 - 当前控制面源码位于 Windows：`D:\Projects\AgentPlane`
-- 当前 Linux backend 源码根位于：`/mnt/d/Projects/AgentPlane`
+- 当前 WSL 目标侧 live checkout 以 inventory 记录为准；它必须是独立 Linux 文件系统 checkout，不是 Windows 工作目录的 `/mnt/<drive>` 映射。
 - 当前重点审查目标：`wsl`、`prod0-main`
 - 当前应用层正式样板：`sub2api`
 
@@ -30,6 +32,7 @@
    - Windows 宿主默认使用 `pwsh` 作为入口 shell。
    - Windows 宿主使用 `pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli ...`
    - Linux / macOS 直接使用 `uv run python -m agentplane.cli ...`
+   - 不创建 `.venv-win`、`.venv-wsl`，也不把 WSL 工作目录指到 `/mnt/<drive>/<repo>`。
 3. 检查当前宿主、工作区与 backend 绑定：
    `uv run python -m agentplane.cli bootstrap inspect-local --repo-root <repo-root>`
 4. 生成本地 secrets 骨架：
@@ -51,6 +54,7 @@
 - Windows 宿主入口：`pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli <domain> <action> [flags]`
 - 命令发现：`uv run python -m agentplane.cli --help`
 - 常用仓库自检：`bash agentplane/scripts/internal/repo/self_check.sh`
+- 虚拟环境：只使用当前 checkout 根目录的 `.venv`。
 
 按 domain 进入正式任务：
 

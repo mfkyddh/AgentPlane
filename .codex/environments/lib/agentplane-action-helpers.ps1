@@ -33,6 +33,12 @@ function Invoke-AgentPlaneWindowsUv {
     }
 }
 
+function Test-AgentPlaneWindowsMountedWslPath {
+    param([AllowNull()][string]$PathValue)
+
+    return -not [string]::IsNullOrWhiteSpace($PathValue) -and $PathValue -match '^/mnt/[A-Za-z]($|/)'
+}
+
 function Get-AgentPlaneLocalInspect {
     param(
         [Parameter(Mandatory = $true)][string]$BaseDirectory,
@@ -58,16 +64,16 @@ function Resolve-AgentPlaneLinuxCommandRoot {
     param([Parameter(Mandatory = $true)]$InspectPayload)
 
     $sourceRoot = [string]$InspectPayload.payload.workspace.source_root
-    if (Test-AgentPlanePosixPath -PathValue $sourceRoot) {
+    if ((Test-AgentPlanePosixPath -PathValue $sourceRoot) -and -not (Test-AgentPlaneWindowsMountedWslPath -PathValue $sourceRoot)) {
         return $sourceRoot
     }
 
     $backendRoot = [string]$InspectPayload.payload.linux_backend_root
-    if (Test-AgentPlanePosixPath -PathValue $backendRoot) {
+    if ((Test-AgentPlanePosixPath -PathValue $backendRoot) -and -not (Test-AgentPlaneWindowsMountedWslPath -PathValue $backendRoot)) {
         return $backendRoot
     }
 
-    throw "No WSL/Linux command root was resolved for the current repository."
+    throw "No separate WSL/Linux checkout was resolved for this repository. AgentPlane forbids using a Windows-mounted path such as /mnt/<drive>/... as the WSL working directory."
 }
 
 function Invoke-AgentPlaneRoutedUv {
@@ -93,17 +99,6 @@ function Invoke-AgentPlaneRoutedUv {
         finally {
             Pop-Location
         }
-    }
-
-    $inspect = Get-AgentPlaneLocalInspect -BaseDirectory $BaseDirectory -RepoRoot $RepoRoot
-    $sourceRoot = [string]$inspect.payload.workspace.source_root
-    if (Test-AgentPlanePosixPath -PathValue $sourceRoot) {
-        $wslUvEnv = "$sourceRoot/.venv-wsl"
-        & wsl.exe -e env "UV_PROJECT_ENVIRONMENT=$wslUvEnv" -C $sourceRoot uv "run" @UvArgs
-        if ($LASTEXITCODE -ne 0) {
-            throw "WSL uv run failed with exit code $LASTEXITCODE."
-        }
-        return
     }
 
     Invoke-AgentPlaneWindowsUv -BaseDirectory $BaseDirectory -RepoRoot $RepoRoot -UvArgs $UvArgs | Out-Null

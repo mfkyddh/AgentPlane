@@ -3,7 +3,9 @@ set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 eval "$("$script_dir/../lib/detect-stack.sh")"
+. "$script_dir/../lib/guard-host-workspace.sh"
 
+agentplane_guard_host_workspace "$REPO_ROOT"
 cd "$REPO_ROOT"
 
 if [[ "$HAS_PYTHON" == "1" ]]; then

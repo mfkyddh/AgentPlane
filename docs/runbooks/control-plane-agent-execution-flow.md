@@ -24,6 +24,7 @@
 
 - 所有正式操作都从 `uv run python -m agentplane.cli ...` 进入。
 - Windows 主机以 `pwsh` 为入口；Linux / macOS 继续使用原生 shell。
+- Windows 与 WSL 不能共享同一个工作目录；WSL 源码绑定动作必须在独立 Linux 文件系统 checkout 内执行，且每个 checkout 只保留根目录 `.venv`。
 - `onepanel` 公开面只剩 `panel`、`firewall`、`cronjob`、`task`。
 - `service`、`website`、`app`、`projection` 是对外默认 domain；不要把 provider/debug helper 当默认入口。
 
@@ -38,7 +39,7 @@ uv run python -m agentplane.cli bootstrap inspect-local --repo-root <repo-root>
 uv run python -m agentplane.cli bootstrap doctor --repo-root <repo-root>
 ```
 
-如果是在 Windows 宿主执行，正式入口仍然是 `pwsh`，只是后续 source-bound 或 remote 动作会落到对应 backend。
+如果是在 Windows 宿主执行，正式入口仍然是 `pwsh`。后续 remote/backend 动作可以落到对应 backend，但不能把 Windows checkout 映射成 WSL 工作目录。
 
 ### 2. 命令发现
 

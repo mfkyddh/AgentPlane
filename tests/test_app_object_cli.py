@@ -8,8 +8,18 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
+from agentplane.domain.app.resource_paths import contract_relpath_for_target, resolve_catalog_repo_root
+
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _expected_real_contract_path(target: str) -> str:
+    return str(resolve_catalog_repo_root(REPO_ROOT, repo_name="sub2api") / contract_relpath_for_target(target))
+
+
 def run_cli(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
     env = None
     if cwd is None:
@@ -962,7 +972,7 @@ class AppObjectCliTests(unittest.TestCase):
             payload_json["payload"]["items"][0]["canonical_ref"],
         )
         self.assertEqual(
-            "/root/work/sub2api/deploy/agentplane/contract.yaml",
+            _expected_real_contract_path("prod0-main"),
             payload_json["payload"]["items"][0]["contract_file"],
         )
 
@@ -986,7 +996,7 @@ class AppObjectCliTests(unittest.TestCase):
             prod2_json["payload"]["app"]["canonical_ref"],
         )
         self.assertEqual(
-            "/root/work/sub2api/deploy/agentplane/contract.prod2.yaml",
+            _expected_real_contract_path("prod2-main"),
             prod2_json["payload"]["app"]["contract_file"],
         )
 
@@ -1008,10 +1018,11 @@ class AppObjectCliTests(unittest.TestCase):
             wsl_json["payload"]["items"][0]["canonical_ref"],
         )
         self.assertEqual(
-            "/root/work/sub2api/deploy/agentplane/contract.wsl.yaml",
+            _expected_real_contract_path("wsl"),
             wsl_json["payload"]["items"][0]["contract_file"],
         )
 
+    @pytest.mark.external_app
     def test_real_formal_catalog_sub2api_keeps_none_previous_control_plane(self) -> None:
         for target in ("wsl", "prod0-main", "prod2-main"):
             with self.subTest(target=target):

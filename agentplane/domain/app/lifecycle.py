@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from agentplane.domain.app import runtime as app_runtime
 from agentplane.domain.app.artifacts import resolve_delivery_contract_spec
 from agentplane.domain.app.catalog import resolve_app_contract, resolve_app_entry
 from agentplane.domain.app.models import AppCatalogEntry, DeliveryContractSpec
@@ -243,9 +244,6 @@ def load_validated_delivery_contract(
     repo_name: str | None = None,
     contract_path: str | None = None,
 ) -> ValidatedDeliveryContract:
-    from agentplane.providers.app_runtime import default_app_runtime_gateway
-
-    app_cli = default_app_runtime_gateway()
     catalog_entry, resolved_repo_name, resolved_app_root, resolved_contract = _resolve_contract_source(
         repo_root,
         target=target,
@@ -254,7 +252,7 @@ def load_validated_delivery_contract(
         repo_name=repo_name,
         contract_path=contract_path,
     )
-    contract = app_cli.validate_contract(resolved_contract, repo_root=repo_root, target=target)
+    contract = app_runtime.validate_contract(resolved_contract, repo_root=repo_root, target=target)
     contract_app = str(contract.get("app_id") or "")
     if contract_app != app:
         raise ValueError(f"contract app_id mismatch: expected {app!r}, got {contract_app!r}")
@@ -263,7 +261,7 @@ def load_validated_delivery_contract(
     except ValueError as exc:
         raise ValueError("contract file must stay inside app repo root") from exc
     return ValidatedDeliveryContract(
-        app_cli=app_cli,
+        app_cli=app_runtime,
         contract=contract,
         delivery_contract=resolve_delivery_contract_spec(contract),
         contract_file=resolved_contract,

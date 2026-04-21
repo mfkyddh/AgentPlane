@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from agentplane.cli.apps import _render_server_readme
+from agentplane.domain.app.runtime import _render_server_readme
 from agentplane.cli.inventory import generate_inventory_snapshot
 from agentplane.scripts.onepanel.ledger import _markdown_for, _render_readme_projection, _tenant_rows
 

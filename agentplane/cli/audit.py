@@ -817,9 +817,12 @@ def audit_filesystem(
     path_check_mode = "local-path"
     if target_env == "wsl":
         backend_type = _wsl_backend_type(host_profile)
-        if backend_type == "windows-wsl":
+        if backend_type == "windows-wsl" and runner is not None:
             path_check_mode = "backend-exec"
             host_violations = _audit_wsl_host_state_via_backend(resolved_root, backend_type=backend_type, runner=runner)
+        elif backend_type == "windows-wsl":
+            path_check_mode = "tracked-snapshot"
+            host_violations = []
         else:
             host_violations = _audit_wsl_host_state(resolved_root)
         violations = _audit_wsl_templates(resolved_root) + host_violations

@@ -7,6 +7,7 @@ from typing import Any
 
 import yaml
 
+from agentplane.domain.app import runtime as app_runtime
 from agentplane.domain.app.catalog import resolve_app_contract_source
 from agentplane.domain.app.lifecycle import (
     offboard_delivery_for_app,
@@ -17,7 +18,7 @@ from agentplane.domain.app.lifecycle import (
     run_delivery_post_actions,
 )
 from agentplane.runtime.backends import build_backend_runner
-from agentplane.runtime.execution import PlannedExecutionStep
+from agentplane.runtime.execution import PlannedExecutionStep, shell_join
 from agentplane.runtime.host_profile import detect_host_profile
 from agentplane.runtime.redaction import redact_execution_payload
 
@@ -41,12 +42,9 @@ def _load_validated_contract(
     app: str,
     app_repo_root: str | None = None,
 ) -> tuple[Any, dict[str, Any], Path]:
-    from agentplane.providers.app_runtime import default_app_runtime_gateway
-
-    app_cli = default_app_runtime_gateway()
     contract_file = _resolve_contract_file(repo_root, target=target, app=app, app_repo_root=app_repo_root)
-    contract = app_cli.validate_contract(contract_file, repo_root=repo_root, target=target)
-    return app_cli, contract, contract_file
+    contract = app_runtime.validate_contract(contract_file, repo_root=repo_root, target=target)
+    return app_runtime, contract, contract_file
 
 
 def _candidate_host_binding(app_cli: Any, host_binding: str) -> str:
@@ -129,9 +127,25 @@ def _render_execution_steps(steps: list[PlannedExecutionStep]) -> list[dict[str,
     runner = build_backend_runner()
     rendered_steps: list[dict[str, Any]] = []
     for step in steps:
-        rendered = runner.render(step.plan, bindings=step.bindings)
-        backend_payload = rendered.to_payload()
         display_override = step.bindings.metadata.get("display_override")
+        try:
+            rendered = runner.render(step.plan, bindings=step.bindings)
+            backend_payload = rendered.to_payload()
+        except ValueError as exc:
+            if step.plan.backend_type != "windows-wsl":
+                raise
+            backend_payload = {
+                "backend_type": step.plan.backend_type,
+                "argv": list(step.plan.argv),
+                "display_command": display_override if isinstance(display_override, str) and display_override else shell_join(step.plan.argv),
+                "cwd": None,
+                "env": {},
+                "expects_stdin": bool(step.plan.input_refs),
+                "expected_outputs": list(step.plan.expected_outputs),
+                "capabilities": list(step.plan.capabilities),
+                "blocked": True,
+                "reason": str(exc),
+            }
         if isinstance(display_override, str) and display_override:
             backend_payload["display_command"] = display_override
         rendered_steps.append(

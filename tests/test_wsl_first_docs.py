@@ -34,8 +34,10 @@ class WslFirstDocsTests(unittest.TestCase):
         self.assertIn("On Windows hosts, use `pwsh` as the default local entry shell.", text)
         self.assertIn("`wsl.exe -e <program> <args...>`", text)
         self.assertIn("Default to a host-entry-first, backend-aware workflow.", text)
+        self.assertIn("Windows and WSL must not share the same working directory.", text)
+        self.assertIn("Each physical checkout must keep exactly one project virtualenv at `.venv`", text)
         self.assertIn(
-            "Control plane location determines the entry host; source location determines the local execution host.",
+            "Control plane location determines the entry host; backend execution must use a host-native workspace for that backend.",
             text,
         )
 
@@ -61,6 +63,7 @@ class WslFirstDocsTests(unittest.TestCase):
         self.assertIn("`pwsh`", flow_text)
         self.assertIn("bootstrap inspect-local", flow_text)
         self.assertIn("resolver / backend", flow_text)
+        self.assertIn("Windows 与 WSL 不能共享同一个工作目录", flow_text)
 
     def test_template_surface_docs_do_not_reintroduce_wsl_first_language(self) -> None:
         for path in CORE_TEMPLATE_ENTRY_DOCS:

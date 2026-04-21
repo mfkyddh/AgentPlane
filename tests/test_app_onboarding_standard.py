@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import json
-import subprocess
 import tomllib
 import unittest
 from pathlib import Path
@@ -129,7 +127,8 @@ class AppOnboardingStandardTests(unittest.TestCase):
         self.assertIn("wsl.exe", windows_setup)
         self.assertIn("host local inspect", windows_setup)
         self.assertIn("invoke-agentplane-windows-uv.ps1", windows_setup)
-        self.assertIn("UV_PROJECT_ENVIRONMENT", windows_setup)
+        self.assertIn("Workspace policy: Windows and WSL must use separate checkouts", windows_setup)
+        self.assertNotIn("UV_PROJECT_ENVIRONMENT", windows_setup)
         self.assertIn("-RepoRoot $repoRoot", windows_setup)
         self.assertIn("--repo-root $repoRoot", windows_setup)
         self.assertIn("-PreferRepoRoot", windows_setup)
@@ -139,49 +138,19 @@ class AppOnboardingStandardTests(unittest.TestCase):
         self.assertIn("Windows_NT", setup_sh)
         self.assertIn("host local inspect", linux_setup)
 
-    def test_windows_uv_wrapper_routes_unc_repo_to_local_project_environment(self) -> None:
+    def test_windows_uv_wrapper_uses_repo_local_venv_and_rejects_unc_repo_roots(self) -> None:
         wrapper = (REPO_ROOT / ".codex" / "environments" / "lib" / "invoke-agentplane-windows-uv.ps1").read_text(
             encoding="utf-8"
         )
 
-        self.assertIn("UV_PROJECT_ENVIRONMENT", wrapper)
-        self.assertIn("LOCALAPPDATA", wrapper)
-        self.assertIn("\\\\wsl.localhost\\", wrapper)
+        self.assertNotIn("UV_PROJECT_ENVIRONMENT", wrapper)
+        self.assertNotIn("LOCALAPPDATA", wrapper)
+        self.assertIn("Test-IsWslUncPath $effectiveRoot", wrapper)
+        self.assertIn("forbids running the Windows uv entry from a WSL UNC checkout", wrapper)
         self.assertIn("Set-StrictMode -Version Latest", wrapper)
         self.assertIn('& $uv.Source "run" @UvArgs', wrapper)
+        self.assertNotIn("WindowsControlRoot", wrapper)
         self.assertNotIn("D:\\Projects\\AgentPlane", wrapper)
-
-    def test_windows_uv_wrapper_executes_host_local_inspect_from_unc_repo(self) -> None:
-        script = r"\\wsl.localhost\Ubuntu\root\work\AgentPlane\.codex\environments\lib\invoke-agentplane-windows-uv.ps1"
-        result = subprocess.run(
-            [
-                "pwsh.exe",
-                "-NoProfile",
-                "-ExecutionPolicy",
-                "Bypass",
-                "-File",
-                script,
-                "-WindowsControlRoot",
-                r"Z:\__missing__",
-                "python",
-                "-m",
-                "agentplane.cli",
-                "host",
-                "local",
-                "inspect",
-            ],
-            cwd=REPO_ROOT,
-            text=True,
-            capture_output=True,
-            check=False,
-        )
-
-        self.assertEqual(result.returncode, 0, msg=result.stderr)
-        payload = json.loads(result.stdout)
-        self.assertEqual("local.inspect", payload["action"])
-        self.assertEqual("wsl-linux", payload["payload"]["linux_backend"]["backend_type"])
-        self.assertTrue(payload["payload"]["control_root"])
-        self.assertTrue(payload["payload"]["linux_backend_root"].startswith("/"))
 
     def test_windows_host_plan_hardens_unc_commands_for_future_tasks(self) -> None:
         plan = (
@@ -206,6 +175,14 @@ class AppOnboardingStandardTests(unittest.TestCase):
         self.assertIn("tests/test_repo_snapshot_contracts.py", text)
         self.assertIn("tests/test_onepanel_plugin_and_skills.py", text)
         self.assertIn("tests/test_app_onboarding_standard.py", text)
+        self.assertIn("guard-host-workspace.sh", text)
+        self.assertNotIn("UV_PROJECT_ENVIRONMENT", text)
+
+    def test_repo_ignores_only_the_single_default_venv(self) -> None:
+        text = (REPO_ROOT / ".gitignore").read_text(encoding="utf-8")
+
+        self.assertIn(".venv/", text)
+        self.assertNotIn(".venv-*/", text)
 
     def test_agents_doc_uses_compact_contract_sections(self) -> None:
         text = (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")

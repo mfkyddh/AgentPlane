@@ -10,7 +10,7 @@ import re
 from tests.app_resource_path_fixtures import resource_relative, resource_root
 
 from agentplane.cli.audit import audit_filesystem
-from agentplane.cli.apps import _render_server_readme
+from agentplane.domain.app.runtime import _render_server_readme
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 

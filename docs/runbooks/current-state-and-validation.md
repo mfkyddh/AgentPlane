@@ -12,8 +12,7 @@
 | 角色 | 当前路径 | 说明 |
 | --- | --- | --- |
 | Windows 控制面源码根 | `D:\Projects\AgentPlane` | 当前主入口所在目录；本地 `git`、文档编辑、Windows 侧 `pwsh` 包装都从这里发起。 |
-| Linux backend 源码根 | `/mnt/d/Projects/AgentPlane` | 当前 Windows 控制面对应的 WSL backend 路径；`uv`、`pytest`、Linux-only 构建与验证从这里执行。 |
-| WSL 目标机上的运行仓库 | `/root/work/AgentPlane` | `wsl` target 当前 inventory 中记录的 live repo 路径；它描述的是目标侧状态，不等于当前本地源码根。 |
+| WSL 目标机上的运行仓库 | `/root/work/AgentPlane` | `wsl` target 当前 inventory 中记录的 live repo 路径；它是独立 Linux 文件系统 checkout，不等于 Windows 工作目录映射。 |
 | `sub2api` 应用仓库 | `/root/work/sub2api` | 当前正式样板应用仓库；`deploy/agentplane/contract*.yaml` 位于这里。 |
 
 ### 本轮重点样板
@@ -30,6 +29,7 @@
 
 - `bootstrap inspect-local`、`host local inspect` 在当前 Windows 控制面 + WSL backend 组合下可正常返回路径绑定结果。
 - 当前本轮修复后，仓库 `pytest` 已恢复到全绿；之前卡住的 10 个失败都已收口。
+- 本地 Python 环境统一使用当前 checkout 根目录 `.venv`；不再维护 `.venv-win` / `.venv-wsl` 分叉。
 
 ### WSL
 

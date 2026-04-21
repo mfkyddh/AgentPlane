@@ -110,7 +110,7 @@ class DocsNoLegacyTermsTests(unittest.TestCase):
             text,
         )
         self.assertIn(
-            "Control plane location determines the entry host; source location determines the local execution host.",
+            "Control plane location determines the entry host; backend execution must use a host-native workspace for that backend.",
             text,
         )
         self.assertNotIn("retained as the WSL/Linux backend path during migration", text)

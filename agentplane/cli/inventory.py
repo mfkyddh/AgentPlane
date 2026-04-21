@@ -12,7 +12,6 @@ from agentplane.runtime.backends import build_backend_runner
 from agentplane.runtime.execution import ExecutionBindings, ExecutionPlan
 from agentplane.runtime.host_profile import HostProfile, detect_host_profile
 from agentplane.runtime.target_resolver import TargetResolver
-from agentplane.runtime.wsl_bridge import windows_path_to_wsl_posix
 
 
 SUPPORTED_INVENTORY_TARGETS = ("wsl", "prod0-main", "prod2-main")
@@ -185,13 +184,11 @@ def _wsl_snapshot_via_backend(
     runner: Any | None = None,
 ) -> dict[str, Any]:
     effective_runner = runner or build_backend_runner()
-    module_root = Path(__file__).resolve().parents[2]
-    pythonpath = windows_path_to_wsl_posix(module_root) or str(module_root)
     plan = ExecutionPlan(
         backend_type=backend_type,  # type: ignore[arg-type]
         cwd_ref="workspace.control_root",
         argv=("python3", "-c", _WSL_SNAPSHOT_SCRIPT),
-        env_refs=("pythonpath",),
+        env_refs=(),
         input_refs=(),
         expected_outputs=("snapshot-json",),
         capabilities=("python3",),
@@ -201,7 +198,6 @@ def _wsl_snapshot_via_backend(
         plan,
         bindings=ExecutionBindings(
             cwd_values={"workspace.control_root": repo_root},
-            env_values={"pythonpath": {"PYTHONPATH": pythonpath}},
         ),
     )
     if not result.ok:
@@ -209,6 +205,18 @@ def _wsl_snapshot_via_backend(
     payload = json.loads(result.stdout)
     if not isinstance(payload, dict):
         raise ValueError("wsl inventory backend payload must be an object")
+    return payload
+
+
+def _tracked_wsl_snapshot(repo_root: Path) -> dict[str, Any]:
+    payload = _load_json_file(_wsl_inventory_file(repo_root))
+    payload.setdefault("label", "WSL 跳板机")
+    payload.setdefault("target", "wsl")
+    payload["collection_mode"] = "tracked-snapshot"
+    payload["live_collection_required"] = (
+        "Run from a separate Linux-filesystem checkout for live WSL inventory; "
+        "Windows-mounted checkouts are not valid WSL working directories."
+    )
     return payload
 
 
@@ -236,8 +244,15 @@ def generate_inventory_snapshot(
     backend_type = None
     if target == "wsl":
         backend_type = _wsl_backend_type(host_profile)
-        if backend_type == "windows-wsl":
+        if backend_type == "windows-wsl" and runner is not None:
             payload = _wsl_snapshot_via_backend(resolved_root, backend_type=backend_type, runner=runner)
+        elif backend_type == "windows-wsl":
+            if write:
+                raise ValueError(
+                    "live WSL inventory write requires running from a separate Linux-filesystem checkout; "
+                    "Windows-mounted checkouts are not valid WSL working directories."
+                )
+            payload = _tracked_wsl_snapshot(resolved_root)
         else:
             payload = _wsl_snapshot(resolved_root)
         inventory_file = _wsl_inventory_file(resolved_root)

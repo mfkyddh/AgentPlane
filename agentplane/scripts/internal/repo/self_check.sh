@@ -3,9 +3,8 @@ set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
 cd "$repo_root"
-if [[ -z "${UV_PROJECT_ENVIRONMENT:-}" ]]; then
-  export UV_PROJECT_ENVIRONMENT="$repo_root/.venv-wsl"
-fi
+. .codex/environments/lib/guard-host-workspace.sh
+agentplane_guard_host_workspace "$repo_root"
 
 # Phase 4 / Lane 6 contract:
 # projection verification / fixture / ledger remain scenario-specific workflows.

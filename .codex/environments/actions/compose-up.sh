@@ -2,6 +2,8 @@
 set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/../../.."
+. .codex/environments/lib/guard-host-workspace.sh
+agentplane_guard_host_workspace "$PWD"
 
 service="${SERVICE:-}"
 if [[ -z "$service" ]]; then

@@ -19,7 +19,8 @@
 
 - 默认采用 `host-entry-first, backend-aware`。
 - Windows 宿主场景固定走 `pwsh -> formal CLI -> WSL/SSH backend`；Linux/macOS 继续使用原生 POSIX shell。
-- 当前已经处于 WSL/Linux 源码根时，源码绑定动作直接在该 backend 内执行，不再重复包一层宿主入口。
+- Windows 与 WSL 禁止共享同一个工作目录；WSL/Linux 源码绑定动作只能在 Linux 文件系统 checkout 内执行，不能使用 `/mnt/<drive>/...` 作为仓库根。
+- 当前已经处于 Linux 文件系统源码根时，源码绑定动作直接在该 backend 内执行，不再重复包一层宿主入口。
 - 只有 WSL 内确实需要 shell 特性时才使用 `sh -lc` / `bash -lc`。
 - 默认以 `root` 在 WSL 本地执行；仅在需要用户态环境或文件归属控制时切换用户。
 - 远端 Linux 生产机默认走 `root` 直连 SSH；只有尚未完成 root 直连准备的目标，才临时走具备 sudo 权限账户。
@@ -28,6 +29,7 @@
 ## 自动化与执行入口治理
 
 - 仓库自动化主栈固定为 Python + `uv`。
+- 每个物理 checkout 只保留根目录 `.venv`；不使用 `.venv-win`、`.venv-wsl` 或 `UV_PROJECT_ENVIRONMENT` 分叉虚拟环境。
 - Bash 只作为薄包装层，不作为仓库主编排语言。
 - Node.js 不是仓库主控制面；只用于临时工具调用或必要生态桥接。
 - 仓库日常自动化正式入口统一为：
