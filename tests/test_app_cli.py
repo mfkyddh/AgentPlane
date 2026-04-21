@@ -1022,7 +1022,9 @@ if [[ "$cmd" == *"ip route replace 172.19.0.0/16 dev ${bridge} src 172.19.0.1"* 
   exit 0
 fi
 if [[ "$cmd" == *"docker inspect sub2api-prod"* ]]; then
-  echo '[]'
+  cat <<'JSON'
+[{"Config":{"Env":["DATABASE_PASSWORD=db-secret","REDIS_PASSWORD=redis-secret","SERVER_PORT=8080"]}}]
+JSON
   exit 0
 fi
 if [[ "$cmd" == *"curl -fsS http://127.0.0.1:18080/health"* ]]; then
@@ -2486,6 +2488,7 @@ class AppCliTests(unittest.TestCase):
             self.assertIn("postgres18-prod", content)
             self.assertIn("redis7-prod", content)
             self.assertIn("zqf_network", content)
+            self.assertIn("/data/sub2api/config/sub2api-prod.env", content)
 
     def test_render_runtime_outputs_sub2api_prod2_compose(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -3081,7 +3084,7 @@ class AppCliTests(unittest.TestCase):
             self.assertEqual("sub2api-prod", app_entry["container_name"])
             self.assertEqual(["postgres18-prod", "redis7-prod"], app_entry["depends_on_containers"])
             self.assertEqual("https://token.zzzai.cloud:8443", app_entry["public_url"])
-            self.assertEqual(["/opt/agentplane/secrets/services/sub2api.prod0.env"], app_entry["config_files"])
+            self.assertEqual(["/data/sub2api/config/sub2api-prod.env"], app_entry["config_files"])
             self.assertEqual("sub2api_prod0", app_entry["app_resource_summary"]["postgres"]["database"])
             self.assertEqual("sub2api:", app_entry["app_resource_summary"]["redis"]["key_prefix"])
             self.assertNotIn("user", app_entry["app_resource_summary"]["redis"])
@@ -3092,7 +3095,7 @@ class AppCliTests(unittest.TestCase):
             )
             written_payload = json.loads(inventory_file.read_text(encoding="utf-8"))
             self.assertEqual(
-                ["/opt/agentplane/secrets/services/sub2api.prod0.env"],
+                ["/data/sub2api/config/sub2api-prod.env"],
                 written_payload["services"]["sub2api"]["config_files"],
             )
             self.assertNotIn("user", written_payload["services"]["sub2api"]["app_resource_summary"]["redis"])
@@ -3408,6 +3411,22 @@ class AppCliTests(unittest.TestCase):
             write_tenant_secret_files(root, include_minio=True)
             contract_file = write_contract(app_root, tenant_resources=baseline_tenant_resources(include_minio=True))
             inventory_file = root / "inventory" / "servers" / "prod0-main" / "inventory.json"
+            server_readme = root / "inventory" / "servers" / "prod0-main" / "README.md"
+            server_readme.write_text(
+                "\n".join(
+                    [
+                        "# prod0-main 摘要",
+                        "",
+                        "<!-- BEGIN AGENTPLANE_ONEPANEL_LEDGER -->",
+                        "## 1Panel 对象台帐投影",
+                        "",
+                        "- 刷新命令：`uv run python -m agentplane.cli onepanel --env prod0-main ledger refresh --repo-root <repo-root> --write`",
+                        "<!-- END AGENTPLANE_ONEPANEL_LEDGER -->",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
             payload = json.loads(inventory_file.read_text(encoding="utf-8"))
             payload["services"]["sub2api"] = {
                 "control_plane": "compose",
@@ -3448,7 +3467,6 @@ class AppCliTests(unittest.TestCase):
             )
 
             self.assertEqual(result.returncode, 0, msg=result.stderr)
-            server_readme = root / "inventory" / "servers" / "prod0-main" / "README.md"
             app_summary = app_root / "docs" / "AGENTPLANE_DEPLOYMENT.md"
             self.assertTrue(server_readme.exists())
             self.assertTrue(app_summary.exists())
@@ -3471,6 +3489,8 @@ class AppCliTests(unittest.TestCase):
             self.assertIn('"policy_scope": "bucket-only"', app_summary_text)
             self.assertIn('"isolation_level": "bucket-scoped-rw"', app_summary_text)
             self.assertIn("合同文件：`contract.yaml`", app_summary_text)
+            self.assertIn("<!-- BEGIN AGENTPLANE_ONEPANEL_LEDGER -->", server_readme_text)
+            self.assertIn("--repo-root <repo-root> --write", server_readme_text)
             server_redis_line = next(line for line in server_readme_text.splitlines() if line.startswith("- app_resource_summary.redis"))
             redis_line = next(line for line in app_summary_text.splitlines() if line.startswith("- `redis`："))
             self.assertIn('"db": 1', server_redis_line)
@@ -3830,12 +3850,12 @@ class AppCliTests(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             payload = json.loads(result.stdout)
-            self.assertEqual("/opt/agentplane/secrets/services/sub2api.prod0.env", payload["payload"]["remote_env"])
+            self.assertEqual("/data/sub2api/config/sub2api-prod.env", payload["payload"]["remote_env"])
             self.assertTrue(payload["payload"]["local_env"].endswith("secrets/services/sub2api.prod0.env"))
             commands = "\n".join(payload["payload"]["commands"])
             self.assertIn("root@prod0-main", commands)
             self.assertNotIn("sudo ", commands)
-            self.assertIn("install -Dm600 /tmp/sub2api.prod0.env /opt/agentplane/secrets/services/sub2api.prod0.env", commands)
+            self.assertIn("install -Dm600 /tmp/sub2api.prod0.env /data/sub2api/config/sub2api-prod.env", commands)
             operation = payload["payload"]["operation"]
             ledger_file = Path(operation["ledger_file"])
             self.assertTrue(ledger_file.is_file())
@@ -3917,7 +3937,7 @@ class AppCliTests(unittest.TestCase):
             self.assertIn("ip addr add 172.19.0.1/16 dev br-66f7da1be943", log_text)
             self.assertIn("scp -F", log_text)
             self.assertIn("/opt/agentplane/infra/compose/sub2api/docker-compose.prod0.yml", log_text)
-            self.assertIn("/opt/agentplane/secrets/services/sub2api.prod0.env", log_text)
+            self.assertIn("/data/sub2api/config/sub2api-prod.env", log_text)
             self.assertIn("systemctl disable --now sub2api || true", log_text)
             self.assertIn("docker compose -f docker-compose.prod0.yml up -d --pull never", log_text)
 
@@ -4063,6 +4083,11 @@ class AppCliTests(unittest.TestCase):
             self.assertIn("public", payload["checks"])
             self.assertEqual(2, len(payload["checks"]["origin"]))
             self.assertEqual(2, len(payload["checks"]["public"]))
+            inspect_stdout = payload["checks"]["origin"][0]["stdout"]
+            self.assertIn("DATABASE_PASSWORD=<redacted>", inspect_stdout)
+            self.assertIn("REDIS_PASSWORD=<redacted>", inspect_stdout)
+            self.assertNotIn("db-secret", inspect_stdout)
+            self.assertNotIn("redis-secret", inspect_stdout)
             log_text = log_file.read_text(encoding="utf-8")
             self.assertIn("docker network inspect zqf_network", log_text)
             self.assertIn("docker inspect sub2api-prod", log_text)

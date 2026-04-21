@@ -42,6 +42,7 @@ def add_projection_parser(subparsers: argparse._SubParsersAction[argparse.Argume
         parser.add_argument("--target", required=True, choices=SUPPORTED_RUNTIME_ENV_TARGETS, help="Target environment")
         parser.add_argument("--app", required=True, help="Application id")
         parser.add_argument("--repo-root", default=".", help="Repository root")
+        parser.add_argument("--reveal-secrets", action="store_true", help="Include unredacted env content in output")
 
     verification = projection_subparsers.add_parser("verification", help="Verification observation surface")
     verification_subparsers = verification.add_subparsers(dest="projection_verification_action", required=True)
@@ -113,13 +114,25 @@ def handle_projection_command(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = _normalize_repo_root(args.repo_root)
     if args.projection_surface == "runtime-env" and args.projection_action == "plan":
         _require_formal_action(args.projection_surface, args.projection_action, FORMAL_RUNTIME_ENV_ACTIONS)
-        return _wrap("runtime-env", "runtime-env.plan", plan_runtime_env_projection(repo_root, args.target, args.app))
+        return _wrap(
+            "runtime-env",
+            "runtime-env.plan",
+            plan_runtime_env_projection(repo_root, args.target, args.app, reveal_secrets=args.reveal_secrets),
+        )
     if args.projection_surface == "runtime-env" and args.projection_action == "apply":
         _require_formal_action(args.projection_surface, args.projection_action, FORMAL_RUNTIME_ENV_ACTIONS)
-        return _wrap("runtime-env", "runtime-env.apply", apply_runtime_env_projection(repo_root, args.target, args.app))
+        return _wrap(
+            "runtime-env",
+            "runtime-env.apply",
+            apply_runtime_env_projection(repo_root, args.target, args.app, reveal_secrets=args.reveal_secrets),
+        )
     if args.projection_surface == "runtime-env" and args.projection_action == "verify":
         _require_formal_action(args.projection_surface, args.projection_action, FORMAL_RUNTIME_ENV_ACTIONS)
-        return _wrap("runtime-env", "runtime-env.verify", verify_runtime_env_projection(repo_root, args.target, args.app))
+        return _wrap(
+            "runtime-env",
+            "runtime-env.verify",
+            verify_runtime_env_projection(repo_root, args.target, args.app, reveal_secrets=args.reveal_secrets),
+        )
     if args.projection_surface == "verification" and args.projection_verification_action == "run":
         _require_formal_action(
             args.projection_surface,

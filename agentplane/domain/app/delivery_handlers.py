@@ -19,6 +19,7 @@ from agentplane.domain.app.lifecycle import (
 from agentplane.runtime.backends import build_backend_runner
 from agentplane.runtime.execution import PlannedExecutionStep
 from agentplane.runtime.host_profile import detect_host_profile
+from agentplane.runtime.redaction import redact_execution_payload
 
 
 _OBSERVATION_WINDOW_NOTE = "旧 runtime 作为 rollback state 保留；只有 post-cutover verification 通过且 observation window 结束后才允许清理。"
@@ -94,7 +95,7 @@ def _candidate_runtime_material(
     remote_compose_name = app_cli._remote_compose_filename(target).removesuffix(".yml") + f".candidate.{suffix}.yml"
     remote_compose_dir = f"/opt/agentplane/infra/compose/{app_id}"
     remote_compose = f"{remote_compose_dir}/{remote_compose_name}"
-    remote_env = f"/opt/agentplane/secrets/services/{app_id}.{app_cli._target_alias(target)}.candidate.{suffix}.env"
+    remote_env = app_cli._remote_env_path(app_id, target, candidate_suffix=suffix)
     service["env_file"] = [remote_env]
     candidate_compose_text = yaml.safe_dump(compose_payload, sort_keys=False, allow_unicode=False)
 
@@ -119,6 +120,7 @@ def _candidate_runtime_material(
         "remote_compose_name": remote_compose_name,
         "remote_compose": remote_compose,
         "remote_env": remote_env,
+        "remote_env_dir": app_cli._remote_env_parent(remote_env),
     }
 
 
@@ -142,7 +144,7 @@ def _execute_steps(steps: list[PlannedExecutionStep], *, stop_on_failure: bool) 
     results: list[dict[str, Any]] = []
     for step in steps:
         result = runner.execute(step.plan, bindings=step.bindings)
-        results.append({"key": step.key, **result.to_payload()})
+        results.append({"key": step.key, **redact_execution_payload(result.to_payload())})
         if stop_on_failure and not result.ok:
             break
     return results
@@ -205,7 +207,7 @@ def _candidate_precheck_steps(app_cli: Any, repo_root: Path, *, target: str, mat
             "candidate.prepare.remote-dirs",
             ssh_target=ssh_target,
             cwd=None,
-            argv=("mkdir", "-p", material["remote_compose_dir"], "/opt/agentplane/secrets/services"),
+            argv=("mkdir", "-p", material["remote_compose_dir"], material["remote_env_dir"]),
             capabilities=("ssh",),
         ),
         plan_remote_copy_step(
@@ -313,14 +315,15 @@ def _plan_remote_deploy_steps(
     rollback_entry = contract["rollback"]["previous_control_plane"]
     remote_compose_name = app_cli._remote_compose_filename(target)
     remote_compose = f"/opt/agentplane/infra/compose/{contract['app_id']}/{remote_compose_name}"
-    remote_env = f"/opt/agentplane/secrets/services/{contract['app_id']}.{app_cli._target_alias(target)}.env"
+    remote_env = app_cli._remote_env_path(str(contract["app_id"]), target)
+    remote_env_dir = app_cli._remote_env_parent(remote_env)
     compose_source = rendered_compose_path or Path("<rendered-compose>")
     steps = [
         plan_remote_shell_step(
             "deploy.remote.remote-dirs",
             ssh_target=ssh_target,
             cwd=None,
-            argv=("mkdir", "-p", f"/opt/agentplane/infra/compose/{contract['app_id']}", "/opt/agentplane/secrets/services"),
+            argv=("mkdir", "-p", f"/opt/agentplane/infra/compose/{contract['app_id']}", remote_env_dir),
             capabilities=("ssh",),
         ),
         plan_remote_copy_step(

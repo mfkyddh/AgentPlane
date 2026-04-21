@@ -38,11 +38,14 @@ from agentplane.domain.app.artifacts import (
 from agentplane.runtime.backends import build_backend_runner
 from agentplane.runtime.execution import ExecutionBindings, ExecutionPlan
 from agentplane.runtime.host_profile import detect_host_profile
+from agentplane.runtime.redaction import redact_execution_payload
 from agentplane.runtime.wsl_bridge import normalize_repo_root_for_current_host
 from agentplane.ssh import SshTarget, resolve_ssh_target
 
 
 PRODUCTION_APP_TARGETS = ("prod0-main", "prod2-main")
+ONEPANEL_LEDGER_BEGIN = "<!-- BEGIN AGENTPLANE_ONEPANEL_LEDGER -->"
+ONEPANEL_LEDGER_END = "<!-- END AGENTPLANE_ONEPANEL_LEDGER -->"
 SUPPORTED_APP_TARGETS = ("wsl", *PRODUCTION_APP_TARGETS)
 ERROR_ID_APP_RESOURCE_RESOURCES_REQUIRED = "app.resource.resources_required"
 ERROR_ID_APP_RESOURCE_SECRET_FILE_SCOPE = "app.resource.secret_file_scope"
@@ -528,6 +531,28 @@ def _target_alias(target: str) -> str:
 
 def _remote_compose_filename(target: str) -> str:
     return f"docker-compose.{_target_alias(target)}.yml"
+
+
+def _prod0_data_env_path(app_id: str, *, candidate_suffix: str | None = None) -> str | None:
+    if app_id not in {"sub2api", "sub2apipay"}:
+        return None
+    filename = f"{app_id}-prod"
+    if candidate_suffix:
+        filename = f"{filename}.candidate.{candidate_suffix}"
+    return f"/data/{app_id}/config/{filename}.env"
+
+
+def _remote_env_path(app_id: str, target: str, *, candidate_suffix: str | None = None) -> str:
+    if target == "prod0-main":
+        data_path = _prod0_data_env_path(app_id, candidate_suffix=candidate_suffix)
+        if data_path:
+            return data_path
+    candidate_fragment = f".candidate.{candidate_suffix}" if candidate_suffix else ""
+    return f"/opt/agentplane/secrets/services/{app_id}.{_target_alias(target)}{candidate_fragment}.env"
+
+
+def _remote_env_parent(remote_env: str) -> str:
+    return str(Path(remote_env).parent).replace("\\", "/")
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:
@@ -1245,10 +1270,13 @@ def _target_dependency_names(depends: list[str], *, target: str) -> list[str]:
 def _target_config_files(repo_root: Path, app_id: str, runtime: dict[str, Any], *, target: str) -> list[str]:
     if target == "wsl":
         return [str(_secrets_root(repo_root) / "services" / f"{app_id}.wsl.env")]
+    prod0_data_env = _prod0_data_env_path(app_id) if target == "prod0-main" else None
+    if prod0_data_env:
+        return [prod0_data_env]
     config_files = runtime.get("config_files")
     if isinstance(config_files, list) and config_files:
         return config_files
-    return [f"/opt/agentplane/secrets/services/{app_id}.{_target_alias(target)}.env"]
+    return [_remote_env_path(app_id, target)]
 
 
 def _compose_template_path(repo_root: Path, app_id: str, *, target: str) -> Path:
@@ -1348,6 +1376,9 @@ def render_runtime(contract: dict[str, Any], *, repo_root: Path, target: str, im
     service["image"] = build_image_ref
     service["container_name"] = _runtime_container_name(str(contract["app_id"]), runtime, target=target)
     service["ports"] = [_port_mapping(runtime, target=target)]
+    prod0_data_env = _prod0_data_env_path(str(contract["app_id"])) if target == "prod0-main" else None
+    if prod0_data_env:
+        service["env_file"] = [prod0_data_env]
     dependency_env = _default_dependency_env(depends, contract, target=target)
     if dependency_env:
         existing_env = service.get("environment")
@@ -1530,6 +1561,17 @@ def _render_app_summary(contract: dict[str, Any], target: str, inventory_entry: 
     return "\n".join(lines) + "\n"
 
 
+def _preserve_onepanel_ledger_section(existing: str, rendered: str) -> str:
+    if ONEPANEL_LEDGER_BEGIN not in existing or ONEPANEL_LEDGER_END not in existing:
+        return rendered
+    if ONEPANEL_LEDGER_BEGIN in rendered and ONEPANEL_LEDGER_END in rendered:
+        return rendered
+    before, _, rest = existing.partition(ONEPANEL_LEDGER_BEGIN)
+    section_body, _, _after = rest.partition(ONEPANEL_LEDGER_END)
+    section = f"{ONEPANEL_LEDGER_BEGIN}{section_body}{ONEPANEL_LEDGER_END}\n"
+    return rendered.rstrip() + "\n\n" + section
+
+
 def _resolve_app_summary_path(contract: dict[str, Any], *, target: str) -> str | None:
     summary_paths = _nested_get(contract, "docs.app_summary_files")
     if isinstance(summary_paths, dict):
@@ -1548,7 +1590,9 @@ def doc_sync(*, repo_root: Path, target: str, contract_paths: list[Path], write:
     app_docs: list[str] = []
 
     if write:
-        server_readme.write_text(_render_server_readme(target, inventory), encoding="utf-8")
+        current_readme = server_readme.read_text(encoding="utf-8") if server_readme.is_file() else ""
+        rendered_readme = _preserve_onepanel_ledger_section(current_readme, _render_server_readme(target, inventory))
+        server_readme.write_text(rendered_readme, encoding="utf-8")
 
     for contract_path in contract_paths:
         contract = validate_contract(contract_path, repo_root=repo_root, target=target)
@@ -1597,16 +1641,16 @@ def _execute_step(
                 env_values={"step.env": env or {}},
             ),
         )
-        return result.to_payload()
+        return redact_execution_payload(result.to_payload())
     result = _run(argv, cwd=cwd, env=env)
-    return {
+    return redact_execution_payload({
         "argv": argv,
         "display": display,
         "returncode": result.returncode,
         "stdout": result.stdout,
         "stderr": result.stderr,
         "ok": result.returncode == 0,
-    }
+    })
 
 
 def _production_network_preflight(repo_root: Path, target: str) -> dict[str, Any] | None:
@@ -1972,10 +2016,11 @@ def deploy_app(
     rollback_entry = contract["rollback"]["previous_control_plane"]
     remote_compose_name = _remote_compose_filename(target)
     remote_compose = f"/opt/agentplane/infra/compose/{contract['app_id']}/{remote_compose_name}"
-    remote_env = f"/opt/agentplane/secrets/services/{contract['app_id']}.{_target_alias(target)}.env"
+    remote_env = _remote_env_path(str(contract["app_id"]), target)
+    remote_env_parent = _remote_env_parent(remote_env)
     commands = [
         ssh_target.display_ssh_command(
-            f"mkdir -p /opt/agentplane/infra/compose/{contract['app_id']} /opt/agentplane/secrets/services"
+            f"mkdir -p /opt/agentplane/infra/compose/{contract['app_id']} {remote_env_parent}"
         ),
         ssh_target.display_scp_command("<rendered-compose>", remote_compose),
         ssh_target.display_scp_command(str(env_path), f"/tmp/{env_path.name}"),
@@ -2028,10 +2073,10 @@ def deploy_app(
     steps = [
         (
             ssh_target.ssh_args_for_shell(
-                f"mkdir -p /opt/agentplane/infra/compose/{contract['app_id']} /opt/agentplane/secrets/services"
+                f"mkdir -p /opt/agentplane/infra/compose/{contract['app_id']} {remote_env_parent}"
             ),
             ssh_target.display_ssh_command(
-                f"mkdir -p /opt/agentplane/infra/compose/{contract['app_id']} /opt/agentplane/secrets/services"
+                f"mkdir -p /opt/agentplane/infra/compose/{contract['app_id']} {remote_env_parent}"
             ),
         ),
         (

@@ -63,12 +63,17 @@ def _remote_api_path_candidates(default_env_file: Path, default_script: Path) ->
     # `api_request.py` path, including `/opt/env_ubuntu/...`, until the remote
     # estate no longer depends on that location.
     candidates = [(default_env_file, default_script)]
+    live_repo_pair = (
+        Path("/root/work/AgentPlane/secrets/services/onepanel-api.env"),
+        Path("/root/work/AgentPlane/agentplane/scripts/onepanel/api_request.py"),
+    )
     legacy_pair = (
         Path("/opt/env_ubuntu/secrets/services/onepanel-api.env"),
         Path("/opt/env_ubuntu/agentplane/scripts/onepanel/api_request.py"),
     )
-    if legacy_pair not in candidates:
-        candidates.append(legacy_pair)
+    for pair in (live_repo_pair, legacy_pair):
+        if pair not in candidates:
+            candidates.append(pair)
     return tuple(candidates)
 
 

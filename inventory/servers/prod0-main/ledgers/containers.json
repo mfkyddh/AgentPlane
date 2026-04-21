@@ -105,7 +105,7 @@
       ],
       "runtime_root": "/data/sub2apipay/app/current",
       "config_files": [
-        "/opt/agentplane/secrets/services/sub2apipay.prod0.env"
+        "/data/sub2apipay/config/sub2apipay-prod.env"
       ],
       "data_dir": "/data/sub2apipay/data",
       "host_binding": "127.0.0.1:18091",
@@ -135,7 +135,7 @@
       ],
       "runtime_root": "/data/sub2api/app/current",
       "config_files": [
-        "/opt/agentplane/secrets/services/sub2api.prod0.env"
+        "/data/sub2api/config/sub2api-prod.env"
       ],
       "data_dir": "/data/sub2api/data",
       "host_binding": "127.0.0.1:18080",

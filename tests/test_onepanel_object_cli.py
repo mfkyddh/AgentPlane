@@ -1,3 +1,4 @@
+import json
 import subprocess
 import sys
 import unittest
@@ -41,7 +42,7 @@ class FakeExecutor(FakeLikeExecutorProtocol):
     def api_request(self, method: str, path: str, body: dict[str, object] | None = None) -> object:
         self.calls.append((method, path, body))
         if path == "/api/v2/core/settings/search":
-            return {"systemVersion": "v2.1.7", "bindDomain": "1panel.example.com"}
+            return {"systemVersion": "v2.1.7", "bindDomain": "1panel.example.com", "apiKey": "panel-secret-key"}
         if path == "/api/v2/core/settings/update":
             return {"ok": True}
         if path == "/api/v2/cronjobs/search":
@@ -134,6 +135,24 @@ class OnePanelObjectApiTests(unittest.TestCase):
 
 
 class OnePanelObjectCliHandlerTests(unittest.TestCase):
+    def test_panel_verify_redacts_sensitive_settings(self) -> None:
+        args = type(
+            "Args",
+            (),
+            {
+                "env": "wsl",
+                "onepanel_panel_action": "verify",
+                "key": "",
+            },
+        )()
+
+        with patch("agentplane.cli.onepanel._executor_for", return_value=FakeExecutor()):
+            payload = _handle_panel_action(args)
+
+        self.assertEqual("panel", payload["scope"])
+        self.assertEqual("<redacted>", payload["payload"]["summary"]["apiKey"])
+        self.assertNotIn("panel-secret-key", json.dumps(payload))
+
     def test_panel_apply_executes_setting_update(self) -> None:
         executor = FakeExecutor()
         args = type(

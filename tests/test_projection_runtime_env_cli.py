@@ -148,7 +148,30 @@ class ProjectionRuntimeEnvCliTests(unittest.TestCase):
             self.assertEqual(str(root / "secrets" / "services" / "sub2api.prod2.env"), payload["env_file"])
             self.assertFalse(payload["written"])
             self.assertIn("DATABASE_USER", payload["managed_keys"])
+            self.assertNotIn("rendered_env", payload)
+            self.assertNotIn("current_env", payload)
+            self.assertNotIn("PGPASSWORD=secret", result.stdout)
+            self.assertNotIn("REDIS_PASSWORD=secret", result.stdout)
             self.assertFalse((root / "secrets" / "services" / "sub2api.prod2.env").exists())
+
+            revealed = run_cli(
+                "projection",
+                "runtime-env",
+                "plan",
+                "--target",
+                "prod2-main",
+                "--app",
+                "sub2api",
+                "--repo-root",
+                str(root),
+                "--reveal-secrets",
+            )
+
+            self.assertEqual(revealed.returncode, 0, msg=revealed.stderr)
+            revealed_payload = json.loads(revealed.stdout)
+            self.assertIn("rendered_env", revealed_payload)
+            self.assertIn("DATABASE_PASSWORD=secret", revealed_payload["rendered_env"])
+            self.assertIn("REDIS_PASSWORD=secret", revealed_payload["rendered_env"])
 
     def test_runtime_env_verify_reports_missing_env_file(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -208,6 +231,14 @@ class ProjectionRuntimeEnvCliTests(unittest.TestCase):
             self.assertFalse(payload["ok"])
             self.assertEqual("projection.runtime_env_drift", payload["error"]["id"])
             self.assertIn("REDIS_DB", payload["drift"]["managed_keys"])
+            self.assertNotIn("expected", payload["drift"])
+            self.assertNotIn("actual", payload["drift"])
+            self.assertIn("expected_redacted", payload["drift"])
+            self.assertIn("actual_redacted", payload["drift"])
+            self.assertIn("REDIS_PASSWORD=<redacted>", payload["drift"]["actual_redacted"])
+            self.assertIn("JWT_SECRET=<redacted>", payload["drift"]["actual_redacted"])
+            self.assertNotIn("REDIS_PASSWORD=secret", result.stdout)
+            self.assertNotIn("JWT_SECRET=keep", result.stdout)
 
 
 if __name__ == "__main__":

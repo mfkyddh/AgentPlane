@@ -17,6 +17,7 @@ from agentplane.cli.app_resource_state import (
     validate_secret_files,
 )
 from agentplane.domain.app.resource_paths import app_resource_secret_relative, secrets_root
+from agentplane.runtime.redaction import redact_env_text
 
 
 SUPPORTED_RUNTIME_ENV_TARGETS = ("wsl", "prod0-main", "prod2-main")
@@ -294,36 +295,52 @@ def _projection_state(repo_root: Path, target: str, app_id: str) -> dict[str, An
     return payload
 
 
-def _public_projection_payload(payload: dict[str, Any]) -> dict[str, Any]:
+def _redact_drift_payload(drift: dict[str, Any]) -> dict[str, Any]:
+    redacted = dict(drift)
+    expected = redacted.pop("expected", None)
+    actual = redacted.pop("actual", None)
+    if isinstance(expected, str):
+        redacted["expected_redacted"] = redact_env_text(expected)
+    if isinstance(actual, str):
+        redacted["actual_redacted"] = redact_env_text(actual)
+    return redacted
+
+
+def _public_projection_payload(payload: dict[str, Any], *, reveal_secrets: bool = False) -> dict[str, Any]:
     public = dict(payload)
-    public.pop("current_env", None)
     public.pop("env_exists", None)
+    if not reveal_secrets:
+        public.pop("current_env", None)
+        public.pop("rendered_env", None)
+        drift = public.get("drift")
+        if isinstance(drift, dict):
+            public["drift"] = _redact_drift_payload(drift)
     return public
 
 
-def plan_runtime_env_projection(repo_root: Path, target: str, app_id: str) -> dict[str, Any]:
-    return _public_projection_payload(_projection_state(repo_root.resolve(), target, app_id))
+def plan_runtime_env_projection(repo_root: Path, target: str, app_id: str, *, reveal_secrets: bool = False) -> dict[str, Any]:
+    return _public_projection_payload(_projection_state(repo_root.resolve(), target, app_id), reveal_secrets=reveal_secrets)
 
 
-def apply_runtime_env_projection(repo_root: Path, target: str, app_id: str) -> dict[str, Any]:
+def apply_runtime_env_projection(repo_root: Path, target: str, app_id: str, *, reveal_secrets: bool = False) -> dict[str, Any]:
     repo_root = repo_root.resolve()
     payload = _projection_state(repo_root, target, app_id)
     if not payload.get("ok"):
-        return _public_projection_payload(payload)
+        return _public_projection_payload(payload, reveal_secrets=reveal_secrets)
 
     env_path = Path(payload["env_file"])
     if payload.get("changed"):
         env_path.parent.mkdir(parents=True, exist_ok=True)
         env_path.write_text(str(payload["rendered_env"]), encoding="utf-8")
         payload["written"] = True
-    return _public_projection_payload(payload)
+    return _public_projection_payload(payload, reveal_secrets=reveal_secrets)
 
 
-def verify_runtime_env_projection(repo_root: Path, target: str, app_id: str) -> dict[str, Any]:
+def verify_runtime_env_projection(repo_root: Path, target: str, app_id: str, *, reveal_secrets: bool = False) -> dict[str, Any]:
     repo_root = repo_root.resolve()
     payload = _projection_state(repo_root, target, app_id)
     if not payload.get("ok"):
-        return _public_projection_payload(payload)
+        return _public_projection_payload(payload, reveal_secrets=reveal_secrets)
 
     current_text = str(payload.get("current_env", ""))
     if not payload.get("env_exists"):
@@ -332,7 +349,7 @@ def verify_runtime_env_projection(repo_root: Path, target: str, app_id: str) -> 
             "id": "projection.runtime_env_missing",
             "message": "runtime env file is missing",
         }
-        return _public_projection_payload(payload)
+        return _public_projection_payload(payload, reveal_secrets=reveal_secrets)
 
     if payload.get("changed"):
         payload["ok"] = False
@@ -345,6 +362,6 @@ def verify_runtime_env_projection(repo_root: Path, target: str, app_id: str) -> 
             "expected": str(payload.get("rendered_env", "")),
             "actual": current_text,
         }
-        return _public_projection_payload(payload)
+        return _public_projection_payload(payload, reveal_secrets=reveal_secrets)
 
-    return _public_projection_payload(payload)
+    return _public_projection_payload(payload, reveal_secrets=reveal_secrets)

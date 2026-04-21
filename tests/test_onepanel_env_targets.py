@@ -80,6 +80,23 @@ class OnePanelEnvTargetsTests(unittest.TestCase):
         self.assertEqual(Path("/opt/env_ubuntu/agentplane/scripts/onepanel/api_request.py"), script)
         run_command.assert_called_once()
 
+    def test_resolve_remote_api_paths_supports_live_root_work_repo(self) -> None:
+        target = env_targets.get_target("prod0-main")
+        completed = subprocess.CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout="/root/work/AgentPlane/secrets/services/onepanel-api.env\n"
+            "/root/work/AgentPlane/agentplane/scripts/onepanel/api_request.py\n",
+            stderr="",
+        )
+
+        with mock.patch.object(env_targets, "run_command", return_value=completed) as run_command:
+            env_file, script = env_targets.resolve_api_paths(target)
+
+        self.assertEqual(Path("/root/work/AgentPlane/secrets/services/onepanel-api.env"), env_file)
+        self.assertEqual(Path("/root/work/AgentPlane/agentplane/scripts/onepanel/api_request.py"), script)
+        run_command.assert_called_once()
+
     def test_phase4_lane12_projection_fixture_apply_requires_execute_for_mutation_guardrail(self) -> None:
         result = self._run_cli(
             "projection",

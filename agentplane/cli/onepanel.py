@@ -41,6 +41,7 @@ from agentplane.scripts.onepanel.object_api import (
 )
 from agentplane.scripts.onepanel.public_ingress import command_ensure_public_ingress
 from agentplane.scripts.onepanel.verification import run_verification_suite
+from agentplane.runtime.redaction import redact_sensitive_value
 
 
 def add_onepanel_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
@@ -401,7 +402,7 @@ def _wait_for_installed_app_running(executor: TargetExecutor, *, install_id: int
 
 
 def _wrap(args: argparse.Namespace, *, scope: str, action: str, payload: dict[str, Any] | Any) -> dict[str, Any]:
-    return {"command": "onepanel", "env": args.env, "scope": scope, "action": action, "payload": payload}
+    return {"command": "onepanel", "env": args.env, "scope": scope, "action": action, "payload": redact_sensitive_value(payload)}
 
 
 def _repo_root_for(args: argparse.Namespace) -> Path:
