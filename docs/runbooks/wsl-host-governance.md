@@ -3,13 +3,13 @@
 ## 这台 WSL 现在扮演什么角色
 
 当前 `wsl` 不是“唯一控制面源码位置”，而是本地 Linux 验证与 fixture 目标。  
-本仓库现在要分清 3 个路径：
+本仓库现在要分清 3 个角色：
 
-- Windows 控制面源码：`D:\Projects\AgentPlane`
-- `wsl` target 当前 live repo 路径：`/root/work/AgentPlane`
-- WSL 侧如果要执行源码绑定动作，必须使用 Linux 文件系统 checkout，例如 `/root/work/AgentPlane`，不能使用 `/mnt/<drive>/...`
+- 控制面源码：`<repo-root>`，只保留一份 checkout。
+- WSL backend 工作目录：由 resolver 从 `<repo-root>` 派生。
+- 应用仓库：`<app-repo-root>`，由 catalog / contract 指向。
 
-文档、CLI 与 inventory 讨论的都是“角色”，不是把 Windows 工作目录和 WSL 工作目录混成一个。
+文档、CLI 与 inventory 讨论的都是“角色”，不是要求用户维护两份源码。
 
 ## 当前结论
 
@@ -25,19 +25,19 @@
 优先先确认控制面和 backend 绑定：
 
 ```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli bootstrap inspect-local --repo-root D:\Projects\AgentPlane
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli host local inspect --repo-root D:\Projects\AgentPlane
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli bootstrap inspect-local --repo-root <repo-root>
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli host local inspect --repo-root <repo-root>
 ```
 
 ### 如果你已经在 WSL backend
 
-优先从独立 Linux 文件系统 checkout 执行：
+优先从当前 checkout 执行：
 
 ```bash
-cd /root/work/AgentPlane
-uv run python -m agentplane.cli host inventory wsl --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli host audit wsl --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli host live-gate plan --profile wsl --repo-root /root/work/AgentPlane
+cd <repo-root>
+uv run python -m agentplane.cli host inventory wsl --repo-root <repo-root>
+uv run python -m agentplane.cli host audit wsl --repo-root <repo-root>
+uv run python -m agentplane.cli host live-gate plan --profile wsl --repo-root <repo-root>
 ```
 
 ## WSL 最小治理检查
@@ -63,25 +63,25 @@ docker network inspect zqf_network >/dev/null
 ### 3. 主机对象面
 
 ```bash
-cd /root/work/AgentPlane
-uv run python -m agentplane.cli host inventory wsl --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli host audit wsl --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli projection verification run --target wsl --profile wsl-fixture --repo-root /root/work/AgentPlane
+cd <repo-root>
+uv run python -m agentplane.cli host inventory wsl --repo-root <repo-root>
+uv run python -m agentplane.cli host audit wsl --repo-root <repo-root>
+uv run python -m agentplane.cli projection verification run --target wsl --profile wsl-fixture --repo-root <repo-root>
 ```
 
-真实 live gate 只在这个 Linux 文件系统 checkout 中显式执行：
+真实 live gate 在当前 checkout 中显式执行：
 
 ```bash
-cd /root/work/AgentPlane
-uv run python -m agentplane.cli host live-gate run --profile wsl --repo-root /root/work/AgentPlane --execute
+cd <repo-root>
+uv run python -m agentplane.cli host live-gate run --profile wsl --repo-root <repo-root> --execute
 ```
 
 ### 4. `sub2api` 应用面
 
 ```bash
-cd /root/work/AgentPlane
-uv run python -m agentplane.cli app object verify --target wsl --app sub2api --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli app delivery verify --target wsl --app sub2api --repo-root /root/work/AgentPlane --execute
+cd <repo-root>
+uv run python -m agentplane.cli app object verify --target wsl --app sub2api --repo-root <repo-root>
+uv run python -m agentplane.cli app delivery verify --target wsl --app sub2api --repo-root <repo-root> --execute
 ```
 
 ## 写回顺序
@@ -96,7 +96,7 @@ WSL 目标状态变化后，仍然按这个顺序回写：
 
 ## 当前需要继续保持的边界
 
-- `wsl` 是本地 Linux 目标，不等于 Windows 控制面源码目录。
-- 不要在 WSL 中对 `/mnt/<drive>/...` 下的 Windows checkout 执行 `uv`、`pytest`、`git` 或包管理命令。
+- `wsl` 是本地 Linux target，不是第二份控制面源码。
+- 不要同时从 Windows 与 WSL 对同一个 checkout 执行包管理器写操作。
 - 任何自动化、fixture、app 验证都优先走 `uv run python -m agentplane.cli ...`。
-- `sub2api` 的应用仓库真源当前在 `/root/work/sub2api`；控制面只通过 catalog 和 contract 读取它，不在本仓库复制第二份应用真源。
+- 应用仓库真源由 catalog 和 contract 指向；控制面不复制第二份应用真源。

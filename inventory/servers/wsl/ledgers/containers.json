@@ -13,7 +13,7 @@
       ],
       "runtime_root": "/data/sub2api/app/current",
       "config_files": [
-        "/root/work/AgentPlane/secrets/services/sub2api.wsl.env"
+        "<repo-root>/secrets/services/sub2api.wsl.env"
       ],
       "data_dir": "/data/sub2api/data",
       "host_binding": "0.0.0.0:18080",

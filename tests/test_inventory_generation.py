@@ -253,7 +253,7 @@ class InventoryGenerationTests(unittest.TestCase):
                 json.dumps(
                     {
                         "host_truth": {
-                            "control_plane_inventory": "uv run python -m agentplane.cli host inventory wsl --repo-root /root/work/AgentPlane",
+                            "control_plane_inventory": "uv run python -m agentplane.cli host inventory wsl --repo-root <repo-root>",
                             "last_ledger_refresh": "2026-04-02T12:04:12.394460+00:00",
                         }
                     },
@@ -267,7 +267,7 @@ class InventoryGenerationTests(unittest.TestCase):
 
             self.assertIn("host_truth", payload)
             self.assertEqual(
-                "uv run python -m agentplane.cli host inventory wsl --repo-root /root/work/AgentPlane",
+                "uv run python -m agentplane.cli host inventory wsl --repo-root <repo-root>",
                 payload["host_truth"]["control_plane_inventory"],
             )
 

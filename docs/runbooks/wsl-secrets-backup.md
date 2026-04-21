@@ -8,36 +8,36 @@
 
 | 项目 | 值 |
 | --- | --- |
-| 真源目录 | `/root/work/AgentPlane/secrets` |
+| 真源目录 | `<repo-root>/secrets` |
 | 状态文件 | `/data/agentplane/secrets-backup/state.json` |
 | 临时目录 | `/tmp/agentplane-secrets-backup` |
 | 调度器 | WSL 本机 `1Panel` 计划任务 `wsl-agentplane-secrets-backup` |
-| 控制面仓库 | `/root/work/AgentPlane` |
+| 控制面仓库 | `<repo-root>` |
 | 远端桶 | `AgentPlane_Backups` |
 | 对象前缀 | `backups/agentplane/secrets-main/` |
 
 ## Execution Entry
 
 任务 env 文件是 `secrets/services/secrets-backup.r2.wsl.env`。
-若本机 secrets 布局发生调整，先执行 `uv run python -m agentplane.cli host secrets sync-layout wsl --repo-root /root/work/AgentPlane --write`，再重新核验自动化任务。
+若本机 secrets 布局发生调整，先执行 `uv run python -m agentplane.cli host secrets sync-layout wsl --repo-root <repo-root> --write`，再重新核验自动化任务。
 
 手动执行正式入口：
 
 ```bash
-env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute
+env -C <repo-root> uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute
 ```
 
 核验并回写 WSL 本机计划任务：
 
 ```bash
-env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation verify wsl --name wsl-agentplane-secrets-backup --repo-root /root/work/AgentPlane
-env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation reconcile --execute --repo-root /root/work/AgentPlane
+env -C <repo-root> uv run python -m agentplane.cli host automation verify wsl --name wsl-agentplane-secrets-backup --repo-root <repo-root>
+env -C <repo-root> uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation reconcile --execute --repo-root <repo-root>
 ```
 
 只读核对计划任务对象是否仍存在：
 
 ```bash
-env -C /root/work/AgentPlane uv run python -m agentplane.cli onepanel \
+env -C <repo-root> uv run python -m agentplane.cli onepanel \
   --env wsl \
   cronjob search \
   --info wsl-agentplane-secrets-backup
@@ -59,7 +59,7 @@ env -C /root/work/AgentPlane uv run python -m agentplane.cli onepanel \
 - 任务名：`wsl-agentplane-secrets-backup`
 - 周期：每 5 小时一次
 - Cron：`0 */5 * * *`
-- 工作目录：`/root/work/AgentPlane`
+- 工作目录：`<repo-root>`
 - 命令：`uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute`
 - 类型：`shell`
 - executor：`bash`
@@ -71,16 +71,16 @@ env -C /root/work/AgentPlane uv run python -m agentplane.cli onepanel \
 建议每次调整后执行最小验证：
 
 ```bash
-env -C /root/work/AgentPlane uv run python -m pytest \
+env -C <repo-root> uv run python -m pytest \
   tests/test_secrets_backup_r2.py \
   tests/test_cli_entrypoints.py \
   tests/test_host_automation.py \
   tests/test_inventory_generation.py \
   tests/test_docs_no_legacy_terms.py -q
 
-env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute
-env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation reconcile --execute --repo-root /root/work/AgentPlane
-env -C /root/work/AgentPlane uv run python -m agentplane.cli onepanel --env wsl cronjob search --info wsl-agentplane-secrets-backup
+env -C <repo-root> uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute
+env -C <repo-root> uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation reconcile --execute --repo-root <repo-root>
+env -C <repo-root> uv run python -m agentplane.cli onepanel --env wsl cronjob search --info wsl-agentplane-secrets-backup
 ```
 
 ## Common Failures
@@ -95,7 +95,7 @@ env -C /root/work/AgentPlane uv run python -m agentplane.cli onepanel --env wsl 
 处理：
 
 ```bash
-env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute
+env -C <repo-root> uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute
 ```
 
 必要时核对 `secrets/services/secrets-backup.r2.wsl.env`。
@@ -111,7 +111,7 @@ env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation app
 
 ```bash
 cat /data/agentplane/secrets-backup/state.json
-find /root/work/AgentPlane/secrets -type f | sort
+find <repo-root>/secrets -type f | sort
 ```
 
 确认 `secrets/hosts/wsl` 是否存在实际内容变化，而不是只看时间戳。

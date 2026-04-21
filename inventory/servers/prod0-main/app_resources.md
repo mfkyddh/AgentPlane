@@ -23,4 +23,4 @@
 - MinIO 记录 bucket-scoped policy 元数据，用于表达每个应用仅应访问自己的 bucket。
 - 这不是强隔离；app resource 之间仍共享同一个 Redis 实例。
 - `secret_files` 表示标准落盘路径，不代表当前仓库已存在真实 secret 文件。
-- 真实 secret 由 `ops.cli secrets` 或受控发布流程写入 `secrets/hosts/<target>/apps/<app>/resources/`，不在 tracked 模板内保存。
+- 真实 secret 由 `agentplane.cli host secrets` 或受控发布流程写入 `secrets/hosts/<target>/apps/<app>/resources/`，不在 tracked 模板内保存。

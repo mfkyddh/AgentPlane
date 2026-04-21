@@ -24,7 +24,7 @@
 
 - 所有正式操作都从 `uv run python -m agentplane.cli ...` 进入。
 - Windows 主机以 `pwsh` 为入口；Linux / macOS 继续使用原生 shell。
-- Windows 与 WSL 不能共享同一个工作目录；WSL 源码绑定动作必须在独立 Linux 文件系统 checkout 内执行，且每个 checkout 只保留根目录 `.venv`。
+- Windows 与 WSL 默认共享同一份源码 checkout；WSL 源码绑定动作通过 resolver/backend 映射执行，且每个 checkout 只保留根目录 `.venv`。
 - 真实 WSL/SSH/Docker live integration gate 只通过 `host live-gate` 运行，默认本地 `pytest` 不执行真实 backend。
 - `onepanel` 公开面只剩 `panel`、`firewall`、`cronjob`、`task`。
 - `service`、`website`、`app`、`projection` 是对外默认 domain；不要把 provider/debug helper 当默认入口。
@@ -40,7 +40,7 @@ uv run python -m agentplane.cli bootstrap inspect-local --repo-root <repo-root>
 uv run python -m agentplane.cli bootstrap doctor --repo-root <repo-root>
 ```
 
-如果是在 Windows 宿主执行，正式入口仍然是 `pwsh`。后续 remote/backend 动作可以落到对应 backend，但不能把 Windows checkout 映射成 WSL 工作目录。
+如果是在 Windows 宿主执行，正式入口仍然是 `pwsh`。后续 remote/backend 动作落到对应 backend，WSL backend 使用 resolver 生成的同 checkout 路径。
 
 ### 2. 命令发现
 
@@ -82,10 +82,10 @@ uv run python -m agentplane.cli projection verification run --target <target> --
 uv run python -m agentplane.cli host live-gate plan --profile <target> --repo-root <repo-root>
 ```
 
-如果需要执行真实 live gate，切到独立 Linux 文件系统 checkout 后显式运行：
+如果需要执行真实 live gate，使用当前 checkout 显式运行；Windows 宿主会按 profile 路由到 WSL/SSH backend：
 
 ```bash
-uv run python -m agentplane.cli host live-gate run --profile <target> --repo-root <linux-repo-root> --execute
+uv run python -m agentplane.cli host live-gate run --profile <target> --repo-root <repo-root> --execute
 ```
 
 ### 6. 回写阶段

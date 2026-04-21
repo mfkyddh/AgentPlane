@@ -15,14 +15,14 @@
 
 ### 当前样板位置
 
-- AgentPlane Windows 控制面源码：`D:\Projects\AgentPlane`
-- AgentPlane WSL 目标侧 live checkout：`/root/work/AgentPlane`
-- `sub2api` 应用仓库：`/root/work/sub2api`
+- AgentPlane Windows 控制面源码：`<repo-root>`
+- AgentPlane WSL 目标侧 live checkout：`<repo-root>`
+- `sub2api` 应用仓库：`<app-repo-root>`
 
 ### 这意味着什么
 
 - `--repo-root` 始终指 AgentPlane 仓库根。
-- Windows 与 WSL 禁止共享同一个工作目录；WSL 侧验证必须在 Linux 文件系统 checkout 内执行，不能把 `/mnt/<drive>/...` 当作控制面仓库根。
+- Windows 与 WSL 默认共享同一份源码 checkout；WSL 侧验证通过 resolver/backend 路由到同一工作树。
 - 应用合同真源仍在应用仓库自己的 `deploy/agentplane/contract*.yaml`。
 - catalog 是 canonical truth；当正式仓库根不是控制面同级目录时，resolver 负责把 canonical ref 解析到实际应用仓库。
 - `--app-repo-root` 只用于临时 worktree 或显式覆盖，不应该成为长期主路径。

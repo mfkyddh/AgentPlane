@@ -1,7 +1,7 @@
 # [ARCHIVED] prod0 PostgreSQL App Resource Ops
 
 > 历史窗口快照。该文档仅保留 `2026-03-26` 前后租户化对账窗口的现场记录，不是当前正式入口。
-> 当前决策请回到 `inventory/servers/prod0-main/`、active runbook，以及 `uv run python -m ops.cli app resource ...` 的现行控制面口径。
+> 当前决策请回到 `inventory/servers/prod0-main/`、active runbook，以及 `uv run python -m agentplane.cli app resource ...` 的现行控制面口径。
 
 ## 2026-03-26 现场状态
 
@@ -24,7 +24,7 @@
 ### 1. app resource 现场审计
 
 ```text
-/root/work/OP_Linux/.worktrees/codex-prod0-pg-app-resource-optimization
+<legacy-op-linux-root>/.worktrees/codex-prod0-pg-app-resource-optimization
 historical helper: prod0 PostgreSQL app resource live audit helper
 ```
 
@@ -33,8 +33,8 @@ historical helper: prod0 PostgreSQL app resource live audit helper
 ### 2. 远端只读校验脚本
 
 ```bash
-cd /root/work/OP_Linux/.worktrees/codex-prod0-pg-app-resource-optimization
-bash ops/scripts/remote/run_remote_bash.sh prod0-main --script-file /root/work/OP_Linux/.worktrees/codex-prod0-pg-app-resource-optimization/ops/scripts/remote/prod0-postgres-app-resource-cutover.sh
+cd <legacy-op-linux-root>/.worktrees/codex-prod0-pg-app-resource-optimization
+bash ops/scripts/remote/run_remote_bash.sh prod0-main --script-file <legacy-op-linux-root>/.worktrees/codex-prod0-pg-app-resource-optimization/ops/scripts/remote/prod0-postgres-app-resource-cutover.sh
 ```
 
 脚本默认输出：
@@ -49,7 +49,7 @@ bash ops/scripts/remote/run_remote_bash.sh prod0-main --script-file /root/work/O
 ### 3. 远端 `psql` 直接核验
 
 ```bash
-cd /root/work/OP_Linux/.worktrees/codex-prod0-pg-app-resource-optimization
+cd <legacy-op-linux-root>/.worktrees/codex-prod0-pg-app-resource-optimization
 printf '%s\n' \
   'set -euo pipefail' \
   'source /opt/op_linux/secrets/services/postgres/admin.prod0.env' \

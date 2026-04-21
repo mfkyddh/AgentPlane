@@ -6,8 +6,8 @@
       "controller": "1panel-cronjob",
       "schedule": "daily at 05:00",
       "spec": "0 5 * * *",
-      "cwd": "/root/work/AgentPlane",
-      "command": "uv run python -m agentplane.cli host inventory prod0-main --repo-root /root/work/AgentPlane",
+      "cwd": "<repo-root>",
+      "command": "uv run python -m agentplane.cli host inventory prod0-main --repo-root <repo-root>",
       "docs": [
         "docs/runbooks/prod0-main-governance.md"
       ],
@@ -19,8 +19,8 @@
       "controller": "1panel-cronjob",
       "schedule": "daily at 05:15",
       "spec": "15 5 * * *",
-      "cwd": "/root/work/AgentPlane",
-      "command": "uv run python -m agentplane.cli host audit prod0-main --repo-root /root/work/AgentPlane",
+      "cwd": "<repo-root>",
+      "command": "uv run python -m agentplane.cli host audit prod0-main --repo-root <repo-root>",
       "docs": [
         "docs/runbooks/prod0-main-governance.md"
       ]
@@ -31,8 +31,8 @@
       "controller": "1panel-cronjob",
       "schedule": "daily at 05:30",
       "spec": "30 5 * * *",
-      "cwd": "/root/work/AgentPlane",
-      "command": "uv run python -m agentplane.cli host network audit prod0-main --repo-root /root/work/AgentPlane",
+      "cwd": "<repo-root>",
+      "command": "uv run python -m agentplane.cli host network audit prod0-main --repo-root <repo-root>",
       "docs": [
         "docs/runbooks/prod0-main-governance.md"
       ]
@@ -43,8 +43,8 @@
       "controller": "1panel-cronjob",
       "schedule": "daily at 06:00",
       "spec": "0 6 * * *",
-      "cwd": "/root/work/AgentPlane",
-      "command": "uv run python -m agentplane.cli projection ledger refresh --target prod0-main --repo-root /root/work/AgentPlane --write",
+      "cwd": "<repo-root>",
+      "command": "uv run python -m agentplane.cli projection ledger refresh --target prod0-main --repo-root <repo-root> --write",
       "docs": [
         "docs/runbooks/prod0-main-governance.md",
         "docs/runbooks/onepanel-cli-validation-workflow.md"

@@ -63,12 +63,12 @@ def write_takeover_ready_ssh_contract(root: Path) -> None:
         "Host prod0-main 1.2.3.4\n"
         "  HostName 1.2.3.4\n"
         "  User root\n"
-        "  IdentityFile /root/work/AgentPlane/secrets/ssh/keys/prod0-main.pem\n"
+        "  IdentityFile <repo-root>/secrets/ssh/keys/prod0-main.pem\n"
         "\n"
         "Host prod2-main 5.6.7.8\n"
         "  HostName 5.6.7.8\n"
         "  User root\n"
-        "  IdentityFile /root/work/AgentPlane/secrets/ssh/keys/prod2-main.pem\n",
+        "  IdentityFile <repo-root>/secrets/ssh/keys/prod2-main.pem\n",
         encoding="utf-8",
     )
     (root / "secrets" / "ssh" / "keys" / "prod0-main.pem").write_text("demo-prod0", encoding="utf-8")
@@ -129,7 +129,7 @@ class BootstrapCliTests(unittest.TestCase):
                 "Host prod0-main\n"
                 "  HostName 1.2.3.4\n"
                 "  User root\n"
-                "  IdentityFile /root/work/AgentPlane/secrets/ssh/keys/prod0-main.pem\n",
+                "  IdentityFile <repo-root>/secrets/ssh/keys/prod0-main.pem\n",
                 encoding="utf-8",
             )
 

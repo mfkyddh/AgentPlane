@@ -7,11 +7,11 @@
 
 ## 硬边界
 
-- 只在独立 Linux 文件系统 checkout 内执行，例如 `<linux-repo-root>`；`wsl` profile 还要求当前 shell 位于 WSL。
-- 不允许从 Windows checkout、WSL UNC path 或 `/mnt/<drive>/...` 执行。
+- 只使用当前单 checkout；不要为了 live gate 再复制一份源码。
+- Windows 宿主可以执行 `wsl` profile，CLI 会把 repo root 路由到 WSL backend 可访问的同一工作树。
 - 每个 checkout 只使用自己的 `.venv`。
 - 不设置 `UV_PROJECT_ENVIRONMENT`，不创建 `.venv-win` 或 `.venv-wsl`。
-- Windows 可以作为控制面入口，但 live gate 的实际执行目录必须是 Linux native checkout。
+- 默认本地门禁仍不执行真实 WSL/SSH/Docker；live gate 必须显式加 `--execute`。
 
 ## 默认门禁
 
@@ -40,16 +40,15 @@ uv run python -m agentplane.cli host live-gate plan --profile wsl --repo-root <r
 uv run python -m agentplane.cli host live-gate plan --profile prod0-main --repo-root <repo-root>
 ```
 
-`plan` 输出会列出每一步命令、所需能力与被阻断的 checkout 类型。
+`plan` 输出会列出每一步命令、所需能力与单 checkout 执行策略。
 
 ## 执行入口
 
-执行入口只能在 Linux 文件系统 checkout 中运行：
+执行入口使用当前 checkout 运行：
 
 ```bash
-cd <linux-repo-root>
-uv run python -m agentplane.cli host live-gate run --profile wsl --repo-root <linux-repo-root> --execute
-uv run python -m agentplane.cli host live-gate run --profile prod0-main --repo-root <linux-repo-root> --execute
+uv run python -m agentplane.cli host live-gate run --profile wsl --repo-root <repo-root> --execute
+uv run python -m agentplane.cli host live-gate run --profile prod0-main --repo-root <repo-root> --execute
 ```
 
 `wsl` profile 覆盖：

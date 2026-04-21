@@ -1,13 +1,12 @@
 from pathlib import Path
 
-import pytest
-
 from agentplane.runtime.backends import WindowsWslBackend, build_backend_runner
 from agentplane.runtime.execution import ExecutionBindings, ExecutionPlan
 from agentplane.ssh import SshTarget
 
 
-def test_windows_wsl_backend_rejects_windows_checkout_cwd() -> None:
+def test_windows_wsl_backend_routes_windows_checkout_cwd_through_wsl_bridge(monkeypatch) -> None:
+    monkeypatch.setattr("agentplane.runtime.backends.windows_wsl.require_local_executable", lambda _name: None)
     plan = ExecutionPlan(
         backend_type="windows-wsl",
         cwd_ref="workspace.control_root",
@@ -19,11 +18,13 @@ def test_windows_wsl_backend_rejects_windows_checkout_cwd() -> None:
         timeout=300,
     )
 
-    with pytest.raises(ValueError, match="forbids using a Windows checkout"):
-        WindowsWslBackend().render(
-            plan,
-            ExecutionBindings(cwd_values={"workspace.control_root": "D:/Projects/AgentPlane"}),
-        )
+    rendered = WindowsWslBackend().render(
+        plan,
+        ExecutionBindings(cwd_values={"workspace.control_root": "D:/Projects/AgentPlane"}),
+    )
+
+    assert rendered.argv[:4] == ("wsl.exe", "-e", "bash", "-lc")
+    assert rendered.metadata["linux_command"] == "cd /mnt/d/Projects/AgentPlane && docker ps"
 
 
 def test_backend_runner_renders_ssh_linux_shell_plan() -> None:

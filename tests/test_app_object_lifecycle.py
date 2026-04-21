@@ -32,7 +32,7 @@ class AppObjectLifecycleCatalogTests(unittest.TestCase):
                         {
                             "app": "sub2api",
                             "repo_name": "sub2api",
-                            "repo_root": "/root/work/sub2api",
+                            "repo_root": "/work/sub2api",
                             "service_key": "sub2api",
                             "contracts": {"prod0-main": "deploy/agentplane/contract.yaml"},
                         }
@@ -43,7 +43,7 @@ class AppObjectLifecycleCatalogTests(unittest.TestCase):
             entry = AppCatalogEntry(
                 app="newapi",
                 repo_name="new-api",
-                repo_root=Path("/root/work/new-api"),
+                repo_root=Path("/work/new-api"),
                 service_key="newapi",
                 contracts={"prod0-main": "deploy/agentplane/contract.yaml"},
             )
@@ -63,7 +63,7 @@ class AppObjectLifecycleCatalogTests(unittest.TestCase):
             entry = AppCatalogEntry(
                 app="newapi",
                 repo_name="new-api",
-                repo_root=Path("/root/work/new-api"),
+                repo_root=Path("/work/new-api"),
                 service_key="new-api",
                 contracts={"prod0-main": "deploy/agentplane/contract.yaml"},
             )
@@ -80,7 +80,7 @@ class AppObjectLifecycleCatalogTests(unittest.TestCase):
                         {
                             "app": "newapi",
                             "repo_name": "new-api",
-                            "repo_root": "/root/work/new-api",
+                            "repo_root": "/work/new-api",
                             "service_key": "newapi",
                             "contracts": {"prod0-main": "deploy/agentplane/contract.yaml"},
                         }

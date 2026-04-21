@@ -21,8 +21,8 @@
 - `zqf_network` 现场子网：`172.19.0.0/16`
 - 站点治理：必须先创建为 1Panel 网站对象，再由 OpenResty 承载
 - 证书目录真源：`/data/1panel/www/certs/`
-- `uv run python -m agentplane.cli host inventory prod2-main --repo-root /root/work/AgentPlane` 当前是 tracked inventory readback，不是 live host collector；它与 `inventory/servers/prod2-main/inventory.json` 共同定义 prod2-main 的仓库级主机真值。
-- `uv run python -m agentplane.cli projection ledger refresh --target prod2-main --repo-root /root/work/AgentPlane --write` 只刷新 object ledger / `ledgers/*.json|md` / README；若需要新的 `verification-prod2-*.json|md`，必须单独执行 `projection verification run --write-report`。
+- `uv run python -m agentplane.cli host inventory prod2-main --repo-root <repo-root>` 当前是 tracked inventory readback，不是 live host collector；它与 `inventory/servers/prod2-main/inventory.json` 共同定义 prod2-main 的仓库级主机真值。
+- `uv run python -m agentplane.cli projection ledger refresh --target prod2-main --repo-root <repo-root> --write` 只刷新 object ledger / `ledgers/*.json|md` / README；若需要新的 `verification-prod2-*.json|md`，必须单独执行 `projection verification run --write-report`。
 
 ### 主机级公开网站对象（来自 `inventory/servers/prod2-main/inventory.json`）
 
@@ -42,56 +42,56 @@
 正式只读校验与台帐刷新：
 
 ```bash
-env -C /root/work/AgentPlane uv run python -m agentplane.cli website verify \
+env -C <repo-root> uv run python -m agentplane.cli website verify \
   --target prod2-main \
   --alias 1panel \
-  --repo-root /root/work/AgentPlane
+  --repo-root <repo-root>
 
-env -C /root/work/AgentPlane uv run python -m agentplane.cli projection verification run \
+env -C <repo-root> uv run python -m agentplane.cli projection verification run \
   --target prod2-main \
   --profile prod2-readonly \
-  --repo-root /root/work/AgentPlane \
+  --repo-root <repo-root> \
   --write-report
 
-env -C /root/work/AgentPlane uv run python -m agentplane.cli projection ledger refresh \
+env -C <repo-root> uv run python -m agentplane.cli projection ledger refresh \
   --target prod2-main \
-  --repo-root /root/work/AgentPlane \
+  --repo-root <repo-root> \
   --write
 ```
 
 如需在受控窗口内修复或重放公网入口，正式任务入口是：
 
 ```bash
-env -C /root/work/AgentPlane uv run python -m agentplane.cli website publish plan \
+env -C <repo-root> uv run python -m agentplane.cli website publish plan \
   --target prod2-main \
-  --config-file /root/work/AgentPlane/secrets/services/onepanel-public-ingress.prod2.env \
-  --cloudflare-env-file /root/work/AgentPlane/secrets/env/prod-jump.env \
-  --repo-root /root/work/AgentPlane
+  --config-file <repo-root>/secrets/services/onepanel-public-ingress.prod2.env \
+  --cloudflare-env-file <repo-root>/secrets/env/prod-jump.env \
+  --repo-root <repo-root>
 
-env -C /root/work/AgentPlane uv run python -m agentplane.cli website publish apply \
+env -C <repo-root> uv run python -m agentplane.cli website publish apply \
   --target prod2-main \
-  --config-file /root/work/AgentPlane/secrets/services/onepanel-public-ingress.prod2.env \
-  --cloudflare-env-file /root/work/AgentPlane/secrets/env/prod-jump.env \
-  --repo-root /root/work/AgentPlane \
+  --config-file <repo-root>/secrets/services/onepanel-public-ingress.prod2.env \
+  --cloudflare-env-file <repo-root>/secrets/env/prod-jump.env \
+  --repo-root <repo-root> \
   --execute
 
-env -C /root/work/AgentPlane uv run python -m agentplane.cli website publish verify \
+env -C <repo-root> uv run python -m agentplane.cli website publish verify \
   --target prod2-main \
-  --config-file /root/work/AgentPlane/secrets/services/onepanel-public-ingress.prod2.env \
-  --cloudflare-env-file /root/work/AgentPlane/secrets/env/prod-jump.env \
-  --repo-root /root/work/AgentPlane
+  --config-file <repo-root>/secrets/services/onepanel-public-ingress.prod2.env \
+  --cloudflare-env-file <repo-root>/secrets/env/prod-jump.env \
+  --repo-root <repo-root>
 ```
 
 bridge 网络是正式控制面前置条件；需要现场核对或修复时走：
 
 ```bash
-env -C /root/work/AgentPlane uv run python -m agentplane.cli host network audit \
+env -C <repo-root> uv run python -m agentplane.cli host network audit \
   prod2-main \
-  --repo-root /root/work/AgentPlane
+  --repo-root <repo-root>
 
-env -C /root/work/AgentPlane uv run python -m agentplane.cli host network ensure \
+env -C <repo-root> uv run python -m agentplane.cli host network ensure \
   prod2-main \
-  --repo-root /root/work/AgentPlane
+  --repo-root <repo-root>
 ```
 
 ## 当前只读审计边界
@@ -124,7 +124,7 @@ docker exec 1panel-openresty-prod nginx -s reload
 
 通过标准：
 
-- `website verify --target prod2-main --alias 1panel --repo-root /root/work/AgentPlane` 返回 `ok=true`
+- `website verify --target prod2-main --alias 1panel --repo-root <repo-root>` 返回 `ok=true`
 - `projection verification run --target prod2-main --profile prod2-readonly` 只出现已知对象边界差异
 - 如执行了公网入口变更，`website publish verify` 与 live-state 结论一致
 - `curl` 与 `nginx -T` 结论一致

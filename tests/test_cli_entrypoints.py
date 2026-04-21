@@ -307,7 +307,7 @@ class CliEntrypointsTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("invalid choice", result.stderr)
 
-    def test_host_live_gate_execute_is_not_allowed_from_windows_checkout(self) -> None:
+    def test_host_live_gate_run_without_execute_is_plan_only(self) -> None:
         result = run_cli(
             "host",
             "live-gate",
@@ -315,12 +315,13 @@ class CliEntrypointsTests(unittest.TestCase):
             "--profile",
             "wsl",
             "--repo-root",
-            "D:/Projects/AgentPlane",
-            "--execute",
+            str(REPO_ROOT),
         )
 
-        self.assertEqual(result.returncode, 1)
-        self.assertIn("live integration gate", result.stderr)
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertFalse(payload["payload"]["executed"])
+        self.assertEqual("single-checkout", payload["payload"]["required_checkout"])
 
 
 if __name__ == "__main__":

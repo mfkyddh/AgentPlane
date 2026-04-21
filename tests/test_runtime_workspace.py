@@ -6,7 +6,7 @@ from agentplane.runtime.workspace import resolve_workspace, resolve_workspace_fr
 from agentplane.runtime.wsl_bridge import windows_path_to_wsl_posix
 
 
-def test_workspace_does_not_derive_wsl_root_from_windows_control_root() -> None:
+def test_workspace_derives_wsl_root_from_windows_control_root_for_single_checkout() -> None:
     workspace = resolve_workspace(
         control_root=Path("C:/repos/agentplane"),
         private_root=Path("C:/repos/agentplane/secrets"),
@@ -15,7 +15,8 @@ def test_workspace_does_not_derive_wsl_root_from_windows_control_root() -> None:
 
     assert workspace.control_root.as_posix().endswith("repos/agentplane")
     assert workspace.private_root.as_posix().endswith("repos/agentplane/secrets")
-    assert workspace.linux_backend_root is None
+    assert workspace.linux_backend_root is not None
+    assert workspace.linux_backend_root.as_posix() == "/mnt/c/repos/agentplane"
     assert workspace.source_root.as_posix().endswith("repos/agentplane")
     assert workspace.local_command_root.as_posix().endswith("repos/agentplane")
 
@@ -42,19 +43,21 @@ def test_workspace_from_repo_uses_common_root_for_private_materials(tmp_path: Pa
     assert workspace.local_command_root == worktree_root
 
 
-def test_workspace_from_windows_repo_keeps_linux_backend_root_unbound() -> None:
+def test_workspace_from_windows_repo_binds_linux_backend_to_same_checkout() -> None:
     workspace = resolve_workspace_from_repo(Path("C:/repos/agentplane"))
 
     assert workspace.control_root.as_posix().endswith("repos/agentplane")
     assert workspace.private_root.as_posix().endswith("repos/agentplane/secrets")
-    assert workspace.linux_backend_root is None
+    assert workspace.linux_backend_root is not None
+    assert workspace.linux_backend_root.as_posix() == "/mnt/c/repos/agentplane"
 
 
-def test_workspace_rejects_windows_mounted_wsl_control_root() -> None:
-    import pytest
+def test_workspace_accepts_windows_mounted_wsl_control_root() -> None:
+    workspace = resolve_workspace(control_root=Path("/mnt/c/repos/agentplane"))
 
-    with pytest.raises(ValueError, match="separate Windows and WSL checkouts"):
-        resolve_workspace(control_root=Path("/mnt/c/repos/agentplane"))
+    assert workspace.control_root.as_posix() == "/mnt/c/repos/agentplane"
+    assert workspace.linux_backend_root is not None
+    assert workspace.linux_backend_root.as_posix() == "/mnt/c/repos/agentplane"
 
 
 def test_workspace_resolver_exposes_linux_staging_root_for_unc_control_root() -> None:

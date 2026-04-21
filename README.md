@@ -9,17 +9,17 @@
 - 人类输入面只剩 `secrets` 和少量 `identity`；其余正式动作统一从 `uv run python -m agentplane.cli ...` 进入。
 - 应用仓库只负责代码、构建资产、合同与非敏感模板；正式部署、验证、回写由控制面模板仓库负责。
 - 本模板不再默认引用作者现场目录；所有示例统一使用 `<repo-root>`、`<target>`、`<app>` 之类占位符。
-- Windows 与 WSL 禁止共享同一个工作目录；WSL 不能把 `/mnt/<drive>/...` 当成本仓库源码根。
+- Windows 与 WSL 默认共享同一份源码 checkout；WSL backend 通过 resolver 映射到同一工作树。
 - 每个物理 checkout 只保留一个项目虚拟环境：根目录 `.venv`。
 
 ## 当前现状
 
-这份 README 既是模板入口，也反映当前仓库自己的运行现实：
+这份 README 是模板入口，不绑定维护者本机路径：
 
-- 当前控制面源码位于 Windows：`D:\Projects\AgentPlane`
-- 当前 WSL 目标侧 live checkout 以 inventory 记录为准；它必须是独立 Linux 文件系统 checkout，不是 Windows 工作目录的 `/mnt/<drive>` 映射。
-- 当前重点审查目标：`wsl`、`prod0-main`
-- 当前应用层正式样板：`sub2api`
+- 本仓库应支持 macOS、Linux、Windows 单 checkout 直接启动。
+- Windows 用户可以用 `pwsh` 作为入口，并在需要 Linux-only 能力时通过 WSL backend 操作同一份源码。
+- 默认本地门禁不触发真实 WSL/SSH/Docker；真实现场验证通过 `host live-gate` 显式执行。
+- 当前样板 target 与 app 以 tracked inventory、catalog 和 runbook 为准。
 
 如果你要直接了解这份仓库在 `2026-04-14` 的真实状态、验证结果和待改造项，优先看：
 
@@ -32,7 +32,7 @@
    - Windows 宿主默认使用 `pwsh` 作为入口 shell。
    - Windows 宿主使用 `pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli ...`
    - Linux / macOS 直接使用 `uv run python -m agentplane.cli ...`
-   - 不创建 `.venv-win`、`.venv-wsl`，也不把 WSL 工作目录指到 `/mnt/<drive>/<repo>`。
+   - 不创建 `.venv-win`、`.venv-wsl`，也不设置 `UV_PROJECT_ENVIRONMENT` 做平台分叉。
 3. 检查当前宿主、工作区与 backend 绑定：
    `uv run python -m agentplane.cli bootstrap inspect-local --repo-root <repo-root>`
 4. 生成本地 secrets 骨架：
@@ -78,7 +78,8 @@
 
 - tracked truth 放在 Git 内：`docs/`、`inventory/`、`infra/compose/`、`templates/`、`agentplane/`。
 - 本地真实 secrets 只放在 `secrets/`，其中 `secrets/local/control-plane/` 与 `secrets/targets/<target>/` 是模板 bootstrap 的正式输入面。
-- `resolver / backend` 负责把 canonical refs 解析到宿主或远端执行现场；Windows / Linux / macOS 的差异只允许留在这里。
+- `resolver / backend` 负责把 canonical refs 解析到宿主、WSL 或远端执行现场；Windows / Linux / macOS 的差异只允许留在这里。
+- Windows + WSL 场景使用同一份源码 checkout，backend root 由 resolver 转换为 WSL 可访问路径。
 - `plan -> apply -> verify -> ledger -> inventory -> doc-sync` 是正式执行闭环。
 
 ## 文档入口

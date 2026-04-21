@@ -40,15 +40,15 @@
 标准只读预检：
 
 ```bash
-env -C /root/work/AgentPlane uv run python -m agentplane.cli projection verification run \
+env -C <repo-root> uv run python -m agentplane.cli projection verification run \
   --target prod0-main \
   --profile prod0-readonly \
-  --repo-root /root/work/AgentPlane \
+  --repo-root <repo-root> \
   --write-report
 
-env -C /root/work/AgentPlane uv run python -m agentplane.cli projection ledger refresh \
+env -C <repo-root> uv run python -m agentplane.cli projection ledger refresh \
   --target prod0-main \
-  --repo-root /root/work/AgentPlane \
+  --repo-root <repo-root> \
   --write
 ```
 
@@ -57,15 +57,15 @@ env -C /root/work/AgentPlane uv run python -m agentplane.cli projection ledger r
 如需定点核对某个站点对象，用正式 `website` 对象面，而不是页面点击或 raw provider workflow：
 
 ```bash
-env -C /root/work/AgentPlane uv run python -m agentplane.cli website get \
+env -C <repo-root> uv run python -m agentplane.cli website get \
   --target prod0-main \
   --alias token \
-  --repo-root /root/work/AgentPlane
+  --repo-root <repo-root>
 
-env -C /root/work/AgentPlane uv run python -m agentplane.cli website verify \
+env -C <repo-root> uv run python -m agentplane.cli website verify \
   --target prod0-main \
   --alias token \
-  --repo-root /root/work/AgentPlane
+  --repo-root <repo-root>
 ```
 
 ## 证书治理
@@ -109,8 +109,8 @@ docker exec 1panel-openresty-prod nginx -T | grep ssl_certificate
 通过标准：
 
 - `projection verification run --target prod0-main --profile prod0-readonly` 与现场 live-state 结论一致
-- `projection ledger refresh --target prod0-main --repo-root /root/work/AgentPlane --write` 产出的机器报告与 live-state 结论不冲突
-- `website verify --target prod0-main --alias token --repo-root /root/work/AgentPlane` 返回站点对象与反代事实一致
+- `projection ledger refresh --target prod0-main --repo-root <repo-root> --write` 产出的机器报告与 live-state 结论不冲突
+- `website verify --target prod0-main --alias token --repo-root <repo-root>` 返回站点对象与反代事实一致
 - `8443` 对外响应正常
 - `nginx -T` 中证书路径只落在 `/www/certs/`
 - 1Panel 证书对象与宿主 `/data/1panel/www/certs/` 中的文件一致

@@ -33,10 +33,25 @@ function Invoke-AgentPlaneWindowsUv {
     }
 }
 
-function Test-AgentPlaneWindowsMountedWslPath {
+function Convert-AgentPlanePathToWslPath {
     param([AllowNull()][string]$PathValue)
 
-    return -not [string]::IsNullOrWhiteSpace($PathValue) -and $PathValue -match '^/mnt/[A-Za-z]($|/)'
+    if ([string]::IsNullOrWhiteSpace($PathValue)) {
+        return $null
+    }
+    $normalized = $PathValue.Replace("\", "/")
+    if ($normalized -match '^([A-Za-z]):/(.*)$') {
+        $drive = $Matches[1].ToLowerInvariant()
+        $tail = $Matches[2].TrimStart("/")
+        if ([string]::IsNullOrWhiteSpace($tail)) {
+            return "/mnt/$drive"
+        }
+        return "/mnt/$drive/$tail"
+    }
+    if ($normalized.StartsWith("/")) {
+        return $normalized
+    }
+    return $null
 }
 
 function Get-AgentPlaneLocalInspect {
@@ -63,17 +78,17 @@ function Test-AgentPlanePosixPath {
 function Resolve-AgentPlaneLinuxCommandRoot {
     param([Parameter(Mandatory = $true)]$InspectPayload)
 
-    $sourceRoot = [string]$InspectPayload.payload.workspace.source_root
-    if ((Test-AgentPlanePosixPath -PathValue $sourceRoot) -and -not (Test-AgentPlaneWindowsMountedWslPath -PathValue $sourceRoot)) {
-        return $sourceRoot
-    }
-
-    $backendRoot = [string]$InspectPayload.payload.linux_backend_root
-    if ((Test-AgentPlanePosixPath -PathValue $backendRoot) -and -not (Test-AgentPlaneWindowsMountedWslPath -PathValue $backendRoot)) {
+    $backendRoot = Convert-AgentPlanePathToWslPath -PathValue ([string]$InspectPayload.payload.linux_backend_root)
+    if (Test-AgentPlanePosixPath -PathValue $backendRoot) {
         return $backendRoot
     }
 
-    throw "No separate WSL/Linux checkout was resolved for this repository. AgentPlane forbids using a Windows-mounted path such as /mnt/<drive>/... as the WSL working directory."
+    $sourceRoot = Convert-AgentPlanePathToWslPath -PathValue ([string]$InspectPayload.payload.workspace.source_root)
+    if (Test-AgentPlanePosixPath -PathValue $sourceRoot) {
+        return $sourceRoot
+    }
+
+    throw "No WSL/Linux command root was resolved for this single checkout."
 }
 
 function Invoke-AgentPlaneRoutedUv {

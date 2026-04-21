@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
@@ -80,15 +81,29 @@ def _find_declared_automation(repo_root: Path, target: str, name: str) -> dict[s
 
 
 def _resolve_task_path(repo_root: Path, raw: str) -> Path:
+    raw = _render_repo_template(repo_root, raw)
     path = Path(raw)
     if path.is_absolute():
         return path
     return (repo_root / path).resolve()
 
 
-def _task_run_command(automation: dict[str, Any]) -> str:
-    cwd = str(automation.get("cwd", "")).strip()
-    command = str(automation.get("command", "")).strip()
+def _render_repo_template(repo_root: Path, value: str) -> str:
+    codex_home = Path(os.environ.get("CODEX_HOME", str(repo_root / ".codex")))
+    bindings = {
+        "<repo-root>": repo_root,
+        "<codex-skills-root>": codex_home / "skills",
+        "<skills-repo-root>": Path(os.environ.get("AGENTPLANE_SKILLS_REPO_ROOT", str(repo_root.parent / "zzz-skills"))),
+    }
+    rendered = value
+    for marker, path in bindings.items():
+        rendered = rendered.replace(marker, str(path).replace("\\", "/"))
+    return rendered
+
+
+def _task_run_command(repo_root: Path, automation: dict[str, Any]) -> str:
+    cwd = _render_repo_template(repo_root, str(automation.get("cwd", "")).strip())
+    command = _render_repo_template(repo_root, str(automation.get("command", "")).strip())
     if not command:
         raise ValueError(f"automation command missing: {automation.get('name', 'unknown')}")
     return f"cd {cwd} && {command}" if cwd else command
@@ -103,12 +118,12 @@ def _supported_operations(automation: dict[str, Any]) -> list[str]:
     return operations
 
 
-def _normalize_automation(target: str, automation: dict[str, Any]) -> dict[str, Any]:
+def _normalize_automation(repo_root: Path, target: str, automation: dict[str, Any]) -> dict[str, Any]:
     payload = dict(automation)
     payload["target"] = target
     payload["supported"] = automation.get("name") in AUTOMATION_DEFINITIONS
     payload["supported_operations"] = _supported_operations(automation)
-    payload["run_command"] = _task_run_command(automation)
+    payload["run_command"] = _task_run_command(repo_root, automation)
     return payload
 
 
@@ -145,7 +160,13 @@ def _default_group_id(executor: TargetExecutor) -> int:
     return int(first.get("groupID") or 0)
 
 
-def _desired_cronjob_payload(automation: dict[str, Any], *, group_id: int, existing: dict[str, Any] | None = None) -> dict[str, Any]:
+def _desired_cronjob_payload(
+    repo_root: Path,
+    automation: dict[str, Any],
+    *,
+    group_id: int,
+    existing: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     existing = existing or {}
     payload = {
         "name": str(automation["name"]),
@@ -155,7 +176,7 @@ def _desired_cronjob_payload(automation: dict[str, Any], *, group_id: int, exist
         "spec": str(automation.get("spec", "")),
         "executor": "bash",
         "scriptMode": "input",
-        "script": _task_run_command(automation),
+        "script": _task_run_command(repo_root, automation),
         "command": "",
         "containerName": "",
         "user": "root",
@@ -196,11 +217,15 @@ def _cronjob_drift(existing: dict[str, Any], desired: dict[str, Any]) -> dict[st
     return drift
 
 
-def _reconcile_actions(automation: dict[str, Any], executor: TargetExecutor) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+def _reconcile_actions(
+    repo_root: Path,
+    automation: dict[str, Any],
+    executor: TargetExecutor,
+) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
     live = _search_live_cronjob(executor, str(automation["name"]))
     if live is None:
         group_id = _default_group_id(executor)
-        desired = _desired_cronjob_payload(automation, group_id=group_id)
+        desired = _desired_cronjob_payload(repo_root, automation, group_id=group_id)
         return (
             [
                 {
@@ -215,7 +240,7 @@ def _reconcile_actions(automation: dict[str, Any], executor: TargetExecutor) -> 
         )
 
     group_id = int(live.get("groupID") or 0)
-    desired = _desired_cronjob_payload(automation, group_id=group_id, existing=live)
+    desired = _desired_cronjob_payload(repo_root, automation, group_id=group_id, existing=live)
     actions: list[dict[str, Any]] = []
     drift = _cronjob_drift(live, desired)
     if drift:
@@ -242,13 +267,13 @@ def _reconcile_actions(automation: dict[str, Any], executor: TargetExecutor) -> 
 
 
 def search_host_automations(repo_root: Path, target: str) -> dict[str, Any]:
-    items = [_normalize_automation(target, item) for item in _load_declared_automations(repo_root, target)]
+    items = [_normalize_automation(repo_root, target, item) for item in _load_declared_automations(repo_root, target)]
     return {"items": items}
 
 
 def get_host_automation(repo_root: Path, target: str, name: str) -> dict[str, Any]:
     automation = _find_declared_automation(repo_root, target, name)
-    return {"automation": _normalize_automation(target, automation)}
+    return {"automation": _normalize_automation(repo_root, target, automation)}
 
 
 def verify_host_automation(
@@ -260,7 +285,7 @@ def verify_host_automation(
     env_file: str | None = None,
 ) -> dict[str, Any]:
     automation = _find_declared_automation(repo_root, target, name)
-    normalized = _normalize_automation(target, automation)
+    normalized = _normalize_automation(repo_root, target, automation)
     checks: dict[str, Any] = {
         "declared": True,
         "supported": normalized["supported"],
@@ -276,6 +301,7 @@ def verify_host_automation(
         return {"ok": False, "automation": normalized, "checks": checks, "live": None}
 
     desired = _desired_cronjob_payload(
+        repo_root,
         automation,
         group_id=int(live.get("groupID") or 0),
         existing=live,
@@ -297,7 +323,7 @@ def plan_host_automation(
     env_file: str | None = None,
 ) -> dict[str, Any]:
     automation = _find_declared_automation(repo_root, target, name)
-    normalized = _normalize_automation(target, automation)
+    normalized = _normalize_automation(repo_root, target, automation)
     if operation not in SUPPORTED_AUTOMATION_OPERATIONS:
         raise ValueError(f"unsupported automation operation: {operation}")
     if operation not in normalized["supported_operations"]:
@@ -329,7 +355,7 @@ def plan_host_automation(
             "actions": [{"object": "cronjob", "mode": "handle", "path": "/api/v2/cronjobs/handle", "body": {"id": int(live["id"])}}],
         }
 
-    actions, live = _reconcile_actions(automation, resolved_executor)
+    actions, live = _reconcile_actions(repo_root, automation, resolved_executor)
     return {
         "ok": True,
         "operation": operation,
@@ -362,7 +388,7 @@ def apply_host_automation(
         return plan
 
     automation = _find_declared_automation(repo_root, target, name)
-    normalized = _normalize_automation(target, automation)
+    normalized = _normalize_automation(repo_root, target, automation)
 
     if operation == "run":
         result = _run_task(repo_root, automation)

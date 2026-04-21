@@ -30,20 +30,20 @@ Formal catalog apps with `schema_version: 2` must use `uv run python -m agentpla
 inventory 中声明为 `onepanel-app` 或 `onepanel-compose` 的 tracked runtime service，一律通过 `service` 访问：
 
 ```bash
-uv run python -m agentplane.cli service get --target prod0-main --name legacy_runtime --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli service plan --target prod0-main --name legacy_runtime --operation restart --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli service apply --target prod0-main --name legacy_runtime --operation restart --repo-root /root/work/AgentPlane --execute
+uv run python -m agentplane.cli service get --target prod0-main --name legacy_runtime --repo-root <repo-root>
+uv run python -m agentplane.cli service plan --target prod0-main --name legacy_runtime --operation restart --repo-root <repo-root>
+uv run python -m agentplane.cli service apply --target prod0-main --name legacy_runtime --operation restart --repo-root <repo-root> --execute
 
-uv run python -m agentplane.cli service get --target prod0-main --name legacy_project --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli service plan --target prod0-main --name legacy_project --operation restart --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli service apply --target prod0-main --name legacy_project --operation restart --repo-root /root/work/AgentPlane --execute
+uv run python -m agentplane.cli service get --target prod0-main --name legacy_project --repo-root <repo-root>
+uv run python -m agentplane.cli service plan --target prod0-main --name legacy_project --operation restart --repo-root <repo-root>
+uv run python -m agentplane.cli service apply --target prod0-main --name legacy_project --operation restart --repo-root <repo-root> --execute
 ```
 
 如果目标服务是 `compose` 控制面，`service` 才会额外开放 `reconcile`：
 
 ```bash
-uv run python -m agentplane.cli service plan --target prod0-main --name sub2api --operation reconcile --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli service apply --target prod0-main --name sub2api --operation reconcile --repo-root /root/work/AgentPlane --execute
+uv run python -m agentplane.cli service plan --target prod0-main --name sub2api --operation reconcile --repo-root <repo-root>
+uv run python -m agentplane.cli service apply --target prod0-main --name sub2api --operation reconcile --repo-root <repo-root> --execute
 ```
 
 ## 验证与回写
@@ -51,14 +51,14 @@ uv run python -m agentplane.cli service apply --target prod0-main --name sub2api
 运行态变更完成后，至少做两步：
 
 ```bash
-uv run python -m agentplane.cli service verify --target prod0-main --name sub2api --repo-root /root/work/AgentPlane
-uv run python -m agentplane.cli projection ledger refresh --target prod0-main --repo-root /root/work/AgentPlane --write
+uv run python -m agentplane.cli service verify --target prod0-main --name sub2api --repo-root <repo-root>
+uv run python -m agentplane.cli projection ledger refresh --target prod0-main --repo-root <repo-root> --write
 ```
 
 只读兼容性验证继续走：
 
 ```bash
-uv run python -m agentplane.cli projection verification run --target prod2-main --profile prod2-readonly --repo-root /root/work/AgentPlane --write-report
+uv run python -m agentplane.cli projection verification run --target prod2-main --profile prod2-readonly --repo-root <repo-root> --write-report
 ```
 
 ## Compat / Troubleshooting

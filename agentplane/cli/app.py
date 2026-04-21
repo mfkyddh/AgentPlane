@@ -85,8 +85,6 @@ def main(argv: list[str] | None = None) -> int:
                 return 0 if payload.get("payload", {}).get("ok", True) else 1
             if payload.get("action") in {"automation.verify", "automation.apply"}:
                 return 0 if payload.get("payload", {}).get("ok", True) else 1
-            if payload.get("action") == "local.migrate.verify":
-                return 0 if payload.get("payload", {}).get("ok", True) else 1
             return 0
         except ValueError as exc:
             print(str(exc), file=sys.stderr)

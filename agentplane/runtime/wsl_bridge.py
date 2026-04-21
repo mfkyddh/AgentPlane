@@ -22,7 +22,6 @@ from agentplane.runtime.workspace import (
 
 DEFAULT_WSL_DISTRO = "Ubuntu"
 PRIVATE_DIR_NAMES = ("secrets",)
-MIGRATION_EXCLUDES = (".git", ".venv", "tmp", "__pycache__")
 
 
 @dataclass(frozen=True)
@@ -241,86 +240,4 @@ def inspect_local_host(
         "targets": {
             "wsl": local_target.to_payload(),
         },
-    }
-
-
-def plan_local_migration(
-    repo_root: Path | str = ".",
-    *,
-    windows_root: Path | str | None = None,
-    legacy_control_root: Path | str | None = None,
-) -> dict[str, Any]:
-    payload = inspect_local_host(
-        repo_root,
-        windows_root=windows_root,
-        legacy_control_root=legacy_control_root,
-    )
-    source_root = wsl_posix_to_unc(payload["legacy_control_root"]) or payload["legacy_control_root"]
-    control_root = payload["control_root"]
-    private_root = render_host_path(Path(control_root) / "secrets") if control_root is not None else None
-    return {
-        **payload,
-        "source_root": source_root,
-        "windows_root": control_root,
-        "copy_commands": [
-            f'robocopy "{source_root}" "{control_root}" /MIR /XD {" ".join(MIGRATION_EXCLUDES)}',
-            f'robocopy "{source_root}\\secrets" "{private_root}" /E',
-        ],
-    }
-
-
-def plan_local_copy(
-    repo_root: Path | str = ".",
-    *,
-    windows_root: Path | str | None = None,
-    legacy_control_root: Path | str | None = None,
-    execute: bool = False,
-) -> dict[str, Any]:
-    return {
-        **plan_local_migration(
-            repo_root,
-            windows_root=windows_root,
-            legacy_control_root=legacy_control_root,
-        ),
-        "execute_requested": execute,
-        "executed": False,
-        "ok": not execute,
-        "message": "copy execution is planned but not run by default; use the emitted robocopy commands from a Windows host shell",
-    }
-
-
-def verify_local_migration(
-    repo_root: Path | str = ".",
-    *,
-    windows_root: Path | str | None = None,
-    legacy_control_root: Path | str | None = None,
-) -> dict[str, Any]:
-    payload = inspect_local_host(
-        repo_root,
-        windows_root=windows_root,
-        legacy_control_root=legacy_control_root,
-    )
-    control_root = _coerce_path(payload["control_root"])
-    private_root = _coerce_path(payload["private_root"])
-    checks = [
-        {
-            "name": "control_root_exists",
-            "ok": control_root is not None and control_root.exists(),
-            "path": payload["control_root"],
-        },
-        {
-            "name": "private_root_exists",
-            "ok": private_root is not None and private_root.exists(),
-            "path": payload["private_root"],
-        },
-        {
-            "name": "linux_backend_available",
-            "ok": bool(payload["linux_backend"]["available"]),
-            "path": payload["linux_backend_root"],
-        },
-    ]
-    return {
-        **payload,
-        "ok": all(check["ok"] for check in checks),
-        "checks": checks,
     }

@@ -7,7 +7,7 @@ Use this runbook when a Tencent Cloud host already has Mihomo, OpenAI-related tr
 Prefer the project alias:
 
 ```bash
-ssh -F /root/work/AgentPlane/secrets/ssh/config <host-alias>
+ssh -F <repo-root>/secrets/ssh/config <host-alias>
 ```
 
 If the current shell cannot read the project SSH config directly, follow the repository's verified SSH path and keep the Windows-host proxy in mind.

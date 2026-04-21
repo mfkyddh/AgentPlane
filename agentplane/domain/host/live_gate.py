@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
-from agentplane.runtime.execution import CommandRunner
+from agentplane.runtime.backends import build_backend_runner
+from agentplane.runtime.execution import CommandRunner, ExecutionBindings, ExecutionPlan
 from agentplane.runtime.platform import HostPlatform, detect_host_platform
 
 
@@ -29,24 +30,6 @@ class LiveGateStep:
             "capabilities": list(self.capabilities),
             "timeout": self.timeout,
         }
-
-
-def _is_windows_drive_path(path: Path | str) -> bool:
-    rendered = str(path)
-    return len(rendered) >= 2 and rendered[0].isalpha() and rendered[1] == ":"
-
-
-def _is_wsl_unc_path(path: Path | str) -> bool:
-    rendered = str(path).replace("/", "\\").lower()
-    return rendered.startswith("\\\\wsl.localhost\\") or rendered.startswith("\\\\wsl$\\")
-
-
-def _is_windows_mounted_wsl_path(path: Path | str) -> bool:
-    rendered = str(path).replace("\\", "/").lower().rstrip("/")
-    if not rendered.startswith("/mnt/"):
-        return False
-    parts = rendered.split("/")
-    return len(parts) >= 3 and len(parts[2]) == 1 and parts[2].isalpha()
 
 
 def _cli(repo_root: Path, *args: str) -> tuple[str, ...]:
@@ -185,7 +168,7 @@ def build_live_gate_steps(
     raise ValueError(f"unsupported live gate profile: {profile}")
 
 
-def assert_linux_filesystem_checkout(
+def assert_live_gate_checkout(
     repo_root: Path | str,
     *,
     profile: str | None = None,
@@ -193,19 +176,37 @@ def assert_linux_filesystem_checkout(
 ) -> None:
     facts = host_platform or detect_host_platform()
     root = Path(repo_root)
-    if facts.os_name == "windows" and not facts.is_wsl:
-        raise ValueError(
-            "live integration gate must run from a Linux filesystem checkout. "
-            "Windows may be the control-plane entry host, but live WSL/SSH/Docker gates execute from "
-            "a separate Linux checkout such as <linux-repo-root>."
-        )
-    if _is_windows_drive_path(root) or _is_wsl_unc_path(root) or _is_windows_mounted_wsl_path(root):
-        raise ValueError(
-            f"live integration gate refuses non-native Linux checkout: {root}. "
-            "Use an independent Linux filesystem checkout, not a Windows drive, WSL UNC path, or /mnt/<drive>/... path."
-        )
-    if profile == "wsl" and not facts.is_wsl:
-        raise ValueError("wsl live integration gate must run inside the WSL Linux filesystem checkout.")
+    if not root.is_dir():
+        raise ValueError(f"live integration gate repo root does not exist: {root}")
+    if profile == "wsl":
+        if facts.os_name == "windows" and not facts.is_wsl:
+            if not facts.has_wsl:
+                raise ValueError("wsl live integration gate on Windows requires WSL.")
+            return
+        if facts.os_name == "linux" and facts.is_wsl:
+            return
+        raise ValueError("wsl live integration gate must run from Windows with WSL or inside WSL.")
+
+
+def _run_step_with_backend(step: LiveGateStep) -> dict[str, Any]:
+    plan = ExecutionPlan(
+        backend_type="windows-wsl",
+        cwd_ref="repo_root",
+        argv=step.argv,
+        env_refs=(),
+        input_refs=(),
+        expected_outputs=(),
+        capabilities=step.capabilities,
+        timeout=step.timeout,
+    )
+    result = build_backend_runner().execute(
+        plan,
+        bindings=ExecutionBindings(cwd_values={"repo_root": step.cwd}),
+    )
+    return {
+        "key": step.key,
+        **result.to_payload(),
+    }
 
 
 def plan_live_gate(
@@ -225,8 +226,8 @@ def plan_live_gate(
         "repo_root": str(root),
         "live_only": True,
         "default_pytest": "excluded",
-        "required_checkout": "linux-filesystem",
-        "blocked_checkouts": ["windows-drive", "wsl-unc", "/mnt/<drive>"],
+        "required_checkout": "single-checkout",
+        "checkout_policy": "clone once; Windows hosts may route WSL steps through the same checkout via the WSL bridge",
         "execute_requires": "--execute",
         "pytest_markers": ["live_gate", "integration_wsl", "integration_remote", "docker_required", "ssh_required"],
         "steps": [step.to_payload() for step in steps],
@@ -251,25 +252,27 @@ def run_live_gate(
         return payload
 
     root = Path(repo_root)
-    assert_linux_filesystem_checkout(root, profile=profile, host_platform=host_platform)
-    if not root.is_dir():
-        raise ValueError(f"live integration gate repo root does not exist: {root}")
+    facts = host_platform or detect_host_platform()
+    assert_live_gate_checkout(root, profile=profile, host_platform=facts)
 
     command_runner = runner or CommandRunner()
     results: list[dict[str, Any]] = []
     for step in build_live_gate_steps(root, profile=profile, app=app, projection_profile=projection_profile):
-        completed = command_runner.run(step.argv, cwd=step.cwd, timeout=step.timeout)
-        result = {
-            "key": step.key,
-            "argv": list(step.argv),
-            "cwd": str(step.cwd),
-            "returncode": completed.returncode,
-            "stdout": completed.stdout,
-            "stderr": completed.stderr,
-            "ok": completed.returncode == 0,
-        }
+        if runner is None and profile == "wsl" and facts.os_name == "windows" and not facts.is_wsl:
+            result = _run_step_with_backend(step)
+        else:
+            completed = command_runner.run(step.argv, cwd=step.cwd, timeout=step.timeout)
+            result = {
+                "key": step.key,
+                "argv": list(step.argv),
+                "cwd": str(step.cwd),
+                "returncode": completed.returncode,
+                "stdout": completed.stdout,
+                "stderr": completed.stderr,
+                "ok": completed.returncode == 0,
+            }
         results.append(result)
-        if completed.returncode != 0:
+        if not result["ok"]:
             break
 
     payload["executed"] = True

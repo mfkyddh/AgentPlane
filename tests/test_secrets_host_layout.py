@@ -67,7 +67,7 @@ class SecretsHostLayoutTests(unittest.TestCase):
             automation_root.mkdir(parents=True, exist_ok=True)
 
             (automation_root / "secrets-backup.r2.env").write_text(
-                "SECRETS_BACKUP_SOURCE_DIR=/root/work/AgentPlane/secrets/hosts/wsl\n"
+                "SECRETS_BACKUP_SOURCE_DIR=<repo-root>/secrets/hosts/wsl\n"
                 "SECRETS_BACKUP_STATE_FILE=/data/agentplane/secrets-backup/state.json\n",
                 encoding="utf-8",
             )

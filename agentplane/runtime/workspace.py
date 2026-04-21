@@ -41,22 +41,6 @@ def _looks_like_unc_path(path: Path) -> bool:
     return lowered.startswith("\\\\wsl.localhost\\") or lowered.startswith("\\\\wsl$\\")
 
 
-def _looks_like_windows_mount_path(path: Path) -> bool:
-    rendered = str(path).replace("\\", "/").lower().rstrip("/")
-    if not rendered.startswith("/mnt/"):
-        return False
-    parts = rendered.split("/")
-    return len(parts) >= 3 and len(parts[2]) == 1 and parts[2].isalpha()
-
-
-def _assert_not_windows_mount(path: Path | None, *, field: str) -> None:
-    if path is not None and _looks_like_windows_mount_path(path):
-        raise ValueError(
-            f"{field} cannot be a Windows-mounted WSL path: {path}. "
-            "AgentPlane requires separate Windows and WSL checkouts."
-        )
-
-
 def _wsl_unc_to_posix(path: Path) -> Path | None:
     rendered = str(path).replace("/", "\\")
     lowered = rendered.lower()
@@ -124,16 +108,12 @@ def resolve_workspace(
         raise ValueError("control_root is required")
     resolved_private_root = _as_path(private_root) or (resolved_control_root / "secrets")
     resolved_source_root = _as_path(source_root) or resolved_control_root
-    _assert_not_windows_mount(resolved_control_root, field="control_root")
-    _assert_not_windows_mount(resolved_legacy_control_root, field="legacy_control_root")
-    _assert_not_windows_mount(resolved_source_root, field="source_root")
     if linux_backend_root is not None:
         resolved_linux_backend_root = _as_path(linux_backend_root)
-        _assert_not_windows_mount(resolved_linux_backend_root, field="linux_backend_root")
     elif resolved_legacy_control_root is not None:
         resolved_linux_backend_root = resolved_legacy_control_root
     elif _looks_like_windows_root(resolved_control_root):
-        resolved_linux_backend_root = None
+        resolved_linux_backend_root = _windows_path_to_wsl_posix(resolved_control_root)
     elif _looks_like_unc_path(resolved_control_root):
         resolved_linux_backend_root = _wsl_unc_to_posix(resolved_control_root)
     else:

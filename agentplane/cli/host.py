@@ -30,8 +30,8 @@ FORMAL_HOST_TARGETS = ("wsl", "prod0-main", "prod2-main")
 HOST_ACTION_SCOPE_HELP = (
     "三正式目标通用动作: inventory / audit / remote bash / "
     "secrets init-data-services|sync-layout\n"
-    "local: inspect / migrate plan|copy|verify\n"
-    "live-gate: plan / run isolated WSL/SSH/Docker integration gates\n"
+    "local: inspect\n"
+    "live-gate: plan / run explicit WSL/SSH/Docker integration gates\n"
     "target-specific: cleanup= wsl|prod0-main; automation= wsl|prod0-main|prod2-main; network= prod0-main|prod2-main"
 )
 
@@ -76,7 +76,7 @@ def add_host_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentPars
     live_gate_parser = host_subparsers.add_parser(
         "live-gate",
         help="独立真实 WSL/SSH/Docker live integration gate",
-        description="真实 live gate 与默认 pytest 分离；run --execute 只能在 Linux filesystem checkout 执行。",
+        description="真实 live gate 与默认 pytest 分离；run --execute 使用当前单 checkout，并按宿主路由到 WSL/SSH/Docker backend。",
     )
     live_gate_subparsers = live_gate_parser.add_subparsers(dest="host_live_gate_action", required=True)
     for action in ("plan", "run"):

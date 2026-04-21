@@ -87,8 +87,8 @@ uv run python -m agentplane.cli host remote bash <target> --help
 正式入口：
 
 ```bash
-uv run python -m agentplane.cli host remote bash prod0-main --repo-root /root/work/AgentPlane --dry-run
-uv run python -m agentplane.cli host inventory prod0-main --repo-root /root/work/AgentPlane
+uv run python -m agentplane.cli host remote bash prod0-main --repo-root <repo-root> --dry-run
+uv run python -m agentplane.cli host inventory prod0-main --repo-root <repo-root>
 ```
 
 历史上曾存在 `uv run python -m agentplane.cli remote bash ...`、`uv run python -m agentplane.cli inventory ...` 等顶层入口；当前正式入口已经收口到 `host` 对象域与其他正式对象域，这些旧命令不再被 parser 接受。

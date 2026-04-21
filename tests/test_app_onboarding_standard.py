@@ -127,11 +127,10 @@ class AppOnboardingStandardTests(unittest.TestCase):
         self.assertIn("wsl.exe", windows_setup)
         self.assertIn("host local inspect", windows_setup)
         self.assertIn("invoke-agentplane-windows-uv.ps1", windows_setup)
-        self.assertIn("Workspace policy: Windows and WSL must use separate checkouts", windows_setup)
+        self.assertIn("Workspace policy: single checkout", windows_setup)
         self.assertNotIn("UV_PROJECT_ENVIRONMENT", windows_setup)
         self.assertIn("-RepoRoot $repoRoot", windows_setup)
         self.assertIn("--repo-root $repoRoot", windows_setup)
-        self.assertIn("-PreferRepoRoot", windows_setup)
         self.assertNotIn("D:\\Projects\\AgentPlane", windows_setup)
         self.assertNotIn("/root/work/AgentPlane", windows_setup)
         self.assertIn("setup.windows.ps1", setup_sh)
@@ -145,25 +144,15 @@ class AppOnboardingStandardTests(unittest.TestCase):
 
         self.assertNotIn("UV_PROJECT_ENVIRONMENT", wrapper)
         self.assertNotIn("LOCALAPPDATA", wrapper)
-        self.assertIn("Test-IsWslUncPath $effectiveRoot", wrapper)
-        self.assertIn("forbids running the Windows uv entry from a WSL UNC checkout", wrapper)
+        self.assertNotIn("Test-IsWslUncPath", wrapper)
+        self.assertNotIn("forbids running the Windows uv entry from a WSL UNC checkout", wrapper)
         self.assertIn("Set-StrictMode -Version Latest", wrapper)
         self.assertIn('& $uv.Source "run" @UvArgs', wrapper)
         self.assertNotIn("WindowsControlRoot", wrapper)
         self.assertNotIn("D:\\Projects\\AgentPlane", wrapper)
 
-    def test_windows_host_plan_hardens_unc_commands_for_future_tasks(self) -> None:
-        plan = (
-            REPO_ROOT / "docs" / "superpowers" / "plans" / "2026-04-11-agentplane-windows-host-opensource-implementation.md"
-        ).read_text(encoding="utf-8")
-
-        self.assertIn("Windows Host Hardening Rules", plan)
-        self.assertIn("invoke-agentplane-windows-uv.ps1", plan)
-        self.assertIn("ExecutionPolicy Bypass", plan)
-        self.assertNotIn(
-            "pwsh -NoProfile -Command \"Set-Location '\\\\\\\\wsl.localhost\\\\Ubuntu\\\\root\\\\work\\\\AgentPlane'; uv run python -m agentplane.cli host local inspect\"",
-            plan,
-        )
+    def test_historical_superpowers_workspace_docs_are_removed_from_active_tree(self) -> None:
+        self.assertFalse((REPO_ROOT / "docs" / "superpowers").exists())
 
     def test_repo_self_check_script_exists_and_runs_documented_checks(self) -> None:
         script_path = REPO_ROOT / "agentplane" / "scripts" / "internal" / "repo" / "self_check.sh"

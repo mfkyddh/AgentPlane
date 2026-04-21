@@ -9,7 +9,7 @@ superseded_by: null
 
 本文用于记录 compat 入口什么时候还能用、替代入口是什么、何时允许删除。compat 入口不是默认入口，正式优先级固定为：
 
-`ops.cli > compat script > runbook > ad-hoc shell`
+`agentplane.cli > compat script > runbook > ad-hoc shell`
 
 ## 台账字段
 

@@ -6,14 +6,14 @@
       "controller": "1panel-cronjob",
       "schedule": "daily at 04:00",
       "spec": "0 4 * * *",
-      "cwd": "/root/work/AgentPlane",
-      "command": "uv run python -m agentplane.cli host inventory prod2-main --repo-root /root/work/AgentPlane --write",
+      "cwd": "<repo-root>",
+      "command": "uv run python -m agentplane.cli host inventory prod2-main --repo-root <repo-root> --write",
       "docs": [
         "docs/runbooks/prod2-main-1panel-public-access.md"
       ],
       "task_truth": {
         "purpose": "以 host inventory 定期收口 prod2-main 的结构化主机状态，确保仓库看得见的真源与 live baseline 对齐。",
-        "entrypoint": "uv run python -m agentplane.cli host inventory prod2-main --repo-root /root/work/AgentPlane --write",
+        "entrypoint": "uv run python -m agentplane.cli host inventory prod2-main --repo-root <repo-root> --write",
         "write_target": "inventory/servers/prod2-main/inventory.json"
       },
       "schedule_truth": {
@@ -22,8 +22,8 @@
         "executor": "prod2-main 1Panel cronjob"
       },
       "verification": [
-        "env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation verify prod2-main --name prod2-main-inventory-refresh --repo-root /root/work/AgentPlane",
-        "env -C /root/work/AgentPlane uv run python -m agentplane.cli host inventory prod2-main --repo-root /root/work/AgentPlane --write"
+        "env -C <repo-root> uv run python -m agentplane.cli host automation verify prod2-main --name prod2-main-inventory-refresh --repo-root <repo-root>",
+        "env -C <repo-root> uv run python -m agentplane.cli host inventory prod2-main --repo-root <repo-root> --write"
       ]
     },
     {
@@ -32,14 +32,14 @@
       "controller": "1panel-cronjob",
       "schedule": "daily at 04:15",
       "spec": "15 4 * * *",
-      "cwd": "/root/work/AgentPlane",
-      "command": "uv run python -m agentplane.cli host audit prod2-main --repo-root /root/work/AgentPlane",
+      "cwd": "<repo-root>",
+      "command": "uv run python -m agentplane.cli host audit prod2-main --repo-root <repo-root>",
       "docs": [
         "docs/runbooks/prod2-main-1panel-public-access.md"
       ],
       "task_truth": {
         "purpose": "每天核对 prod2-main host baseline，尽早捕获 ssh、firewall、bridge、docker 等 drift。",
-        "entrypoint": "uv run python -m agentplane.cli host audit prod2-main --repo-root /root/work/AgentPlane"
+        "entrypoint": "uv run python -m agentplane.cli host audit prod2-main --repo-root <repo-root>"
       },
       "schedule_truth": {
         "cron": "15 4 * * *",
@@ -47,8 +47,8 @@
         "executor": "prod2-main 1Panel cronjob"
       },
       "verification": [
-        "env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation verify prod2-main --name prod2-main-host-audit --repo-root /root/work/AgentPlane",
-        "env -C /root/work/AgentPlane uv run python -m agentplane.cli host audit prod2-main --repo-root /root/work/AgentPlane"
+        "env -C <repo-root> uv run python -m agentplane.cli host automation verify prod2-main --name prod2-main-host-audit --repo-root <repo-root>",
+        "env -C <repo-root> uv run python -m agentplane.cli host audit prod2-main --repo-root <repo-root>"
       ]
     },
     {
@@ -57,14 +57,14 @@
       "controller": "1panel-cronjob",
       "schedule": "daily at 04:30",
       "spec": "30 4 * * *",
-      "cwd": "/root/work/AgentPlane",
-      "command": "uv run python -m agentplane.cli host network audit prod2-main --repo-root /root/work/AgentPlane",
+      "cwd": "<repo-root>",
+      "command": "uv run python -m agentplane.cli host network audit prod2-main --repo-root <repo-root>",
       "docs": [
         "docs/runbooks/prod2-main-1panel-public-access.md"
       ],
       "task_truth": {
         "purpose": "以 host network audit 监测 zqf_network 172.19.0.0/16 以及 docker bridge 状态，防止 2026-03-28 那种 bridge 漂移重演。",
-        "entrypoint": "uv run python -m agentplane.cli host network audit prod2-main --repo-root /root/work/AgentPlane"
+        "entrypoint": "uv run python -m agentplane.cli host network audit prod2-main --repo-root <repo-root>"
       },
       "schedule_truth": {
         "cron": "30 4 * * *",
@@ -72,8 +72,8 @@
         "executor": "prod2-main 1Panel cronjob"
       },
       "verification": [
-        "env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation verify prod2-main --name prod2-main-network-audit --repo-root /root/work/AgentPlane",
-        "env -C /root/work/AgentPlane uv run python -m agentplane.cli host network audit prod2-main --repo-root /root/work/AgentPlane"
+        "env -C <repo-root> uv run python -m agentplane.cli host automation verify prod2-main --name prod2-main-network-audit --repo-root <repo-root>",
+        "env -C <repo-root> uv run python -m agentplane.cli host network audit prod2-main --repo-root <repo-root>"
       ]
     },
     {
@@ -82,15 +82,15 @@
       "controller": "1panel-cronjob",
       "schedule": "daily at 05:00",
       "spec": "0 5 * * *",
-      "cwd": "/root/work/AgentPlane",
-      "command": "uv run python -m agentplane.cli projection ledger refresh --target prod2-main --repo-root /root/work/AgentPlane --write",
+      "cwd": "<repo-root>",
+      "command": "uv run python -m agentplane.cli projection ledger refresh --target prod2-main --repo-root <repo-root> --write",
       "docs": [
         "docs/runbooks/prod2-main-1panel-public-access.md",
         "docs/runbooks/onepanel-cli-validation-workflow.md"
       ],
       "task_truth": {
         "purpose": "把 prod2-main 的 projection ledgers 写回仓库，为后续 verification 与 runbooks 提供最新枚举。",
-        "entrypoint": "uv run python -m agentplane.cli projection ledger refresh --target prod2-main --repo-root /root/work/AgentPlane --write",
+        "entrypoint": "uv run python -m agentplane.cli projection ledger refresh --target prod2-main --repo-root <repo-root> --write",
         "targets": [
           "inventory/servers/prod2-main/ledgers/*.json",
           "inventory/servers/prod2-main/ledgers/*.md"
@@ -102,8 +102,8 @@
         "executor": "prod2-main 1Panel cronjob"
       },
       "verification": [
-        "env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation verify prod2-main --name prod2-main-projection-ledger-refresh --repo-root /root/work/AgentPlane",
-        "env -C /root/work/AgentPlane uv run python -m agentplane.cli projection ledger refresh --target prod2-main --repo-root /root/work/AgentPlane --write"
+        "env -C <repo-root> uv run python -m agentplane.cli host automation verify prod2-main --name prod2-main-projection-ledger-refresh --repo-root <repo-root>",
+        "env -C <repo-root> uv run python -m agentplane.cli projection ledger refresh --target prod2-main --repo-root <repo-root> --write"
       ]
     }
   ],

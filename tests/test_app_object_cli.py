@@ -118,9 +118,9 @@ class AppObjectCliTests(unittest.TestCase):
         catalog = importlib.import_module("agentplane.domain.app.catalog")
 
         with patch.object(catalog.os, "name", "nt"):
-            normalized = catalog._normalize_repo_root_for_current_host("/root/work/sub2api")
+            normalized = catalog._normalize_repo_root_for_current_host("/work/sub2api")
 
-        self.assertEqual(r"\\wsl.localhost\Ubuntu\root\work\sub2api", normalized)
+        self.assertEqual(r"\\wsl.localhost\Ubuntu\work\sub2api", normalized)
 
     def test_app_object_search_returns_empty_items_when_catalog_missing(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

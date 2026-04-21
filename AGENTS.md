@@ -29,7 +29,7 @@
 - Formal host-scoped network governance must prefer `uv run python -m agentplane.cli host network ...`; do not route active workflows through a top-level `uv run python -m agentplane.cli network ...` entry.
 - Formal host-scoped remote execution must prefer `uv run python -m agentplane.cli host remote bash ...`.
 - Formal host-scoped secrets operations must prefer `uv run python -m agentplane.cli host secrets ...`.
-- Formal live WSL/SSH/Docker integration gates must prefer `uv run python -m agentplane.cli host live-gate ...` and run only from a Linux filesystem checkout.
+- Formal live WSL/SSH/Docker integration gates must prefer `uv run python -m agentplane.cli host live-gate ...`; default pytest must stay offline and non-live.
 - Daily automation entry must prefer `uv run python -m agentplane.cli ...`.
 - Python projects managed by AgentPlane should prefer `uv` for dependency installation, virtualenv management, and command execution.
 - Each physical checkout must keep exactly one project virtualenv at `.venv`; do not create platform-suffixed variants such as `.venv-win` or `.venv-wsl`.
@@ -42,14 +42,14 @@
 - Default to a host-entry-first, backend-aware workflow.
 - On Windows hosts, use `pwsh` as the default local entry shell.
 - If the control plane and source tree both live on Windows, run `git`, `uv`, `pnpm`, tests, and other host-native commands directly in `pwsh`.
-- Windows and WSL must not share the same working directory. Do not run WSL `git`, `uv`, tests, or package-manager commands against a Windows-mounted checkout such as `/mnt/c/...` or `/mnt/d/...`, and do not run Windows `uv` from a WSL UNC checkout such as `\\wsl.localhost\...`.
-- If source-bound work must run inside WSL/Linux, use a separate checkout on the Linux filesystem and let that checkout own its single `.venv`; do not point it at the Windows checkout.
+- Windows and WSL use one checkout by default. A Windows checkout may be exposed to WSL through resolver-provided `/mnt/<drive>/...` bindings; do not clone a second copy just to run WSL operations.
+- If source-bound work must run inside WSL/Linux, route it through the formal backend binding for the same checkout and avoid concurrent package-manager writes from two shells.
 - Do not set `UV_PROJECT_ENVIRONMENT` to platform-specific repo-local variants. Let `uv` use the checkout-local `.venv`.
 - On Windows, Linux-only actions should prefer `wsl.exe -e <program> <args...>`; only fall back to `sh -lc` or `bash -lc` when WSL-side shell features are required.
 - Remote Linux operations should prefer `pwsh -> agentplane.cli -> WSL/SSH backend`; do not hand-build multi-layer shell commands.
 - On Linux/macOS, continue using the native POSIX shell for local execution.
 - Desktop-browser validation is the main companion exception; use the host browser when a real GUI browser is required.
-- Control plane location determines the entry host; backend execution must use a host-native workspace for that backend.
+- Control plane location determines the entry host; backend execution must route through resolver-provided workspace bindings.
 - Real secrets stay in `secrets/`; tracked examples stay in `templates/`.
 - Template bootstrap truth lives under `secrets/local/control-plane/` and `secrets/targets/<target>/`.
 - Use target SSH aliases from `secrets/ssh/config`; avoid hard-coding environment-specific aliases in shared docs.

@@ -8,25 +8,25 @@
 
 | 项目 | 值 |
 | --- | --- |
-| 源目录 | `/mnt/c/Users/Administrator/.codex/skills` |
-| 当前会话现实 | `CODEX_HOME=/mnt/c/Users/Administrator/.codex` |
+| 源目录 | `<codex-skills-root>` |
+| 当前会话现实 | `CODEX_HOME=<codex-home>` |
 | 选择规则 | 仅同步名称匹配 `zzz-*` 的一级技能目录 |
-| 目标仓库 | `/root/work/zzz-skills` |
+| 目标仓库 | `<skills-repo-root>` |
 | 调度器 | WSL 本机 `1Panel` 计划任务 `wsl-zzz-skills-sync` |
-| 控制面仓库 | `/root/work/AgentPlane` |
+| 控制面仓库 | `<repo-root>` |
 
 ## Execution Entry
 
 手动执行正式入口：
 
 ```bash
-env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation apply wsl --name wsl-zzz-skills-sync --operation run --execute
+env -C <repo-root> uv run python -m agentplane.cli host automation apply wsl --name wsl-zzz-skills-sync --operation run --execute
 ```
 
 只读核对计划任务对象：
 
 ```bash
-env -C /root/work/AgentPlane uv run python -m agentplane.cli onepanel \
+env -C <repo-root> uv run python -m agentplane.cli onepanel \
   --env wsl \
   cronjob search \
   --info wsl-zzz-skills-sync
@@ -49,7 +49,7 @@ env -C /root/work/AgentPlane uv run python -m agentplane.cli onepanel \
 - 任务名：`wsl-zzz-skills-sync`
 - 周期：每 2 小时一次
 - Cron：`0 */2 * * *`
-- 工作目录：`/root/work/AgentPlane`
+- 工作目录：`<repo-root>`
 - 命令：`uv run python -m agentplane.cli host automation apply wsl --name wsl-zzz-skills-sync --operation run --execute`
 
 ## Verification
@@ -57,14 +57,14 @@ env -C /root/work/AgentPlane uv run python -m agentplane.cli onepanel \
 建议每次调整后执行最小验证：
 
 ```bash
-env -C /root/work/AgentPlane uv run python -m unittest \
+env -C <repo-root> uv run python -m unittest \
   tests.test_zzz_skills_sync \
   tests.test_host_automation \
   tests.test_cli_entrypoints \
   tests.test_inventory_generation -v
 
-env -C /root/work/AgentPlane uv run python -m agentplane.cli host automation apply wsl --name wsl-zzz-skills-sync --operation run --execute
-env -C /root/work/AgentPlane uv run python -m agentplane.cli onepanel --env wsl cronjob search --info wsl-zzz-skills-sync
+env -C <repo-root> uv run python -m agentplane.cli host automation apply wsl --name wsl-zzz-skills-sync --operation run --execute
+env -C <repo-root> uv run python -m agentplane.cli onepanel --env wsl cronjob search --info wsl-zzz-skills-sync
 ```
 
 ## Common Failures
@@ -79,7 +79,7 @@ env -C /root/work/AgentPlane uv run python -m agentplane.cli onepanel --env wsl 
 处理：
 
 ```bash
-cd /root/work/zzz-skills && git status --short
+cd <skills-repo-root> && git status --short
 ```
 
 确认这些改动是否为人工保留内容。若需要继续自动同步，先人工提交、清理或移动这些改动，再重跑同步。
@@ -110,7 +110,7 @@ cd /root/work/zzz-skills && git status --short
 处理：
 
 ```bash
-cd /root/work/zzz-skills && git fetch origin main && git status -sb
+cd <skills-repo-root> && git fetch origin main && git status -sb
 ```
 
 若本地落后远端，先人工 fast-forward 到最新远端状态，再重跑同步。不要让计划任务自动 rebase 或 merge。
@@ -125,7 +125,7 @@ cd /root/work/zzz-skills && git fetch origin main && git status -sb
 处理：
 
 ```bash
-ls -la /mnt/c/Users/Administrator/.codex/skills
+ls -la <codex-skills-root>
 ```
 
 确认 Windows 侧目录挂载正常，且 `zzz-*` 技能仍位于该目录下。

@@ -1,7 +1,7 @@
 # [ARCHIVED] prod0-main Sub2 Control-Plane Convergence History
 
 > 历史窗口快照。该文档只保留 `2026-03-25` 收口窗口及 `2026-03-30` 后续补记，不是当前正式入口。
-> 当前决策请回到 `inventory/servers/prod0-main/`、active runbook，以及 `uv run python -m ops.cli ...` 的现行控制面口径。
+> 当前决策请回到 `inventory/servers/prod0-main/`、active runbook，以及 `uv run python -m agentplane.cli ...` 的现行控制面口径。
 
 ## 历史目标（2026-03-25 视角）
 
@@ -74,21 +74,21 @@
 1. 用仓库脚本读取当前 compose 与 env，生成 1Panel Compose 草稿：
 
 ```bash
-cd /root/work/OP_Linux
+cd <legacy-op-linux-root>
 python3 ops/scripts/onepanel/project_lifecycle.py \
   --env prod0-main \
   test-sub2apipay \
-  --repo-root /root/work/OP_Linux
+  --repo-root <legacy-op-linux-root>
 ```
 
 2. 用仓库脚本同步/更新 1Panel 项目：
 
 ```bash
-cd /root/work/OP_Linux
+cd <legacy-op-linux-root>
 python3 ops/scripts/onepanel/project_lifecycle.py \
   --env prod0-main \
   sync-sub2apipay \
-  --repo-root /root/work/OP_Linux \
+  --repo-root <legacy-op-linux-root> \
   --disable-systemd
 ```
 

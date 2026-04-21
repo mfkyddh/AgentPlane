@@ -25,16 +25,16 @@ def run_cli_json(*args: str) -> dict:
 
 
 class LocalHostCliTests(unittest.TestCase):
-    def test_windows_host_does_not_bind_wsl_to_windows_repo_root(self) -> None:
+    def test_windows_host_binds_wsl_to_same_checkout(self) -> None:
         payload = inspect_local_host(
             "C:/repos/agentplane",
             host_platform=HostPlatform(os_name="windows", has_wsl=True, is_wsl=False),
         )
 
         self.assertIsNone(payload["legacy_control_root"])
-        self.assertIsNone(payload["linux_backend_root"])
+        self.assertEqual("/mnt/c/repos/agentplane", payload["linux_backend_root"])
         self.assertEqual("windows-wsl", payload["host_profile"]["linux_backend"])
-        self.assertTrue(payload["workspace"]["artifact_staging_root"].endswith(r"C:\repos\agentplane\.agentplane\staging"))
+        self.assertEqual("/mnt/c/repos/agentplane/.agentplane/staging", payload["workspace"]["artifact_staging_root"])
         self.assertTrue(payload["workspace"]["source_root"].endswith("C:\\repos\\agentplane"))
         self.assertTrue(payload["workspace"]["local_command_root"].endswith("C:\\repos\\agentplane"))
 
@@ -64,20 +64,22 @@ class LocalHostCliTests(unittest.TestCase):
         self.assertEqual("wsl-linux", payload["payload"]["linux_backend"]["backend_type"])
         self.assertEqual("windows", payload["payload"]["host_profile"]["os_name"])
         self.assertEqual("windows-wsl", payload["payload"]["host_profile"]["linux_backend"])
-        self.assertTrue(
-            payload["payload"]["workspace"]["artifact_staging_root"].endswith(
-                r"C:\repos\agentplane\.agentplane\staging"
-            )
-        )
+        self.assertEqual("/mnt/c/repos/agentplane/.agentplane/staging", payload["payload"]["workspace"]["artifact_staging_root"])
         self.assertTrue(payload["payload"]["workspace"]["source_root"].endswith("C:\\repos\\agentplane"))
         self.assertTrue(payload["payload"]["workspace"]["local_command_root"].endswith("C:\\repos\\agentplane"))
         self.assertEqual("canonical-ref-only", payload["payload"]["path_policy"]["truth"])
 
-    def test_host_local_migration_plan_includes_private_dirs(self) -> None:
-        payload = run_cli_json("host", "local", "migrate", "plan", "--windows-root", "D:\\Projects\\AgentPlane")
+    def test_host_local_migration_entry_is_removed(self) -> None:
+        result = subprocess.run(
+            [sys.executable, "-m", "agentplane.cli", "host", "local", "migrate", "plan"],
+            cwd=REPO_ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
 
-        self.assertEqual("local.migrate.plan", payload["action"])
-        self.assertIn("secrets", payload["payload"]["private_dirs"])
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("invalid choice", result.stderr)
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 # [ARCHIVED] prod0-main 8443 OpenResty 配置切换手册
 
 > 历史窗口快照。该文档仅保留当时 `8443` 切换窗口的操作记录，不是当前正式入口。
-> 当前决策请回到 `inventory/servers/prod0-main/`、active runbook，以及 `uv run python -m ops.cli ...` 的现行控制面口径。
+> 当前决策请回到 `inventory/servers/prod0-main/`、active runbook，以及 `uv run python -m agentplane.cli ...` 的现行控制面口径。
 
 ## Historical Scope
 

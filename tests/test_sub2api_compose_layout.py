@@ -5,7 +5,7 @@ import yaml
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SUB2API_ROOT = Path("/root/work/sub2api")
+SUB2API_ROOT = Path("<app-repo-root>")
 
 
 def load_compose(path: Path) -> dict:

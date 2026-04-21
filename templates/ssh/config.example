@@ -3,7 +3,7 @@
 Host prod1-backup
   HostName REPLACE_WITH_BACKUP_IP
   User ubuntu
-  IdentityFile /root/work/AgentPlane/secrets/ssh/keys/prod1-backup.pem
+  IdentityFile <repo-root>/secrets/ssh/keys/prod1-backup.pem
   ProxyCommand nc -X connect -x REPLACE_WITH_PROXY_HOST:REPLACE_WITH_PROXY_PORT %h %p
   IdentitiesOnly yes
   ControlMaster auto
@@ -17,7 +17,7 @@ Host prod1-backup
 Host prod0-main REPLACE_WITH_PRIMARY_DOMAIN
   HostName REPLACE_WITH_PRIMARY_IP
   User root
-  IdentityFile /root/work/AgentPlane/secrets/ssh/keys/prod0-main.pem
+  IdentityFile <repo-root>/secrets/ssh/keys/prod0-main.pem
   ProxyCommand nc -X connect -x REPLACE_WITH_PROXY_HOST:REPLACE_WITH_PROXY_PORT %h %p
   IdentitiesOnly yes
   ControlMaster auto

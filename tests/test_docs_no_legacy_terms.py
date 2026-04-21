@@ -38,7 +38,10 @@ ARCHITECTURE_TEMPLATE_LINKS = (
 )
 FORBIDDEN_TEMPLATE_DEFAULTS = (
     "/root/work/AgentPlane",
+    "D:\\Projects\\AgentPlane",
     "ops.cli",
+    "separate checkout",
+    "separate checkouts",
 )
 
 
@@ -110,7 +113,7 @@ class DocsNoLegacyTermsTests(unittest.TestCase):
             text,
         )
         self.assertIn(
-            "Control plane location determines the entry host; backend execution must use a host-native workspace for that backend.",
+            "Control plane location determines the entry host; backend execution must route through resolver-provided workspace bindings.",
             text,
         )
         self.assertNotIn("retained as the WSL/Linux backend path during migration", text)

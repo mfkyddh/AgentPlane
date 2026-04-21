@@ -25,7 +25,7 @@ class TruthPathPolicyTests(unittest.TestCase):
             entry = AppCatalogEntry(
                 app="sub2api",
                 repo_name="sub2api",
-                repo_root=Path("/root/work/sub2api"),
+                repo_root=Path("<app-repo-root>"),
                 service_key="sub2api",
                 contracts={
                     "wsl": "deploy/agentplane/contract.wsl.yaml",

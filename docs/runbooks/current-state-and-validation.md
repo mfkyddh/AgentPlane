@@ -5,15 +5,15 @@
 这不是第二真源，而是给人看的当前状态总览。  
 机器可消费的正式真源仍然是 `inventory/`、`tmp/operation-ledger/`、`secrets/` 和应用仓库合同。
 
-## 2026-04-14 快照
+## 2026-04-22 快照
 
 ### 控制面与源码位置
 
 | 角色 | 当前路径 | 说明 |
 | --- | --- | --- |
-| Windows 控制面源码根 | `D:\Projects\AgentPlane` | 当前主入口所在目录；本地 `git`、文档编辑、Windows 侧 `pwsh` 包装都从这里发起。 |
-| WSL 目标机上的运行仓库 | `/root/work/AgentPlane` | `wsl` target 当前 inventory 中记录的 live repo 路径；它是独立 Linux 文件系统 checkout，不等于 Windows 工作目录映射。 |
-| `sub2api` 应用仓库 | `/root/work/sub2api` | 当前正式样板应用仓库；`deploy/agentplane/contract*.yaml` 位于这里。 |
+| 控制面源码根 | `<repo-root>` | 用户 fork / clone 后的唯一源码 checkout。 |
+| WSL backend 工作目录 | resolver 派生 | Windows 宿主通过 WSL bridge 访问同一 checkout；Linux/macOS 直接使用本地源码根。 |
+| 应用仓库 | `<app-repo-root>` | 由 app catalog、合同和 runbook 指向，不在模板文档中写死维护者路径。 |
 
 ### 本轮重点样板
 
@@ -29,7 +29,7 @@
 
 - `bootstrap inspect-local`、`host local inspect` 在当前 Windows 控制面 + WSL backend 组合下可正常返回路径绑定结果。
 - 当前本轮修复后，仓库 `pytest` 已恢复到全绿；之前卡住的 10 个失败都已收口。
-- 默认 `pytest` 不执行真实 WSL/SSH/Docker live gate；真实验证已收口到 `host live-gate`，并要求独立 Linux 文件系统 checkout。
+- 默认 `pytest` 不执行真实 WSL/SSH/Docker live gate；真实验证已收口到 `host live-gate`，并使用当前单 checkout 路由到 backend。
 - 本地 Python 环境统一使用当前 checkout 根目录 `.venv`；不再维护 `.venv-win` / `.venv-wsl` 分叉。
 
 ### WSL

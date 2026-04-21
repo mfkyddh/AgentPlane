@@ -110,13 +110,6 @@ def _catalog_repo_candidates(workspace_control_root: Path, linux_backend_root: P
         else:
             _append_candidate(candidates, linux_sibling)
 
-    legacy_posix_candidate = Path("/root/work") / repo_name
-    if is_windows_path(workspace_control_root):
-        unc_candidate = wsl_posix_to_unc(legacy_posix_candidate)
-        _append_candidate(candidates, Path(unc_candidate) if unc_candidate else None)
-    else:
-        _append_candidate(candidates, legacy_posix_candidate)
-
     return candidates
 
 

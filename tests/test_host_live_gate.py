@@ -5,7 +5,7 @@ import tomllib
 import pytest
 
 from agentplane.domain.host.live_gate import (
-    assert_linux_filesystem_checkout,
+    assert_live_gate_checkout,
     plan_live_gate,
     run_live_gate,
     summarize_capabilities,
@@ -37,8 +37,8 @@ def test_live_gate_plan_is_default_pytest_excluded_contract() -> None:
 
     assert payload["live_only"] is True
     assert payload["default_pytest"] == "excluded"
-    assert payload["required_checkout"] == "linux-filesystem"
-    assert "/mnt/<drive>" in payload["blocked_checkouts"]
+    assert payload["required_checkout"] == "single-checkout"
+    assert "clone once" in payload["checkout_policy"]
     assert {"live_gate", "integration_wsl", "integration_remote", "docker_required", "ssh_required"}.issubset(
         set(payload["pytest_markers"])
     )
@@ -77,21 +77,22 @@ def test_live_gate_run_without_execute_only_returns_plan() -> None:
     assert runner.calls == []
 
 
-def test_live_gate_execute_requires_linux_filesystem_checkout() -> None:
-    with pytest.raises(ValueError, match="Linux filesystem checkout"):
-        assert_linux_filesystem_checkout(
-            Path("D:/Projects/AgentPlane"),
-            host_platform=HostPlatform(os_name="windows", has_wsl=True, is_wsl=False),
+def test_live_gate_execute_accepts_single_checkout_when_wsl_backend_is_available(tmp_path: Path) -> None:
+    assert_live_gate_checkout(
+        tmp_path,
+        profile="wsl",
+        host_platform=HostPlatform(os_name="windows", has_wsl=True, is_wsl=False),
+    )
+
+    with pytest.raises(ValueError, match="requires WSL"):
+        assert_live_gate_checkout(
+            tmp_path,
+            profile="wsl",
+            host_platform=HostPlatform(os_name="windows", has_wsl=False, is_wsl=False),
         )
 
-    with pytest.raises(ValueError, match="/mnt/<drive>"):
-        assert_linux_filesystem_checkout(
-            Path("/mnt/d/Projects/AgentPlane"),
-            host_platform=HostPlatform(os_name="linux", has_wsl=True, is_wsl=True),
-        )
-
-    with pytest.raises(ValueError, match="inside the WSL Linux filesystem checkout"):
-        assert_linux_filesystem_checkout(
+    with pytest.raises(ValueError, match="Windows with WSL or inside WSL"):
+        assert_live_gate_checkout(
             Path("/"),
             profile="wsl",
             host_platform=HostPlatform(os_name="linux", has_wsl=False, is_wsl=False),
