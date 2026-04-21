@@ -3,6 +3,7 @@ from pathlib import Path
 from agentplane.runtime.resolution import WorkspaceResolver
 from agentplane.runtime.secret_resolver import SecretResolver
 from agentplane.runtime.workspace import resolve_workspace, resolve_workspace_from_repo
+from agentplane.runtime.wsl_bridge import windows_path_to_wsl_posix
 
 
 def test_workspace_derives_linux_backend_root_from_windows_control_root() -> None:
@@ -35,7 +36,9 @@ def test_workspace_from_repo_uses_common_root_for_private_materials(tmp_path: Pa
     assert workspace.control_root == main_root
     assert workspace.private_root == main_root / "secrets"
     assert workspace.linux_backend_root is not None
-    assert workspace.linux_backend_root == main_root
+    rendered_backend_root = str(workspace.linux_backend_root).replace("\\", "/")
+    expected_wsl_root = windows_path_to_wsl_posix(main_root)
+    assert rendered_backend_root in {str(main_root).replace("\\", "/"), expected_wsl_root}
     assert workspace.source_root == worktree_root
     assert workspace.local_command_root == worktree_root
 

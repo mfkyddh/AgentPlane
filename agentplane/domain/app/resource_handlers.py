@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from agentplane.cli.app_resource_state import (
+from agentplane.domain.app.resource_state import (
     APP_RESOURCE_SUMMARY_FIELDS,
     registry_secret_file,
     resolve_secret_file_path,
@@ -17,7 +17,7 @@ from agentplane.domain.app.resource_registry import (
 )
 from agentplane.runtime.observation import build_verification_payload
 from agentplane.runtime.path_policy import assert_canonical_ref
-from agentplane.scripts.onepanel.ledger import refresh_ledgers
+from agentplane.providers.gateway import default_provider_gateway
 
 
 def _summary(definition: AppResourceDefinition) -> dict[str, Any]:
@@ -133,4 +133,4 @@ def verify_app_resource(repo_root: Path, target: str, app: str) -> dict[str, Any
 
 
 def refresh_app_resource_ledger(repo_root: Path, target: str, *, write: bool) -> dict[str, Any]:
-    return refresh_ledgers(repo_root, target, write=write)
+    return default_provider_gateway().refresh_app_resource_ledgers(repo_root, target, write=write)

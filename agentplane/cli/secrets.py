@@ -181,7 +181,7 @@ def _legacy_backup_env_path(repo_root: Path, target: str) -> Path:
 
 
 def _canonical_backup_source_dir(repo_root: Path, target: str) -> str:
-    return str(_host_truth_root(repo_root, target))
+    return f"{repo_root}/secrets/hosts/{target}"
 
 
 def _enforce_env_value(content: str, key: str, value: str) -> str:

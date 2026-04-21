@@ -4,9 +4,9 @@ import json
 from pathlib import Path
 
 from agentplane.domain.website.models import WebsiteDefinition
+from agentplane.domain.targets import SUPPORTED_WEBSITE_TARGETS
 
 
-SUPPORTED_WEBSITE_TARGETS = ("wsl", "prod0-main", "prod2-main")
 WEBSITE_VERIFICATION_PROFILE_BY_TARGET = {
     "wsl": "wsl-fixture",
     "prod0-main": "prod0-readonly",

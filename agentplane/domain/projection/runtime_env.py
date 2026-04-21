@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import quote
 
-from agentplane.cli.app_resource_state import (
+from agentplane.domain.app.resource_state import (
     APP_RESOURCE_SUMMARY_FIELDS,
     FORMAL_PROD0_REDIS_REGISTRY,
     app_resource_secret_dir,
@@ -20,7 +20,7 @@ from agentplane.domain.app.resource_paths import app_resource_secret_relative, s
 from agentplane.runtime.redaction import redact_env_text
 
 
-SUPPORTED_RUNTIME_ENV_TARGETS = ("wsl", "prod0-main", "prod2-main")
+from agentplane.domain.targets import SUPPORTED_RUNTIME_ENV_TARGETS
 FORMAL_PROD0_APP_REQUIREMENTS: dict[str, tuple[str, ...]] = {
     "newapi": ("postgres", "redis", "minio"),
     "sub2api": ("postgres", "redis", "minio"),

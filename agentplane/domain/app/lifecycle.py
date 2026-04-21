@@ -49,7 +49,7 @@ from agentplane.domain.website.lifecycle import (
     plan_website_truth_onboard,
 )
 from agentplane.domain.website.models import WebsiteDefinition
-from agentplane.runtime.execution import ExecutionBindings, ExecutionPlan, PlannedExecutionStep
+from agentplane.runtime.execution import ExecutionBindings, ExecutionPlan, PlannedExecutionStep, shell_join
 from agentplane.ssh import SshTarget
 
 
@@ -77,6 +77,7 @@ def plan_local_backend_step(
     capabilities: tuple[str, ...] = (),
     expected_outputs: tuple[str, ...] = (),
     timeout: int = 300,
+    display_command: str | None = None,
 ) -> PlannedExecutionStep:
     env_refs = ("step.env",) if env else ()
     input_refs = ("step.stdin",) if stdin_text is not None else ()
@@ -96,6 +97,7 @@ def plan_local_backend_step(
             cwd_values={"step.cwd": cwd},
             env_values={"step.env": env or {}},
             input_values={"step.stdin": stdin_text or ""},
+            metadata={"display_override": display_command or shell_join(argv)},
         ),
     )
 
@@ -241,8 +243,9 @@ def load_validated_delivery_contract(
     repo_name: str | None = None,
     contract_path: str | None = None,
 ) -> ValidatedDeliveryContract:
-    from agentplane.cli import apps as app_cli
+    from agentplane.providers.app_runtime import default_app_runtime_gateway
 
+    app_cli = default_app_runtime_gateway()
     catalog_entry, resolved_repo_name, resolved_app_root, resolved_contract = _resolve_contract_source(
         repo_root,
         target=target,

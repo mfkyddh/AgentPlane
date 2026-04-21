@@ -6,24 +6,21 @@ from typing import Any
 from agentplane.domain.website.models import WebsiteDefinition
 from agentplane.domain.website.registry import available_websites, resolve_website
 from agentplane.domain.website.lifecycle import build_website_follow_through, summarize_website
-from agentplane.scripts.onepanel.env_targets import get_target
-from agentplane.scripts.onepanel.executor import TargetExecutor
-from agentplane.scripts.onepanel.ledger import refresh_ledgers
-from agentplane.scripts.onepanel.object_api import get_website as get_onepanel_website
-from agentplane.scripts.onepanel.object_api import plan_website_create, search_websites as search_onepanel_websites
+from agentplane.providers.gateway import default_provider_gateway
 
-def _executor_for_target(target: str) -> TargetExecutor:
-    return TargetExecutor(get_target(target))
+def _executor_for_target(target: str) -> object:
+    return default_provider_gateway().onepanel_target_executor(target)
 
 
-def _find_live_website(executor: TargetExecutor, alias: str) -> dict[str, Any] | None:
-    payload = search_onepanel_websites(executor, name=alias)
+def _find_live_website(executor: object, alias: str) -> dict[str, Any] | None:
+    provider = default_provider_gateway()
+    payload = provider.search_onepanel_websites(executor, name=alias)
     items = payload.get("items")
     if not isinstance(items, list):
         raise RuntimeError("website search returned no items")
     for item in items:
         if isinstance(item, dict) and item.get("alias") == alias and "id" in item:
-            return get_onepanel_website(executor, website_id=int(item["id"]))
+            return provider.get_onepanel_website(executor, website_id=int(item["id"]))
     return None
 
 
@@ -100,7 +97,7 @@ def plan_website_operation(repo_root: Path, target: str, alias: str, operation: 
         steps: list[dict[str, Any]] = []
         warnings: list[str] = []
     elif verification["failures"] == ["missing"]:
-        create_plan = plan_website_create(
+        create_plan = default_provider_gateway().plan_onepanel_website_create(
             alias=definition.alias,
             domain=definition.primary_domain,
             proxy=definition.proxy,
@@ -180,4 +177,4 @@ def apply_website_operation(repo_root: Path, target: str, alias: str, operation:
 
 
 def refresh_website_ledger(repo_root: Path, target: str, *, write: bool = False) -> dict[str, Any]:
-    return refresh_ledgers(Path(repo_root).resolve(), target, write=write)
+    return default_provider_gateway().refresh_onepanel_ledgers(Path(repo_root).resolve(), target, write=write)

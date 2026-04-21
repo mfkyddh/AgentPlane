@@ -20,10 +20,10 @@ from agentplane.cli.local_host import add_local_host_parser, handle_local_host_c
 from agentplane.cli.networks import SUPPORTED_NETWORK_TARGETS, audit_managed_bridge_networks, ensure_managed_bridge_networks
 from agentplane.cli.remote import execute_remote_bash
 from agentplane.cli.secrets import SUPPORTED_SECRET_TARGETS, init_data_services, materialize_legacy_host_layout
+from agentplane.domain.targets import SUPPORTED_HOST_TARGETS
 from agentplane.runtime.wsl_bridge import normalize_repo_root_for_current_host
 
 
-SUPPORTED_HOST_TARGETS = SUPPORTED_SECRET_TARGETS
 FORMAL_HOST_TARGETS = ("wsl", "prod0-main", "prod2-main")
 
 HOST_ACTION_SCOPE_HELP = (

@@ -28,7 +28,8 @@ def test_windows_wsl_backend_wraps_linux_command() -> None:
 
 
 def test_backend_runner_renders_ssh_linux_shell_plan() -> None:
-    ssh_target = SshTarget(alias="prod0-main", config_path=Path("/tmp/ssh-config"), user="root")
+    ssh_config = Path("/tmp/ssh-config")
+    ssh_target = SshTarget(alias="prod0-main", config_path=ssh_config, user="root")
     plan = ExecutionPlan(
         backend_type="ssh-linux",
         cwd_ref="",
@@ -46,5 +47,5 @@ def test_backend_runner_renders_ssh_linux_shell_plan() -> None:
     )
 
     assert rendered.backend_type == "ssh-linux"
-    assert rendered.argv[:4] == ("ssh", "-F", "/tmp/ssh-config", "root@prod0-main")
+    assert rendered.argv[:4] == ("ssh", "-F", str(ssh_config), "root@prod0-main")
     assert rendered.metadata["remote_command"] == "docker inspect sub2api-prod"

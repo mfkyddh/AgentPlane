@@ -5,17 +5,17 @@ from datetime import UTC, datetime
 import json
 import os
 import shlex
-import subprocess
 import tempfile
 import tomllib
 from pathlib import Path
+from subprocess import CompletedProcess
 from typing import Any
 
 import yaml
 
 from agentplane.cli.networks import ensure_managed_bridge_networks
 from agentplane.cli.operations import append_operation_ledger, next_operation_id
-from agentplane.cli.app_resource_state import (
+from agentplane.domain.app.resource_state import (
     APP_RESOURCE_SUMMARY_FIELDS,
     build_app_resource_summary,
     load_registry,
@@ -27,6 +27,7 @@ from agentplane.domain.app.resource_paths import (
     resolve_secret_file_path,
     secrets_root as shared_secrets_root,
 )
+from agentplane.domain.targets import FORMAL_TARGETS, PRODUCTION_TARGETS, is_production_target, remote_compose_filename, target_alias
 from agentplane.domain.app.artifacts import (
     SUPPORTED_CONTRACT_SCHEMA_VERSIONS,
     artifact_output_path,
@@ -36,17 +37,17 @@ from agentplane.domain.app.artifacts import (
     resolve_delivery_contract_spec,
 )
 from agentplane.runtime.backends import build_backend_runner
-from agentplane.runtime.execution import ExecutionBindings, ExecutionPlan
+from agentplane.runtime.execution import CommandRunner, ExecutionBindings, ExecutionPlan
 from agentplane.runtime.host_profile import detect_host_profile
 from agentplane.runtime.redaction import redact_execution_payload
 from agentplane.runtime.wsl_bridge import normalize_repo_root_for_current_host
 from agentplane.ssh import SshTarget, resolve_ssh_target
 
 
-PRODUCTION_APP_TARGETS = ("prod0-main", "prod2-main")
+PRODUCTION_APP_TARGETS = PRODUCTION_TARGETS
 ONEPANEL_LEDGER_BEGIN = "<!-- BEGIN AGENTPLANE_ONEPANEL_LEDGER -->"
 ONEPANEL_LEDGER_END = "<!-- END AGENTPLANE_ONEPANEL_LEDGER -->"
-SUPPORTED_APP_TARGETS = ("wsl", *PRODUCTION_APP_TARGETS)
+SUPPORTED_APP_TARGETS = FORMAL_TARGETS
 ERROR_ID_APP_RESOURCE_RESOURCES_REQUIRED = "app.resource.resources_required"
 ERROR_ID_APP_RESOURCE_SECRET_FILE_SCOPE = "app.resource.secret_file_scope"
 ERROR_ID_APP_RESOURCE_SECRET_FILE_MISSING = "app.resource.secret_file_missing"
@@ -351,42 +352,39 @@ def handle_app_command(args: argparse.Namespace) -> dict[str, Any]:
 
     if args.app_surface == "delivery":
         _ensure_formal_delivery_action_contract(args)
-        import agentplane.domain.app.delivery_handlers as delivery_handlers
+        from agentplane.domain.app.delivery_service import AppDeliveryService
+
+        delivery_service = AppDeliveryService(repo_root)
 
         if args.app_delivery_action == "validate-contract":
-            return delivery_handlers.validate_contract_for_app(
-                repo_root,
+            return delivery_service.validate_contract(
                 target=args.target,
                 app=args.app,
                 app_repo_root=getattr(args, "app_repo_root", None),
             )
         if args.app_delivery_action == "render-runtime":
-            return delivery_handlers.render_runtime_for_app(
-                repo_root,
+            return delivery_service.render_runtime(
                 target=args.target,
                 app=args.app,
                 image_ref=args.image_ref,
                 app_repo_root=getattr(args, "app_repo_root", None),
             )
         if args.app_delivery_action == "inventory-refresh":
-            return delivery_handlers.inventory_refresh_for_app(
-                repo_root,
+            return delivery_service.inventory_refresh(
                 target=args.target,
                 app=args.app,
                 write=bool(args.write),
                 app_repo_root=getattr(args, "app_repo_root", None),
             )
         if args.app_delivery_action == "doc-sync":
-            return delivery_handlers.doc_sync_for_app(
-                repo_root,
+            return delivery_service.doc_sync(
                 target=args.target,
                 app=args.app,
                 write=bool(args.write),
                 app_repo_root=getattr(args, "app_repo_root", None),
             )
         if args.app_delivery_action == "build-artifact":
-            return delivery_handlers.build_artifact_for_app(
-                repo_root,
+            return delivery_service.build_artifact(
                 target=args.target,
                 app=args.app,
                 image_tag=args.image_tag,
@@ -395,8 +393,7 @@ def handle_app_command(args: argparse.Namespace) -> dict[str, Any]:
                 app_repo_root=getattr(args, "app_repo_root", None),
             )
         if args.app_delivery_action == "package-runtime":
-            return delivery_handlers.package_runtime_for_app(
-                repo_root,
+            return delivery_service.package_runtime(
                 target=args.target,
                 app=args.app,
                 image_tag=args.image_tag,
@@ -405,8 +402,7 @@ def handle_app_command(args: argparse.Namespace) -> dict[str, Any]:
                 app_repo_root=getattr(args, "app_repo_root", None),
             )
         if args.app_delivery_action == "ship-image":
-            return delivery_handlers.ship_image_for_app(
-                repo_root,
+            return delivery_service.ship_image(
                 target=args.target,
                 app=args.app,
                 image_ref=args.image_ref,
@@ -415,8 +411,7 @@ def handle_app_command(args: argparse.Namespace) -> dict[str, Any]:
                 app_repo_root=getattr(args, "app_repo_root", None),
             )
         if args.app_delivery_action == "deploy":
-            return delivery_handlers.deploy_for_app(
-                repo_root,
+            return delivery_service.deploy(
                 target=args.target,
                 app=args.app,
                 image_ref=args.image_ref,
@@ -425,8 +420,7 @@ def handle_app_command(args: argparse.Namespace) -> dict[str, Any]:
                 app_repo_root=getattr(args, "app_repo_root", None),
             )
         if args.app_delivery_action == "verify":
-            return delivery_handlers.verify_delivery_for_app(
-                repo_root,
+            return delivery_service.verify(
                 target=args.target,
                 app=args.app,
                 dry_run=args.dry_run,
@@ -434,8 +428,7 @@ def handle_app_command(args: argparse.Namespace) -> dict[str, Any]:
                 app_repo_root=getattr(args, "app_repo_root", None),
             )
         if args.app_delivery_action == "rollback":
-            return delivery_handlers.rollback_for_app(
-                repo_root,
+            return delivery_service.rollback(
                 target=args.target,
                 app=args.app,
                 dry_run=args.dry_run,
@@ -443,9 +436,7 @@ def handle_app_command(args: argparse.Namespace) -> dict[str, Any]:
                 app_repo_root=getattr(args, "app_repo_root", None),
             )
         if args.app_delivery_action == "onboard":
-            # Domain handler is the single source of truth for lifecycle semantics.
-            return delivery_handlers.onboard_for_app(
-                repo_root,
+            return delivery_service.onboard(
                 target=args.target,
                 app=args.app,
                 dry_run=bool(getattr(args, "dry_run", False)),
@@ -455,8 +446,7 @@ def handle_app_command(args: argparse.Namespace) -> dict[str, Any]:
                 contract_path=getattr(args, "contract_path", None),
             )
         if args.app_delivery_action == "offboard":
-            return delivery_handlers.offboard_for_app(
-                repo_root,
+            return delivery_service.offboard(
                 target=args.target,
                 app=args.app,
                 dry_run=bool(getattr(args, "dry_run", False)),
@@ -467,8 +457,8 @@ def handle_app_command(args: argparse.Namespace) -> dict[str, Any]:
     raise ValueError(f"Unsupported app surface: {args.app_surface}")
 
 
-def _run(command: list[str], *, cwd: Path | None = None, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(command, cwd=cwd, env=env, text=True, capture_output=True, check=False)
+def _run(command: list[str], *, cwd: Path | None = None, env: dict[str, str] | None = None) -> CompletedProcess[str]:
+    return CommandRunner().run(command, cwd=cwd, env=env)
 
 
 def _local_backend_type() -> str:
@@ -481,16 +471,38 @@ def _run_linux_backend_command(
     cwd: Path,
     env: dict[str, str],
     backend: str,
-) -> subprocess.CompletedProcess[str]:
+) -> CompletedProcess[str]:
+    local_backend = _local_backend_type()
     if backend == "native-posix":
-        return _run(["bash", "-lc", command], cwd=cwd, env=env)
-    if backend == "wsl-linux":
-        posix_cwd = wsl_unc_to_posix(cwd) or cwd
-        normalized_cwd = normalize_wsl_posix_path(posix_cwd)
-        if not normalized_cwd:
-            raise ValueError(f"无法解析 WSL backend cwd: {cwd}")
-        return _run(["wsl.exe", "-e", "bash", "-lc", f"cd {shlex.quote(normalized_cwd)} && {command}"], env=env)
-    raise ValueError(f"暂不支持本地执行 packaging.backend={backend!r}")
+        execution_backend = local_backend
+    elif backend == "wsl-linux":
+        execution_backend = "windows-wsl" if local_backend == "windows-wsl" else "linux-native"
+    else:
+        raise ValueError(f"暂不支持本地执行 packaging.backend={backend!r}")
+    runner = build_backend_runner()
+    plan = ExecutionPlan(
+        backend_type=execution_backend,  # type: ignore[arg-type]
+        cwd_ref="app.cwd",
+        argv=("bash", "-lc", command),
+        env_refs=("app.env",),
+        input_refs=(),
+        expected_outputs=(),
+        capabilities=("bash",),
+        timeout=1800,
+    )
+    result = runner.execute(
+        plan,
+        bindings=ExecutionBindings(
+            cwd_values={"app.cwd": cwd},
+            env_values={"app.env": env},
+        ),
+    )
+    return CompletedProcess(
+        args=list(result.argv),
+        returncode=result.returncode,
+        stdout=result.stdout,
+        stderr=result.stderr,
+    )
 
 
 def _record_app_operation(
@@ -518,19 +530,15 @@ def _record_app_operation(
 
 
 def _is_production_target(target: str) -> bool:
-    return target in PRODUCTION_APP_TARGETS
+    return is_production_target(target)
 
 
 def _target_alias(target: str) -> str:
-    if target == "prod0-main":
-        return "prod0"
-    if target == "prod2-main":
-        return "prod2"
-    raise ValueError(f"Unsupported production target alias: {target}")
+    return target_alias(target)
 
 
 def _remote_compose_filename(target: str) -> str:
-    return f"docker-compose.{_target_alias(target)}.yml"
+    return remote_compose_filename(target)
 
 
 def _prod0_data_env_path(app_id: str, *, candidate_suffix: str | None = None) -> str | None:
@@ -729,6 +737,13 @@ def _contract_validation_target(target: str) -> str:
 
 def _secrets_root(repo_root: Path) -> Path:
     return shared_secrets_root(repo_root)
+
+
+def _payload_path(path: Path | str) -> str:
+    rendered = str(path)
+    if len(rendered) >= 2 and rendered[0].isalpha() and rendered[1] == ":":
+        return rendered
+    return rendered.replace("\\", "/")
 
 
 def _inventory_container_names(payload: dict[str, Any]) -> set[str]:
@@ -1516,9 +1531,9 @@ def _render_app_summary(contract: dict[str, Any], target: str, inventory_entry: 
     contract_file = str(_nested_get(contract, "_meta.contract_file") or "deploy/agentplane/contract.yaml")
     app_root = Path(str(_nested_get(contract, "_meta.app_root") or "."))
     try:
-        contract_label = str(Path(contract_file).resolve().relative_to(app_root.resolve()))
+        contract_label = Path(contract_file).resolve().relative_to(app_root.resolve()).as_posix()
     except ValueError:
-        contract_label = contract_file
+        contract_label = _payload_path(contract_file)
     public_url = str(inventory_entry.get("public_url", "-"))
     access_label = "公网入口"
     if public_url.startswith("internal://"):
@@ -1604,12 +1619,12 @@ def doc_sync(*, repo_root: Path, target: str, contract_paths: list[Path], write:
         if isinstance(summary_path, str) and summary_path:
             app_root = Path(contract["_meta"]["app_root"])
             output_file = app_root / summary_path
-            app_docs.append(str(output_file))
+            app_docs.append(_payload_path(output_file))
             if write:
                 output_file.parent.mkdir(parents=True, exist_ok=True)
                 output_file.write_text(_render_app_summary(contract, target, entry), encoding="utf-8")
 
-    return {"server_readme": str(server_readme), "app_docs": app_docs}
+    return {"server_readme": _payload_path(server_readme), "app_docs": app_docs}
 
 
 def _execute_step(
@@ -1742,7 +1757,12 @@ def build_artifact(
         if recommended_versions is not None:
             payload["recommended_versions"] = recommended_versions
         return payload
-    result = _run(["bash", "-lc", command], cwd=app_root, env=env)
+    result = _run_linux_backend_command(
+        command,
+        cwd=app_root,
+        env=env,
+        backend=contract_spec.packaging.backend,
+    )
     if result.returncode != 0:
         raise ValueError(result.stdout or result.stderr or "build-artifact 执行失败")
     if not output_path.exists():
@@ -2054,7 +2074,7 @@ def deploy_app(
             "container_name": rendered["container_name"],
             "remote_compose": remote_compose,
             "remote_env": remote_env,
-            "local_env": str(env_path),
+            "local_env": _payload_path(env_path),
             "commands": commands,
             "operation": operation,
             "dry_run": True,
@@ -2127,7 +2147,7 @@ def deploy_app(
         "container_name": rendered["container_name"],
         "remote_compose": remote_compose,
         "remote_env": remote_env,
-        "local_env": str(env_path),
+        "local_env": _payload_path(env_path),
         "network_preflight": network_preflight,
         "commands": [display for _, display in steps],
         "results": step_results,

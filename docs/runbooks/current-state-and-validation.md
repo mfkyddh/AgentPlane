@@ -50,8 +50,8 @@
 
 ### 仓库实现侧
 
-1. `projection runtime-env plan` 当前会把渲染后的完整 env 直接输出到 stdout。  
-这会把真实密码、JWT secret 等敏感值暴露在终端与日志里，应该改为默认脱敏或显式 `--reveal-secrets` 才允许输出。
+1. `projection runtime-env plan` 当前默认不输出完整 `current_env` / `rendered_env`；只有显式传 `--reveal-secrets` 才会展示真实 env 内容。  
+这条命令可以用于日常漂移判断，但含 `--reveal-secrets` 的输出仍不能贴到共享日志里。
 
 2. `prod0-readonly` 的 1Panel 只读验证链路当前不可用。  
 现场报错是远端缺少 `/opt/agentplane/agentplane/scripts/onepanel/api_request.py`，说明 prod0 的 readonly provider surface 与仓库当前 CLI/脚本布局已经漂移。
@@ -68,7 +68,7 @@
 
 ### 先改仓库
 
-1. 给 `projection runtime-env plan` 增加默认脱敏输出。
+1. 继续保持 `projection runtime-env plan` 默认脱敏，并把需要真实 env 的排障动作限制在本机受控会话内。
 2. 修复 `prod0-readonly` 远端 onepanel helper 的分发/查找路径。
 3. 把 prod0 的 config file 收口规则写成明确合同，避免 audit 和现场长期打架。
 

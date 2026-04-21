@@ -90,7 +90,7 @@ def _resource_payload(raw_entry: dict[str, Any]) -> dict[str, dict[str, Any]]:
 
 
 def available_app_resources(repo_root: Path, target: str) -> list[tuple[AppResourceDefinition, dict[str, Any]]]:
-    from agentplane.cli.app_resource_state import load_registry
+    from agentplane.domain.app.resource_state import load_registry
 
     _, registry = load_registry(repo_root, target)
     by_app, by_service_key = _catalog_entry_maps(repo_root)

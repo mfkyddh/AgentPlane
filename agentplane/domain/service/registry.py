@@ -5,9 +5,8 @@ from pathlib import Path
 from typing import Any
 
 from agentplane.domain.service.models import ServiceDefinition
+from agentplane.domain.targets import SUPPORTED_SERVICE_TARGETS
 
-
-SUPPORTED_SERVICE_TARGETS = ("wsl", "prod0-main", "prod2-main")
 
 FIXED_SERVICE_DEFINITIONS: dict[str, ServiceDefinition] = {
     "postgres": ServiceDefinition(

@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from agentplane.cli.app_resource_state import load_registry
+from agentplane.domain.app.resource_state import load_registry
 from agentplane.domain.app.resource_paths import app_resource_secret_dir, app_resource_secret_relative
 from agentplane.domain.app.resource_registry import resolve_app_resource
 
@@ -100,8 +100,8 @@ def _build_plan(repo_root: Path, target: str, app: str, *, operation: str) -> di
     markup = STATUS_MATERIALIZED if operation == 'allocate' else STATUS_RETIRED
 
     steps: list[str] = [
-        f'Ensure the secret directory {state['secret_dir']} exists',
-        f'Keep {state['definition'].app} secret paths under the canonical names',
+        f"Ensure the secret directory {state['secret_dir']} exists",
+        f"Keep {state['definition'].app} secret paths under the canonical names",
     ]
     if operation == 'allocate':
         steps.extend(

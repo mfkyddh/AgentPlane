@@ -98,7 +98,8 @@ function Invoke-AgentPlaneRoutedUv {
     $inspect = Get-AgentPlaneLocalInspect -BaseDirectory $BaseDirectory -RepoRoot $RepoRoot
     $sourceRoot = [string]$inspect.payload.workspace.source_root
     if (Test-AgentPlanePosixPath -PathValue $sourceRoot) {
-        & wsl.exe -e env -C $sourceRoot uv "run" @UvArgs
+        $wslUvEnv = "$sourceRoot/.venv-wsl"
+        & wsl.exe -e env "UV_PROJECT_ENVIRONMENT=$wslUvEnv" -C $sourceRoot uv "run" @UvArgs
         if ($LASTEXITCODE -ne 0) {
             throw "WSL uv run failed with exit code $LASTEXITCODE."
         }

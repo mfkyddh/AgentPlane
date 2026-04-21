@@ -41,8 +41,9 @@ def _load_validated_contract(
     app: str,
     app_repo_root: str | None = None,
 ) -> tuple[Any, dict[str, Any], Path]:
-    from agentplane.cli import apps as app_cli
+    from agentplane.providers.app_runtime import default_app_runtime_gateway
 
+    app_cli = default_app_runtime_gateway()
     contract_file = _resolve_contract_file(repo_root, target=target, app=app, app_repo_root=app_repo_root)
     contract = app_cli.validate_contract(contract_file, repo_root=repo_root, target=target)
     return app_cli, contract, contract_file
@@ -129,11 +130,15 @@ def _render_execution_steps(steps: list[PlannedExecutionStep]) -> list[dict[str,
     rendered_steps: list[dict[str, Any]] = []
     for step in steps:
         rendered = runner.render(step.plan, bindings=step.bindings)
+        backend_payload = rendered.to_payload()
+        display_override = step.bindings.metadata.get("display_override")
+        if isinstance(display_override, str) and display_override:
+            backend_payload["display_command"] = display_override
         rendered_steps.append(
             {
                 "key": step.key,
                 "plan": step.plan.to_payload(),
-                "backend": rendered.to_payload(),
+                "backend": backend_payload,
             }
         )
     return rendered_steps
@@ -179,12 +184,16 @@ def _transition_step_to_execution(
             capabilities=("ssh",),
         )
     executable = str(argv[0]) if argv else "python3"
+    display_command = " ".join(str(item) for item in argv)
+    if len(argv) > 1 and "app_lifecycle.py" in str(argv[1]):
+        display_command = display_command.replace("\\", "/")
     return plan_local_backend_step(
         key,
         backend_type=detect_host_profile().linux_backend,
         cwd=repo_root,
         argv=tuple(str(item) for item in argv),
         capabilities=(executable,),
+        display_command=display_command,
     )
 
 
@@ -376,7 +385,7 @@ def _plan_remote_deploy_steps(
         "container_name": rendered["container_name"],
         "remote_compose": remote_compose,
         "remote_env": remote_env,
-        "local_env": str(env_path),
+        "local_env": app_cli._payload_path(env_path),
     }
 
 
@@ -807,7 +816,7 @@ def deploy_for_app(
         "host_binding": candidate_material["host_binding"],
         "health_url": candidate_material["health_url"],
         "local_compose": str(candidate_material["local_compose"]),
-        "local_env": str(candidate_material["local_env"]),
+        "local_env": app_cli._payload_path(candidate_material["local_env"]),
         "remote_compose": candidate_material["remote_compose"],
         "remote_env": candidate_material["remote_env"],
         "commands": [

@@ -7,13 +7,14 @@ from typing import Any
 from agentplane.domain.app.catalog import load_app_catalog, resolve_app_contract_source
 from agentplane.domain.app.models import AppObject
 from agentplane.domain.app.resource_paths import canonical_contract_ref
+from agentplane.domain.app.runtime_helpers import render_domain_path
 from agentplane.runtime.observation import build_verification_payload
 
 
 def _inventory_entry(repo_root: Path, target: str, service_key: str) -> dict[str, Any]:
-    from agentplane.cli.apps import _load_inventory
+    from agentplane.domain.app.runtime_helpers import load_inventory
 
-    _, payload = _load_inventory(repo_root, target)
+    _, payload = load_inventory(repo_root, target)
     services = payload.get("services", {})
     if not isinstance(services, dict):
         return {}
@@ -53,8 +54,8 @@ def _object_payload(obj: AppObject, inventory_entry: dict[str, Any], *, include_
         "public_url": inventory_entry.get("public_url", ""),
     }
     if include_resolved_path:
-        payload["resolved_path"] = str(obj.contract_file)
-        payload["contract_file"] = str(obj.contract_file)
+        payload["resolved_path"] = render_domain_path(obj.contract_file)
+        payload["contract_file"] = render_domain_path(obj.contract_file)
     return payload
 
 
@@ -81,10 +82,10 @@ def _resolved_summary_path(repo_root: Path, configured_path: str) -> Path | None
 
 
 def _summary_files(obj: AppObject) -> list[dict[str, Any]]:
-    from agentplane.cli.apps import _nested_get
+    from agentplane.domain.app.runtime_helpers import nested_get
 
     contract = _contract_payload(obj.contract_file)
-    summary_paths = _nested_get(contract, "docs.app_summary_files")
+    summary_paths = nested_get(contract, "docs.app_summary_files")
     if isinstance(summary_paths, dict):
         target_path = summary_paths.get(obj.target)
         if isinstance(target_path, str) and target_path:
@@ -98,7 +99,7 @@ def _summary_files(obj: AppObject) -> list[dict[str, Any]]:
                         "exists": resolved.is_file(),
                     }
                 ]
-    summary_path = _nested_get(contract, "docs.app_summary_file")
+    summary_path = nested_get(contract, "docs.app_summary_file")
     if isinstance(summary_path, str) and summary_path:
         resolved = _resolved_summary_path(obj.repo_root, summary_path)
         if resolved is None:
@@ -115,14 +116,14 @@ def _summary_files(obj: AppObject) -> list[dict[str, Any]]:
 
 
 def _ledger_status(repo_root: Path, target: str) -> dict[str, Any]:
-    from agentplane.cli.apps import _nested_get
+    from agentplane.domain.app.runtime_helpers import nested_get
 
     inventory_file = repo_root / "inventory" / "servers" / target / "inventory.json"
     payload = json.loads(inventory_file.read_text(encoding="utf-8")) if inventory_file.exists() else {}
     expected_pointer = f"inventory/servers/{target}/ledgers/apps.json"
     json_file = repo_root / expected_pointer
     markdown_file = repo_root / "inventory" / "servers" / target / "ledgers" / "apps.md"
-    actual_pointer = _nested_get(payload, "object_ledgers.ledgers.apps") if isinstance(payload, dict) else None
+    actual_pointer = nested_get(payload, "object_ledgers.ledgers.apps") if isinstance(payload, dict) else None
     inventory_pointer = actual_pointer if isinstance(actual_pointer, str) else ""
     return {
         "json_file": str(json_file),
@@ -186,8 +187,8 @@ def verify_app_object(repo_root: Path, target: str, app: str, app_repo_root: str
     checks["contract_file"] = {
         "ok": contract_exists,
         "canonical_ref": _canonical_ref(obj),
-        "resolved_path": str(obj.contract_file),
-        "path": str(obj.contract_file),
+            "resolved_path": render_domain_path(obj.contract_file),
+            "path": render_domain_path(obj.contract_file),
     }
     if not contract_exists:
         failures.append("contract_file")
@@ -225,7 +226,7 @@ def verify_app_object(repo_root: Path, target: str, app: str, app_repo_root: str
         "app": obj.app,
         "target": target,
         "canonical_ref": _canonical_ref(obj),
-        "resolved_path": str(obj.contract_file),
+        "resolved_path": render_domain_path(obj.contract_file),
         "inventory_entry": inventory_entry,
         "summary_files": summary_files,
         "ledger_status": ledger_status,
@@ -234,12 +235,12 @@ def verify_app_object(repo_root: Path, target: str, app: str, app_repo_root: str
         canonical_ref=_canonical_ref(obj),
         ledger_fields=_object_payload(obj, inventory_entry, include_resolved_path=False),
         verification_fields={
-            "resolved_path": str(obj.contract_file),
+            "resolved_path": render_domain_path(obj.contract_file),
             "inventory_entry": inventory_entry,
             "summary_files": summary_files,
             "ledger_status": ledger_status,
         },
-        resolved_path=str(obj.contract_file),
+        resolved_path=render_domain_path(obj.contract_file),
         evidence=evidence,
         checks=checks,
         failures=failures,

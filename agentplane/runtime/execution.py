@@ -199,3 +199,31 @@ class BackendRunner:
         if len(rendered) >= 2 and rendered[0].isalpha() and rendered[1] == ":":
             return rendered
         return rendered
+
+
+class CommandRunner:
+    def run(
+        self,
+        argv: list[str] | tuple[str, ...],
+        *,
+        cwd: Path | str | None = None,
+        env: Mapping[str, str] | None = None,
+        timeout: int | None = None,
+    ) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            list(argv),
+            cwd=self._local_cwd(cwd),
+            env=dict(env) if env else None,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            capture_output=True,
+            check=False,
+            timeout=timeout,
+        )
+
+    @staticmethod
+    def _local_cwd(value: Path | str | None) -> str | None:
+        if value is None:
+            return None
+        return str(value)

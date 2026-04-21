@@ -19,5 +19,15 @@ dev = [
   "pytest>=8.4.2",
 ]
 
+[tool.pytest.ini_options]
+addopts = "-m 'not integration_wsl and not integration_remote and not external_app and not docker_required and not ssh_required'"
+markers = [
+  "integration_wsl: requires a real WSL/Linux backend from the current host",
+  "integration_remote: requires a real remote host, SSH target, or provider endpoint",
+  "external_app: requires an external application repository outside AgentPlane",
+  "docker_required: requires a live Docker daemon",
+  "ssh_required: requires live SSH transport",
+]
+
 [tool.hatch.build.targets.wheel]
 packages = ["agentplane"]

@@ -155,7 +155,7 @@ uv run python -m agentplane.cli app delivery doc-sync --target <target> --app <a
 
 ## 当前操作提醒
 
-1. `projection runtime-env plan` 目前会直接打印完整 env，含真实 secrets；不要把它当成可随手贴日志的命令。
+1. `projection runtime-env plan` 默认脱敏；只有显式 `--reveal-secrets` 才会输出完整 env，不要把 reveal 输出贴到共享日志。
 2. `--app-repo-root` 只在临时覆盖时使用；长期状态仍应回到 catalog 解析结果。
 3. 目标网络如果未先对齐 `managed_bridge_networks` 与 required container contract，`deploy` 成功也不代表上线安全。
 
