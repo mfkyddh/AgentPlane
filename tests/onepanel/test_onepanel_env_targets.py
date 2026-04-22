@@ -63,6 +63,25 @@ class OnePanelEnvTargetsTests(unittest.TestCase):
     def test_supported_targets_include_prod2(self) -> None:
         self.assertIn("prod2-main", env_targets.supported_targets())
 
+    def test_wsl_local_api_request_command_uses_backend_paths(self) -> None:
+        target = env_targets.TargetConfig(
+            name="wsl",
+            mode="local",
+            api_env_file=Path("D:/Projects/AgentPlane/secrets/hosts/wsl/onepanel/api.env"),
+            api_request_script=Path("D:/Projects/AgentPlane/agentplane/scripts/onepanel/api_request.py"),
+            linux_backend=env_targets.LinuxBackend(
+                backend_type="wsl-linux",
+                executable=("wsl.exe", "-e"),
+                shell_executable=("wsl.exe", "-e", "bash", "-lc"),
+            ),
+        )
+
+        command = env_targets.build_api_request_command(target, "GET", "/api/v2/core/settings/search")
+
+        self.assertEqual("python3", command[0])
+        self.assertEqual("/mnt/d/Projects/AgentPlane/agentplane/scripts/onepanel/api_request.py", command[1])
+        self.assertIn("/mnt/d/Projects/AgentPlane/secrets/hosts/wsl/onepanel/api.env", command)
+
     def test_resolve_remote_api_paths_uses_declared_agentplane_remote_root(self) -> None:
         target = env_targets.get_target("prod0-main")
         completed = subprocess.CompletedProcess(

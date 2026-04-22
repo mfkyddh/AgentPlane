@@ -17,8 +17,9 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 class RecordingRunner:
-    def __init__(self, returncodes: list[int] | None = None) -> None:
+    def __init__(self, returncodes: list[int] | None = None, stdout: str = "ok\n") -> None:
         self.returncodes = list(returncodes or [])
+        self.stdout = stdout
         self.calls: list[tuple[tuple[str, ...], Path | str | None, int | None]] = []
 
     def run(self, argv, *, cwd=None, env=None, timeout=None):  # noqa: ANN001
@@ -27,7 +28,7 @@ class RecordingRunner:
         return CompletedProcess(
             args=list(argv),
             returncode=returncode,
-            stdout="ok\n" if returncode == 0 else "",
+            stdout=self.stdout if returncode == 0 else "",
             stderr="" if returncode == 0 else "failed\n",
         )
 
@@ -45,6 +46,18 @@ def test_live_gate_plan_is_default_pytest_excluded_contract() -> None:
     assert "docker" in summarize_capabilities(payload["steps"])
     assert [step["key"] for step in payload["steps"]][-1] == "app.delivery.verify"
     assert payload["steps"][-1]["argv"][-1] == "--execute"
+
+
+def test_wsl_live_gate_keeps_formal_cli_on_host_entry() -> None:
+    payload = plan_live_gate(REPO_ROOT, profile="wsl")
+    steps = {step["key"]: step for step in payload["steps"]}
+
+    assert steps["toolchain.uv"]["execution"] == "linux-backend"
+    assert steps["toolchain.docker"]["execution"] == "linux-backend"
+    assert steps["toolchain.docker-compose"]["execution"] == "linux-backend"
+    assert steps["host.inventory"]["execution"] == "host"
+    assert steps["projection.verification"]["execution"] == "host"
+    assert steps["app.delivery.verify"]["execution"] == "host"
 
 
 def test_default_pytest_excludes_live_gate_marker() -> None:
@@ -114,4 +127,20 @@ def test_live_gate_execute_uses_command_runner_and_stops_on_first_failure() -> N
     assert payload["ok"] is False
     assert [result["ok"] for result in payload["results"]] == [True, False]
     assert len(runner.calls) == 2
+
+
+def test_live_gate_results_redact_nested_command_stdout() -> None:
+    runner = RecordingRunner(stdout='{"apiKey": "secret", "status": "ok"}\n')
+
+    payload = run_live_gate(
+        Path("/"),
+        profile="wsl",
+        execute=True,
+        runner=runner,
+        host_platform=HostPlatform(os_name="linux", has_wsl=True, is_wsl=True),
+    )
+
+    assert payload["ok"] is True
+    assert "<redacted>" in payload["results"][0]["stdout"]
+    assert "secret" not in payload["results"][0]["stdout"]
 

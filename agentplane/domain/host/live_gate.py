@@ -2,16 +2,18 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Literal, Mapping
 
 from agentplane.runtime.backends import build_backend_runner
 from agentplane.runtime.execution import CommandRunner, ExecutionBindings, ExecutionPlan
 from agentplane.runtime.platform import HostPlatform, detect_host_platform
+from agentplane.runtime.redaction import redact_execution_payload
 
 
 LIVE_GATE_PROFILES: tuple[str, ...] = ("wsl", "prod0-main", "prod2-main")
 DEFAULT_APP = "sub2api"
 DEFAULT_WSL_PROJECTION_PROFILE = "wsl-fixture"
+LiveGateExecution = Literal["host", "linux-backend"]
 
 
 @dataclass(frozen=True)
@@ -20,6 +22,7 @@ class LiveGateStep:
     argv: tuple[str, ...]
     capabilities: tuple[str, ...]
     cwd: Path
+    execution: LiveGateExecution = "host"
     timeout: int = 300
 
     def to_payload(self) -> dict[str, Any]:
@@ -28,6 +31,7 @@ class LiveGateStep:
             "argv": list(self.argv),
             "cwd": str(self.cwd),
             "capabilities": list(self.capabilities),
+            "execution": self.execution,
             "timeout": self.timeout,
         }
 
@@ -61,18 +65,21 @@ def _wsl_steps(repo_root: Path, *, app: str, projection_profile: str) -> list[Li
             argv=("uv", "--version"),
             cwd=repo_root,
             capabilities=("uv",),
+            execution="linux-backend",
         ),
         LiveGateStep(
             key="toolchain.docker",
             argv=("docker", "version", "--format", "{{.Server.Version}}"),
             cwd=repo_root,
             capabilities=("docker",),
+            execution="linux-backend",
         ),
         LiveGateStep(
             key="toolchain.docker-compose",
             argv=("docker", "compose", "version"),
             cwd=repo_root,
             capabilities=("docker",),
+            execution="linux-backend",
         ),
         LiveGateStep(
             key="host.inventory",
@@ -203,10 +210,12 @@ def _run_step_with_backend(step: LiveGateStep) -> dict[str, Any]:
         plan,
         bindings=ExecutionBindings(cwd_values={"repo_root": step.cwd}),
     )
-    return {
+    payload = {
         "key": step.key,
+        "execution": step.execution,
         **result.to_payload(),
     }
+    return redact_execution_payload(payload)
 
 
 def plan_live_gate(
@@ -227,7 +236,7 @@ def plan_live_gate(
         "live_only": True,
         "default_pytest": "excluded",
         "required_checkout": "single-checkout",
-        "checkout_policy": "clone once; Windows hosts may route WSL steps through the same checkout via the WSL bridge",
+        "checkout_policy": "clone once; Windows hosts keep formal CLI on the host and route Linux-only toolchain steps through the WSL bridge",
         "execute_requires": "--execute",
         "pytest_markers": ["live_gate", "integration_wsl", "integration_remote", "docker_required", "ssh_required"],
         "steps": [step.to_payload() for step in steps],
@@ -258,7 +267,13 @@ def run_live_gate(
     command_runner = runner or CommandRunner()
     results: list[dict[str, Any]] = []
     for step in build_live_gate_steps(root, profile=profile, app=app, projection_profile=projection_profile):
-        if runner is None and profile == "wsl" and facts.os_name == "windows" and not facts.is_wsl:
+        if (
+            runner is None
+            and profile == "wsl"
+            and facts.os_name == "windows"
+            and not facts.is_wsl
+            and step.execution == "linux-backend"
+        ):
             result = _run_step_with_backend(step)
         else:
             completed = command_runner.run(step.argv, cwd=step.cwd, timeout=step.timeout)
@@ -266,11 +281,13 @@ def run_live_gate(
                 "key": step.key,
                 "argv": list(step.argv),
                 "cwd": str(step.cwd),
+                "execution": step.execution,
                 "returncode": completed.returncode,
                 "stdout": completed.stdout,
                 "stderr": completed.stderr,
                 "ok": completed.returncode == 0,
             }
+            result = redact_execution_payload(result)
         results.append(result)
         if not result["ok"]:
             break

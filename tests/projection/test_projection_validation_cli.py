@@ -39,6 +39,33 @@ class ProjectionValidationCliTests(unittest.TestCase):
         self.assertEqual("wsl-fixture", run_suite.call_args.kwargs["profile"])
         self.assertEqual("wsl", run_suite.call_args.kwargs["env"])
 
+    def test_projection_verification_run_redacts_sensitive_payload(self) -> None:
+        from agentplane.cli.projection import handle_projection_command
+
+        args = SimpleNamespace(
+            projection_surface="verification",
+            projection_verification_action="run",
+            target="wsl",
+            profile="wsl-fixture",
+            repo_root=str(REPO_ROOT),
+            write_report=False,
+            website_alias="",
+            container_name="",
+            project_name="",
+            cronjob_id=None,
+            cronjob_name="",
+            app_name="",
+            firewall_tab="port",
+        )
+
+        with patch("agentplane.cli.projection._executor_for_target", return_value=object()), patch(
+            "agentplane.cli.projection.run_onepanel_verification_suite",
+            return_value={"ok": True, "checks": [{"scope": "panel", "ok": True, "payload": {"apiKey": "secret"}}]},
+        ):
+            payload = handle_projection_command(args)
+
+        self.assertEqual("<redacted>", payload["checks"][0]["payload"]["apiKey"])
+
     def test_projection_fixture_apply_requires_execute(self) -> None:
         from agentplane.cli.projection import handle_projection_command
 

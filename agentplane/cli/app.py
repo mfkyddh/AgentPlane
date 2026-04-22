@@ -16,7 +16,7 @@ from agentplane.cli.website import add_website_parser, handle_website_command
 
 
 def _emit(payload: dict[str, Any]) -> None:
-    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    print(json.dumps(payload, ensure_ascii=True, indent=2))
 
 
 def _split_remote_bash_remainder(argv: list[str]) -> tuple[list[str], list[str]]:

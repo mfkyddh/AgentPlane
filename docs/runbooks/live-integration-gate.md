@@ -8,7 +8,7 @@
 ## 硬边界
 
 - 只使用当前单 checkout；不要为了 live gate 再复制一份源码。
-- Windows 宿主可以执行 `wsl` profile，CLI 会把 repo root 路由到 WSL backend 可访问的同一工作树。
+- Windows 宿主可以执行 `wsl` profile；正式 `agentplane.cli` 步骤仍在 Windows host 入口执行，只有 Linux-only 工具链探针通过 WSL backend 访问同一工作树。
 - 每个 checkout 只使用自己的 `.venv`。
 - 不设置 `UV_PROJECT_ENVIRONMENT`，不创建 `.venv-win` 或 `.venv-wsl`。
 - 默认本地门禁仍不执行真实 WSL/SSH/Docker；live gate 必须显式加 `--execute`。
@@ -72,3 +72,4 @@ uv run python -m agentplane.cli host live-gate run --profile prod0-main --repo-r
 - 任一步失败即停止，返回已执行步骤的结构化结果。
 - live gate 失败不应通过修改默认 `pytest` 门禁掩盖。
 - 如果现场缺少 Docker、SSH、secrets 或应用仓库，直接记录阻塞原因；不要把真实现场验证混回默认门禁。
+- `app object verify` 与 `app delivery verify` 需要 catalog 指向的应用仓库合同文件真实存在；缺少应用仓库 checkout 时，live gate 应直接失败并记录缺口。

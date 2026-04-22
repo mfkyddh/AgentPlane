@@ -13,6 +13,7 @@ import sys
 
 from agentplane.runtime.platform import LinuxBackend, default_linux_backend
 from agentplane.runtime.workspace import resolve_workspace_from_repo
+from agentplane.runtime.wsl_bridge import windows_path_to_wsl_posix
 
 def resolve_repo_root(anchor: Path) -> Path:
     repo_candidate = anchor.parents[3]
@@ -116,6 +117,12 @@ def resolve_api_paths(target: TargetConfig) -> tuple[Path, Path]:
     )
 
 
+def _path_for_target_backend(target: TargetConfig, path: Path) -> str:
+    if target.mode == "local" and target.linux_backend and target.linux_backend.backend_type == "wsl-linux":
+        return windows_path_to_wsl_posix(path) or str(path)
+    return str(path)
+
+
 def build_api_request_command(
     target: TargetConfig,
     method: str,
@@ -127,11 +134,11 @@ def build_api_request_command(
     env_file, script = resolve_api_paths(target)
     command = [
         "python3",
-        str(script),
+        _path_for_target_backend(target, script),
         method,
         path,
         "--env-file",
-        str(env_file),
+        _path_for_target_backend(target, env_file),
     ]
     if body is not None:
         command.extend(["--body-json", json.dumps(body, ensure_ascii=False)])

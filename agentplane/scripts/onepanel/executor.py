@@ -31,7 +31,8 @@ class TargetExecutor:
         command = build_api_request_command(self.target, method, path, body=body, query=query)
 
         if self.target.mode == "local":
-            result = run_command(command)
+            backend = self.target.linux_backend or default_linux_backend()
+            result = run_command(backend.program_argv(*command))
         else:
             result = run_command(self.target.build_ssh_target().ssh_args_for_argv(command))
 

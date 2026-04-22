@@ -19,6 +19,7 @@ from agentplane.providers.onepanel_fixtures import (
 )
 from agentplane.providers.onepanel_ledgers import refresh_onepanel_ledgers
 from agentplane.providers.onepanel_objects import onepanel_target_executor, supported_onepanel_targets
+from agentplane.runtime.redaction import redact_sensitive_value
 from agentplane.runtime.wsl_bridge import normalize_repo_root_for_current_host
 
 FORMAL_PROJECTION_SURFACES = ("runtime-env", "verification", "fixture", "ledger")
@@ -143,23 +144,24 @@ def handle_projection_command(args: argparse.Namespace) -> dict[str, Any]:
             args.projection_verification_action,
             FORMAL_VERIFICATION_ACTIONS,
         )
+        payload = run_onepanel_verification_suite(
+            _executor_for_target(args.target),
+            profile=args.profile,
+            env=args.target,
+            repo_root=repo_root,
+            write_report=bool(args.write_report),
+            website_alias=args.website_alias,
+            container_name=args.container_name,
+            project_name=args.project_name,
+            cronjob_id=args.cronjob_id,
+            cronjob_name=args.cronjob_name,
+            app_name=args.app_name,
+            firewall_tab=args.firewall_tab,
+        )
         return _wrap(
             "verification",
             "verification.run",
-            run_onepanel_verification_suite(
-                _executor_for_target(args.target),
-                profile=args.profile,
-                env=args.target,
-                repo_root=repo_root,
-                write_report=bool(args.write_report),
-                website_alias=args.website_alias,
-                container_name=args.container_name,
-                project_name=args.project_name,
-                cronjob_id=args.cronjob_id,
-                cronjob_name=args.cronjob_name,
-                app_name=args.app_name,
-                firewall_tab=args.firewall_tab,
-            ),
+            redact_sensitive_value(payload),
         )
     if args.projection_surface == "fixture":
         _require_formal_action(args.projection_surface, args.projection_fixture_action, FORMAL_FIXTURE_ACTIONS)
