@@ -32,7 +32,10 @@ def _split_remote_bash_remainder(argv: list[str]) -> tuple[list[str], list[str]]
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="agentplane.cli", description="Minimal governance CLI for AgentPlane")
+    parser = argparse.ArgumentParser(
+        prog="agentplane.cli",
+        description="Agent-first control plane CLI for AgentPlane",
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     add_onepanel_parser(subparsers)

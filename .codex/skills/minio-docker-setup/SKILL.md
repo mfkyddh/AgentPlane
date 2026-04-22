@@ -15,7 +15,7 @@ Set up MinIO as a small local development service using Docker Compose, with a f
 4. Create or update `infra/compose/minio/docker-compose.wsl.yml` and `infra/compose/minio/docker-compose.prod0.yml`.
 5. Keep the compose file minimal: one `minio` service, fixed image tag, `container_name: minio-dev`, `restart: unless-stopped`, port mappings for `9000` and `9001`, environment variables for timezone and credentials, host bind mounts for data and config under `/data/minio`, `command: server --address ":9000" --console-address ":9001" /data`, and the explicit Docker network required by the project.
 6. Unless the user explicitly requires it, do not add `privileged: true`; MinIO local development does not need elevated container privileges.
-7. Create `/data/minio/data` and `/data/minio/config` before startup, then run `docker compose up -d` from `/root/work/env_ubuntu/infra/compose/minio`.
+7. Create `/data/minio/data` and `/data/minio/config` before startup, then run `docker compose up -d` from `<repo-root>/infra/compose/minio`.
 8. Verify `docker ps`, MinIO health endpoints, network wiring, and that files appear under `/data/minio/data` and `/data/minio/config`.
 9. If you learn a new durable environment pitfall, update `AGENTS.md` in the same turn.
 
@@ -80,7 +80,7 @@ mkdir -p /data/minio/data /data/minio/config
 Start MinIO:
 
 ```bash
-cd /root/work/env_ubuntu/infra/compose/minio
+cd <repo-root>/infra/compose/minio
 docker compose up -d
 ```
 

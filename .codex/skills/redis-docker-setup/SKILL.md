@@ -16,7 +16,7 @@ Set up Redis 7.x as a small local development service using Docker Compose, with
 5. Keep each compose file minimal: one `redis` service, fixed image tag, `restart: unless-stopped`, published host port `0.0.0.0:6379:6379`, host bind mount `/data/redis/data:/data`, `command: ["redis-server", "/usr/local/etc/redis/redis.conf"]`, and the explicit Docker network required by the project.
 6. Keep `redis.conf` minimal but fully commented. Include only settings the user asked for or that materially improve a local dev setup.
 7. When the user wants password auth, set `requirepass <value>` and verify with authenticated `redis-cli`.
-8. Create `/data/redis/data` before startup, then run `docker compose up -d` from `/root/work/env_ubuntu/infra/compose/redis`.
+8. Create `/data/redis/data` before startup, then run `docker compose up -d` from `<repo-root>/infra/compose/redis`.
 9. Verify `docker ps`, Redis version, authenticated `PING`, and that persistence files appear under `/data/redis/data`.
 10. If you learn a new durable environment pitfall, update `AGENTS.md` in the same turn.
 
@@ -74,7 +74,7 @@ mkdir -p /data/redis/data
 Start Redis:
 
 ```bash
-cd /root/work/env_ubuntu/infra/compose/redis
+cd <repo-root>/infra/compose/redis
 docker compose up -d
 ```
 

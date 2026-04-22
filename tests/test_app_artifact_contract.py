@@ -7,7 +7,7 @@ from pathlib import Path
 
 import yaml
 
-from tests.test_app_cli import (
+from tests.support.app_delivery import (
     baseline_tenant_resources,
     run_app_delivery_cli,
     write_contract,

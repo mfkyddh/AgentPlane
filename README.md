@@ -107,8 +107,18 @@
 - [app-repository-standard.md](docs/reference/app-repository-standard.md)
 - [compat-retirement-ledger.md](docs/reference/compat-retirement-ledger.md)
 - [control-plane-naming-registry.md](docs/reference/control-plane-naming-registry.md)
+- [testing-architecture.md](docs/reference/testing-architecture.md)
+- [open-source-readiness.md](docs/reference/open-source-readiness.md)
 - [docs/history/index.md](docs/history/index.md)
 - [docs/archive/README.md](docs/archive/README.md)
+
+### Open Source
+
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [SECURITY.md](SECURITY.md)
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+- [SUPPORT.md](SUPPORT.md)
+- [LICENSE](LICENSE)
 
 ## 目录导航
 

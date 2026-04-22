@@ -13,6 +13,8 @@
 - `docs/architecture/`: long-term control-plane contracts.
 - `docs/runbooks/`: active operating procedures.
 - `docs/reference/`: stable lookup docs such as app repo standards, versioning, naming, and compat ledgers.
+- `docs/reference/testing-architecture.md`: default gate, live markers, and test helper structure.
+- `docs/reference/open-source-readiness.md`: public repository readiness baseline and remaining hard-cut work.
 - `docs/maintainers/`: maintainer-only authoring and governance rules.
 - `infra/compose/`: tracked compose assets.
 - `inventory/`: tracked non-sensitive state projections.
@@ -81,4 +83,6 @@
 - App delivery versioning reference: `docs/reference/app-delivery-versioning.md`.
 - Compat retirement ledger: `docs/reference/compat-retirement-ledger.md`.
 - Naming registry: `docs/reference/control-plane-naming-registry.md`.
+- Testing architecture: `docs/reference/testing-architecture.md`.
+- Open source readiness: `docs/reference/open-source-readiness.md`.
 - Maintainer authoring rules: `docs/maintainers/control-plane-authoring.md`.

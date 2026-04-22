@@ -5,8 +5,24 @@ build-backend = "hatchling.build"
 [project]
 name = "agentplane-cli"
 version = "0.1.0"
-description = "Minimal governance CLI for AgentPlane"
+description = "Agent-first control plane CLI and template repository"
+readme = "README.md"
+license = "MIT"
 requires-python = ">=3.12"
+authors = [
+  { name = "AgentPlane Maintainers" },
+]
+keywords = ["agentplane", "control-plane", "deployment", "automation"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: System :: Systems Administration",
+]
 dependencies = [
   "PyYAML>=6.0",
 ]

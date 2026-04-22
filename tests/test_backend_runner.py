@@ -20,11 +20,11 @@ def test_windows_wsl_backend_routes_windows_checkout_cwd_through_wsl_bridge(monk
 
     rendered = WindowsWslBackend().render(
         plan,
-        ExecutionBindings(cwd_values={"workspace.control_root": "D:/Projects/AgentPlane"}),
+        ExecutionBindings(cwd_values={"workspace.control_root": "C:/Users/example/AgentPlane"}),
     )
 
     assert rendered.argv[:4] == ("wsl.exe", "-e", "bash", "-lc")
-    assert rendered.metadata["linux_command"] == "cd /mnt/d/Projects/AgentPlane && docker ps"
+    assert rendered.metadata["linux_command"] == "cd /mnt/c/Users/example/AgentPlane && docker ps"
 
 
 def test_backend_runner_renders_ssh_linux_shell_plan() -> None:

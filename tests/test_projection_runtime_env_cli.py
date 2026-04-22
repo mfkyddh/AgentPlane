@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from tests.app_resource_path_fixtures import resource_relative, resource_root
+from tests.support.app_resources import resource_relative, resource_root
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]

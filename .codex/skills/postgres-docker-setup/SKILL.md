@@ -84,7 +84,7 @@ mkdir -p /data/postgres/data
 Start PostgreSQL:
 
 ```bash
-cd /root/work/env_ubuntu/infra/compose/postgres
+cd <repo-root>/infra/compose/postgres
 docker compose up -d
 ```
 

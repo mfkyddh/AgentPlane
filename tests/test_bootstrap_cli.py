@@ -149,7 +149,7 @@ class BootstrapCliTests(unittest.TestCase):
             write_takeover_ready_ssh_contract(root)
             (root / "secrets" / "env").mkdir(parents=True, exist_ok=True)
             (root / "secrets" / "env" / "prod-jump.env").write_text(
-                "export PROJECT_SSH_CONFIG=/root/work/env_ubuntu/secrets/ssh/config\n",
+                "export PROJECT_SSH_CONFIG=<repo-root>/secrets/ssh/config\n",
                 encoding="utf-8",
             )
 

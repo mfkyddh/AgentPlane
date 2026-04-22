@@ -14,7 +14,7 @@ import yaml
 
 from agentplane.domain.app.resource_paths import app_resource_secret_dir
 from agentplane.runtime.host_profile import HostProfile
-from tests.app_resource_path_fixtures import resource_relative, resource_root
+from tests.support.app_resources import resource_relative, resource_root
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
