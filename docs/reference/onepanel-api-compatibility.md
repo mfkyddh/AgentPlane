@@ -34,19 +34,20 @@ superseded_by: null
 | Object | CLI Scope | Status | Primary Backing |
 | --- | --- | --- | --- |
 | Panel | `onepanel panel` | supported | `core/settings/search`, `core/settings/update` |
-| Website | `onepanel website` | supported | `websites/search`, `websites/:id`, `websites/:id/https`, `websites` |
-| Container | `onepanel container` | supported for read/verify + low-risk op plan/apply | `containers/search`, `containers/info`, `containers/operate` |
+| Website | `agentplane.cli website ...` | supported through website domain | `websites/search`, `websites/:id`, `websites/:id/https`, `websites` |
+| Container | provider-internal / service domain | supported for read/verify + low-risk op plan/apply | `containers/search`, `containers/info`, `containers/operate` |
 | Cronjob | `onepanel cronjob` | supported | `cronjobs/search`, `cronjobs/load/info`, `cronjobs*` mutation paths |
-| App | `onepanel app` | supported for read/verify + low-risk op plan/apply | `apps/installed/search`, `apps/installed/info/:id`, `apps/installed/op` |
-| Project | `onepanel project` | supported for read/verify + op plan/apply | `containers/compose/search`, `containers/compose/operate` |
+| App | provider-internal / app delivery domain | supported for read/verify + low-risk op plan/apply | `apps/installed/search`, `apps/installed/info/:id`, `apps/installed/op` |
+| Project | provider-internal / app delivery domain | supported for read/verify + op plan/apply | `containers/compose/search`, `containers/compose/operate` |
 | Task Center | `onepanel task` | supported for read/verify | `logs/tasks/search`, `logs/tasks/executing/count` |
 | Firewall | `onepanel firewall` | supported for base/search/verify + low-risk op plan/apply | `hosts/firewall/base`, `hosts/firewall/search`, `hosts/firewall/operate` |
-| Ledger | `onepanel ledger refresh` | supported | tracked inventory + app resource registry |
+| Ledger | `projection ledger refresh` / object `refresh-ledger` | supported | tracked inventory + app resource registry |
 
 ## Object / Workflow / Projection Boundary
 
-- 对象域：`onepanel panel|website|container|firewall|cronjob|app|project|task|ledger`
-- 任务域：`onepanel fixture ...` 与 `onepanel suite run ...`
+- 对外 `onepanel` 对象域：`panel|firewall|cronjob|task`
+- Website、app、project、container 与 ledger 通过各自 formal domain 或 provider-internal object API 承接，不再作为公开 `onepanel` scope。
+- 任务域：`projection fixture ...` 与 `projection verification run ...`
 - 投影链：`live state -> verification-<profile>.json|md -> object ledgers -> host README/runbook`
 
 补充约束：
@@ -58,12 +59,12 @@ superseded_by: null
 ## Compatibility Rules
 
 - Skills and plugins must never construct signed 1Panel HTTP requests themselves.
-- Python modules under `ops/scripts/onepanel/` are the execution truth for 1Panel object operations.
+- Python modules under `agentplane/scripts/onepanel/` are provider substrate, not public script entrypoints. Only `api_request.py` remains as a low-level provider/debug request helper.
 - Human operators should default to concise CLI text output; plugins and automations should append `--json` and reuse the CLI result model directly.
 - New object support should first land in WSL, then validate on `prod2-main`, then be considered for `prod0-main`.
 - When a stable 1Panel API is unavailable or unverified, AgentPlane may temporarily read from tracked inventory, but that boundary must be documented explicitly.
 - `plan` and `apply` remain separate states. `apply` must not execute unless `--execute` is present.
-- `suite run` remains read-only. Any WSL fixture mutation must go through `uv run python -m agentplane.cli onepanel fixture ...`.
+- `projection verification run` remains read-only. Any WSL fixture mutation must go through `uv run python -m agentplane.cli projection fixture ...`.
 - On targets such as `prod2-main`, `suite run` may be used as a live compatibility audit even when some selectors intentionally do not resolve to 1Panel-native objects. A persisted failure report is valid audit evidence, not automatically a service-health failure.
 
 ## Error Model

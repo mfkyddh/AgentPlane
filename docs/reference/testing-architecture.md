@@ -40,15 +40,18 @@ Do not add new cross-file helpers to large test modules. Put shared behavior und
 
 ## File Shape
 
-Prefer focused test files by domain:
+Tests are grouped by domain directory:
 
-- `test_app_*`
-- `test_host_*`
-- `test_service_*`
-- `test_website_*`
-- `test_projection_*`
-- `test_runtime_*`
-- `test_*_docs*` or `test_*_readiness*`
+- `tests/app/`
+- `tests/host/`
+- `tests/onepanel/`
+- `tests/projection/`
+- `tests/runtime/`
+- `tests/service/`
+- `tests/website/`
+- `tests/inventory/`
+- `tests/repository/`
+- `tests/secret_management/`
+- `tests/compose/`
 
-Large historical files should shrink over time by moving reusable fixtures into `tests/support/` and splitting new behavior into focused files.
-
+Keep new test files focused by behavior. Large historical files should shrink by moving reusable fixtures into `tests/support/` and splitting new behavior into focused files.

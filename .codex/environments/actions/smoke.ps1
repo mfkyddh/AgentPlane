@@ -9,4 +9,4 @@ $windowsUvHelper = Resolve-AgentPlaneWindowsUvHelper -BaseDirectory $PSScriptRoo
 Invoke-AgentPlaneRoutedUv `
     -BaseDirectory $PSScriptRoot `
     -RepoRoot $repoRoot `
-    -UvArgs @("python", "-m", "pytest", "tests/test_docs_no_legacy_terms.py", "tests/test_wsl_first_docs.py", "tests/test_repo_snapshot_contracts.py", "tests/test_onepanel_plugin_and_skills.py", "tests/test_app_onboarding_standard.py", "-q")
+    -UvArgs @("python", "-m", "pytest", "tests/repository/test_docs_no_legacy_terms.py", "tests/host/test_wsl_first_docs.py", "tests/repository/test_repo_snapshot_contracts.py", "tests/onepanel/test_onepanel_plugin_and_skills.py", "tests/app/test_app_onboarding_standard.py", "-q")

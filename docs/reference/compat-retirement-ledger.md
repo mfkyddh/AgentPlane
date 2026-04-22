@@ -36,5 +36,3 @@ Contract:
 | --- | --- | --- | --- | --- | --- |
 | `agentplane/scripts/remote/run_remote_bash.sh` | `uv run python -m agentplane.cli host remote bash ...` | 历史 runbook、人工救援 | `2026-04-02` | active docs 与自动化不再默认引用时 | 远端 dry-run 与最小远端脚本验证通过 |
 | `agentplane/scripts/onepanel/api_request.py` | `uv run python -m agentplane.cli onepanel ...` | provider/debug 低层场景 | `2026-04-02` | 无 active docs 把它当默认入口时 | CLI 帮助、runbook、技能测试通过 |
-| `agentplane/scripts/onepanel/app_lifecycle.py` | `uv run python -m agentplane.cli app ...` / `uv run python -m agentplane.cli service ...` | 历史迁移辅助 | `2026-04-02` | 正式对象面与运行态面完全 CLI-first 后 | active docs 不再引用旧入口 |
-| `agentplane/scripts/onepanel/project_lifecycle.py` | `uv run python -m agentplane.cli service ...` / `uv run python -m agentplane.cli website ...` | 历史迁移辅助 | `2026-04-02` | 正式容器与网站对象不再依赖旧 helper 后 | repo self-check 与 CLI 合同测试通过 |

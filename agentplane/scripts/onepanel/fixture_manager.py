@@ -14,7 +14,7 @@ from .object_api import (
     search_installed_apps,
     search_websites,
 )
-from .project_lifecycle import create_compose, operate_compose, search_compose, update_compose
+from .compose_project import create_compose, operate_compose, search_compose, update_compose
 
 
 @dataclass(frozen=True)

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
 import shlex
+from pathlib import Path
 from typing import Any, Protocol
 
 
@@ -85,13 +85,16 @@ class OnePanelProviderGateway:
         operate: str,
         rollback_entry: dict[str, Any],
     ) -> tuple[list[str], str]:
-        package_root = Path(__file__).resolve().parents[2]
-        script_path = package_root / "agentplane" / "scripts" / "onepanel" / "app_lifecycle.py"
         argv = [
-            "python3",
-            str(script_path),
-            "--env",
+            "uv",
+            "run",
+            "python",
+            "-m",
+            "agentplane.providers.onepanel_transition",
+            "--target",
             target,
+            "app",
+            "--operate",
             operate,
         ]
         install_id = rollback_entry.get("install_id")
@@ -99,7 +102,7 @@ class OnePanelProviderGateway:
         if install_id is not None:
             argv.extend(["--install-id", str(install_id)])
         elif isinstance(app_key, str) and app_key:
-            argv.extend(["--app", app_key])
+            argv.extend(["--name", app_key])
         else:
             raise ValueError(f"rollback.previous_control_plane.kind=1panel-app 缺少 install_id/app_key: {rollback_entry}")
         return argv, " ".join(shlex.quote(part) for part in argv)
@@ -115,17 +118,18 @@ class OnePanelProviderGateway:
         project_name = rollback_entry.get("project_name")
         if not isinstance(project_name, str) or not project_name:
             raise ValueError(f"rollback.previous_control_plane.kind=1panel-compose 缺少 project_name: {rollback_entry}")
-        package_root = Path(__file__).resolve().parents[2]
-        script_path = package_root / "agentplane" / "scripts" / "onepanel" / "project_lifecycle.py"
         argv = [
-            "python3",
-            str(script_path),
-            "--env",
+            "uv",
+            "run",
+            "python",
+            "-m",
+            "agentplane.providers.onepanel_transition",
+            "--target",
             target,
-            "operate",
+            "project",
             "--name",
             project_name,
-            "--operation",
+            "--operate",
             operate,
         ]
         return argv, " ".join(shlex.quote(part) for part in argv)

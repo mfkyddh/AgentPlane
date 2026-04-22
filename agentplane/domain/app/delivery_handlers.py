@@ -199,8 +199,6 @@ def _transition_step_to_execution(
         )
     executable = str(argv[0]) if argv else "python3"
     display_command = " ".join(str(item) for item in argv)
-    if len(argv) > 1 and "app_lifecycle.py" in str(argv[1]):
-        display_command = display_command.replace("\\", "/")
     return plan_local_backend_step(
         key,
         backend_type=detect_host_profile().linux_backend,

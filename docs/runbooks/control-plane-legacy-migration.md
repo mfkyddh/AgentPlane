@@ -78,7 +78,7 @@ uv run python -m agentplane.cli host remote bash <target> --help
 - `agentplane/scripts/remote/run_remote_bash.sh`
 - 各类历史 shell wrapper
 - 旧 skill 中的脚本型主路径
-- `agentplane/scripts/onepanel/api_request.py`、`app_lifecycle.py`、`project_lifecycle.py` 这类 compat helper
+- `agentplane/scripts/onepanel/api_request.py` 仅保留为 provider/debug 低层核对；`app_lifecycle.py`、`project_lifecycle.py` 已退役
 
 这些入口只能作为“过渡态说明”，不得重新写成默认路径。
 

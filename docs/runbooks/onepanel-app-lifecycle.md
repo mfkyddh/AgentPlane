@@ -11,7 +11,7 @@
 - fixture / verification / ledger 走 `uv run python -m agentplane.cli projection ...`
 - `onepanel` 公开面只剩 provider/debug 对象：`panel`、`firewall`、`cronjob`、`task`
 
-`ops/scripts/onepanel/*.py`、`api_request.py` 与内部 object API 继续保留为 substrate，只用于 compat、troubleshooting 或实现复用。
+`api_request.py` 与内部 object API 继续保留为 provider/debug substrate；旧 `app_lifecycle.py` / `project_lifecycle.py` 脚本入口已退役。
 Formal catalog apps with `schema_version: 2` must use `uv run python -m agentplane.cli app object ...`, `app delivery ...`, `service ...`, and `website ...`; these compat helpers are not the active execution path.
 
 ## 当前边界
@@ -63,8 +63,8 @@ uv run python -m agentplane.cli projection verification run --target prod2-main 
 
 ## Compat / Troubleshooting
 
-- 低层 helper：`ops/scripts/onepanel/api_request.py`
-- 1Panel compose lifecycle substrate：`ops/scripts/onepanel/project_lifecycle.py`
+- 低层 provider helper：`agentplane/scripts/onepanel/api_request.py`
+- 1Panel app / compose lifecycle：通过 formal CLI 与内部 object API 计划执行，不再保留脚本入口
 - 这些 substrate 不是公开默认命令面，不在 docs / skill 中作为首选入口暴露
 - 历史收敛材料、切换窗口记录、一次性现场补救，应转存到 `docs/archive/runbooks/...`
 - `sub2apipay` 历史收敛记录：`docs/archive/runbooks/prod0-main-sub2-control-plane-convergence.md`

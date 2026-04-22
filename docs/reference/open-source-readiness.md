@@ -11,6 +11,7 @@ This repository is being shaped as a one-checkout, cross-platform open source co
 - Live WSL, Docker, SSH, and provider validation is explicit.
 - Real secrets stay out of Git.
 - Contributor, security, support, license, and test architecture documents are present at the repository root or under `docs/reference/`.
+- Tests are grouped by domain directory with shared helpers isolated under `tests/support/`.
 
 ## Remaining Hard-Cut Work
 
@@ -18,4 +19,3 @@ This repository is being shaped as a one-checkout, cross-platform open source co
 - Split the largest historical test modules into smaller domain files as behavior changes.
 - Add hosted CI once the public repository is created.
 - Publish a release process and versioning policy after the first public tag.
-

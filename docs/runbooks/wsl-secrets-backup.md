@@ -72,11 +72,11 @@ env -C <repo-root> uv run python -m agentplane.cli onepanel \
 
 ```bash
 env -C <repo-root> uv run python -m pytest \
-  tests/test_secrets_backup_r2.py \
-  tests/test_cli_entrypoints.py \
-  tests/test_host_automation.py \
-  tests/test_inventory_generation.py \
-  tests/test_docs_no_legacy_terms.py -q
+  tests/secret_management/test_secrets_backup_r2.py \
+  tests/repository/test_cli_entrypoints.py \
+  tests/host/test_host_automation.py \
+  tests/inventory/test_inventory_generation.py \
+  tests/repository/test_docs_no_legacy_terms.py -q
 
 env -C <repo-root> uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute
 env -C <repo-root> uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation reconcile --execute --repo-root <repo-root>
