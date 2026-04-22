@@ -5,16 +5,15 @@ import json
 import sys
 from typing import Any
 
-from agentplane.scripts.onepanel.env_targets import get_target
-from agentplane.scripts.onepanel.executor import TargetExecutor
-from agentplane.scripts.onepanel.object_api import (
+from agentplane.providers.onepanel_objects import (
+    onepanel_target_executor,
     plan_compose_project_operation,
     plan_installed_app_operation,
     search_installed_apps,
 )
 
 
-def _find_installed_app_id(executor: TargetExecutor, *, install_id: int | None, name: str) -> int:
+def _find_installed_app_id(executor: object, *, install_id: int | None, name: str) -> int:
     if install_id is not None:
         return install_id
     if not name:
@@ -28,7 +27,7 @@ def _find_installed_app_id(executor: TargetExecutor, *, install_id: int | None, 
 
 
 def _handle_app(args: argparse.Namespace) -> dict[str, Any]:
-    executor = TargetExecutor(get_target(args.target))
+    executor = onepanel_target_executor(args.target)
     install_id = _find_installed_app_id(executor, install_id=args.install_id, name=args.name)
     plan = plan_installed_app_operation(install_id=install_id, operate=args.operate)
     result = executor.api_request("POST", plan.path, plan.body)
@@ -36,7 +35,7 @@ def _handle_app(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def _handle_project(args: argparse.Namespace) -> dict[str, Any]:
-    executor = TargetExecutor(get_target(args.target))
+    executor = onepanel_target_executor(args.target)
     plan = plan_compose_project_operation(name=args.name, operation=args.operate)
     result = executor.api_request("POST", plan.path, plan.body)
     return {"scope": "project", "action": args.operate, "name": args.name, "result": result}

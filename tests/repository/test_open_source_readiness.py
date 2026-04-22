@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import tomllib
 import unittest
 
@@ -41,11 +42,41 @@ class OpenSourceReadinessTests(unittest.TestCase):
                 text = (REPO_ROOT / relative_path).read_text(encoding="utf-8")
                 self.assertIn("single checkout" if "open-source" in relative_path else "Default Gate", text)
 
+    def test_readme_presents_cross_platform_first_run_path(self) -> None:
+        text = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn("### Windows", text)
+        self.assertIn("### macOS / Linux", text)
+        self.assertIn("### Live Gate", text)
+        self.assertIn("uv run python -m agentplane.cli bootstrap doctor --repo-root .", text)
+        self.assertIn("single checkout", text)
+
+    def test_docs_and_truth_do_not_embed_author_machine_paths(self) -> None:
+        roots = ("README.md", "docs", "inventory", "infra", "templates")
+        forbidden = re.compile(r"D:[/\\]Projects[/\\]AgentPlane|C:[/\\]Users[/\\]Administrator", re.IGNORECASE)
+
+        for root in roots:
+            path = REPO_ROOT / root
+            files = [path] if path.is_file() else [item for item in path.rglob("*") if item.is_file()]
+            for file in files:
+                with self.subTest(path=file.relative_to(REPO_ROOT)):
+                    text = file.read_text(encoding="utf-8", errors="ignore")
+                    self.assertIsNone(forbidden.search(text))
+
     def test_tests_support_layer_owns_shared_helpers(self) -> None:
         support_files = {
             path.name for path in (REPO_ROOT / "tests" / "support").glob("*.py")
         }
-        self.assertTrue({"paths.py", "cli.py", "markers.py", "app_resources.py"}.issubset(support_files))
+        self.assertTrue(
+            {
+                "paths.py",
+                "cli.py",
+                "markers.py",
+                "app_resources.py",
+                "app_object.py",
+                "service_cli.py",
+            }.issubset(support_files)
+        )
         self.assertFalse((REPO_ROOT / "tests" / "app_resource_path_fixtures.py").exists())
         self.assertFalse((REPO_ROOT / "tests" / "test_app_cli.py").exists())
 
@@ -80,6 +111,12 @@ class OpenSourceReadinessTests(unittest.TestCase):
         self.assertIn("uv run python -m pytest", text)
         self.assertIn("uv run python -m agentplane.cli --help", text)
         self.assertNotIn("live-gate run --execute", text)
+
+    def test_ci_never_executes_live_gate(self) -> None:
+        for workflow in (REPO_ROOT / ".github" / "workflows").glob("*.yml"):
+            text = workflow.read_text(encoding="utf-8")
+            with self.subTest(path=workflow.name):
+                self.assertIsNone(re.search(r"host\s+live-gate\s+run[\s\S]{0,200}--execute", text))
 
 
 if __name__ == "__main__":

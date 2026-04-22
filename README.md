@@ -25,33 +25,54 @@
 
 - [current-state-and-validation.md](docs/runbooks/current-state-and-validation.md)
 
-## 30 秒上手
+## Quickstart
 
-1. `fork / clone` 本仓库，保留它作为你的正式控制面模板仓库。
-2. 先确认本地入口：
-   - Windows 宿主默认使用 `pwsh` 作为入口 shell。
-   - Windows 宿主使用 `pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli ...`
-   - Linux / macOS 直接使用 `uv run python -m agentplane.cli ...`
-   - 不创建 `.venv-win`、`.venv-wsl`，也不设置 `UV_PROJECT_ENVIRONMENT` 做平台分叉。
-3. 检查当前宿主、工作区与 backend 绑定：
-   `uv run python -m agentplane.cli bootstrap inspect-local --repo-root <repo-root>`
-4. 生成本地 secrets 骨架：
-   `uv run python -m agentplane.cli bootstrap init-secrets --repo-root <repo-root>`
-5. 只填写 Agent takeover 必需的 truth：
-   - `secrets/local/control-plane/...`
-   - `secrets/targets/<target>/...`
-   - `secrets/ssh/config`
-   - `secrets/ssh/keys/*.pem`
-6. 校验 readiness：
-   `uv run python -m agentplane.cli bootstrap verify-secrets --repo-root <repo-root>`
-7. 汇总是否满足接管条件：
-   `uv run python -m agentplane.cli bootstrap doctor --repo-root <repo-root>`
-8. 让 Agent 接管后续 domain 动作，不再默认引用作者现场目录。
+先 clone 一次，保留 single checkout：Windows、macOS、Linux 都使用同一份源码与根目录 `.venv`。首次运行的主入口是 `bootstrap doctor`，它会同时报告宿主、工作区、backend 绑定、secrets readiness 与后续动作；需要拆开看宿主绑定时，再运行 `bootstrap inspect-local`。
+
+### Windows
+
+在 `pwsh` 里进入仓库根目录：
+
+```powershell
+uv run python -m agentplane.cli bootstrap doctor --repo-root .
+uv run python -m agentplane.cli bootstrap inspect-local --repo-root .
+uv run python -m agentplane.cli bootstrap init-secrets --repo-root .
+uv run python -m agentplane.cli bootstrap verify-secrets --repo-root .
+uv run python -m agentplane.cli --help
+```
+
+Windows 与 WSL 默认共享同一份 checkout。需要 Linux-only 能力时，先看 doctor 输出里的 backend 绑定；正式 live 验证再显式进入 `host live-gate`。
+
+### macOS / Linux
+
+在仓库根目录运行：
+
+```bash
+uv run python -m agentplane.cli bootstrap doctor --repo-root .
+uv run python -m agentplane.cli bootstrap inspect-local --repo-root .
+uv run python -m agentplane.cli bootstrap init-secrets --repo-root .
+uv run python -m agentplane.cli bootstrap verify-secrets --repo-root .
+uv run python -m pytest
+uv run python -m agentplane.cli --help
+```
+
+默认 pytest 只跑 offline gate，不触发真实 WSL、SSH、Docker 或 provider 侧写操作。
+doctor 与 secrets 校验通过后，再让 Agent 接管后续 domain 动作。
+
+### Live Gate
+
+真实现场检查必须显式 opt-in。先查看计划：
+
+```bash
+uv run python -m agentplane.cli host live-gate plan --profile wsl --repo-root .
+```
+
+只有确认目标、secrets、Docker/SSH/WSL backend 都准备好后，才执行带 `--execute` 的 live gate。
 
 ## 正式入口
 
 - 统一入口：`uv run python -m agentplane.cli <domain> <action> [flags]`
-- Windows 宿主入口：`pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli <domain> <action> [flags]`
+- Windows 宿主入口：在 `pwsh` 中直接使用统一入口；如本机策略限制 `uv`，再使用 `.codex/environments/lib/invoke-agentplane-windows-uv.ps1` 包装同一条 Python module command。
 - 命令发现：`uv run python -m agentplane.cli --help`
 - 常用仓库自检：`bash agentplane/scripts/internal/repo/self_check.sh`
 - 虚拟环境：只使用当前 checkout 根目录的 `.venv`。

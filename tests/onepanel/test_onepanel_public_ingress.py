@@ -13,7 +13,6 @@ ONEPANEL_SCRIPTS = REPO_ROOT / "agentplane" / "scripts" / "onepanel"
 if str(ONEPANEL_SCRIPTS) not in sys.path:
     sys.path.insert(0, str(ONEPANEL_SCRIPTS))
 
-from agentplane.cli import onepanel as onepanel_cli  # type: ignore  # noqa: E402
 from agentplane.scripts.onepanel import public_ingress  # type: ignore  # noqa: E402
 
 
@@ -348,17 +347,6 @@ class OnePanelPublicIngressTests(unittest.TestCase):
         self.assertEqual("proxy", create_request["type"])
         self.assertEqual([{"domain": "token.zzzai.fun", "port": 80, "ssl": False}], create_request["domains"])
         self.assertEqual(5, result["website"]["id"])
-
-    def test_onepanel_cli_ingress_handler_wraps_payload(self) -> None:
-        with patch.object(onepanel_cli, "command_ensure_public_ingress", return_value={"ok": True}) as handler:
-            payload = onepanel_cli._handle_ingress_ensure(
-                argparse.Namespace(env="prod2-main", config_file="cfg", cloudflare_env_file="cf", env_file=None)
-            )
-
-            self.assertEqual("ingress", payload["scope"])
-            self.assertEqual("ensure-cloudflare-dns01", payload["action"])
-            self.assertEqual({"ok": True}, payload["payload"])
-            handler.assert_called_once()
 
 
 if __name__ == "__main__":

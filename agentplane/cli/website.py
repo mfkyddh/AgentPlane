@@ -14,8 +14,12 @@ from agentplane.domain.website.handlers import (
     verify_website,
 )
 from agentplane.domain.website.registry import SUPPORTED_WEBSITE_TARGETS
+from agentplane.providers.onepanel_ingress import (
+    ensure_public_ingress,
+    plan_public_ingress,
+    verify_public_ingress,
+)
 from agentplane.runtime.wsl_bridge import normalize_repo_root_for_current_host
-from agentplane.scripts.onepanel.public_ingress import ensure_public_ingress, plan_public_ingress, verify_public_ingress
 
 
 def add_website_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:

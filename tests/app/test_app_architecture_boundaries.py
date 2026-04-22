@@ -48,6 +48,40 @@ def test_app_domain_does_not_import_cli_or_onepanel_scripts() -> None:
         ), path
 
 
+def test_public_cli_and_domain_surfaces_do_not_import_onepanel_scripts() -> None:
+    checked_roots = (
+        REPO_ROOT / "agentplane" / "cli",
+        REPO_ROOT / "agentplane" / "domain",
+    )
+    for root in checked_roots:
+        for path in root.rglob("*.py"):
+            imports = _imports(path)
+            assert not any(
+                name == "agentplane.scripts.onepanel" or name.startswith("agentplane.scripts.onepanel.")
+                for name in imports
+            ), path
+
+
+def test_onepanel_script_imports_are_provider_internal() -> None:
+    provider_files = {
+        "gateway.py",
+        "onepanel_fixtures.py",
+        "onepanel_ingress.py",
+        "onepanel_ledgers.py",
+        "onepanel_objects.py",
+        "onepanel_transition.py",
+    }
+    for path in (REPO_ROOT / "agentplane" / "providers").glob("*.py"):
+        imports = _imports(path)
+        imports_scripts = any(
+            name == "agentplane.scripts.onepanel" or name.startswith("agentplane.scripts.onepanel.")
+            for name in imports
+        )
+        if path.name in provider_files:
+            continue
+        assert not imports_scripts, path
+
+
 def test_legacy_app_runtime_provider_adapter_is_removed() -> None:
     assert not (REPO_ROOT / "agentplane" / "providers" / "app_runtime.py").exists()
 

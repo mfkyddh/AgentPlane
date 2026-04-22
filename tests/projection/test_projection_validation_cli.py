@@ -28,7 +28,7 @@ class ProjectionValidationCliTests(unittest.TestCase):
         )
 
         with patch("agentplane.cli.projection._executor_for_target", return_value=object()), patch(
-            "agentplane.cli.projection.run_verification_suite",
+            "agentplane.cli.projection.run_onepanel_verification_suite",
             return_value={"ok": True, "checks": []},
         ) as run_suite:
             payload = handle_projection_command(args)
@@ -111,7 +111,7 @@ class ProjectionValidationCliTests(unittest.TestCase):
         )
 
         with patch(
-            "agentplane.cli.projection.refresh_ledgers",
+            "agentplane.cli.projection.refresh_onepanel_ledgers",
             return_value={"counts": {"websites": 1}, "written": True},
         ) as refresh_ledgers:
             payload = handle_projection_command(args)

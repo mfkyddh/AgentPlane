@@ -10,11 +10,15 @@ from agentplane.domain.projection.runtime_env import (
     plan_runtime_env_projection,
     verify_runtime_env_projection,
 )
-from agentplane.scripts.onepanel.env_targets import get_target, supported_targets
-from agentplane.scripts.onepanel.executor import TargetExecutor
-from agentplane.scripts.onepanel.fixture_manager import apply_fixture, cleanup_fixture, plan_fixture, resolve_fixture_spec
-from agentplane.scripts.onepanel.ledger import refresh_ledgers
-from agentplane.scripts.onepanel.verification import run_verification_suite
+from agentplane.providers.onepanel_fixtures import (
+    apply_fixture,
+    cleanup_fixture,
+    plan_fixture,
+    resolve_fixture_spec,
+    run_onepanel_verification_suite,
+)
+from agentplane.providers.onepanel_ledgers import refresh_onepanel_ledgers
+from agentplane.providers.onepanel_objects import onepanel_target_executor, supported_onepanel_targets
 from agentplane.runtime.wsl_bridge import normalize_repo_root_for_current_host
 
 FORMAL_PROJECTION_SURFACES = ("runtime-env", "verification", "fixture", "ledger")
@@ -47,7 +51,7 @@ def add_projection_parser(subparsers: argparse._SubParsersAction[argparse.Argume
     verification = projection_subparsers.add_parser("verification", help="Verification observation surface")
     verification_subparsers = verification.add_subparsers(dest="projection_verification_action", required=True)
     run = verification_subparsers.add_parser("run", help="Run verification suite")
-    run.add_argument("--target", required=True, choices=supported_targets(), help="Target environment")
+    run.add_argument("--target", required=True, choices=supported_onepanel_targets(), help="Target environment")
     run.add_argument("--profile", required=True, choices=("wsl-fixture", "prod2-readonly", "prod0-readonly"), help="Verification profile")
     run.add_argument("--repo-root", default=".", help="Repository root")
     run.add_argument("--write-report", action="store_true", help="Write verification report")
@@ -63,7 +67,7 @@ def add_projection_parser(subparsers: argparse._SubParsersAction[argparse.Argume
     fixture_subparsers = fixture.add_subparsers(dest="projection_fixture_action", required=True)
     for action in ("plan", "apply", "cleanup"):
         parser = fixture_subparsers.add_parser(action, help=f"{action} fixture profile")
-        parser.add_argument("--target", required=True, choices=supported_targets(), help="Target environment")
+        parser.add_argument("--target", required=True, choices=supported_onepanel_targets(), help="Target environment")
         parser.add_argument("--profile", required=True, choices=("wsl-fixture",), help="Fixture profile")
         parser.add_argument("--repo-root", default=".", help="Repository root")
         parser.add_argument("--website-alias", default="", help="Website alias override")
@@ -77,7 +81,7 @@ def add_projection_parser(subparsers: argparse._SubParsersAction[argparse.Argume
     ledger = projection_subparsers.add_parser("ledger", help="Projection-only ledger task surface")
     ledger_subparsers = ledger.add_subparsers(dest="projection_ledger_action", required=True)
     refresh = ledger_subparsers.add_parser("refresh", help="Refresh tracked ledgers")
-    refresh.add_argument("--target", required=True, choices=supported_targets(), help="Target environment")
+    refresh.add_argument("--target", required=True, choices=supported_onepanel_targets(), help="Target environment")
     refresh.add_argument("--repo-root", default=".", help="Repository root")
     refresh.add_argument("--write", action="store_true", help="Write tracked artifacts")
 
@@ -95,8 +99,8 @@ def _normalize_repo_root(path: Path | str) -> Path:
     return normalize_repo_root_for_current_host(path)
 
 
-def _executor_for_target(target: str) -> TargetExecutor:
-    return TargetExecutor(get_target(target))
+def _executor_for_target(target: str) -> object:
+    return onepanel_target_executor(target)
 
 
 def _require_formal_surface(surface: str) -> None:
@@ -142,7 +146,7 @@ def handle_projection_command(args: argparse.Namespace) -> dict[str, Any]:
         return _wrap(
             "verification",
             "verification.run",
-            run_verification_suite(
+            run_onepanel_verification_suite(
                 _executor_for_target(args.target),
                 profile=args.profile,
                 env=args.target,
@@ -180,7 +184,7 @@ def handle_projection_command(args: argparse.Namespace) -> dict[str, Any]:
         return _wrap("fixture", f"fixture.{args.projection_fixture_action}", payload)
     if args.projection_surface == "ledger" and args.projection_ledger_action == "refresh":
         _require_formal_action(args.projection_surface, args.projection_ledger_action, FORMAL_LEDGER_ACTIONS)
-        return _wrap("ledger", "ledger.refresh", refresh_ledgers(repo_root, args.target, write=bool(args.write)))
+        return _wrap("ledger", "ledger.refresh", refresh_onepanel_ledgers(repo_root, args.target, write=bool(args.write)))
     action = (
         getattr(args, "projection_action", None)
         or getattr(args, "projection_verification_action", None)

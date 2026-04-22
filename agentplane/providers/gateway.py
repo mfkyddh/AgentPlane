@@ -5,6 +5,14 @@ import shlex
 from pathlib import Path
 from typing import Any, Protocol
 
+from agentplane.providers.onepanel_ledgers import refresh_onepanel_ledgers
+from agentplane.providers.onepanel_objects import (
+    get_website,
+    onepanel_target_executor,
+    plan_website_create,
+    search_websites,
+)
+
 
 class ProviderGateway(Protocol):
     def refresh_onepanel_ledgers(self, repo_root: Path, target: str, *, write: bool) -> dict[str, object]:
@@ -49,32 +57,21 @@ class ProviderGateway(Protocol):
 @dataclass(frozen=True)
 class OnePanelProviderGateway:
     def refresh_onepanel_ledgers(self, repo_root: Path, target: str, *, write: bool) -> dict[str, object]:
-        from agentplane.scripts.onepanel.ledger import refresh_ledgers
-
-        return refresh_ledgers(repo_root, target, write=write)
+        return refresh_onepanel_ledgers(repo_root, target, write=write)
 
     def refresh_app_resource_ledgers(self, repo_root: Path, target: str, *, write: bool) -> dict[str, object]:
         return self.refresh_onepanel_ledgers(repo_root, target, write=write)
 
     def onepanel_target_executor(self, target: str) -> object:
-        from agentplane.scripts.onepanel.env_targets import get_target
-        from agentplane.scripts.onepanel.executor import TargetExecutor
-
-        return TargetExecutor(get_target(target))
+        return onepanel_target_executor(target)
 
     def search_onepanel_websites(self, executor: object, *, name: str) -> dict[str, Any]:
-        from agentplane.scripts.onepanel.object_api import search_websites
-
         return search_websites(executor, name=name)
 
     def get_onepanel_website(self, executor: object, *, website_id: int) -> dict[str, Any]:
-        from agentplane.scripts.onepanel.object_api import get_website
-
         return get_website(executor, website_id=website_id)
 
     def plan_onepanel_website_create(self, *, alias: str, domain: str, proxy: str, remark: str, ipv6: bool) -> object:
-        from agentplane.scripts.onepanel.object_api import plan_website_create
-
         return plan_website_create(alias=alias, domain=domain, proxy=proxy, remark=remark, ipv6=ipv6)
 
     def onepanel_app_lifecycle_step(

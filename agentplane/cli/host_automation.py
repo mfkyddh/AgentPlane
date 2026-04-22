@@ -8,9 +8,7 @@ from typing import Any, Callable
 
 from agentplane.scripts.automation.backup_secrets_r2 import DEFAULT_ENV_FILE, load_config, run_backup
 from agentplane.scripts.automation.sync_zzz_skills import run_sync
-from agentplane.scripts.onepanel.env_targets import get_target
-from agentplane.scripts.onepanel.executor import TargetExecutor
-from agentplane.scripts.onepanel.object_api import load_cronjob, search_cronjobs
+from agentplane.providers.onepanel_objects import load_cronjob, onepanel_target_executor, search_cronjobs
 
 
 SUPPORTED_AUTOMATION_TARGETS = ("wsl", "prod0-main", "prod2-main")
@@ -127,12 +125,12 @@ def _normalize_automation(repo_root: Path, target: str, automation: dict[str, An
     return payload
 
 
-def _executor_for_target(target: str, env_file: str | None = None) -> TargetExecutor:
+def _executor_for_target(target: str, env_file: str | None = None) -> object:
     _require_supported_target(target)
-    return TargetExecutor(get_target(target, env_file))
+    return onepanel_target_executor(target, env_file)
 
 
-def _search_live_cronjob(executor: TargetExecutor, name: str) -> dict[str, Any] | None:
+def _search_live_cronjob(executor: object, name: str) -> dict[str, Any] | None:
     payload = search_cronjobs(executor, info=name, page_size=50)
     items = payload.get("items")
     if not isinstance(items, list):
@@ -149,7 +147,7 @@ def _search_live_cronjob(executor: TargetExecutor, name: str) -> dict[str, Any] 
     return None
 
 
-def _default_group_id(executor: TargetExecutor) -> int:
+def _default_group_id(executor: object) -> int:
     payload = search_cronjobs(executor, info="", page_size=50)
     items = payload.get("items")
     if not isinstance(items, list) or not items:
@@ -220,7 +218,7 @@ def _cronjob_drift(existing: dict[str, Any], desired: dict[str, Any]) -> dict[st
 def _reconcile_actions(
     repo_root: Path,
     automation: dict[str, Any],
-    executor: TargetExecutor,
+    executor: object,
 ) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
     live = _search_live_cronjob(executor, str(automation["name"]))
     if live is None:
@@ -281,7 +279,7 @@ def verify_host_automation(
     target: str,
     name: str,
     *,
-    executor: TargetExecutor | None = None,
+    executor: object | None = None,
     env_file: str | None = None,
 ) -> dict[str, Any]:
     automation = _find_declared_automation(repo_root, target, name)
@@ -319,7 +317,7 @@ def plan_host_automation(
     name: str,
     operation: str,
     *,
-    executor: TargetExecutor | None = None,
+    executor: object | None = None,
     env_file: str | None = None,
 ) -> dict[str, Any]:
     automation = _find_declared_automation(repo_root, target, name)
@@ -380,7 +378,7 @@ def apply_host_automation(
     operation: str,
     *,
     execute: bool,
-    executor: TargetExecutor | None = None,
+    executor: object | None = None,
     env_file: str | None = None,
 ) -> dict[str, Any]:
     plan = plan_host_automation(repo_root, target, name, operation, executor=executor, env_file=env_file)
