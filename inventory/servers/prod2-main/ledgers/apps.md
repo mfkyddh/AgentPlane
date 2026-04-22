@@ -1,3 +1,3 @@
 # prod2-main apps ledger
 
-- `sub2api` / `compose` / `https://token.zzzai.fun`
+- no active app catalog object

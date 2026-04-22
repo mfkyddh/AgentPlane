@@ -6,19 +6,21 @@
   "runtime_user": "root",
   "repo_root": "<repo-root>",
   "compose_services": [
-    "chatgpt-register-v2",
-    "chatgpt-register-v2-prod2",
     "cliproxyapi",
     "minio",
-    "newapi",
     "openclaw",
     "postgres",
     "redis",
     "sub2api",
-    "sub2apipay",
     "vmail"
   ],
   "docker_containers": [
+    {
+      "name": "sub2api-dev",
+      "image": "ghcr.io/wei-shaw/sub2api:latest",
+      "ports": "0.0.0.0:18080->8080/tcp",
+      "status": "Up 55 minutes (healthy)"
+    },
     {
       "name": "redis7-dev",
       "image": "redis:7.4.7",
@@ -33,12 +35,6 @@
     }
   ],
   "unmanaged_docker_containers": [
-    {
-      "name": "sub2api-dev",
-      "image": "sub2api-prod:0.1.106-zzz.20260330.v1.g2552ff5e",
-      "ports": "0.0.0.0:18080->8080/tcp",
-      "status": "Up 55 minutes (healthy)"
-    },
     {
       "name": "1Panel-openresty-wOeD",
       "image": "1panel/openresty:1.27.1.2-5-1-focal",
@@ -148,9 +144,6 @@
     }
   ],
   "services": {
-    "chatgpt-register-v2": {
-      "container_name": "chatgpt-register-v2-dev"
-    },
     "sub2api": {
       "control_plane": "compose",
       "container_name": "sub2api-dev",
@@ -194,14 +187,14 @@
     }
   },
   "object_ledgers": {
-    "generated_at": "2026-04-08T07:08:17.832760+00:00",
+    "generated_at": "2026-04-22T11:00:06.349217+00:00",
     "counts": {
       "websites": 0,
-      "containers": 4,
+      "containers": 3,
       "firewall": 0,
       "cronjobs": 2,
-      "apps": 1,
-      "app_resources": 2,
+      "apps": 0,
+      "app_resources": 1,
       "automations": 2
     },
     "ledgers": {

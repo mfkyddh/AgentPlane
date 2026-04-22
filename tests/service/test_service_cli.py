@@ -37,7 +37,7 @@ class ServiceCliTests(unittest.TestCase):
                     "minio",
                     "mihomo",
                     "onepanel_openresty",
-                    "newapi",
+                    "sampleapi",
                     "relay-trojan",
                     "relay-trojan-host",
                     "legacy_runtime",
@@ -81,7 +81,7 @@ class ServiceCliTests(unittest.TestCase):
             write_inventory(root)
             bin_dir = root / "bin"
             bin_dir.mkdir(parents=True, exist_ok=True)
-            log_file = root / "service-get-newapi.log"
+            log_file = root / "service-get-sampleapi.log"
             write_fake_service_ssh(bin_dir)
 
             result = run_cli(
@@ -90,7 +90,7 @@ class ServiceCliTests(unittest.TestCase):
                 "--target",
                 "prod0-main",
                 "--name",
-                "newapi",
+                "sampleapi",
                 "--repo-root",
                 str(root),
                 env_overrides={"PATH": f"{bin_dir}:{os.environ['PATH']}", "FAKE_CMD_LOG": str(log_file)},
@@ -98,7 +98,7 @@ class ServiceCliTests(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             payload = json.loads(result.stdout)
-            self.assertEqual("newapi", payload["payload"]["service"]["name"])
+            self.assertEqual("sampleapi", payload["payload"]["service"]["name"])
             self.assertEqual("compose", payload["payload"]["service"]["control_plane"])
             self.assertEqual(["restart", "reconcile"], payload["payload"]["service"]["supported_operations"])
 

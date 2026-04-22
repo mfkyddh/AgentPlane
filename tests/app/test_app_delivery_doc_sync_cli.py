@@ -89,7 +89,7 @@ class TestAppDeliveryDocSyncCliTests(unittest.TestCase):
                         "<!-- BEGIN AGENTPLANE_ONEPANEL_LEDGER -->",
                         "## 1Panel 对象台帐投影",
                         "",
-                        "- 刷新命令：`uv run python -m agentplane.cli onepanel --env prod0-main ledger refresh --repo-root <repo-root> --write`",
+                        "- 刷新命令：`uv run python -m agentplane.cli projection ledger refresh --target prod0-main --repo-root <repo-root> --write`",
                         "<!-- END AGENTPLANE_ONEPANEL_LEDGER -->",
                         "",
                     ]
@@ -173,31 +173,31 @@ class TestAppDeliveryDocSyncCliTests(unittest.TestCase):
     def test_doc_sync_wsl_does_not_emit_prod0_live_db_partition_language(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            app_root = root / "newapi"
+            app_root = root / "sampleapi"
             app_root.mkdir(parents=True, exist_ok=True)
             write_inventory(root)
-            contract_file = write_newapi_contract(app_root, target="wsl")
-            write_newapi_tenant_files(root, target="wsl")
+            contract_file = write_sampleapi_contract(app_root, target="wsl")
+            write_sampleapi_tenant_files(root, target="wsl")
             inventory_file = root / "inventory" / "servers" / "wsl" / "inventory.json"
             payload = json.loads(inventory_file.read_text(encoding="utf-8"))
-            payload["services"]["newapi"] = {
+            payload["services"]["sampleapi"] = {
                 "control_plane": "compose",
-                "container_name": "newapi-dev",
+                "container_name": "sampleapi-dev",
                 "depends_on_containers": ["postgres18-dev", "redis7-dev"],
                 "host_binding": "0.0.0.0:3000",
                 "public_url": "http://127.0.0.1:3000",
                 "rollback_entry": {"kind": "none", "note": "dev only"},
                 "app_resource_summary": {
                     "postgres": {
-                        "database": "newapi_wsl",
-                        "user": "newapi_wsl",
-                        "secret_file": resource_relative("wsl", "newapi", "postgres"),
+                        "database": "sampleapi_wsl",
+                        "user": "sampleapi_wsl",
+                        "secret_file": resource_relative("wsl", "sampleapi", "postgres"),
                     },
                     "redis": {
-                        "user": "newapi_wsl_legacy",
+                        "user": "sampleapi_wsl_legacy",
                         "db": 2,
-                        "key_prefix": "newapi:wsl:",
-                        "secret_file": resource_relative("wsl", "newapi", "redis"),
+                        "key_prefix": "sampleapi:wsl:",
+                        "secret_file": resource_relative("wsl", "sampleapi", "redis"),
                     },
                 },
             }
@@ -206,7 +206,7 @@ class TestAppDeliveryDocSyncCliTests(unittest.TestCase):
             result = run_app_delivery_cli(
                 "doc-sync",
                 repo_root=root,
-                app="newapi",
+                app="sampleapi",
                 target="wsl",
                 extra_args=("--write",),
             )
@@ -220,40 +220,40 @@ class TestAppDeliveryDocSyncCliTests(unittest.TestCase):
             self.assertNotIn("shared runtime credential", app_summary_text)
             self.assertNotIn("DB 级逻辑分区", app_summary_text)
             self.assertNotIn("强隔离", app_summary_text)
-            self.assertNotIn('"user": "newapi_wsl_legacy"', server_readme_text)
-            self.assertNotIn('"user": "newapi_wsl_legacy"', app_summary_text)
+            self.assertNotIn('"user": "sampleapi_wsl_legacy"', server_readme_text)
+            self.assertNotIn('"user": "sampleapi_wsl_legacy"', app_summary_text)
 
     def test_doc_sync_renders_1panel_compose_transition_entry(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            app_root = root / "newapi"
+            app_root = root / "sampleapi"
             app_root.mkdir(parents=True, exist_ok=True)
             write_inventory(root)
-            write_newapi_tenant_files(root)
-            contract_file = write_newapi_contract(
+            write_sampleapi_tenant_files(root)
+            contract_file = write_sampleapi_contract(
                 app_root,
                 rollback_entry={
                     "kind": "1panel-compose",
-                    "project_name": "sub2apipay-prod",
-                    "container_name": "sub2apipay-prod",
-                    "project_path": "/data/1panel/docker/compose/sub2apipay-prod",
-                    "compose_file": "/data/1panel/docker/compose/sub2apipay-prod/docker-compose.yml",
+                    "project_name": "samplepay-prod",
+                    "container_name": "samplepay-prod",
+                    "project_path": "/data/1panel/docker/compose/samplepay-prod",
+                    "compose_file": "/data/1panel/docker/compose/samplepay-prod/docker-compose.yml",
                 },
             )
             inventory_file = root / "inventory" / "servers" / "prod0-main" / "inventory.json"
             payload = json.loads(inventory_file.read_text(encoding="utf-8"))
-            payload["services"]["newapi"] = {
+            payload["services"]["sampleapi"] = {
                 "control_plane": "compose",
-                "container_name": "newapi-prod",
+                "container_name": "sampleapi-prod",
                 "depends_on_containers": ["postgres18-prod", "redis7-prod"],
                 "host_binding": "127.0.0.1:3000",
-                "public_url": "https://newapi.zzzai.cloud:8443",
+                "public_url": "https://sampleapi.zzzai.cloud:8443",
                 "rollback_entry": {
                     "kind": "1panel-compose",
-                    "project_name": "sub2apipay-prod",
-                    "container_name": "sub2apipay-prod",
-                    "project_path": "/data/1panel/docker/compose/sub2apipay-prod",
-                    "compose_file": "/data/1panel/docker/compose/sub2apipay-prod/docker-compose.yml",
+                    "project_name": "samplepay-prod",
+                    "container_name": "samplepay-prod",
+                    "project_path": "/data/1panel/docker/compose/samplepay-prod",
+                    "compose_file": "/data/1panel/docker/compose/samplepay-prod/docker-compose.yml",
                 },
             }
             inventory_file.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -261,15 +261,15 @@ class TestAppDeliveryDocSyncCliTests(unittest.TestCase):
             result = run_app_delivery_cli(
                 "doc-sync",
                 repo_root=root,
-                app="newapi",
+                app="sampleapi",
                 extra_args=("--write",),
             )
 
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             app_summary_text = (app_root / "docs" / "AGENTPLANE_DEPLOYMENT.md").read_text(encoding="utf-8")
             self.assertIn("1panel-compose", app_summary_text)
-            self.assertIn("path=/data/1panel/docker/compose/sub2apipay-prod", app_summary_text)
-            self.assertIn("compose=/data/1panel/docker/compose/sub2apipay-prod/docker-compose.yml", app_summary_text)
+            self.assertIn("path=/data/1panel/docker/compose/samplepay-prod", app_summary_text)
+            self.assertIn("compose=/data/1panel/docker/compose/samplepay-prod/docker-compose.yml", app_summary_text)
 
     def test_doc_sync_writes_target_specific_app_summary_files_when_configured(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

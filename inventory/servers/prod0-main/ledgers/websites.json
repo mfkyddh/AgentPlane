@@ -10,24 +10,6 @@
       "status": "Running"
     },
     {
-      "alias": "newapi",
-      "primary_domain": "newapi.zzzai.cloud",
-      "public_url": "https://newapi.zzzai.cloud:8443",
-      "proxy": "http://127.0.0.1:3000",
-      "config_file": "/data/1panel/www/conf.d/newapi.conf",
-      "ssl_id": 4,
-      "status": "Running"
-    },
-    {
-      "alias": "pay",
-      "primary_domain": "pay.zzzai.cloud",
-      "public_url": "https://pay.zzzai.cloud:8443/pay",
-      "proxy": "http://127.0.0.1:18091",
-      "config_file": "/data/1panel/www/conf.d/pay.conf",
-      "ssl_id": 4,
-      "status": "Running"
-    },
-    {
       "alias": "token",
       "primary_domain": "token.zzzai.cloud",
       "public_url": "https://token.zzzai.cloud:8443",
@@ -37,5 +19,5 @@
       "status": "Running"
     }
   ],
-  "count": 4
+  "count": 2
 }

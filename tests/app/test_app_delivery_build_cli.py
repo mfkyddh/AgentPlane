@@ -193,27 +193,27 @@ class TestAppDeliveryBuildCliTests(unittest.TestCase):
             write_app_resource_registry(
                 root,
                 {
-                    "newapi": {
-                        "owner_app": "newapi",
-                        "postgres": {"database": "newapi_prod2", "user": "newapi_prod2"},
-                        "redis": {"db": 2, "key_prefix": "newapi:"},
+                    "sampleapi": {
+                        "owner_app": "sampleapi",
+                        "postgres": {"database": "sampleapi_prod2", "user": "sampleapi_prod2"},
+                        "redis": {"db": 2, "key_prefix": "sampleapi:"},
                         "minio": {
-                            "bucket": "prod2-newapi",
-                            "access_key": "newapi_prod2",
-                            "policy_name": "prod2-newapi-rw",
+                            "bucket": "prod2-sampleapi",
+                            "access_key": "sampleapi_prod2",
+                            "policy_name": "prod2-sampleapi-rw",
                             "policy_scope": "bucket-only",
                             "isolation_level": "bucket-scoped-rw",
                         },
                         "secret_files": [
-                            resource_relative("prod2-main", "newapi", "postgres"),
-                            resource_relative("prod2-main", "newapi", "redis"),
-                            resource_relative("prod2-main", "newapi", "minio"),
+                            resource_relative("prod2-main", "sampleapi", "postgres"),
+                            resource_relative("prod2-main", "sampleapi", "redis"),
+                            resource_relative("prod2-main", "sampleapi", "minio"),
                         ],
                     }
                 },
                 target="prod2-main",
             )
-            write_newapi_tenant_files(root, target="prod2-main", include_minio=True)
+            write_sampleapi_tenant_files(root, target="prod2-main", include_minio=True)
             sha = init_git_repo_with_tag(root, "v0.11.9-alpha.2")
             deploy_dir = root / "deploy"
             deploy_dir.mkdir(parents=True, exist_ok=True)
@@ -232,7 +232,7 @@ class TestAppDeliveryBuildCliTests(unittest.TestCase):
                 encoding="utf-8",
             )
             script_file.chmod(0o755)
-            write_newapi_contract(
+            write_sampleapi_contract(
                 root,
                 target="prod2-main",
                 include_minio=True,
@@ -244,7 +244,7 @@ class TestAppDeliveryBuildCliTests(unittest.TestCase):
             result = run_app_delivery_cli(
                 "build-artifact",
                 repo_root=root,
-                app="newapi",
+                app="sampleapi",
                 target="prod2-main",
                 extra_args=("--auto-version",),
             )
@@ -253,7 +253,7 @@ class TestAppDeliveryBuildCliTests(unittest.TestCase):
             payload = json.loads(result.stdout)["payload"]
             today = datetime.now(UTC).strftime("%Y%m%d")
             expected_tag = f"v0.11.9-alpha.2-zzz.{today}.v1.g{sha}"
-            self.assertEqual(f"newapi-prod:{expected_tag}", payload["packaging"]["image_ref"])
+            self.assertEqual(f"sampleapi-prod:{expected_tag}", payload["packaging"]["image_ref"])
             self.assertEqual(expected_tag, output_file.read_text(encoding="utf-8"))
 
     def test_build_artifact_dry_run_does_not_consume_fork_sequence(self) -> None:

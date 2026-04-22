@@ -120,15 +120,13 @@ def build_prod2_main_onboarding_plan(repo_root: Path) -> dict[str, Any]:
     for service in ('postgres', 'redis', 'minio', 'onepanel', 'onepanel_openresty'):
         service_verify_cmds.append(f'uv run python -m agentplane.cli service verify --target {PRODUCTION_TARGET} --name {service} --repo-root {repo_root_shell}')
 
-    app_verify_cmds: list[str] = []
-    for app_name in ('sub2api', 'newapi'):
-        app_verify_cmds.extend([
-            f'uv run python -m agentplane.cli app object verify --target {PRODUCTION_TARGET} --app {app_name} --repo-root {repo_root_shell}',
-            f'uv run python -m agentplane.cli app resource verify --target {PRODUCTION_TARGET} --app {app_name} --repo-root {repo_root_shell}',
-        ])
+    app_verify_cmds = [
+        f'uv run python -m agentplane.cli app resource verify --target {PRODUCTION_TARGET} --app sub2api --repo-root {repo_root_shell}',
+        f'uv run python -m agentplane.cli service verify --target {PRODUCTION_TARGET} --name sub2api --repo-root {repo_root_shell}',
+    ]
 
     website_verify_cmds: list[str] = []
-    for alias in ('1panel', 'token', 'newapi', 'vmail'):
+    for alias in ('1panel', 'token', 'vmail'):
         website_verify_cmds.append(f'uv run python -m agentplane.cli website verify --target {PRODUCTION_TARGET} --alias {alias} --repo-root {repo_root_shell}')
     website_verify_cmds.append(
         f'uv run python -m agentplane.cli website publish verify --target {PRODUCTION_TARGET} --config-file {ingress_config_shell} --cloudflare-env-file {cloudflare_shell} --repo-root {repo_root_shell}'
@@ -186,7 +184,7 @@ def build_prod2_main_offboarding_plan(repo_root: Path) -> dict[str, Any]:
     cloudflare_shell = shlex.quote(str((repo_root / _CLOUDFLARE_ENV).resolve()))
 
     removal_commands: list[str] = []
-    for alias in ('1panel', 'token', 'newapi', 'vmail'):
+    for alias in ('1panel', 'token', 'vmail'):
         removal_commands.append(
             f'uv run python -m agentplane.cli website publish plan --target {PRODUCTION_TARGET} --config-file {ingress_config_shell} --cloudflare-env-file {cloudflare_shell} --repo-root {repo_root_shell}'
         )
@@ -195,7 +193,7 @@ def build_prod2_main_offboarding_plan(repo_root: Path) -> dict[str, Any]:
         )
 
     app_remove_commands: list[str] = []
-    for app_name in ('sub2api', 'newapi', 'vmail', 'chatgpt-register-v2-prod2'):
+    for app_name in ('sub2api', 'vmail'):
         app_remove_commands.append(
             f'uv run python -m agentplane.cli app delivery rollback --target {PRODUCTION_TARGET} --app {app_name} --repo-root {repo_root_shell} --dry-run'
         )
@@ -221,7 +219,7 @@ def build_prod2_main_offboarding_plan(repo_root: Path) -> dict[str, Any]:
                 'id': 'app-decommission',
                 'summary': 'Roll back tracked apps so their resources can be reclaimed',
                 'commands': app_remove_commands,
-                'notes': ['Gracefully drain sub2api/newapi/vmail and the internal register service.'],
+                'notes': ['Gracefully drain sub2api and vmail.'],
             },
             {
                 'id': 'service-cleanup',

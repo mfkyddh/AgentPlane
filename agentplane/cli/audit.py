@@ -680,18 +680,6 @@ def _audit_prod0_inventory(repo_root: Path) -> list[dict[str, Any]]:
     violations.extend(_audit_openresty_contract("prod0", inventory_file, payload))
     violations.extend(_audit_managed_bridge_network_declarations("prod", inventory_file, payload))
 
-    newapi_networks = _as_list(payload.get("services", {}).get("newapi", {}).get("docker_networks"))
-    if REQUIRED_NETWORK not in newapi_networks:
-        violations.append(
-            _violation(
-                "prod0",
-                "prod0.newapi.network",
-                "prod0 newapi 必须挂载 zqf_network。",
-                path=inventory_file,
-                details={"actual": newapi_networks},
-            )
-        )
-
     services = payload.get("services", {})
     if not isinstance(services, dict):
         services = {}
@@ -750,30 +738,6 @@ def _audit_prod0_inventory(repo_root: Path) -> list[dict[str, Any]]:
                 "prod0 sub2api 配置文件必须收口到 /data/sub2api。",
                 path=inventory_file,
                 details={"actual": sub2api_config_file},
-            )
-        )
-
-    sub2apipay = services.get("sub2apipay", {})
-    sub2apipay_root = sub2apipay.get("runtime_root")
-    sub2apipay_configs = _as_list(sub2apipay.get("config_files"))
-    if not isinstance(sub2apipay_root, str) or not sub2apipay_root.startswith("/data/sub2apipay/"):
-        violations.append(
-            _violation(
-                "prod0",
-                "prod0.sub2apipay.runtime_root",
-                "prod0 sub2apipay 运行目录必须收口到 /data/sub2apipay。",
-                path=inventory_file,
-                details={"actual": sub2apipay_root},
-            )
-        )
-    if not sub2apipay_configs or any(not isinstance(item, str) or not item.startswith("/data/sub2apipay/") for item in sub2apipay_configs):
-        violations.append(
-            _violation(
-                "prod0",
-                "prod0.sub2apipay.config_files",
-                "prod0 sub2apipay 配置文件必须收口到 /data/sub2apipay。",
-                path=inventory_file,
-                details={"actual": sub2apipay_configs},
             )
         )
 

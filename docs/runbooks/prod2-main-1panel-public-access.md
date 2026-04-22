@@ -30,10 +30,7 @@
 | --- | --- | --- | --- |
 | `1panel` | `1panel.zzzai.fun` | `https://1panel.zzzai.fun/p2panel443` | `1panel-openresty-prod`（host 网络 443）向 `http://127.0.0.1:2096` 反代；证书由 `1panel-zzzai-fun`（`/data/1panel/www/certs/1panel-zzzai-fun`）提供。 |
 | `token` | `token.zzzai.fun` | `https://token.zzzai.fun` | `sub2api-prod`（AgentPlane compose）绑定 `127.0.0.1:18080`，依赖 `zqf_network`；`inventory` 中的 `public_url` 与 CLI `website get/verify` 自此处读取。 |
-| `newapi` | `newapi.zzzai.fun` | `https://newapi.zzzai.fun` | `newapi-prod`（compose）绑定 `127.0.0.1:3000`，`public_url` 与 `inventory` 对齐。 |
 | `vmail` | `vmail.zzzai.fun` | `https://vmail.zzzai.fun` | `vmail-prod`（compose）绑定 `127.0.0.1:3001`，借助 `1panel-openresty-prod` 提供外部 HTTPS。 |
-
-内部控制面：`chatgpt-register-v2-prod2` 仅暴露 `internal://127.0.0.1:18082`，不作为 public ingress。
 
 ## 正式主入口
 

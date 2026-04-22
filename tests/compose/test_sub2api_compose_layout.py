@@ -5,7 +5,7 @@ import yaml
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-SUB2API_ROOT = Path("<app-repo-root>")
+OFFICIAL_WSL_IMAGE = "${SUB2API_IMAGE_REF:-ghcr.io/wei-shaw/sub2api:latest}"
 
 
 def load_compose(path: Path) -> dict:
@@ -13,39 +13,12 @@ def load_compose(path: Path) -> dict:
 
 
 class Sub2ApiComposeLayoutTests(unittest.TestCase):
-    def test_sub2api_contracts_use_artifact_first_schema_v2(self) -> None:
-        expected_targets = {
-            "wsl": SUB2API_ROOT / "deploy" / "agentplane" / "contract.wsl.yaml",
-            "prod0-main": SUB2API_ROOT / "deploy" / "agentplane" / "contract.yaml",
-            "prod2-main": SUB2API_ROOT / "deploy" / "agentplane" / "contract.prod2.yaml",
-        }
-
-        for target, contract_path in expected_targets.items():
-            with self.subTest(target=target):
-                contract = load_compose(contract_path)
-                self.assertEqual(2, contract["schema_version"])
-                self.assertEqual("bash deploy/build-runtime-artifacts.sh", contract["artifact"]["build_command"])
-                self.assertEqual("dist/oplinux", contract["artifact"]["output_path"])
-                self.assertEqual("linux", contract["artifact"]["runtime_os"])
-                self.assertEqual("amd64", contract["artifact"]["runtime_arch"])
-                self.assertEqual("wsl-linux", contract["packaging"]["backend"])
-                self.assertEqual("sub2api-prod", contract["packaging"]["image_name"])
-                self.assertEqual("bash deploy/package-runtime-image.sh", contract["packaging"]["package_command"])
-
-    def test_sub2api_build_and_package_scripts_are_split(self) -> None:
-        build_script = (SUB2API_ROOT / "deploy" / "build-runtime-artifacts.sh").read_text(encoding="utf-8")
-        package_script = (SUB2API_ROOT / "deploy" / "package-runtime-image.sh").read_text(encoding="utf-8")
-
-        self.assertNotIn("docker build", build_script)
-        self.assertNotIn("build-runtime-artifacts.sh", package_script)
-        self.assertIn("ARTIFACT_OUTPUT_PATH", build_script)
-        self.assertIn("ARTIFACT_OUTPUT_PATH", package_script)
-        self.assertIn("docker build", package_script)
-
     def test_wsl_template_matches_contract(self) -> None:
         compose = load_compose(REPO_ROOT / "infra" / "compose" / "sub2api" / "docker-compose.wsl.yml")
         service = compose["services"]["sub2api"]
 
+        self.assertEqual(OFFICIAL_WSL_IMAGE, service["image"])
+        self.assertEqual("always", service["pull_policy"])
         self.assertEqual("sub2api-dev", service["container_name"])
         self.assertIn("0.0.0.0:18080:8080", service["ports"])
         self.assertIn("/data/sub2api/data:/app/data", service["volumes"])

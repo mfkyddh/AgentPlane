@@ -3,14 +3,8 @@
 
 from __future__ import annotations
 
-import json
 import time
-from pathlib import Path
 from typing import Any
-
-import yaml
-
-from .compose_policy import enforce_zqf_network
 
 
 COMPOSE_PROJECT_DIR = "/data/1panel/docker/compose"
@@ -116,33 +110,3 @@ def wait_for_compose(executor: ComposeExecutorProtocol, name: str, timeout_secon
             return item
         time.sleep(2)
     raise TimeoutError(f"Timed out waiting for compose {name} to become running")
-
-
-def _load_inventory(repo_root: Path) -> dict[str, Any]:
-    inventory_file = repo_root / "inventory" / "servers" / "prod0-main" / "inventory.json"
-    return json.loads(inventory_file.read_text(encoding="utf-8"))
-
-
-def _replace_sub2apipay_paths(compose_data: dict[str, Any], inventory: dict[str, Any]) -> dict[str, Any]:
-    services = compose_data.get("services")
-    if not isinstance(services, dict) or "app" not in services or not isinstance(services["app"], dict):
-        raise ValueError("sub2apipay compose must contain services.app")
-    app = services["app"]
-    runtime = inventory["services"]["sub2apipay"]
-    app["container_name"] = runtime["container_name"]
-    app["env_file"] = runtime["config_files"]
-    app["ports"] = [f"{runtime['host_binding']}:{runtime['container_port']}"]
-    app["networks"] = ["zqf_network"]
-    compose_data["services"] = services
-    return compose_data
-
-
-def render_sub2apipay_compose(repo_root: Path, raw_compose: str) -> str:
-    inventory = _load_inventory(repo_root)
-    compose_data = yaml.safe_load(raw_compose)
-    if not isinstance(compose_data, dict):
-        raise ValueError("compose content must decode to a mapping")
-    compose_data = _replace_sub2apipay_paths(compose_data, inventory)
-    rendered = yaml.safe_dump(compose_data, sort_keys=False, allow_unicode=False)
-    return enforce_zqf_network(rendered)
-

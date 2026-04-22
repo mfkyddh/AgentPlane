@@ -12,7 +12,4 @@
   status: `running`
 - `onepanel_openresty`
   status: `running`
-- `newapi`
-- `sub2apipay`
 - `sub2api`
-- `chatgpt-register-v2`

@@ -112,8 +112,8 @@ class InventoryGenerationTests(unittest.TestCase):
                     {
                         "_meta": {"host": "prod2-main"},
                         "infrastructure": {"postgres": {"status": "running"}},
-                        "app_resources": {"newapi": {"owner_app": "newapi"}},
-                        "newapi": {"owner_app": "newapi"},
+                        "app_resources": {"sampleapi": {"owner_app": "sampleapi"}},
+                        "sampleapi": {"owner_app": "sampleapi"},
                         "sub2api": {"owner_app": "sub2api"},
                     },
                     ensure_ascii=False,
@@ -124,10 +124,10 @@ class InventoryGenerationTests(unittest.TestCase):
 
             rows = _tenant_rows(server_root)
 
-        self.assertEqual(["newapi", "sub2api"], [row["app_id"] for row in rows])
+        self.assertEqual(["sampleapi", "sub2api"], [row["app_id"] for row in rows])
 
     def test_ledger_markdown_is_projection_only_summary(self) -> None:
-        rendered = _markdown_for("app_resources", [{"app_id": "newapi"}])
+        rendered = _markdown_for("app_resources", [{"app_id": "sampleapi"}])
         self.assertIn("Markdown 摘要投影", rendered)
         self.assertIn("对应 JSON 真源", rendered)
 
@@ -156,21 +156,14 @@ class InventoryGenerationTests(unittest.TestCase):
                 self.assertIn("Markdown 摘要投影", content)
                 self.assertIn("机器真源：", content)
 
-    def test_real_app_ledgers_keep_canonical_refs_only(self) -> None:
-        for target, expected_ref in (
-            ("wsl", "apps/sub2api/contracts/wsl"),
-            ("prod0-main", "apps/sub2api/contracts/prod0-main"),
-            ("prod2-main", "apps/sub2api/contracts/prod2-main"),
-        ):
+    def test_real_app_ledgers_are_empty_after_local_app_delivery_offboarding(self) -> None:
+        for target in ("wsl", "prod0-main", "prod2-main"):
             with self.subTest(target=target):
                 ledger_json = json.loads(
                     (REPO_ROOT / "inventory" / "servers" / target / "ledgers" / "apps.json").read_text(encoding="utf-8")
                 )
-                self.assertEqual(expected_ref, ledger_json["items"][0]["canonical_ref"])
-                self.assertNotIn("contract_file", ledger_json["items"][0])
-                self.assertNotIn("resolved_path", ledger_json["items"][0])
-                self.assertNotIn("verification_fields", ledger_json["items"][0])
-                self.assertNotIn("observation", ledger_json["items"][0])
+                self.assertEqual([], ledger_json["items"])
+                self.assertEqual(0, ledger_json["count"])
 
     def test_inventory_separates_managed_and_unmanaged_containers(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

@@ -17,7 +17,7 @@ uv run python -m agentplane.cli onepanel --env <target> firewall search --type p
 uv run python -m agentplane.cli onepanel --env <target> firewall verify --tab port --expected-active true --json
 uv run python -m agentplane.cli onepanel --env <target> firewall plan --operation restart --json
 uv run python -m agentplane.cli onepanel --env <target> firewall apply --operation restart --execute --json
-uv run python -m agentplane.cli onepanel --env <target> ledger refresh --repo-root <repo-root> --write --json
+uv run python -m agentplane.cli projection ledger refresh --target <target> --repo-root <repo-root> --write --json
 ```
 
 ## Rules

@@ -98,8 +98,8 @@ if [[ "$cmd" == *"docker inspect 1panel-openresty-prod --format"* ]]; then
   emit_container "1panel-openresty-prod" "1panel/openresty:1.27.1.2-5-1-focal" "running" "host"
   exit 0
 fi
-if [[ "$cmd" == *"docker inspect newapi-prod --format"* ]]; then
-  emit_container "newapi-prod" "ghcr.io/example/newapi:2026.04" "running" "bridge" ',"NetworkSettings":{"Ports":{"3000/tcp":[{"HostIp":"127.0.0.1","HostPort":"3000"}]}}'
+if [[ "$cmd" == *"docker inspect sampleapi-prod --format"* ]]; then
+  emit_container "sampleapi-prod" "ghcr.io/example/sampleapi:2026.04" "running" "bridge" ',"NetworkSettings":{"Ports":{"3000/tcp":[{"HostIp":"127.0.0.1","HostPort":"3000"}]}}'
   exit 0
 fi
 if [[ "$cmd" == *"docker inspect relay-trojan-prod --format"* ]]; then
@@ -133,7 +133,7 @@ fi
 if [[ "$cmd" == *"docker restart postgres18-prod"* ]]; then
   exit 0
 fi
-if [[ "$cmd" == *"docker restart newapi-prod"* ]]; then
+if [[ "$cmd" == *"docker restart sampleapi-prod"* ]]; then
   exit 0
 fi
 if [[ "$cmd" == *"docker restart legacy-runtime-prod"* ]]; then
@@ -145,7 +145,7 @@ fi
 if [[ "$cmd" == *"cd /opt/agentplane/infra/compose/postgres && docker compose -f docker-compose.prod0.yml up -d"* ]]; then
   exit 0
 fi
-if [[ "$cmd" == *"cd /opt/agentplane/infra/compose/newapi && docker compose -f docker-compose.prod0.yml up -d"* ]]; then
+if [[ "$cmd" == *"cd /opt/agentplane/infra/compose/sampleapi && docker compose -f docker-compose.prod0.yml up -d"* ]]; then
   exit 0
 fi
 if [[ "$cmd" == *"systemctl restart mihomo"* ]]; then
@@ -210,10 +210,10 @@ def write_inventory(root: Path) -> None:
                         "network_mode": "host",
                         "listen_ports": [8443],
                     },
-                    "newapi": {
+                    "sampleapi": {
                         "control_plane": "compose",
-                        "container_name": "newapi-prod",
-                        "image": "ghcr.io/example/newapi:2026.04",
+                        "container_name": "sampleapi-prod",
+                        "image": "ghcr.io/example/sampleapi:2026.04",
                         "status": "running",
                         "host_binding": "127.0.0.1:3000",
                     },

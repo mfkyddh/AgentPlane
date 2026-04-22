@@ -13,7 +13,5 @@
 - `onepanel_openresty`
   status: `running`
 - `sub2api`
-- `newapi`
-- `chatgpt-register-v2-prod2`
 - `relay-trojan`
 - `vmail`

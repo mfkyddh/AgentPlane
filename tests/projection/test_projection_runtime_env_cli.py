@@ -110,7 +110,7 @@ class ProjectionRuntimeEnvCliTests(unittest.TestCase):
                 "--target",
                 "prod2-main",
                 "--app",
-                "newapi",
+                "sampleapi",
                 "--repo-root",
                 str(root),
             )

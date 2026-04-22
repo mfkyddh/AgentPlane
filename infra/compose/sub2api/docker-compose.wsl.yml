@@ -3,7 +3,8 @@
 
 services:
   sub2api:
-    image: ${SUB2API_IMAGE_REF:-sub2api-prod:0.1.105-wsl.20260328.g3468f10f74af}
+    image: ${SUB2API_IMAGE_REF:-ghcr.io/wei-shaw/sub2api:latest}
+    pull_policy: always
     container_name: sub2api-dev
     restart: unless-stopped
 

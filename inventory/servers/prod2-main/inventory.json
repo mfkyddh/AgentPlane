@@ -87,9 +87,7 @@
         "postgres18-prod",
         "redis7-prod",
         "minio-prod",
-        "sub2api-prod",
-        "newapi-prod",
-        "chatgpt-register-v2-prod2"
+        "sub2api-prod"
       ]
     }
   ],
@@ -241,74 +239,6 @@
           "secret_file": "secrets/hosts/prod2-main/apps/sub2api/resources/minio.env"
         }
       }
-    },
-    "newapi": {
-      "control_plane": "compose",
-      "container_name": "newapi-prod",
-      "depends_on_containers": [
-        "postgres18-prod",
-        "redis7-prod",
-        "minio-prod"
-      ],
-      "runtime_root": "/data/newapi/app/current",
-      "config_files": [
-        "/opt/agentplane/secrets/services/newapi.prod2.env"
-      ],
-      "data_dir": "/data/newapi/data",
-      "host_binding": "127.0.0.1:3000",
-      "container_port": 3000,
-      "public_url": "https://newapi.zzzai.fun",
-      "rollback_entry": {
-        "kind": "none",
-        "note": "prod2-main 首次上线无旧控制面",
-        "service_name": "newapi"
-      },
-      "docker_networks": [
-        "zqf_network"
-      ],
-      "app_resource_summary": {
-        "postgres": {
-          "database": "newapi_prod2",
-          "user": "newapi_prod2",
-          "secret_file": "secrets/hosts/prod2-main/apps/newapi/resources/postgres.env"
-        },
-        "redis": {
-          "db": 2,
-          "key_prefix": "newapi:",
-          "secret_file": "secrets/hosts/prod2-main/apps/newapi/resources/redis.env"
-        },
-        "minio": {
-          "bucket": "prod2-newapi",
-          "access_key": "newapi_prod2",
-          "policy_name": "prod2-newapi-rw",
-          "policy_scope": "bucket-only",
-          "isolation_level": "bucket-scoped-rw",
-          "secret_file": "secrets/hosts/prod2-main/apps/newapi/resources/minio.env"
-        }
-      }
-    },
-    "chatgpt-register-v2-prod2": {
-      "control_plane": "compose",
-      "container_name": "chatgpt-register-v2-prod2",
-      "depends_on_containers": [
-        "sub2api-prod"
-      ],
-      "runtime_root": "/data/chatgpt-register-v2-prod2/app/current",
-      "config_files": [
-        "/opt/agentplane/secrets/services/chatgpt-register-v2-prod2.prod2.env"
-      ],
-      "data_dir": "/data/chatgpt-register-v2-prod2/data",
-      "host_binding": "127.0.0.1:18082",
-      "container_port": 18082,
-      "public_url": "internal://127.0.0.1:18082",
-      "rollback_entry": {
-        "kind": "none",
-        "note": "prod2 为并行新实例，不复用 prod0 容器回滚面。",
-        "service_name": "chatgpt-register-v2-prod2"
-      },
-      "docker_networks": [
-        "zqf_network"
-      ]
     },
     "relay-trojan": {
       "control_plane": "compose",
@@ -541,14 +471,14 @@
     "prod2-main 当前正式公网面板入口为 https://1panel.zzzai.fun/p2panel443，由 1panel-openresty-prod 在 443/tcp 承载。"
   ],
   "object_ledgers": {
-    "generated_at": "2026-04-10T06:39:10.665847+00:00",
+    "generated_at": "2026-04-22T10:57:19.196558+00:00",
     "counts": {
       "websites": 2,
-      "containers": 9,
+      "containers": 7,
       "firewall": 1,
       "cronjobs": 4,
-      "apps": 1,
-      "app_resources": 2,
+      "apps": 0,
+      "app_resources": 1,
       "automations": 4
     },
     "ledgers": {

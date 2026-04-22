@@ -21,7 +21,6 @@ class Prod2MainLifecyclePolicyTests(unittest.TestCase):
         self.assertTrue(any(site.get('alias') == '1panel' for site in topology['websites']))
         resource_apps = {entry['app'] for entry in topology['app_resources']}
         self.assertIn('sub2api', resource_apps)
-        self.assertIn('newapi', resource_apps)
 
     def test_onboarding_plan_references_inventory_and_network_steps(self) -> None:
         plan = build_prod2_main_onboarding_plan(self.repo_root)

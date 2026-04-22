@@ -14,35 +14,35 @@ class ServiceLifecycleTests(unittest.TestCase):
         }
         next_services, evidence = service_lifecycle.plan_service_registry_onboard(
             base_services,
-            service_key="newapi",
-            entry={"container_name": "newapi-prod", "control_plane": "compose"},
+            service_key="sampleapi",
+            entry={"container_name": "sampleapi-prod", "control_plane": "compose"},
         )
-        self.assertIn("newapi", next_services)
-        self.assertEqual(next_services["newapi"]["container_name"], "newapi-prod")
+        self.assertIn("sampleapi", next_services)
+        self.assertEqual(next_services["sampleapi"]["container_name"], "sampleapi-prod")
         self.assertFalse(evidence["replaced"])
         self.assertEqual(evidence["action"], "upsert")
 
         replaced_services, replaced_evidence = service_lifecycle.plan_service_registry_onboard(
             next_services,
-            service_key="newapi",
-            entry={"container_name": "newapi-prod", "control_plane": "compose"},
+            service_key="sampleapi",
+            entry={"container_name": "sampleapi-prod", "control_plane": "compose"},
             allow_replace=True,
         )
         self.assertTrue(replaced_evidence["replaced"])
-        self.assertEqual(replaced_services["newapi"]["container_name"], "newapi-prod")
+        self.assertEqual(replaced_services["sampleapi"]["container_name"], "sampleapi-prod")
 
         offboarded_services, remove_evidence = service_lifecycle.plan_service_registry_offboard(
             replaced_services,
-            service_key="newapi",
+            service_key="sampleapi",
         )
-        self.assertNotIn("newapi", offboarded_services)
+        self.assertNotIn("sampleapi", offboarded_services)
         self.assertEqual(remove_evidence["action"], "remove")
-        self.assertEqual(remove_evidence["service_key"], "newapi")
+        self.assertEqual(remove_evidence["service_key"], "sampleapi")
 
         with self.assertRaises(ValueError):
             service_lifecycle.plan_service_registry_offboard(
                 offboarded_services,
-                service_key="newapi",
+                service_key="sampleapi",
             )
 
     def test_plan_rejects_invalid_entries(self):
@@ -56,13 +56,13 @@ class ServiceLifecycleTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             service_lifecycle.plan_service_registry_onboard(
                 base_services,
-                service_key="newapi",
+                service_key="sampleapi",
                 entry={"container_name": " ", "control_plane": "compose"},
             )
         with self.assertRaises(ValueError):
             service_lifecycle.plan_service_registry_onboard(
                 base_services,
-                service_key="newapi",
+                service_key="sampleapi",
                 entry={"container_name": "foo", "control_plane": "invalid"},
             )
 
@@ -75,22 +75,22 @@ class ServiceLifecycleTests(unittest.TestCase):
             onboard_result = service_lifecycle.apply_service_onboard(
                 repo_root=repo_root,
                 target=target,
-                service_key="newapi",
-                entry={"container_name": " newapi-prod ", "control_plane": "compose"},
+                service_key="sampleapi",
+                entry={"container_name": " sampleapi-prod ", "control_plane": "compose"},
             )
             self.assertTrue(onboard_result.changed)
             payload = json.loads(inventory_file.read_text(encoding="utf-8").strip())
-            self.assertIn("newapi", payload["services"])
-            self.assertEqual(payload["services"]["newapi"]["container_name"], "newapi-prod")
+            self.assertIn("sampleapi", payload["services"])
+            self.assertEqual(payload["services"]["sampleapi"]["container_name"], "sampleapi-prod")
 
             offboard_result = service_lifecycle.apply_service_offboard(
                 repo_root=repo_root,
                 target=target,
-                service_key="newapi",
+                service_key="sampleapi",
             )
             self.assertTrue(offboard_result.changed)
             payload_after = json.loads(inventory_file.read_text(encoding="utf-8").strip())
-            self.assertNotIn("newapi", payload_after["services"])
+            self.assertNotIn("sampleapi", payload_after["services"])
 
     def test_service_verify_separates_ledger_fields_and_observation(self) -> None:
         from agentplane.domain.service.handlers import verify_service

@@ -26,7 +26,6 @@ APP_RESOURCE_SUMMARY_FIELDS: dict[str, tuple[str, ...]] = {
 }
 FORMAL_PROD0_REDIS_REGISTRY: dict[str, dict[str, object]] = {
     "sub2api": {"db": 1, "key_prefix": "sub2api:"},
-    "newapi": {"db": 2, "key_prefix": "newapi:"},
 }
 # `redis.user` is retained only as historical metadata in some inventories.
 # The current prod0-main DB-isolation contract is `db` + canonical `key_prefix`.

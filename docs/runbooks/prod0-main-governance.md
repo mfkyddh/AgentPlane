@@ -16,20 +16,19 @@
 ### 已通过
 
 - `host remote bash prod0-main` 的 Windows 入口和实际远端执行都可用。
-- `sub2api` 的 `app object verify` 已通过。
-- `sub2api` 的 `app delivery deploy --dry-run` 已通过。
-- `sub2api` 的 `app delivery verify --execute` 已通过。
+- `sub2api` 的 `app resource verify` 已通过。
+- `sub2api` 的 `service verify` 已通过。
 - 当前 `sub2api` 两条探针链路都健康：
   - 宿主机回环：`http://127.0.0.1:18080/health`
   - 公网入口：`https://token.zzzai.cloud:8443/health`
 
 ### 仍有问题
 
-1. `host audit prod0-main` 仍报 `sub2api` 与 `sub2apipay` 的 config file 路径没有收口到目标目录语义。  
+1. `host audit prod0-main` 仍报 `sub2api` 的 config file 路径没有收口到目标目录语义。
 当前 live path 仍然是 `/opt/agentplane/secrets/services/*.env`。
 
-2. `host network audit prod0-main` 显示 `zqf_network` 缺少声明中的必需容器。  
-当前缺口是 `chatgpt-register-v2-prod` 和 `minio-prod`。
+2. `host network audit prod0-main` 显示 `zqf_network` 缺少声明中的必需容器。
+当前缺口按 `inventory/servers/prod0-main/inventory.json` 的 `managed_bridge_networks.required_for` 为准。
 
 3. `projection verification run --target prod0-main --profile prod0-readonly` 当前失败。  
 现场缺少 `/opt/agentplane/agentplane/scripts/onepanel/api_request.py`，导致 readonly 1Panel 验证面失效。
@@ -55,9 +54,9 @@ printf '%s\n' 'set -euo pipefail' 'hostname' 'docker ps --format "{{.Names}}"' \
 ### 2. `sub2api` 应用面
 
 ```bash
-uv run python -m agentplane.cli app object verify --target prod0-main --app sub2api --repo-root <repo-root>
-uv run python -m agentplane.cli app delivery deploy --target prod0-main --app sub2api --repo-root <repo-root> --dry-run
-uv run python -m agentplane.cli app delivery verify --target prod0-main --app sub2api --repo-root <repo-root> --execute
+uv run python -m agentplane.cli app resource verify --target prod0-main --app sub2api --repo-root <repo-root>
+uv run python -m agentplane.cli projection runtime-env verify --target prod0-main --app sub2api --repo-root <repo-root>
+uv run python -m agentplane.cli service verify --target prod0-main --name sub2api --repo-root <repo-root>
 ```
 
 ### 3. 只读验证面
@@ -93,5 +92,5 @@ uv run python -m agentplane.cli projection ledger refresh --target prod0-main --
 ## 接下来应该补什么
 
 1. 修掉 `prod0-readonly` 远端 helper 缺失，恢复只读验证面。
-2. 对齐 `sub2api` / `sub2apipay` config file 的目录合同。
+2. 对齐 `sub2api` config file 的目录合同。
 3. 对齐 `zqf_network` 的 required container 声明与现场实际容器。

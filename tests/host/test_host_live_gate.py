@@ -44,8 +44,8 @@ def test_live_gate_plan_is_default_pytest_excluded_contract() -> None:
         set(payload["pytest_markers"])
     )
     assert "docker" in summarize_capabilities(payload["steps"])
-    assert [step["key"] for step in payload["steps"]][-1] == "app.delivery.verify"
-    assert payload["steps"][-1]["argv"][-1] == "--execute"
+    assert [step["key"] for step in payload["steps"]][-1] == "service.verify"
+    assert "app" not in [step["argv"][5] for step in payload["steps"] if len(step["argv"]) > 5]
 
 
 def test_wsl_live_gate_keeps_formal_cli_on_host_entry() -> None:
@@ -57,7 +57,8 @@ def test_wsl_live_gate_keeps_formal_cli_on_host_entry() -> None:
     assert steps["toolchain.docker-compose"]["execution"] == "linux-backend"
     assert steps["host.inventory"]["execution"] == "host"
     assert steps["projection.verification"]["execution"] == "host"
-    assert steps["app.delivery.verify"]["execution"] == "host"
+    assert steps["projection.runtime-env.verify"]["execution"] == "host"
+    assert steps["service.verify"]["execution"] == "host"
 
 
 def test_default_pytest_excludes_live_gate_marker() -> None:

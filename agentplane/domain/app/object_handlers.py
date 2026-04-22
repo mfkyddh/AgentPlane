@@ -260,6 +260,8 @@ def refresh_app_ledger(repo_root: Path, target: str, write: bool) -> dict[str, A
     inventory_pointer = f"inventory/servers/{target}/ledgers/apps.json"
     json_payload = {"target": target, "count": len(payload["items"]), "items": payload["items"]}
     markdown_lines = [f"# {target} apps ledger", ""]
+    if not payload["items"]:
+        markdown_lines.append("- no active app catalog object")
     for item in payload["items"]:
         markdown_lines.append(
             f"- `{item['app']}` / `{item.get('control_plane', '-')}` / `{item.get('public_url', '-')}`"

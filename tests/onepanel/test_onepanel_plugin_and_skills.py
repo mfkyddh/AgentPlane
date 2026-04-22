@@ -242,7 +242,7 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
             ),
             "onepanel-firewall-ops": (
                 "--repo-root <repo-root>",
-                "onepanel --env <target> ledger refresh --repo-root <repo-root> --write --json",
+                "projection ledger refresh --target <target> --repo-root <repo-root> --write --json",
             ),
             "onepanel-website-ops": (
                 "--repo-root <repo-root>",

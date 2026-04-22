@@ -6,9 +6,5 @@
 
 - `1panel`
   status: `Running`
-- `newapi`
-  status: `Running`
-- `pay`
-  status: `Running`
 - `token`
   status: `Running`

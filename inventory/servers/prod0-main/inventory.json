@@ -66,10 +66,7 @@
         "postgres18-prod",
         "redis7-prod",
         "minio-prod",
-        "newapi-prod",
-        "sub2api-prod",
-        "sub2apipay-prod",
-        "chatgpt-register-v2-prod"
+        "sub2api-prod"
       ]
     }
   ],
@@ -153,24 +150,6 @@
         "status": "Running"
       },
       {
-        "alias": "newapi",
-        "primary_domain": "newapi.zzzai.cloud",
-        "public_url": "https://newapi.zzzai.cloud:8443",
-        "proxy": "http://127.0.0.1:3000",
-        "config_file": "/data/1panel/www/conf.d/newapi.conf",
-        "ssl_id": 4,
-        "status": "Running"
-      },
-      {
-        "alias": "pay",
-        "primary_domain": "pay.zzzai.cloud",
-        "public_url": "https://pay.zzzai.cloud:8443/pay",
-        "proxy": "http://127.0.0.1:18091",
-        "config_file": "/data/1panel/www/conf.d/pay.conf",
-        "ssl_id": 4,
-        "status": "Running"
-      },
-      {
         "alias": "token",
         "primary_domain": "token.zzzai.cloud",
         "public_url": "https://token.zzzai.cloud:8443",
@@ -180,77 +159,6 @@
         "status": "Running"
       }
     ],
-    "newapi": {
-      "control_plane": "compose",
-      "container_name": "newapi-prod",
-      "depends_on_containers": [
-        "postgres18-prod",
-        "redis7-prod"
-      ],
-      "runtime_root": "/data/newapi/app/current",
-      "config_files": [
-        "/opt/agentplane/secrets/services/newapi.prod0.env"
-      ],
-      "data_dir": "/data/newapi/data",
-      "host_binding": "127.0.0.1:3000",
-      "container_port": 3000,
-      "public_url": "https://newapi.zzzai.cloud:8443",
-      "rollback_entry": {
-        "kind": "none",
-        "note": "当前运行已切到 compose，回退需手工恢复上一镜像"
-      },
-      "docker_networks": [
-        "zqf_network"
-      ],
-      "app_resource_summary": {
-        "postgres": {
-          "database": "newapi_prod0",
-          "user": "newapi_prod0",
-          "secret_file": "secrets/hosts/prod0-main/apps/newapi/resources/postgres.env"
-        },
-        "redis": {
-          "db": 2,
-          "key_prefix": "newapi:",
-          "secret_file": "secrets/hosts/prod0-main/apps/newapi/resources/redis.env"
-        },
-        "minio": {
-          "bucket": "prod0-newapi",
-          "access_key": "newapi_prod0",
-          "policy_name": "prod0-newapi-rw",
-          "policy_scope": "bucket-only",
-          "isolation_level": "bucket-scoped-rw",
-          "secret_file": "secrets/hosts/prod0-main/apps/newapi/resources/minio.env"
-        }
-      }
-    },
-    "sub2apipay": {
-      "control_plane": "compose",
-      "container_name": "sub2apipay-prod",
-      "depends_on_containers": [
-        "postgres18-prod"
-      ],
-      "runtime_root": "/data/sub2apipay/app/current",
-      "config_files": [
-        "/data/sub2apipay/config/sub2apipay-prod.env"
-      ],
-      "data_dir": "/data/sub2apipay/data",
-      "host_binding": "127.0.0.1:18091",
-      "container_port": 3000,
-      "public_url": "https://pay.zzzai.cloud:8443",
-      "rollback_entry": {
-        "kind": "none"
-      },
-      "docker_networks": [
-        "zqf_network"
-      ],
-      "app_resource_summary": {
-        "postgres": {
-          "database": "sub2apipay",
-          "user": "sub2apipay_prod0",
-          "secret_file": "secrets/hosts/prod0-main/apps/sub2apipay/resources/postgres.env"
-        }
-      }
-    },
     "sub2api": {
       "control_plane": "compose",
       "container_name": "sub2api-prod",
@@ -292,28 +200,6 @@
           "secret_file": "secrets/hosts/prod0-main/apps/sub2api/resources/minio.env"
         }
       }
-    },
-    "chatgpt-register-v2": {
-      "control_plane": "compose",
-      "container_name": "chatgpt-register-v2-prod",
-      "depends_on_containers": [
-        "sub2api-prod"
-      ],
-      "runtime_root": "/data/chatgpt-register-v2/app/current",
-      "config_files": [
-        "/opt/agentplane/secrets/services/chatgpt-register-v2.prod0.env"
-      ],
-      "data_dir": "/data/chatgpt-register-v2/data",
-      "host_binding": "127.0.0.1:18081",
-      "container_port": 18081,
-      "public_url": "internal://127.0.0.1:18081",
-      "rollback_entry": {
-        "kind": "none",
-        "note": "旧版 chatgpt-register-v2-prod 容器与 /data/apps/chatgpt-register-v2-prod 已在切换前清理，不保留自动回滚入口。"
-      },
-      "docker_networks": [
-        "zqf_network"
-      ]
     }
   },
   "audit": {
@@ -326,8 +212,7 @@
     "host_first_path": "secrets/hosts/prod0-main",
     "service_envs": [
       "secrets/services/onepanel-api.env",
-      "secrets/services/sub2api.prod0.env",
-      "secrets/services/sub2apipay.prod0.env"
+      "secrets/services/sub2api.prod0.env"
     ],
     "app_resources_prefix": "secrets/hosts/prod0-main/apps/<app>/resources",
     "notes": "主机级 secrets 映射至 host-first 路径；服务 env 仍在 secrets/services，应用资源凭据写入 secrets/hosts/prod0-main/apps/<app>/resources/，避免丢失验证痕迹。"
@@ -433,23 +318,19 @@
     "prod0-main 当前公网 HTTPS 正式入口统一由 1panel-openresty-prod 在 8443 承载。",
     "公网网站必须先创建为 1Panel 网站对象，再由 OpenResty 对外暴露。",
     "正式公网证书统一由 /data/1panel/www/certs 提供，1Panel 托管证书自动续签后 reload OpenResty。",
-    "newapi-prod 当前只挂载 zqf_network，并通过 1Panel 网站对象 newapi 暴露到 8443。",
-    "newapi 与 sub2api 当前共享 redis7-prod 的 runtime 凭据，租户区分依赖 Redis DB 级逻辑分区与 key prefix。",
     "上述 Redis 分区仅是逻辑隔离，不属于强隔离，也不把 per-app Redis user 视为活跃运行时依赖。",
-    "sub2api 与 sub2apipay 的目录已收口到 /data，并保留兼容符号链接。",
-    "sub2apipay 已切换到 AgentPlane compose 为唯一正式控制面，不再登记 systemd rollback entry。",
     "历史迁移端口不属于正式公网入口。",
     "历史 legacy 入口组件不属于该主机正式公网链路。"
   ],
   "object_ledgers": {
-    "generated_at": "2026-04-10T06:39:10.665075+00:00",
+    "generated_at": "2026-04-22T10:57:19.196981+00:00",
     "counts": {
-      "websites": 4,
-      "containers": 8,
+      "websites": 2,
+      "containers": 5,
       "firewall": 1,
       "cronjobs": 4,
-      "apps": 1,
-      "app_resources": 3,
+      "apps": 0,
+      "app_resources": 1,
       "automations": 4
     },
     "ledgers": {
@@ -461,6 +342,14 @@
       "app_resources": "inventory/servers/prod0-main/ledgers/app_resources.json",
       "automations": "inventory/servers/prod0-main/ledgers/automations.json"
     },
-    "last_operations": {}
+    "last_operations": {
+      "panel": {
+        "action": "verify",
+        "result": "verified",
+        "op_id": "onepanel-panel-20260421T081054Z-7098d2d6",
+        "timestamp": "2026-04-21T08:10:54.184774+00:00",
+        "dry_run": false
+      }
+    }
   }
 }

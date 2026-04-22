@@ -17,7 +17,7 @@
 
 - AgentPlane Windows 控制面源码：`<repo-root>`
 - AgentPlane WSL 目标侧 live checkout：`<repo-root>`
-- `sub2api` 应用仓库：`<app-repo-root>`
+- 源码交付应用仓库：`<app-repo-root>`（当前 active catalog 为空，重新 onboard 后才适用）
 
 ### 这意味着什么
 

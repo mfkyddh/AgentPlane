@@ -372,19 +372,19 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             self.assertIn("ubuntu@prod0-main", commands)
             self.assertIn("sudo bash -lc", commands)
 
-    def test_deploy_dry_run_stops_1panel_app_control_plane_for_newapi(self) -> None:
+    def test_deploy_dry_run_stops_1panel_app_control_plane_for_sampleapi(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory(root)
-            write_newapi_tenant_files(root)
-            contract_file = write_newapi_contract(root)
-            write_newapi_compose_templates(root)
+            write_sampleapi_tenant_files(root)
+            contract_file = write_sampleapi_contract(root)
+            write_sampleapi_compose_templates(root)
 
             result = run_app_delivery_cli(
                 "deploy",
                 repo_root=root,
-                app="newapi",
-                extra_args=("--image-ref", "newapi-prod:test", "--dry-run"),
+                app="sampleapi",
+                extra_args=("--image-ref", "sampleapi-prod:test", "--dry-run"),
             )
 
             self.assertEqual(result.returncode, 0, msg=result.stderr)
@@ -393,18 +393,18 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             self.assertIn("uv run python -m agentplane.providers.onepanel_transition --target prod0-main app --operate stop --install-id 3", commands)
             self.assertNotIn("systemctl stop", commands)
 
-    def test_rollback_dry_run_starts_1panel_app_control_plane_for_newapi(self) -> None:
+    def test_rollback_dry_run_starts_1panel_app_control_plane_for_sampleapi(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory(root)
-            write_newapi_tenant_files(root)
-            contract_file = write_newapi_contract(root)
-            write_newapi_compose_templates(root)
+            write_sampleapi_tenant_files(root)
+            contract_file = write_sampleapi_contract(root)
+            write_sampleapi_compose_templates(root)
 
             result = run_app_delivery_cli(
                 "rollback",
                 repo_root=root,
-                app="newapi",
+                app="sampleapi",
                 extra_args=("--dry-run",),
             )
 
@@ -418,30 +418,30 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory(root)
-            write_newapi_tenant_files(root)
-            contract_file = write_newapi_contract(
+            write_sampleapi_tenant_files(root)
+            contract_file = write_sampleapi_contract(
                 root,
                 rollback_entry={
                     "kind": "1panel-compose",
-                    "project_name": "sub2apipay-prod",
-                    "container_name": "sub2apipay-prod",
-                    "project_path": "/data/1panel/docker/compose/sub2apipay-prod",
-                    "compose_file": "/data/1panel/docker/compose/sub2apipay-prod/docker-compose.yml",
+                    "project_name": "samplepay-prod",
+                    "container_name": "samplepay-prod",
+                    "project_path": "/data/1panel/docker/compose/samplepay-prod",
+                    "compose_file": "/data/1panel/docker/compose/samplepay-prod/docker-compose.yml",
                 },
             )
-            write_newapi_compose_templates(root)
+            write_sampleapi_compose_templates(root)
 
             result = run_app_delivery_cli(
                 "deploy",
                 repo_root=root,
-                app="newapi",
-                extra_args=("--image-ref", "newapi-prod:test", "--dry-run"),
+                app="sampleapi",
+                extra_args=("--image-ref", "sampleapi-prod:test", "--dry-run"),
             )
 
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             commands = "\n".join(json.loads(result.stdout)["payload"]["commands"])
             self.assertIn(
-                "uv run python -m agentplane.providers.onepanel_transition --target prod0-main project --name sub2apipay-prod --operate stop",
+                "uv run python -m agentplane.providers.onepanel_transition --target prod0-main project --name samplepay-prod --operate stop",
                 commands,
             )
             self.assertNotIn("systemctl stop", commands)
@@ -450,30 +450,30 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory(root)
-            write_newapi_tenant_files(root)
-            contract_file = write_newapi_contract(
+            write_sampleapi_tenant_files(root)
+            contract_file = write_sampleapi_contract(
                 root,
                 rollback_entry={
                     "kind": "1panel-compose",
-                    "project_name": "sub2apipay-prod",
-                    "container_name": "sub2apipay-prod",
-                    "project_path": "/data/1panel/docker/compose/sub2apipay-prod",
-                    "compose_file": "/data/1panel/docker/compose/sub2apipay-prod/docker-compose.yml",
+                    "project_name": "samplepay-prod",
+                    "container_name": "samplepay-prod",
+                    "project_path": "/data/1panel/docker/compose/samplepay-prod",
+                    "compose_file": "/data/1panel/docker/compose/samplepay-prod/docker-compose.yml",
                 },
             )
-            write_newapi_compose_templates(root)
+            write_sampleapi_compose_templates(root)
 
             result = run_app_delivery_cli(
                 "rollback",
                 repo_root=root,
-                app="newapi",
+                app="sampleapi",
                 extra_args=("--dry-run",),
             )
 
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             commands = "\n".join(json.loads(result.stdout)["payload"]["commands"])
             self.assertIn(
-                "uv run python -m agentplane.providers.onepanel_transition --target prod0-main project --name sub2apipay-prod --operate up",
+                "uv run python -m agentplane.providers.onepanel_transition --target prod0-main project --name samplepay-prod --operate up",
                 commands,
             )
             self.assertNotIn("systemctl start", commands)
@@ -482,20 +482,20 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory(root, include_managed_bridge_networks=True)
-            write_newapi_tenant_files(root)
-            write_newapi_compose_templates(root)
-            contract_file = write_newapi_contract(
+            write_sampleapi_tenant_files(root)
+            write_sampleapi_compose_templates(root)
+            contract_file = write_sampleapi_contract(
                 root,
                 rollback_entry={
                     "kind": "1panel-compose",
-                    "project_name": "sub2apipay-prod",
-                    "container_name": "sub2apipay-prod",
-                    "project_path": "/data/1panel/docker/compose/sub2apipay-prod",
-                    "compose_file": "/data/1panel/docker/compose/sub2apipay-prod/docker-compose.yml",
+                    "project_name": "samplepay-prod",
+                    "container_name": "samplepay-prod",
+                    "project_path": "/data/1panel/docker/compose/samplepay-prod",
+                    "compose_file": "/data/1panel/docker/compose/samplepay-prod/docker-compose.yml",
                 },
             )
             (root / "secrets" / "services").mkdir(parents=True, exist_ok=True)
-            (root / "secrets" / "services" / "newapi.prod0.env").write_text("PORT=3000\n", encoding="utf-8")
+            (root / "secrets" / "services" / "sampleapi.prod0.env").write_text("PORT=3000\n", encoding="utf-8")
             (root / "secrets" / "ssh").mkdir(parents=True, exist_ok=True)
             (root / "secrets" / "ssh" / "config").write_text("Host prod0-main\n", encoding="utf-8")
             bin_dir = root / "bin"
@@ -518,8 +518,8 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             result = run_app_delivery_cli(
                 "deploy",
                 repo_root=root,
-                app="newapi",
-                extra_args=("--image-ref", "newapi-prod:test", "--execute"),
+                app="sampleapi",
+                extra_args=("--image-ref", "sampleapi-prod:test", "--execute"),
                 env_overrides={
                     "PATH": f"{bin_dir}:{os.environ['PATH']}",
                     "FAKE_CMD_LOG": str(log_file),
@@ -532,7 +532,7 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             self.assertTrue(payload["ok"])
             log_text = log_file.read_text(encoding="utf-8")
             self.assertIn(
-                "uv run python -m agentplane.providers.onepanel_transition --target prod0-main project --name sub2apipay-prod --operate stop",
+                "uv run python -m agentplane.providers.onepanel_transition --target prod0-main project --name samplepay-prod --operate stop",
                 log_text,
             )
             self.assertNotIn("systemctl stop", log_text)
@@ -541,16 +541,16 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory(root)
-            write_newapi_tenant_files(root)
-            write_newapi_compose_templates(root)
-            contract_file = write_newapi_contract(
+            write_sampleapi_tenant_files(root)
+            write_sampleapi_compose_templates(root)
+            contract_file = write_sampleapi_contract(
                 root,
                 rollback_entry={
                     "kind": "1panel-compose",
-                    "project_name": "sub2apipay-prod",
-                    "container_name": "sub2apipay-prod",
-                    "project_path": "/data/1panel/docker/compose/sub2apipay-prod",
-                    "compose_file": "/data/1panel/docker/compose/sub2apipay-prod/docker-compose.yml",
+                    "project_name": "samplepay-prod",
+                    "container_name": "samplepay-prod",
+                    "project_path": "/data/1panel/docker/compose/samplepay-prod",
+                    "compose_file": "/data/1panel/docker/compose/samplepay-prod/docker-compose.yml",
                 },
             )
             (root / "secrets" / "ssh").mkdir(parents=True, exist_ok=True)
@@ -572,7 +572,7 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             result = run_app_delivery_cli(
                 "rollback",
                 repo_root=root,
-                app="newapi",
+                app="sampleapi",
                 extra_args=("--execute",),
                 env_overrides={
                     "PATH": f"{bin_dir}:{os.environ['PATH']}",
@@ -585,7 +585,7 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             self.assertTrue(payload["ok"])
             log_text = log_file.read_text(encoding="utf-8")
             self.assertIn(
-                "uv run python -m agentplane.providers.onepanel_transition --target prod0-main project --name sub2apipay-prod --operate up",
+                "uv run python -m agentplane.providers.onepanel_transition --target prod0-main project --name samplepay-prod --operate up",
                 log_text,
             )
             self.assertNotIn("systemctl start", log_text)
@@ -630,21 +630,21 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory(root)
-            write_newapi_tenant_files(root)
-            contract_file = write_newapi_contract(
+            write_sampleapi_tenant_files(root)
+            contract_file = write_sampleapi_contract(
                 root,
                 rollback_entry={
                     "kind": "none",
                     "note": "no previous control plane retained; rollback requires manual image restore",
                 },
             )
-            write_newapi_compose_templates(root)
+            write_sampleapi_compose_templates(root)
 
             result = run_app_delivery_cli(
                 "deploy",
                 repo_root=root,
-                app="newapi",
-                extra_args=("--image-ref", "newapi-prod:test", "--dry-run"),
+                app="sampleapi",
+                extra_args=("--image-ref", "sampleapi-prod:test", "--dry-run"),
             )
 
             self.assertEqual(result.returncode, 0, msg=result.stderr)
@@ -659,20 +659,20 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory(root)
-            write_newapi_tenant_files(root)
-            contract_file = write_newapi_contract(
+            write_sampleapi_tenant_files(root)
+            contract_file = write_sampleapi_contract(
                 root,
                 rollback_entry={
                     "kind": "none",
                     "note": "no previous control plane retained; rollback requires manual image restore",
                 },
             )
-            write_newapi_compose_templates(root)
+            write_sampleapi_compose_templates(root)
 
             result = run_app_delivery_cli(
                 "rollback",
                 repo_root=root,
-                app="newapi",
+                app="sampleapi",
                 extra_args=("--dry-run",),
             )
 

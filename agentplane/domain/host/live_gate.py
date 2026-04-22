@@ -109,17 +109,14 @@ def _wsl_steps(repo_root: Path, *, app: str, projection_profile: str) -> list[Li
             capabilities=("uv", "docker"),
         ),
         LiveGateStep(
-            key="app.object.verify",
-            argv=_cli(repo_root, "app", "object", "verify", "--target", "wsl", "--app", app),
+            key="projection.runtime-env.verify",
+            argv=_cli(repo_root, "projection", "runtime-env", "verify", "--target", "wsl", "--app", app),
             cwd=repo_root,
             capabilities=("uv",),
         ),
         LiveGateStep(
-            key="app.delivery.verify",
-            argv=(
-                *_cli(repo_root, "app", "delivery", "verify", "--target", "wsl", "--app", app),
-                "--execute",
-            ),
+            key="service.verify",
+            argv=_cli(repo_root, "service", "verify", "--target", "wsl", "--name", app),
             cwd=repo_root,
             capabilities=("uv", "docker"),
             timeout=600,
@@ -142,17 +139,14 @@ def _ssh_target_steps(repo_root: Path, *, target: str, app: str) -> list[LiveGat
             capabilities=("uv", "ssh", "docker"),
         ),
         LiveGateStep(
-            key="app.object.verify",
-            argv=_cli(repo_root, "app", "object", "verify", "--target", target, "--app", app),
+            key="projection.runtime-env.verify",
+            argv=_cli(repo_root, "projection", "runtime-env", "verify", "--target", target, "--app", app),
             cwd=repo_root,
             capabilities=("uv", "ssh"),
         ),
         LiveGateStep(
-            key="app.delivery.verify",
-            argv=(
-                *_cli(repo_root, "app", "delivery", "verify", "--target", target, "--app", app),
-                "--execute",
-            ),
+            key="service.verify",
+            argv=_cli(repo_root, "service", "verify", "--target", target, "--name", app),
             cwd=repo_root,
             capabilities=("uv", "ssh", "docker"),
             timeout=600,

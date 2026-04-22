@@ -276,7 +276,7 @@ class AppResourceCliTests(unittest.TestCase):
     def test_app_resource_get_maps_legacy_registry_key_to_catalog_owner_app(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            app_id = "chatgpt-register-v2"
+            app_id = "sample-register-v2"
             service_key = "chatgpt-register"
             write_catalog(root, app=app_id, service_key=service_key)
             write_inventory(root)

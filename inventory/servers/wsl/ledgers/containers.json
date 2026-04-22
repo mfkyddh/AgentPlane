@@ -1,10 +1,6 @@
 {
   "items": [
     {
-      "container_name": "chatgpt-register-v2-dev",
-      "service_key": "chatgpt-register-v2"
-    },
-    {
       "control_plane": "compose",
       "container_name": "sub2api-dev",
       "depends_on_containers": [
@@ -49,5 +45,5 @@
       "service_key": "redis"
     }
   ],
-  "count": 4
+  "count": 3
 }

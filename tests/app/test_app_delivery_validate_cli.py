@@ -72,17 +72,17 @@ class TestAppDeliveryValidateCliTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory(root)
-            write_newapi_tenant_files(root)
-            contract_file = write_newapi_contract(
+            write_sampleapi_tenant_files(root)
+            contract_file = write_sampleapi_contract(
                 root,
                 rollback_entry={
                     "kind": "1panel-compose",
-                    "container_name": "sub2apipay-prod",
-                    "project_path": "/data/1panel/docker/compose/sub2apipay-prod/docker-compose.yml",
+                    "container_name": "samplepay-prod",
+                    "project_path": "/data/1panel/docker/compose/samplepay-prod/docker-compose.yml",
                 },
             )
 
-            result = run_app_delivery_cli("validate-contract", repo_root=root, app="newapi")
+            result = run_app_delivery_cli("validate-contract", repo_root=root, app="sampleapi")
 
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("rollback.previous_control_plane.kind=1panel-compose 缺少 project_name", result.stderr)
@@ -91,19 +91,19 @@ class TestAppDeliveryValidateCliTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory(root)
-            write_newapi_tenant_files(root)
-            contract_file = write_newapi_contract(
+            write_sampleapi_tenant_files(root)
+            contract_file = write_sampleapi_contract(
                 root,
                 rollback_entry={
                     "kind": "1panel-compose",
-                    "project_name": "sub2apipay-prod",
-                    "container_name": "sub2apipay-prod",
-                    "project_path": "/data/1panel/docker/compose/sub2apipay-prod",
-                    "compose_file": "/data/1panel/docker/compose/sub2apipay-prod/docker-compose.yml",
+                    "project_name": "samplepay-prod",
+                    "container_name": "samplepay-prod",
+                    "project_path": "/data/1panel/docker/compose/samplepay-prod",
+                    "compose_file": "/data/1panel/docker/compose/samplepay-prod/docker-compose.yml",
                 },
             )
 
-            result = run_app_delivery_cli("validate-contract", repo_root=root, app="newapi")
+            result = run_app_delivery_cli("validate-contract", repo_root=root, app="sampleapi")
 
             self.assertEqual(result.returncode, 0, msg=result.stderr)
 
@@ -193,18 +193,18 @@ class TestAppDeliveryValidateCliTests(unittest.TestCase):
                 public_sites=[],
             )
             payload = yaml.safe_load(contract_file.read_text(encoding="utf-8"))
-            payload["app_id"] = "chatgpt-register-v2"
-            payload["artifact"]["image_name"] = "chatgpt-register-v2-prod"
-            payload["runtime"]["container_name"] = "chatgpt-register-v2-prod"
+            payload["app_id"] = "sample-register-v2"
+            payload["artifact"]["image_name"] = "sample-register-v2-prod"
+            payload["runtime"]["container_name"] = "sample-register-v2-prod"
             payload["runtime"]["container_port"] = 18081
             payload["runtime"]["host_binding"] = "127.0.0.1:18081"
             payload["runtime"]["healthcheck"] = {"path": "/healthz", "expected_status": 200}
-            payload["data"]["mounts"] = [{"host_path": "/data/chatgpt-register-v2/data", "container_path": "/data"}]
-            payload["inventory"]["service_key"] = "chatgpt-register-v2"
+            payload["data"]["mounts"] = [{"host_path": "/data/sample-register-v2/data", "container_path": "/data"}]
+            payload["inventory"]["service_key"] = "sample-register-v2"
             contract_file.write_text(yaml.safe_dump(payload, sort_keys=False, allow_unicode=False), encoding="utf-8")
-            sync_app_catalog_for_contract(root, contract_file=contract_file, app="chatgpt-register-v2", service_key="chatgpt-register-v2")
+            sync_app_catalog_for_contract(root, contract_file=contract_file, app="sample-register-v2", service_key="sample-register-v2")
 
-            result = run_app_delivery_cli("validate-contract", repo_root=root, app="chatgpt-register-v2")
+            result = run_app_delivery_cli("validate-contract", repo_root=root, app="sample-register-v2")
 
             self.assertEqual(result.returncode, 0, msg=result.stderr)
 

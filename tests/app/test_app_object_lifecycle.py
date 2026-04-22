@@ -41,10 +41,10 @@ class AppObjectLifecycleCatalogTests(unittest.TestCase):
             )
 
             entry = AppCatalogEntry(
-                app="newapi",
+                app="sampleapi",
                 repo_name="new-api",
                 repo_root=Path("/work/new-api"),
-                service_key="newapi",
+                service_key="sampleapi",
                 contracts={"prod0-main": "deploy/agentplane/contract.yaml"},
             )
 
@@ -52,8 +52,8 @@ class AppObjectLifecycleCatalogTests(unittest.TestCase):
             self.assertTrue(result.changed)
             payload = _read_catalog(repo_root)
             apps = payload["apps"]
-            self.assertEqual(["newapi", "sub2api"], [item["app"] for item in apps])
-            self.assertEqual("newapi", apps[0]["service_key"])
+            self.assertEqual(["sampleapi", "sub2api"], [item["app"] for item in apps])
+            self.assertEqual("sampleapi", apps[0]["service_key"])
 
     def test_onboard_rejects_service_key_alias(self) -> None:
         with tempfile.TemporaryDirectory(prefix="oplinux-app-catalog-") as tmp:
@@ -61,7 +61,7 @@ class AppObjectLifecycleCatalogTests(unittest.TestCase):
             _write_catalog(repo_root, {"apps": []})
 
             entry = AppCatalogEntry(
-                app="newapi",
+                app="sampleapi",
                 repo_name="new-api",
                 repo_root=Path("/work/new-api"),
                 service_key="new-api",
@@ -78,17 +78,17 @@ class AppObjectLifecycleCatalogTests(unittest.TestCase):
                 {
                     "apps": [
                         {
-                            "app": "newapi",
+                            "app": "sampleapi",
                             "repo_name": "new-api",
                             "repo_root": "/work/new-api",
-                            "service_key": "newapi",
+                            "service_key": "sampleapi",
                             "contracts": {"prod0-main": "deploy/agentplane/contract.yaml"},
                         }
                     ]
                 },
             )
 
-            result = offboard_catalog_entry(repo_root, app_id="newapi", write=True)
+            result = offboard_catalog_entry(repo_root, app_id="sampleapi", write=True)
             self.assertTrue(result.changed)
             payload = _read_catalog(repo_root)
             self.assertEqual([], payload["apps"])

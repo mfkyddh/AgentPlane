@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import os
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
+from agentplane.runtime.wsl_bridge import windows_path_to_wsl_posix
 from agentplane.ssh import resolve_ssh_target
 
 
@@ -15,12 +17,14 @@ class CommandSpec:
 
 def remote_repo_root(target: str, repo_root: Path) -> str:
     if target == "wsl":
-        return str(repo_root)
+        return windows_path_to_wsl_posix(repo_root) or str(repo_root)
     return "/opt/agentplane"
 
 
 def shell_command_spec(repo_root: Path, target: str, command: str) -> CommandSpec:
     if target == "wsl":
+        if os.name == "nt":
+            return CommandSpec(argv=["wsl.exe", "-e", "bash", "-lc", command], display=f"wsl.exe -e bash -lc {command}")
         return CommandSpec(argv=["bash", "-lc", command], display=command)
     ssh_target = resolve_ssh_target(repo_root, target)
     return CommandSpec(argv=ssh_target.ssh_args_for_shell(command), display=ssh_target.display_ssh_command(command))

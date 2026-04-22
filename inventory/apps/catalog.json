@@ -1,15 +1,3 @@
 {
-  "apps": [
-    {
-      "app": "sub2api",
-      "repo_name": "sub2api",
-      "repo_ref": "apps/sub2api",
-      "service_key": "sub2api",
-      "contracts": {
-        "wsl": "apps/sub2api/contracts/wsl",
-        "prod0-main": "apps/sub2api/contracts/prod0-main",
-        "prod2-main": "apps/sub2api/contracts/prod2-main"
-      }
-    }
-  ]
+  "apps": []
 }

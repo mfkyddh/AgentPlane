@@ -1,13 +1,5 @@
 {
   "target": "prod0-main",
-  "count": 1,
-  "items": [
-    {
-      "app": "sub2api",
-      "service_key": "sub2api",
-      "canonical_ref": "apps/sub2api/contracts/prod0-main",
-      "control_plane": "compose",
-      "public_url": "https://token.zzzai.cloud:8443"
-    }
-  ]
+  "count": 0,
+  "items": []
 }

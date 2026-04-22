@@ -10,13 +10,6 @@
 
 ## 应用控制面
 
-- `chatgpt-register-v2-prod2`：`compose` / `chatgpt-register-v2-prod2` / `internal://127.0.0.1:18082`
-- 依赖容器：`sub2api-prod`
-- `newapi`：`compose` / `newapi-prod` / `https://newapi.zzzai.fun`
-- 依赖容器：`postgres18-prod, redis7-prod, minio-prod`
-- app_resource_summary.postgres：`{"database": "newapi_prod2", "secret_file": "secrets/hosts/prod2-main/apps/newapi/resources/postgres.env", "user": "newapi_prod2"}`
-- app_resource_summary.redis：`{"db": 2, "key_prefix": "newapi:", "secret_file": "secrets/hosts/prod2-main/apps/newapi/resources/redis.env"}`
-- app_resource_summary.minio：`{"access_key": "newapi_prod2", "bucket": "prod2-newapi", "isolation_level": "bucket-scoped-rw", "policy_name": "prod2-newapi-rw", "policy_scope": "bucket-only", "secret_file": "secrets/hosts/prod2-main/apps/newapi/resources/minio.env"}`
 - `relay-trojan`：`compose` / `relay-trojan-prod` / `-`
 - `sub2api`：`compose` / `sub2api-prod` / `https://token.zzzai.fun`
 - 依赖容器：`postgres18-prod, redis7-prod`
@@ -32,3 +25,24 @@
 - 机器真源：`inventory/servers/prod2-main/inventory.json`
 - 本摘要：`inventory/servers/prod2-main/README.md`
 - README 只保留非敏感摘要，不承载第二真源；脚本消费和对象细节以 JSON 为准。
+
+<!-- BEGIN AGENTPLANE_ONEPANEL_LEDGER -->
+## 1Panel 对象台帐投影
+
+- 生成时间：`2026-04-22T10:57:19.196950+00:00`
+- 刷新命令：`uv run python -m agentplane.cli projection ledger refresh --target prod2-main --repo-root <repo-root> --write`
+
+### 对象计数
+
+- `websites`: 2
+- `containers`: 7
+- `firewall`: 1
+- `cronjobs`: 4
+- `apps`: 0
+- `app_resources`: 1
+- `automations`: 4
+
+### 最近 CLI 动作
+
+- 无最近 onepanel CLI 记录。
+<!-- END AGENTPLANE_ONEPANEL_LEDGER -->

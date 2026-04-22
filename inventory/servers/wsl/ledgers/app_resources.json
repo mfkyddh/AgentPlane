@@ -16,24 +16,7 @@
         "secrets/hosts/wsl/apps/sub2api/resources/redis.env"
       ],
       "app_id": "sub2api"
-    },
-    {
-      "owner_app": "newapi",
-      "postgres": {
-        "database": "newapi_wsl",
-        "user": "newapi_wsl"
-      },
-      "redis": {
-        "user": "",
-        "db": 2,
-        "key_prefix": "newapi:wsl:"
-      },
-      "secret_files": [
-        "secrets/hosts/wsl/apps/newapi/resources/postgres.env",
-        "secrets/hosts/wsl/apps/newapi/resources/redis.env"
-      ],
-      "app_id": "newapi"
     }
   ],
-  "count": 2
+  "count": 1
 }

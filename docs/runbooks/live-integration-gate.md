@@ -57,19 +57,19 @@ uv run python -m agentplane.cli host live-gate run --profile prod0-main --repo-r
 - `host inventory wsl`。
 - `host audit wsl`。
 - `projection verification run --target wsl --profile wsl-fixture`。
-- `app object verify --target wsl --app <app>`。
-- `app delivery verify --target wsl --app <app> --execute`。
+- `projection runtime-env verify --target wsl --app <app>`。
+- `service verify --target wsl --name <app>`。
 
 `prod0-main` / `prod2-main` profile 覆盖：
 
 - SSH 可达性。
 - 远端 Docker daemon 基线。
-- `app object verify --target <target> --app <app>`。
-- `app delivery verify --target <target> --app <app> --execute`。
+- `projection runtime-env verify --target <target> --app <app>`。
+- `service verify --target <target> --name <app>`。
 
 ## 结果处理
 
 - 任一步失败即停止，返回已执行步骤的结构化结果。
 - live gate 失败不应通过修改默认 `pytest` 门禁掩盖。
-- 如果现场缺少 Docker、SSH、secrets 或应用仓库，直接记录阻塞原因；不要把真实现场验证混回默认门禁。
-- `app object verify` 与 `app delivery verify` 需要 catalog 指向的应用仓库合同文件真实存在；缺少应用仓库 checkout 时，live gate 应直接失败并记录缺口。
+- 如果现场缺少 Docker、SSH、secrets 或受管服务，直接记录阻塞原因；不要把真实现场验证混回默认门禁。
+- 当前 active live gate 不再依赖本地应用仓库 catalog；从源码交付的应用重新 onboard 后再进入 `app delivery` 门禁。

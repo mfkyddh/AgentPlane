@@ -24,15 +24,11 @@
 | 域名 | 当前反代目标 |
 | --- | --- |
 | `1panel.zzzai.cloud` | `http://127.0.0.1:2096` |
-| `newapi.zzzai.cloud` | `http://127.0.0.1:3000` |
-| `pay.zzzai.cloud` | `http://127.0.0.1:18091` |
 | `token.zzzai.cloud` | `http://127.0.0.1:18080` |
 
 1Panel 生成配置位于：
 
 - `/data/1panel/www/conf.d/1panel.conf`
-- `/data/1panel/www/conf.d/newapi.conf`
-- `/data/1panel/www/conf.d/pay.conf`
 - `/data/1panel/www/conf.d/token.conf`
 
 ## 正式主入口
@@ -97,11 +93,7 @@ docker exec 1panel-openresty-prod nginx -s reload
 ss -ltnp | grep ':8443'
 
 curl -skI https://1panel.zzzai.cloud:8443/0f0e8602e3
-curl -skI https://newapi.zzzai.cloud:8443/
-curl -skI https://pay.zzzai.cloud:8443/pay
 curl -skI https://token.zzzai.cloud:8443/
-curl -sS -o /tmp/newapi_models.out -w '%{http_code}\n' \
-  https://newapi.zzzai.cloud:8443/v1/models
 
 docker exec 1panel-openresty-prod nginx -T | grep ssl_certificate
 ```

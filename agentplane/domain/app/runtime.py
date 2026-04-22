@@ -160,7 +160,7 @@ def _remote_compose_filename(target: str) -> str:
 
 
 def _prod0_data_env_path(app_id: str, *, candidate_suffix: str | None = None) -> str | None:
-    if app_id not in {"sub2api", "sub2apipay"}:
+    if app_id != "sub2api":
         return None
     filename = f"{app_id}-prod"
     if candidate_suffix:

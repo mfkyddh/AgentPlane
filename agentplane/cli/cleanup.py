@@ -118,11 +118,6 @@ def build_cleanup_plan(repo_root: Path, target_env: str) -> dict[str, Any]:
                     "path": "/data/sub2api",
                     "reason": "将 sub2api 的数据与配置目录收口到 /data/sub2api。",
                 },
-                {
-                    "type": "normalize_sub2apipay_paths",
-                    "path": "/data/sub2apipay",
-                    "reason": "将 sub2apipay 的配置与运行目录收口到 /data/sub2apipay。",
-                },
             ]
         )
     else:

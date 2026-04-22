@@ -3,7 +3,7 @@
 ## 这页解决什么问题
 
 这不是第二真源，而是给人看的当前状态总览。  
-机器可消费的正式真源仍然是 `inventory/`、`tmp/operation-ledger/`、`secrets/` 和应用仓库合同。
+机器可消费的正式真源仍然是 `inventory/`、`tmp/operation-ledger/`、`secrets/` 和已登记应用合同；当前 active app catalog 为空。
 
 ## 2026-04-22 快照
 
@@ -13,7 +13,7 @@
 | --- | --- | --- |
 | 控制面源码根 | `<repo-root>` | 用户 fork / clone 后的唯一源码 checkout。 |
 | WSL backend 工作目录 | resolver 派生 | Windows 宿主通过 WSL bridge 访问同一 checkout；Linux/macOS 直接使用本地源码根。 |
-| 应用仓库 | `<app-repo-root>` | 由 app catalog、合同和 runbook 指向，不在模板文档中写死维护者路径。 |
+| 官方镜像应用 | `sub2api` | WSL 先从官方 `ghcr.io/wei-shaw/sub2api:latest` 拉取运行；生产切换另开窗口。 |
 
 ### 本轮重点样板
 
@@ -21,7 +21,7 @@
 | --- | --- | --- |
 | 本地/开发面 | `wsl` | 本地 fixture、回归验证、`sub2api-dev` 运行面。 |
 | 生产面 | `prod0-main` | 0 号生产机；`AgentPlane compose + 1Panel/OpenResty` 联合控制面。 |
-| 应用层 | `sub2api` | 当前唯一纳入本轮全面验证的应用层项目。 |
+| 应用层 | `sub2api` | 当前唯一保留的应用层运行面；本轮 WSL 改为官方镜像部署。 |
 
 ## 已验证结论
 
@@ -36,13 +36,13 @@
 
 - `host inventory wsl`、`host audit wsl` 已通过。
 - `projection verification run --target wsl --profile wsl-fixture` 已通过。
-- `sub2api` 在 `wsl` 上执行 `app object verify`、`app delivery verify --execute` 已通过。
+- `sub2api` 在 `wsl` 上通过 `projection runtime-env verify` 与 `service verify` 核对。
 - 当前 `sub2api` WSL 探针为 `http://127.0.0.1:18080/health`，本轮验证返回 `{"status":"ok"}`。
 
 ### prod0-main
 
 - `host remote bash prod0-main` 的 Windows 入口与实际 SSH backend 都可用。
-- `sub2api` 在 `prod0-main` 上执行 `app object verify`、`app delivery deploy --dry-run`、`app delivery verify --execute` 已通过。
+- `sub2api` 在 `prod0-main` 上仍保持现有生产运行面；官方镜像切换后续单独执行。
 - 本轮验证确认了两条健康链路：
   - 宿主机回环：`http://127.0.0.1:18080/health`
   - 公网入口：`https://token.zzzai.cloud:8443/health`
@@ -59,11 +59,11 @@
 
 ### 生产机环境侧
 
-1. `host audit prod0-main` 仍然认为 `sub2api`、`sub2apipay` 的 config file 没有收口到目标目录。  
+1. `host audit prod0-main` 仍然认为 `sub2api` 的 config file 没有收口到目标目录。
 当前 live path 仍指向 `/opt/agentplane/secrets/services/*.env`，而不是预期的 `/data/<app>/...` 语义。
 
-2. `host network audit prod0-main` 显示 `zqf_network` 缺少声明中的必需容器。  
-当前缺口是 `chatgpt-register-v2-prod` 和 `minio-prod`；要么修 live state，要么修 inventory/required container contract，不能长期漂着。
+2. `host network audit prod0-main` 显示 `zqf_network` 缺少声明中的必需容器。
+当前缺口以 `inventory/servers/prod0-main/inventory.json` 中声明为准；已退役应用不再作为 required container。
 
 ## 建议优先级
 
@@ -75,7 +75,7 @@
 
 ### 再改现场
 
-1. 统一 prod0 的 `sub2api` / `sub2apipay` config file 落点。
+1. 统一 prod0 的 `sub2api` config file 落点。
 2. 对齐 `zqf_network` 的 required container 声明与现场实际容器。
 3. 重新执行 `prod0-readonly` 验证，确认 1Panel 只读面恢复。
 

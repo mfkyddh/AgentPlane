@@ -405,18 +405,18 @@ def write_compose_template(root: Path) -> Path:
 
 
 def write_internal_worker_compose_template(root: Path) -> Path:
-    compose_file = root / "infra" / "compose" / "chatgpt-register-v2" / "docker-compose.prod0.yml"
+    compose_file = root / "infra" / "compose" / "sample-register-v2" / "docker-compose.prod0.yml"
     compose_file.parent.mkdir(parents=True, exist_ok=True)
     compose_file.write_text(
         yaml.safe_dump(
             {
                 "services": {
-                    "chatgpt-register-v2": {
-                        "image": "chatgpt-register-v2-prod:latest",
-                        "container_name": "chatgpt-register-v2-prod",
+                    "sample-register-v2": {
+                        "image": "sample-register-v2-prod:latest",
+                        "container_name": "sample-register-v2-prod",
                         "command": ["/app/.venv/bin/python", "chatgpt_register_v2.py", "--import-sub2api"],
-                        "env_file": ["../../../secrets/services/chatgpt-register-v2.prod0.env"],
-                        "volumes": ["/data/chatgpt-register-v2/data:/data"],
+                        "env_file": ["../../../secrets/services/sample-register-v2.prod0.env"],
+                        "volumes": ["/data/sample-register-v2/data:/data"],
                         "networks": ["zqf_network"],
                     }
                 },
@@ -607,7 +607,7 @@ def write_prod2_compose_template(root: Path) -> Path:
     return compose_file
 
 
-def write_newapi_contract(
+def write_sampleapi_contract(
     root: Path,
     *,
     target: str = "prod0-main",
@@ -619,15 +619,15 @@ def write_newapi_contract(
     packaging_backend: str = "native-posix",
     artifact_output_path: str = "dist/oplinux",
 ) -> Path:
-    contract_file = root / "newapi-contract.yaml"
+    contract_file = root / "sampleapi-contract.yaml"
     if target == "wsl":
         target_alias = "wsl"
-        postgres_database = "newapi_wsl"
-        postgres_user = "newapi_wsl"
-        minio_bucket = "wsl-newapi"
-        minio_access_key = "newapi_wsl"
-        minio_policy_name = "wsl-newapi-rw"
-        domain = "newapi.local"
+        postgres_database = "sampleapi_wsl"
+        postgres_user = "sampleapi_wsl"
+        minio_bucket = "wsl-sampleapi"
+        minio_access_key = "sampleapi_wsl"
+        minio_policy_name = "wsl-sampleapi-rw"
+        domain = "sampleapi.local"
         public_url = "http://127.0.0.1:3000"
         docs_path = "docs/AGENTPLANE_DEPLOYMENT.wsl.md"
         previous_control_plane = rollback_entry or {
@@ -636,13 +636,13 @@ def write_newapi_contract(
         }
     elif target == "prod2-main":
         target_alias = "prod2"
-        postgres_database = "newapi_prod2"
-        postgres_user = "newapi_prod2"
-        minio_bucket = "prod2-newapi"
-        minio_access_key = "newapi_prod2"
-        minio_policy_name = "prod2-newapi-rw"
-        domain = "newapi.zzzai.fun"
-        public_url = "https://newapi.zzzai.fun"
+        postgres_database = "sampleapi_prod2"
+        postgres_user = "sampleapi_prod2"
+        minio_bucket = "prod2-sampleapi"
+        minio_access_key = "sampleapi_prod2"
+        minio_policy_name = "prod2-sampleapi-rw"
+        domain = "sampleapi.zzzai.fun"
+        public_url = "https://sampleapi.zzzai.fun"
         docs_path = "docs/AGENTPLANE_DEPLOYMENT.prod2-main.md"
         previous_control_plane = rollback_entry or {
             "kind": "none",
@@ -650,19 +650,19 @@ def write_newapi_contract(
         }
     else:
         target_alias = "prod0"
-        postgres_database = "newapi_prod0"
-        postgres_user = "newapi_prod0"
-        minio_bucket = "prod0-newapi"
-        minio_access_key = "newapi_prod0"
-        minio_policy_name = "prod0-newapi-rw"
-        domain = "newapi.zzzai.cloud"
-        public_url = "https://newapi.zzzai.cloud:8443"
+        postgres_database = "sampleapi_prod0"
+        postgres_user = "sampleapi_prod0"
+        minio_bucket = "prod0-sampleapi"
+        minio_access_key = "sampleapi_prod0"
+        minio_policy_name = "prod0-sampleapi-rw"
+        domain = "sampleapi.zzzai.cloud"
+        public_url = "https://sampleapi.zzzai.cloud:8443"
         docs_path = "docs/AGENTPLANE_DEPLOYMENT.md"
         previous_control_plane = rollback_entry or {
             "kind": "1panel-app",
             "app_key": "new-api",
             "install_id": 3,
-            "container_name": "newapi-prod",
+            "container_name": "sampleapi-prod",
         }
 
     tenant_resources: dict[str, object] = {
@@ -670,13 +670,13 @@ def write_newapi_contract(
             "required": True,
             "database": postgres_database,
             "user": postgres_user,
-            "secret_file": resource_relative(target, "newapi", "postgres"),
+            "secret_file": resource_relative(target, "sampleapi", "postgres"),
         },
         "redis": {
             "required": True,
             "db": 2,
-            "key_prefix": "newapi:wsl:" if target == "wsl" else "newapi:",
-            "secret_file": resource_relative(target, "newapi", "redis"),
+            "key_prefix": "sampleapi:wsl:" if target == "wsl" else "sampleapi:",
+            "secret_file": resource_relative(target, "sampleapi", "redis"),
         },
     }
     if include_minio:
@@ -687,7 +687,7 @@ def write_newapi_contract(
             "policy_name": minio_policy_name,
             "policy_scope": "bucket-only",
             "isolation_level": "bucket-scoped-rw",
-            "secret_file": resource_relative(target, "newapi", "minio"),
+            "secret_file": resource_relative(target, "sampleapi", "minio"),
         }
 
     depends_on_containers = ["postgres18-prod", "redis7-prod"]
@@ -695,14 +695,14 @@ def write_newapi_contract(
         depends_on_containers.append("minio-prod")
 
     contract = {
-        "app_id": "newapi",
+        "app_id": "sampleapi",
         "runtime": {
             "kind": "compose",
-            "container_name": "newapi-prod",
+            "container_name": "sampleapi-prod",
             "container_port": 3000,
             "host_binding": "0.0.0.0:3000" if target == "wsl" else "127.0.0.1:3000",
             "healthcheck": {"path": "/api/status", "expected_status": 200},
-            "env_template": f"deploy/prod/newapi-{target_alias}.env.example",
+            "env_template": f"deploy/prod/sampleapi-{target_alias}.env.example",
         },
         "infra": {
             "depends_on_containers": depends_on_containers,
@@ -711,28 +711,28 @@ def write_newapi_contract(
         "ingress": {
             "public_sites": [
                 {
-                    "alias": "newapi",
+                    "alias": "sampleapi",
                     "domain": domain,
                     "public_url": public_url,
-                    "website_object": "newapi",
+                    "website_object": "sampleapi",
                 }
             ]
         },
         "data": {
             "mounts": [
-                {"host_path": "/data/newapi/data", "container_path": "/data"},
-                {"host_path": "/data/newapi/logs", "container_path": "/app/logs"},
+                {"host_path": "/data/sampleapi/data", "container_path": "/data"},
+                {"host_path": "/data/sampleapi/logs", "container_path": "/app/logs"},
             ]
         },
         "rollback": {"previous_control_plane": previous_control_plane},
         "docs": {"app_summary_file": docs_path},
-        "inventory": {"service_key": "newapi"},
+        "inventory": {"service_key": "sampleapi"},
     }
     contract.update(
         delivery_contract_sections(
             schema_version=schema_version,
             build_command=build_command,
-            image_name="newapi-prod",
+            image_name="sampleapi-prod",
             package_command=package_command,
             packaging_backend=packaging_backend,
             artifact_output_path=artifact_output_path,
@@ -746,36 +746,36 @@ def write_newapi_contract(
         contracts = {"prod2-main": contract_file.name}
     write_app_catalog_entry(
         _catalog_repo_root(root),
-        app="newapi",
+        app="sampleapi",
         repo_name=root.name,
         app_root=root,
-        service_key="newapi",
+        service_key="sampleapi",
         contracts=contracts,
     )
     return contract_file
 
 
-def write_newapi_tenant_files(root: Path, *, target: str = "prod0-main", include_minio: bool = False) -> None:
-    tenant_root = resource_root(root, target, "newapi")
+def write_sampleapi_tenant_files(root: Path, *, target: str = "prod0-main", include_minio: bool = False) -> None:
+    tenant_root = resource_root(root, target, "sampleapi")
     tenant_root.mkdir(parents=True, exist_ok=True)
     if target == "wsl":
-        postgres_database = "newapi_wsl"
-        postgres_user = "newapi_wsl"
-        minio_bucket = "wsl-newapi"
-        minio_access_key = "newapi_wsl"
-        redis_key_prefix = "newapi:wsl:"
+        postgres_database = "sampleapi_wsl"
+        postgres_user = "sampleapi_wsl"
+        minio_bucket = "wsl-sampleapi"
+        minio_access_key = "sampleapi_wsl"
+        redis_key_prefix = "sampleapi:wsl:"
     elif target == "prod2-main":
-        postgres_database = "newapi_prod2"
-        postgres_user = "newapi_prod2"
-        minio_bucket = "prod2-newapi"
-        minio_access_key = "newapi_prod2"
-        redis_key_prefix = "newapi:"
+        postgres_database = "sampleapi_prod2"
+        postgres_user = "sampleapi_prod2"
+        minio_bucket = "prod2-sampleapi"
+        minio_access_key = "sampleapi_prod2"
+        redis_key_prefix = "sampleapi:"
     else:
-        postgres_database = "newapi_prod0"
-        postgres_user = "newapi_prod0"
-        minio_bucket = "prod0-newapi"
-        minio_access_key = "newapi_prod0"
-        redis_key_prefix = "newapi:"
+        postgres_database = "sampleapi_prod0"
+        postgres_user = "sampleapi_prod0"
+        minio_bucket = "prod0-sampleapi"
+        minio_access_key = "sampleapi_prod0"
+        redis_key_prefix = "sampleapi:"
     (tenant_root / "postgres.env").write_text(
         f"PGDATABASE={postgres_database}\nPGUSER={postgres_user}\n",
         encoding="utf-8",
@@ -786,25 +786,25 @@ def write_newapi_tenant_files(root: Path, *, target: str = "prod0-main", include
     )
     if include_minio:
         (tenant_root / "minio.env").write_text(
-            f"S3_BUCKET={minio_bucket}\nS3_ACCESS_KEY={minio_access_key}\nS3_SECRET_KEY=newapi-s3-secret\n",
+            f"S3_BUCKET={minio_bucket}\nS3_ACCESS_KEY={minio_access_key}\nS3_SECRET_KEY=sampleapi-s3-secret\n",
             encoding="utf-8",
         )
 
 
-def write_newapi_compose_templates(root: Path, *, include_prod2: bool = False) -> None:
-    compose_root = root / "infra" / "compose" / "newapi"
+def write_sampleapi_compose_templates(root: Path, *, include_prod2: bool = False) -> None:
+    compose_root = root / "infra" / "compose" / "sampleapi"
     compose_root.mkdir(parents=True, exist_ok=True)
     wsl_file = compose_root / "docker-compose.wsl.yml"
     prod_file = compose_root / "docker-compose.prod0.yml"
     prod_payload = {
         "services": {
-            "newapi": {
-                "image": "newapi-prod:latest",
-                "container_name": "newapi-prod",
+            "sampleapi": {
+                "image": "sampleapi-prod:latest",
+                "container_name": "sampleapi-prod",
                 "command": ["--log-dir", "/app/logs"],
-                "env_file": ["../../../secrets/services/newapi.prod0.env"],
+                "env_file": ["../../../secrets/services/sampleapi.prod0.env"],
                 "ports": ["127.0.0.1:3000:3000"],
-                "volumes": ["/data/newapi/data:/data", "/data/newapi/logs:/app/logs"],
+                "volumes": ["/data/sampleapi/data:/data", "/data/sampleapi/logs:/app/logs"],
                 "networks": ["zqf_network"],
             }
         },
@@ -812,13 +812,13 @@ def write_newapi_compose_templates(root: Path, *, include_prod2: bool = False) -
     }
     wsl_payload = {
         "services": {
-            "newapi": {
-                "image": "newapi-prod:latest",
-                "container_name": "newapi-dev",
+            "sampleapi": {
+                "image": "sampleapi-prod:latest",
+                "container_name": "sampleapi-dev",
                 "command": ["--log-dir", "/app/logs"],
-                "env_file": ["../../../secrets/services/newapi.wsl.env"],
+                "env_file": ["../../../secrets/services/sampleapi.wsl.env"],
                 "ports": ["0.0.0.0:3000:3000"],
-                "volumes": ["/data/newapi/data:/data", "/data/newapi/logs:/app/logs"],
+                "volumes": ["/data/sampleapi/data:/data", "/data/sampleapi/logs:/app/logs"],
                 "networks": ["zqf_network"],
             }
         },
@@ -829,13 +829,13 @@ def write_newapi_compose_templates(root: Path, *, include_prod2: bool = False) -
     if include_prod2:
         prod2_payload = {
             "services": {
-                "newapi": {
-                    "image": "newapi-prod:latest",
-                    "container_name": "newapi-prod",
+                "sampleapi": {
+                    "image": "sampleapi-prod:latest",
+                    "container_name": "sampleapi-prod",
                     "command": ["--log-dir", "/app/logs"],
-                    "env_file": ["../../../secrets/services/newapi.prod2.env"],
+                    "env_file": ["../../../secrets/services/sampleapi.prod2.env"],
                     "ports": ["127.0.0.1:3000:3000"],
-                    "volumes": ["/data/newapi/data:/data", "/data/newapi/logs:/app/logs"],
+                    "volumes": ["/data/sampleapi/data:/data", "/data/sampleapi/logs:/app/logs"],
                     "networks": ["zqf_network"],
                 }
             },

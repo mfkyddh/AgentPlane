@@ -7,7 +7,7 @@
 
 - 控制面源码：`<repo-root>`，只保留一份 checkout。
 - WSL backend 工作目录：由 resolver 从 `<repo-root>` 派生。
-- 应用仓库：`<app-repo-root>`，由 catalog / contract 指向。
+- 官方镜像应用：`sub2api` 当前由本仓库 compose 管理，WSL 从官方镜像源拉取。
 
 文档、CLI 与 inventory 讨论的都是“角色”，不是要求用户维护两份源码。
 
@@ -15,7 +15,7 @@
 
 - `host inventory wsl`、`host audit wsl` 当前通过。
 - `projection verification run --target wsl --profile wsl-fixture` 当前通过。
-- `sub2api` 在 `wsl` 上的 `app object verify` 与 `app delivery verify --execute` 当前通过。
+- `sub2api` 在 `wsl` 上通过 `projection runtime-env verify` 与 `service verify` 核对。
 - 当前 `sub2api-dev` 的健康探针是 `http://127.0.0.1:18080/health`。
 
 ## 先看哪几个入口
@@ -80,8 +80,8 @@ uv run python -m agentplane.cli host live-gate run --profile wsl --repo-root <re
 
 ```bash
 cd <repo-root>
-uv run python -m agentplane.cli app object verify --target wsl --app sub2api --repo-root <repo-root>
-uv run python -m agentplane.cli app delivery verify --target wsl --app sub2api --repo-root <repo-root> --execute
+uv run python -m agentplane.cli projection runtime-env verify --target wsl --app sub2api --repo-root <repo-root>
+uv run python -m agentplane.cli service verify --target wsl --name sub2api --repo-root <repo-root>
 ```
 
 ## 写回顺序
@@ -98,5 +98,5 @@ WSL 目标状态变化后，仍然按这个顺序回写：
 
 - `wsl` 是本地 Linux target，不是第二份控制面源码。
 - 不要同时从 Windows 与 WSL 对同一个 checkout 执行包管理器写操作。
-- 任何自动化、fixture、app 验证都优先走 `uv run python -m agentplane.cli ...`。
-- 应用仓库真源由 catalog 和 contract 指向；控制面不复制第二份应用真源。
+- 任何自动化、fixture、service 验证都优先走 `uv run python -m agentplane.cli ...`。
+- 当前没有 active 本地应用仓库 catalog object；需要从源码交付的应用重新 onboard 后再进入 `app delivery`。

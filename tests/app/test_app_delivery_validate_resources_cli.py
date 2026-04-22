@@ -37,10 +37,10 @@ class TestAppDeliveryValidateResourcesCliTests(unittest.TestCase):
             write_app_resource_registry(root, baseline_app_resource_registry_payload())
             # Ensure the referenced secret files exist so the test is stable against
             # future validation ordering (we want to lock in the scope error).
-            bad_pg = resource_root(root, "prod0-main", "newapi") / "postgres.env"
+            bad_pg = resource_root(root, "prod0-main", "sampleapi") / "postgres.env"
             bad_pg.parent.mkdir(parents=True, exist_ok=True)
             bad_pg.write_text("PGDATABASE=sub2api_prod0\nPGUSER=sub2api_prod0\n", encoding="utf-8")
-            bad_redis = resource_root(root, "prod0-main", "newapi") / "redis.env"
+            bad_redis = resource_root(root, "prod0-main", "sampleapi") / "redis.env"
             bad_redis.parent.mkdir(parents=True, exist_ok=True)
             bad_redis.write_text("REDIS_USER=sub2api_prod0\nREDIS_DB=1\nREDIS_KEY_PREFIX=sub2api:\n", encoding="utf-8")
             contract_file = write_contract(
@@ -50,14 +50,14 @@ class TestAppDeliveryValidateResourcesCliTests(unittest.TestCase):
                         "required": True,
                         "database": "sub2api_prod0",
                         "user": "sub2api_prod0",
-                        "secret_file": resource_relative("prod0-main", "newapi", "postgres"),
+                        "secret_file": resource_relative("prod0-main", "sampleapi", "postgres"),
                     },
                     "redis": {
                         "required": True,
                         "user": "sub2api_prod0",
                         "db": 1,
                         "key_prefix": "sub2api:",
-                        "secret_file": resource_relative("prod0-main", "newapi", "redis"),
+                        "secret_file": resource_relative("prod0-main", "sampleapi", "redis"),
                     },
                 },
             )
@@ -73,8 +73,8 @@ class TestAppDeliveryValidateResourcesCliTests(unittest.TestCase):
             write_inventory(root)
             registry_payload = baseline_app_resource_registry_payload()
             registry_payload["sub2api"]["secret_files"] = [
-                resource_relative("prod0-main", "newapi", "postgres"),
-                resource_relative("prod0-main", "newapi", "redis"),
+                resource_relative("prod0-main", "sampleapi", "postgres"),
+                resource_relative("prod0-main", "sampleapi", "redis"),
             ]
             write_app_resource_registry(root, registry_payload)
             write_tenant_secret_files(root)
@@ -143,7 +143,7 @@ class TestAppDeliveryValidateResourcesCliTests(unittest.TestCase):
             redis.write_text("REDIS_USER=sub2api_prod0\nREDIS_DB=1\nREDIS_KEY_PREFIX=sub2api:\n", encoding="utf-8")
             # Create the file that the traversal path would resolve to, so the check
             # cannot be a naive startswith(prefix) + exists(path) against the raw string.
-            escaped_pg = resource_root(root, "prod0-main", "newapi") / "postgres.env"
+            escaped_pg = resource_root(root, "prod0-main", "sampleapi") / "postgres.env"
             escaped_pg.parent.mkdir(parents=True, exist_ok=True)
             escaped_pg.write_text("PGDATABASE=sub2api_prod0\nPGUSER=sub2api_prod0\n", encoding="utf-8")
             contract_file = write_contract(
@@ -155,7 +155,7 @@ class TestAppDeliveryValidateResourcesCliTests(unittest.TestCase):
                         "user": "sub2api_prod0",
                         # Looks in-scope by prefix, but escapes the app directory after normalization.
                         "secret_file": resource_relative("prod0-main", "sub2api", "postgres").replace(
-                            "/postgres.env", "/../newapi/postgres.env"
+                            "/postgres.env", "/../sampleapi/postgres.env"
                         ),
                     },
                     "redis": {
@@ -176,7 +176,7 @@ class TestAppDeliveryValidateResourcesCliTests(unittest.TestCase):
             self.assertIn(ERROR_ID_TENANT_SECRET_FILE_SCOPE, combined)
             self.assertIn(
                 resource_relative("prod0-main", "sub2api", "postgres").replace(
-                    "/postgres.env", "/../newapi/postgres.env"
+                    "/postgres.env", "/../sampleapi/postgres.env"
                 ),
                 combined,
             )
@@ -242,7 +242,7 @@ class TestAppDeliveryValidateResourcesCliTests(unittest.TestCase):
             redis = resource_root(root, "prod0-main", "sub2api") / "redis.env"
             redis.parent.mkdir(parents=True, exist_ok=True)
             redis.write_text("REDIS_USER=sub2api_prod0\nREDIS_DB=1\nREDIS_KEY_PREFIX=sub2api:\n", encoding="utf-8")
-            bad_minio = root / "secrets" / "app-resources" / "prod0-main" / "newapi" / "minio.env"
+            bad_minio = root / "secrets" / "app-resources" / "prod0-main" / "sampleapi" / "minio.env"
             bad_minio.parent.mkdir(parents=True, exist_ok=True)
             bad_minio.write_text("S3_BUCKET=prod0-sub2api\nS3_ACCESS_KEY=sub2api_prod0\nS3_SECRET_KEY=sub2api-s3-secret\n", encoding="utf-8")
             contract_file = write_contract(
@@ -265,7 +265,7 @@ class TestAppDeliveryValidateResourcesCliTests(unittest.TestCase):
                         "required": True,
                         "bucket": "prod0-sub2api",
                         "access_key": "sub2api_prod0",
-                        "secret_file": resource_relative("prod0-main", "newapi", "minio"),
+                        "secret_file": resource_relative("prod0-main", "sampleapi", "minio"),
                     },
                 },
             )
@@ -398,10 +398,10 @@ class TestAppDeliveryValidateResourcesCliTests(unittest.TestCase):
             root = Path(tmp)
             write_inventory(root)
             write_app_resource_registry(root, baseline_app_resource_registry_payload())
-            bad_pg = resource_root(root, "prod0-main", "newapi") / "postgres.env"
+            bad_pg = resource_root(root, "prod0-main", "sampleapi") / "postgres.env"
             bad_pg.parent.mkdir(parents=True, exist_ok=True)
             bad_pg.write_text("PGDATABASE=sub2api_prod0\nPGUSER=sub2api_prod0\n", encoding="utf-8")
-            bad_redis = resource_root(root, "prod0-main", "newapi") / "redis.env"
+            bad_redis = resource_root(root, "prod0-main", "sampleapi") / "redis.env"
             bad_redis.write_text("REDIS_DB=1\nREDIS_KEY_PREFIX=sub2api:\n", encoding="utf-8")
             write_contract(
                 root,
@@ -410,13 +410,13 @@ class TestAppDeliveryValidateResourcesCliTests(unittest.TestCase):
                         "required": True,
                         "database": "sub2api_prod0",
                         "user": "sub2api_prod0",
-                        "secret_file": resource_relative("prod0-main", "newapi", "postgres"),
+                        "secret_file": resource_relative("prod0-main", "sampleapi", "postgres"),
                     },
                     "redis": {
                         "required": True,
                         "db": 1,
                         "key_prefix": "sub2api:",
-                        "secret_file": resource_relative("prod0-main", "newapi", "redis"),
+                        "secret_file": resource_relative("prod0-main", "sampleapi", "redis"),
                     },
                 },
             )

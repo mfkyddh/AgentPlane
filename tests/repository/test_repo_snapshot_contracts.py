@@ -8,7 +8,7 @@ from agentplane.domain.app.resource_paths import git_common_root
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-EXPECTED_PHASE1_APPS = {
+EXPECTED_MANAGED_SERVICES = {
     "sub2api": {
         "wsl": "infra/compose/sub2api/docker-compose.wsl.yml",
         "prod": [
@@ -79,33 +79,14 @@ class RepoSnapshotContractsTests(unittest.TestCase):
 
     def test_expected_compose_snapshots_and_examples_still_exist(self) -> None:
         expected_compose_dirs = [
-            "infra/compose/newapi",
             "infra/compose/sub2api",
-            "infra/compose/sub2apipay",
-            "infra/compose/chatgpt-register-v2",
-            "infra/compose/chatgpt-register-v2-prod2",
             "infra/compose/vmail",
         ]
         tracked_examples_by_service = {
-            "newapi": [
-                "templates/services/newapi.wsl.env.example",
-                "templates/services/newapi.prod0.env.example",
-                "templates/services/newapi.prod2.env.example",
-            ],
             "sub2api": [
                 "templates/services/sub2api.wsl.env.example",
                 "templates/services/sub2api.prod0.env.example",
                 "templates/services/sub2api.prod2.env.example",
-            ],
-            "sub2apipay": [
-                "templates/services/sub2apipay.wsl.env.example",
-                "templates/services/sub2apipay.prod0.env.example",
-            ],
-            "chatgpt-register-v2": [
-                "templates/services/chatgpt-register-v2.env.example",
-            ],
-            "chatgpt-register-v2-prod2": [
-                "templates/services/chatgpt-register-v2-prod2.prod2.env.example",
             ],
         }
 
@@ -129,7 +110,18 @@ class RepoSnapshotContractsTests(unittest.TestCase):
     def test_legacy_snapshots_still_absent(self) -> None:
         unexpected_paths = [
             "infra/compose/chatgpt-register-wsl",
+            "infra/compose/chatgpt-register-v2",
+            "infra/compose/chatgpt-register-v2-prod2",
+            "infra/compose/newapi",
+            "infra/compose/sub2apipay",
             "templates/services/chatgpt-register-wsl.env.example",
+            "templates/services/chatgpt-register-v2.env.example",
+            "templates/services/chatgpt-register-v2-prod2.prod2.env.example",
+            "templates/services/newapi.wsl.env.example",
+            "templates/services/newapi.prod0.env.example",
+            "templates/services/newapi.prod2.env.example",
+            "templates/services/sub2apipay.wsl.env.example",
+            "templates/services/sub2apipay.prod0.env.example",
             "agentplane/scripts/remote/deploy_nginx_ui_to_host.sh",
             "agentplane/scripts/remote/remote_deploy_nginx_ui.sh",
             "agentplane/scripts/remote/remote_deploy_nginxwebui.sh",
@@ -199,17 +191,19 @@ class RepoSnapshotContractsTests(unittest.TestCase):
         self.assertNotIn("与生产容器同族", text)
         self.assertNotIn("与应用或运行服务主名一致", text)
 
-    def test_formal_app_compose_snapshots_match_phase1_naming_contract(self) -> None:
+    def test_catalog_has_no_local_app_repo_delivery_objects(self) -> None:
         catalog = (REPO_ROOT / "inventory/apps/catalog.json").read_text(encoding="utf-8")
-        for app_id in EXPECTED_PHASE1_APPS:
-            self.assertIn(f'"app": "{app_id}"', catalog)
-            self.assertIn(f'"service_key": "{app_id}"', catalog)
+        self.assertIn('"apps": []', catalog)
 
-        for app_id, paths in EXPECTED_PHASE1_APPS.items():
+    def test_managed_service_compose_snapshots_match_naming_contract(self) -> None:
+        for app_id, paths in EXPECTED_MANAGED_SERVICES.items():
             wsl_compose = load_compose(REPO_ROOT / paths["wsl"])
             wsl_service = wsl_compose["services"][app_id]
             with self.subTest(app_id=app_id, target="wsl-container"):
                 self.assertEqual(f"{app_id}-dev", wsl_service["container_name"])
+            with self.subTest(app_id=app_id, target="wsl-official-image"):
+                self.assertEqual("ghcr.io/wei-shaw/sub2api", image_family(wsl_service["image"]))
+                self.assertEqual("always", wsl_service["pull_policy"])
 
             for relative_path in paths["prod"]:
                 compose = load_compose(REPO_ROOT / relative_path)

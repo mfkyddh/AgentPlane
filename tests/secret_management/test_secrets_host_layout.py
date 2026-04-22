@@ -39,21 +39,21 @@ class SecretsHostLayoutTests(unittest.TestCase):
             host_root = root / "secrets" / "hosts" / "prod0-main"
             (host_root / "onepanel").mkdir(parents=True, exist_ok=True)
             (host_root / "infra" / "postgres").mkdir(parents=True, exist_ok=True)
-            (host_root / "apps" / "newapi" / "tenants").mkdir(parents=True, exist_ok=True)
-            (host_root / "apps" / "newapi").mkdir(parents=True, exist_ok=True)
+            (host_root / "apps" / "sampleapi" / "tenants").mkdir(parents=True, exist_ok=True)
+            (host_root / "apps" / "sampleapi").mkdir(parents=True, exist_ok=True)
 
             (host_root / "onepanel" / "api.env").write_text("ONEPANEL_API_KEY=demo\n", encoding="utf-8")
             (host_root / "infra" / "postgres" / "admin.env").write_text("POSTGRES_USER=postgres\n", encoding="utf-8")
-            (host_root / "apps" / "newapi" / "runtime.env").write_text("DATABASE_URL=postgres://demo\n", encoding="utf-8")
-            (host_root / "apps" / "newapi" / "tenants" / "postgres.env").write_text("PGDATABASE=newapi_prod0\n", encoding="utf-8")
+            (host_root / "apps" / "sampleapi" / "runtime.env").write_text("DATABASE_URL=postgres://demo\n", encoding="utf-8")
+            (host_root / "apps" / "sampleapi" / "tenants" / "postgres.env").write_text("PGDATABASE=sampleapi_prod0\n", encoding="utf-8")
 
             payload = materialize_legacy_host_layout(root, "prod0-main", write=True)
 
             self.assertEqual("prod0-main", payload["target"])
             self.assertTrue((root / "secrets" / "services" / "onepanel-api.env").is_file())
             self.assertTrue((root / "secrets" / "services" / "postgres" / "admin.prod0.env").is_file())
-            self.assertTrue((root / "secrets" / "services" / "newapi.prod0.env").is_file())
-            self.assertTrue((root / "secrets" / "tenants" / "prod0-main" / "newapi" / "postgres.env").is_file())
+            self.assertTrue((root / "secrets" / "services" / "sampleapi.prod0.env").is_file())
+            self.assertTrue((root / "secrets" / "tenants" / "prod0-main" / "sampleapi" / "postgres.env").is_file())
             self.assertEqual(
                 "ONEPANEL_API_KEY=demo\n",
                 (root / "secrets" / "services" / "onepanel-api.env").read_text(encoding="utf-8"),

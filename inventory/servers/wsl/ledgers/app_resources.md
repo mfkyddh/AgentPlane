@@ -8,4 +8,3 @@
 - PostgreSQL/MinIO 继续记录各自租户凭据标识，其中 MinIO 额外登记 bucket-scoped policy 元数据。
 
 - `sub2api`
-- `newapi`

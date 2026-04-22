@@ -71,40 +71,40 @@ def baseline_app_resource_registry() -> dict:
                 resource_relative("prod0-main", "sub2api", "minio"),
             ],
         },
-        "sub2apipay": {
-            "owner_app": "sub2apipay",
+        "samplepay": {
+            "owner_app": "samplepay",
             "ledger_status": {
                 "intent": "live-db-partition-ledger",
                 "runtime_credential_model": "dedicated-runtime-credentials",
                 "tenant_isolation": "dedicated-db-user-per-app",
                 "local_secret_presence": "not-materialized-by-repo",
             },
-            "postgres": {"database": "sub2apipay", "user": "sub2apipay_prod0"},
+            "postgres": {"database": "samplepay", "user": "samplepay_prod0"},
             "secret_files": [
-                resource_relative("prod0-main", "sub2apipay", "postgres"),
+                resource_relative("prod0-main", "samplepay", "postgres"),
             ],
         },
-        "newapi": {
-            "owner_app": "newapi",
+        "sampleapi": {
+            "owner_app": "sampleapi",
             "ledger_status": {
                 "intent": "live-db-partition-ledger",
                 "runtime_credential_model": "shared-runtime-credentials",
                 "tenant_isolation": "logical-db-partition-not-strong-isolation",
                 "local_secret_presence": "not-materialized-by-repo",
             },
-            "postgres": {"database": "newapi_prod0", "user": "newapi_prod0"},
-            "redis": {"db": 2, "key_prefix": "newapi:"},
+            "postgres": {"database": "sampleapi_prod0", "user": "sampleapi_prod0"},
+            "redis": {"db": 2, "key_prefix": "sampleapi:"},
             "minio": {
-                "bucket": "prod0-newapi",
-                "access_key": "newapi_prod0",
-                "policy_name": "prod0-newapi-rw",
+                "bucket": "prod0-sampleapi",
+                "access_key": "sampleapi_prod0",
+                "policy_name": "prod0-sampleapi-rw",
                 "policy_scope": "bucket-only",
                 "isolation_level": "bucket-scoped-rw",
             },
             "secret_files": [
-                resource_relative("prod0-main", "newapi", "postgres"),
-                resource_relative("prod0-main", "newapi", "redis"),
-                resource_relative("prod0-main", "newapi", "minio"),
+                resource_relative("prod0-main", "sampleapi", "postgres"),
+                resource_relative("prod0-main", "sampleapi", "redis"),
+                resource_relative("prod0-main", "sampleapi", "minio"),
             ],
         },
     }
@@ -118,22 +118,22 @@ def baseline_payload(*, include_app_resource_summary: bool = False) -> dict:
                 "driver": "bridge",
                 "subnet": "172.19.0.0/16",
                 "gateway_ip": "172.19.0.1/16",
-                "required_for": ["postgres18-prod", "redis7-prod", "minio-prod", "sub2api-prod", "newapi-prod"],
+                "required_for": ["postgres18-prod", "redis7-prod", "minio-prod", "sub2api-prod", "sampleapi-prod"],
             }
         ],
         "security": {"openresty_public_listen": {"ports": [8443]}},
         "services": {
             "onepanel_openresty": {"network_mode": "host", "listen_ports": [8443]},
-            "newapi": {
+            "sampleapi": {
                 "docker_networks": ["zqf_network"],
                 "control_plane": "compose",
                 "depends_on_containers": ["postgres18-prod", "redis7-prod"],
             },
-            "sub2apipay": {
-                "runtime_root": "/data/sub2apipay/app/current",
+            "samplepay": {
+                "runtime_root": "/data/samplepay/app/current",
                 "config_files": [
-                    "/data/sub2apipay/config/sub2apipay-prod.env",
-                    "/data/sub2apipay/config/.env.runtime",
+                    "/data/samplepay/config/samplepay-prod.env",
+                    "/data/samplepay/config/.env.runtime",
                 ],
             },
             "sub2api": {
@@ -148,7 +148,7 @@ def baseline_payload(*, include_app_resource_summary: bool = False) -> dict:
     if include_app_resource_summary:
         registry = baseline_app_resource_registry()
         services = payload["services"]
-        for app_id in ("sub2api", "newapi"):
+        for app_id in ("sub2api", "sampleapi"):
             services[app_id]["app_resource_summary"] = {
                 "postgres": {
                     **dict(registry[app_id]["postgres"]),
@@ -163,10 +163,10 @@ def baseline_payload(*, include_app_resource_summary: bool = False) -> dict:
                     "secret_file": resource_relative("prod0-main", app_id, "minio"),
                 },
             }
-        services["sub2apipay"]["app_resource_summary"] = {
+        services["samplepay"]["app_resource_summary"] = {
             "postgres": {
-                **dict(registry["sub2apipay"]["postgres"]),
-                "secret_file": resource_relative("prod0-main", "sub2apipay", "postgres"),
+                **dict(registry["samplepay"]["postgres"]),
+                "secret_file": resource_relative("prod0-main", "samplepay", "postgres"),
             }
         }
     return payload
@@ -225,8 +225,6 @@ class Prod0AuditTests(unittest.TestCase):
             "security": {"openresty_public_listen": {"ports": [2053]}},
             "services": {
                 "onepanel_openresty": {"network_mode": "bridge", "listen_ports": [2053]},
-                "newapi": {"docker_networks": ["bridge"]},
-                "sub2apipay": {"runtime_root": "/opt/sub2apipay/current", "config_files": ["/etc/sub2apipay/sub2apipay-prod.env"]},
                 "token_backend": legacy_sub2api_alias,
             },
             "notes": ["legacy nginx-ui marker"],
@@ -240,11 +238,8 @@ class Prod0AuditTests(unittest.TestCase):
 
             self.assertIn("prod0.openresty.listen_ports", codes)
             self.assertIn("prod0.openresty.network_mode", codes)
-            self.assertIn("prod0.newapi.network", codes)
             self.assertIn("prod0.sub2api.data_dir", codes)
             self.assertIn("prod0.sub2api.config_file", codes)
-            self.assertIn("prod0.sub2apipay.runtime_root", codes)
-            self.assertIn("prod0.sub2apipay.config_files", codes)
             self.assertIn("prod0.inventory.legacy_marker", codes)
 
     def test_cli_audit_filesystem_reports_tenant_registry_summary_and_drift_including_minio(self) -> None:
@@ -287,10 +282,10 @@ class Prod0AuditTests(unittest.TestCase):
             payload_drift = baseline_payload(include_app_resource_summary=True)
             tenant_registry = baseline_app_resource_registry()
             # Lock in MinIO drift detection through the CLI: postgres/redis remain consistent, only minio differs.
-            payload_drift["services"]["newapi"]["app_resource_summary"] = {
-                "postgres": dict(tenant_registry["newapi"]["postgres"]),
-                "redis": dict(tenant_registry["newapi"]["redis"]),
-                "minio": {"bucket": "prod0-newapi-legacy", "access_key": "newapi_legacy"},
+            payload_drift["services"]["sampleapi"]["app_resource_summary"] = {
+                "postgres": dict(tenant_registry["sampleapi"]["postgres"]),
+                "redis": dict(tenant_registry["sampleapi"]["redis"]),
+                "minio": {"bucket": "prod0-sampleapi-legacy", "access_key": "sampleapi_legacy"},
             }
             payload_drift["services"]["sub2api"]["app_resource_summary"] = {
                 "postgres": dict(tenant_registry["sub2api"]["postgres"]),
@@ -351,11 +346,11 @@ class Prod0AuditTests(unittest.TestCase):
                     "public_url": "https://example.com",
                     "rollback_entry": {"kind": "compose", "service_name": "marketing_site"},
                 },
-                "sub2apipay": {
-                    "runtime_root": "/data/sub2apipay/app/current",
+                "samplepay": {
+                    "runtime_root": "/data/samplepay/app/current",
                     "config_files": [
-                        "/data/sub2apipay/config/sub2apipay-prod.env",
-                        "/data/sub2apipay/config/.env.runtime",
+                        "/data/samplepay/config/samplepay-prod.env",
+                        "/data/samplepay/config/.env.runtime",
                     ],
                 },
             },
@@ -384,10 +379,10 @@ class Prod0AuditTests(unittest.TestCase):
         payload = baseline_payload(include_app_resource_summary=True)
         tenant_registry = baseline_app_resource_registry()
         # Lock in MinIO drift detection: postgres/redis remain consistent, only minio differs.
-        payload["services"]["newapi"]["app_resource_summary"] = {
-            "postgres": dict(tenant_registry["newapi"]["postgres"]),
-            "redis": dict(tenant_registry["newapi"]["redis"]),
-            "minio": {"bucket": "prod0-newapi-legacy", "access_key": "newapi_legacy"},
+        payload["services"]["sampleapi"]["app_resource_summary"] = {
+            "postgres": dict(tenant_registry["sampleapi"]["postgres"]),
+            "redis": dict(tenant_registry["sampleapi"]["redis"]),
+            "minio": {"bucket": "prod0-sampleapi-legacy", "access_key": "sampleapi_legacy"},
         }
         payload["services"]["sub2api"]["app_resource_summary"] = {
             "postgres": dict(tenant_registry["sub2api"]["postgres"]),
@@ -405,8 +400,8 @@ class Prod0AuditTests(unittest.TestCase):
 
     def test_tenant_audit_accepts_postgres_only_app_resource_summary_when_registry_matches(self) -> None:
         payload = baseline_payload(include_app_resource_summary=True)
-        payload["services"]["sub2apipay"]["control_plane"] = "compose"
-        payload["services"]["sub2apipay"]["depends_on_containers"] = ["postgres18-prod"]
+        payload["services"]["samplepay"]["control_plane"] = "compose"
+        payload["services"]["samplepay"]["depends_on_containers"] = ["postgres18-prod"]
         tenant_registry = baseline_app_resource_registry()
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -418,7 +413,7 @@ class Prod0AuditTests(unittest.TestCase):
             issues = [
                 item
                 for item in result["violations"]
-                if item["id"] == "prod0.app_resource.drift" and item.get("details", {}).get("app") == "sub2apipay"
+                if item["id"] == "prod0.app_resource.drift" and item.get("details", {}).get("app") == "samplepay"
             ]
             self.assertEqual([], issues, msg=json.dumps(issues, ensure_ascii=False))
 
@@ -429,19 +424,19 @@ class Prod0AuditTests(unittest.TestCase):
   "security": {"openresty_public_listen": {"ports": [8443]}},
   "services": {
     "onepanel_openresty": {"network_mode": "host", "listen_ports": [8443]},
-    "newapi": {
+    "sampleapi": {
       "docker_networks": ["zqf_network"],
       "control_plane": "compose",
       "depends_on_containers": ["postgres18-prod", "redis7-prod"],
       "app_resource_summary": {
-        "postgres": {"database": "newapi_prod0", "user": "newapi_prod0", "secret_file": "%s"},
-        "redis": {"user": "newapi_prod0", "db": 2, "key_prefix": "newapi:", "secret_file": "%s"},
-        "minio": {"bucket": "prod0-newapi", "access_key": "newapi_prod0", "secret_file": "%s"}
+        "postgres": {"database": "sampleapi_prod0", "user": "sampleapi_prod0", "secret_file": "%s"},
+        "redis": {"user": "sampleapi_prod0", "db": 2, "key_prefix": "sampleapi:", "secret_file": "%s"},
+        "minio": {"bucket": "prod0-sampleapi", "access_key": "sampleapi_prod0", "secret_file": "%s"}
       },
       "app_resource_summary": {
-        "postgres": {"database": "newapi_legacy", "user": "newapi_legacy"},
-        "redis": {"user": "newapi_legacy", "db": 0, "key_prefix": "legacy:"},
-        "minio": {"bucket": "prod0-newapi-legacy", "access_key": "newapi_legacy"}
+        "postgres": {"database": "sampleapi_legacy", "user": "sampleapi_legacy"},
+        "redis": {"user": "sampleapi_legacy", "db": 0, "key_prefix": "legacy:"},
+        "minio": {"bucket": "prod0-sampleapi-legacy", "access_key": "sampleapi_legacy"}
       }
     },
     "sub2api": {
@@ -453,9 +448,9 @@ class Prod0AuditTests(unittest.TestCase):
         "minio": {"bucket": "prod0-sub2api", "access_key": "sub2api_prod0", "secret_file": "%s"}
       }
     },
-        "sub2apipay": {
-          "runtime_root": "/data/sub2apipay/app/current",
-          "config_files": ["/data/sub2apipay/config/sub2apipay-prod.env", "/data/sub2apipay/config/.env.runtime"]
+        "samplepay": {
+          "runtime_root": "/data/samplepay/app/current",
+          "config_files": ["/data/samplepay/config/samplepay-prod.env", "/data/samplepay/config/.env.runtime"]
         },
         "marketing_site": {
           "control_plane": "compose",
@@ -467,9 +462,9 @@ class Prod0AuditTests(unittest.TestCase):
       }
 }
 """ % (
-            resource_relative("prod0-main", "newapi", "postgres"),
-            resource_relative("prod0-main", "newapi", "redis"),
-            resource_relative("prod0-main", "newapi", "minio"),
+            resource_relative("prod0-main", "sampleapi", "postgres"),
+            resource_relative("prod0-main", "sampleapi", "redis"),
+            resource_relative("prod0-main", "sampleapi", "minio"),
             resource_relative("prod0-main", "sub2api", "postgres"),
             resource_relative("prod0-main", "sub2api", "redis"),
             resource_relative("prod0-main", "sub2api", "minio"),
@@ -485,8 +480,8 @@ class Prod0AuditTests(unittest.TestCase):
             duplicates = [item for item in result["violations"] if item["id"] == "prod0.app_resource.summary_duplicate"]
             self.assertEqual(1, len(duplicates), msg=json.dumps(result, ensure_ascii=False))
             details = duplicates[0].get("details", {})
-            self.assertEqual("newapi", details.get("app"))
-            self.assertEqual("services.newapi.app_resource_summary", details.get("json_path"))
+            self.assertEqual("sampleapi", details.get("app"))
+            self.assertEqual("services.sampleapi.app_resource_summary", details.get("json_path"))
 
     def test_prod0_openresty_runtime_ports_must_match_declared_public_ports(self) -> None:
         payload = baseline_payload(include_app_resource_summary=True)
@@ -533,7 +528,7 @@ class Prod0AuditTests(unittest.TestCase):
 
     def test_tenant_audit_detects_legacy_flat_secret_references_for_formal_apps(self) -> None:
         payload = baseline_payload(include_app_resource_summary=True)
-        payload["services"]["newapi"]["config_files"] = [
+        payload["services"]["sampleapi"]["config_files"] = [
             "/opt/agentplane/secrets/services/postgres.env",
             "/opt/agentplane/secrets/services/redis.conf",
             "/opt/agentplane/secrets/services/minio.env",
@@ -555,19 +550,13 @@ class Prod0AuditTests(unittest.TestCase):
     def test_tracked_prod0_registry_uses_normalized_app_resource_summary_values(self) -> None:
         registry_file = REPO_ROOT / "inventory" / "servers" / "prod0-main" / "app-resources.json"
         payload = json.loads(registry_file.read_text(encoding="utf-8"))
-        self.assertEqual("sub2apipay", payload["sub2apipay"]["owner_app"])
-        self.assertEqual("sub2apipay", payload["sub2apipay"]["postgres"]["database"])
-        self.assertEqual("sub2apipay_prod0", payload["sub2apipay"]["postgres"]["user"])
+        self.assertEqual(["sub2api"], sorted(payload))
+        self.assertEqual("sub2api", payload["sub2api"]["owner_app"])
         self.assertEqual(1, payload["sub2api"]["redis"]["db"])
         self.assertEqual("sub2api:", payload["sub2api"]["redis"]["key_prefix"])
-        self.assertEqual(2, payload["newapi"]["redis"]["db"])
-        self.assertEqual("newapi:", payload["newapi"]["redis"]["key_prefix"])
         self.assertEqual("prod0-sub2api-rw", payload["sub2api"]["minio"]["policy_name"])
         self.assertEqual("bucket-only", payload["sub2api"]["minio"]["policy_scope"])
         self.assertEqual("bucket-scoped-rw", payload["sub2api"]["minio"]["isolation_level"])
-        self.assertEqual("prod0-newapi-rw", payload["newapi"]["minio"]["policy_name"])
-        self.assertEqual("bucket-only", payload["newapi"]["minio"]["policy_scope"])
-        self.assertEqual("bucket-scoped-rw", payload["newapi"]["minio"]["isolation_level"])
 
     def test_tracked_resource_tenant_ledgers_mark_live_db_partition_semantics(self) -> None:
         registry_file = REPO_ROOT / "inventory" / "servers" / "prod0-main" / "app-resources.json"
@@ -577,16 +566,8 @@ class Prod0AuditTests(unittest.TestCase):
                 "runtime_credential_model": "shared-runtime-credentials",
                 "tenant_isolation": "logical-db-partition-not-strong-isolation",
             },
-            "sub2apipay": {
-                "runtime_credential_model": "dedicated-runtime-credentials",
-                "tenant_isolation": "dedicated-db-user-per-app",
-            },
-            "newapi": {
-                "runtime_credential_model": "shared-runtime-credentials",
-                "tenant_isolation": "logical-db-partition-not-strong-isolation",
-            },
         }
-        for app in ("sub2api", "sub2apipay", "newapi"):
+        for app in ("sub2api",):
             with self.subTest(app=app):
                 status = payload[app].get("ledger_status")
                 if isinstance(status, dict):
@@ -599,15 +580,11 @@ class Prod0AuditTests(unittest.TestCase):
                 assert isinstance(postgres, dict)
                 self.assertIn("database", postgres)
                 self.assertIn("user", postgres)
-                if app != "sub2apipay":
-                    redis = payload[app].get("redis")
-                    self.assertIsInstance(redis, dict)
-                    assert isinstance(redis, dict)
-                    self.assertIn("db", redis)
-                    self.assertIn("key_prefix", redis)
-                else:
-                    self.assertNotIn("redis", payload[app])
-                    self.assertNotIn("minio", payload[app])
+                redis = payload[app].get("redis")
+                self.assertIsInstance(redis, dict)
+                assert isinstance(redis, dict)
+                self.assertIn("db", redis)
+                self.assertIn("key_prefix", redis)
 
         ledger_md = (
             REPO_ROOT / "inventory" / "servers" / "prod0-main" / "ledgers" / "app_resources.md"
@@ -622,9 +599,8 @@ class Prod0AuditTests(unittest.TestCase):
         inventory_text = (REPO_ROOT / "inventory" / "servers" / "prod0-main" / "inventory.json").read_text(
             encoding="utf-8"
         )
-        assert_live_db_partition_markers(self, inventory_text)
         inventory_payload = json.loads(inventory_text)
-        for app in ("sub2api", "sub2apipay", "newapi"):
+        for app in ("sub2api",):
             with self.subTest(app=f"{app}-inventory-postgres"):
                 postgres = inventory_payload["services"][app]["app_resource_summary"]["postgres"]
                 self.assertIsInstance(postgres, dict)
@@ -642,17 +618,12 @@ class Prod0AuditTests(unittest.TestCase):
                     postgres.get("secret_file"),
                 )
 
-        for app in ("sub2api", "newapi"):
+        for app in ("sub2api",):
             with self.subTest(app=f"{app}-inventory-redis-user"):
                 redis = inventory_payload["services"][app]["app_resource_summary"]["redis"]
                 self.assertIsInstance(redis, dict)
                 assert isinstance(redis, dict)
                 self.assertNotIn("user", redis)
-
-        self.assertEqual(
-            {"postgres"},
-            set(inventory_payload["services"]["sub2apipay"]["app_resource_summary"].keys()),
-        )
 
     def test_tracked_prod0_readme_and_renderer_lock_mixed_tenant_credential_semantics(self) -> None:
         inventory_payload = json.loads(
@@ -670,7 +641,7 @@ class Prod0AuditTests(unittest.TestCase):
         inventory_file = REPO_ROOT / "inventory" / "servers" / "prod0-main" / "inventory.json"
         raw = inventory_file.read_text(encoding="utf-8")
 
-        for app in ("newapi", "sub2apipay", "sub2api"):
+        for app in ("sub2api",):
             anchor = f"\"{app}\": {{"
             start = raw.find(anchor)
             self.assertNotEqual(-1, start, msg=f"missing app block in inventory source: {app}")

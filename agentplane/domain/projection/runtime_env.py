@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
-from urllib.parse import quote
 
 from agentplane.domain.app.resource_state import (
     APP_RESOURCE_SUMMARY_FIELDS,
@@ -22,9 +21,7 @@ from agentplane.runtime.redaction import redact_env_text
 
 from agentplane.domain.targets import SUPPORTED_RUNTIME_ENV_TARGETS
 FORMAL_PROD0_APP_REQUIREMENTS: dict[str, tuple[str, ...]] = {
-    "newapi": ("postgres", "redis", "minio"),
     "sub2api": ("postgres", "redis", "minio"),
-    "sub2apipay": ("postgres",),
 }
 APP_RESOURCES_REGISTRY_ENTRY_LABEL = "app-resources registry entry"
 
@@ -38,23 +35,6 @@ def service_env_file(repo_root: Path, target: str, app_id: str) -> Path:
     if target == "prod2-main":
         return resolved_secrets_root / "services" / f"{app_id}.prod2.env"
     raise ValueError(f"Unsupported target for env projection: {target}")
-
-
-def _pg_url(pg_env: dict[str, str]) -> str:
-    user = quote(pg_env.get("PGUSER", ""), safe="")
-    password = quote(pg_env.get("PGPASSWORD", ""), safe="")
-    return (
-        f"postgres://{user}:{password}"
-        f"@{pg_env.get('PGHOST', '')}:{pg_env.get('PGPORT', '')}/{pg_env.get('PGDATABASE', '')}"
-    )
-
-
-def _redis_url(redis_env: dict[str, str]) -> str:
-    scheme = "rediss" if redis_env.get("REDIS_ENABLE_TLS", "").strip().lower() == "true" else "redis"
-    password = quote(redis_env.get("REDIS_PASSWORD", ""), safe="")
-    username = quote(redis_env.get("REDIS_USER", ""), safe="")
-    userinfo = f"{username}:{password}" if username else f":{password}"
-    return f"{scheme}://{userinfo}@{redis_env.get('REDIS_HOST', '')}:{redis_env.get('REDIS_PORT', '')}/{redis_env.get('REDIS_DB', '')}"
 
 
 def _shared_runtime_redis_env(repo_root: Path, target: str, redis_env: dict[str, str]) -> dict[str, str]:
@@ -81,17 +61,6 @@ def _shared_runtime_redis_env(repo_root: Path, target: str, redis_env: dict[str,
     return projected
 
 
-def _newapi_sql_dsn(pg_env: dict[str, str]) -> str:
-    sslmode = pg_env.get("PGSSLMODE") or "disable"
-    user = quote(pg_env.get("PGUSER", ""), safe="")
-    password = quote(pg_env.get("PGPASSWORD", ""), safe="")
-    return (
-        f"postgresql://{user}:{password}"
-        f"@{pg_env.get('PGHOST', '')}:{pg_env.get('PGPORT', '')}/{pg_env.get('PGDATABASE', '')}"
-        f"?sslmode={sslmode}"
-    )
-
-
 def _merge_sub2api_env(current: dict[str, str], pg_env: dict[str, str], redis_env: dict[str, str]) -> tuple[dict[str, str], set[str]]:
     managed = {
         "DATABASE_HOST": pg_env.get("PGHOST", ""),
@@ -109,20 +78,6 @@ def _merge_sub2api_env(current: dict[str, str], pg_env: dict[str, str], redis_en
     merged = {key: value for key, value in current.items() if key not in {"REDIS_USER", "REDIS_KEY_PREFIX"}}
     for key, value in managed.items():
         if value != "":
-            merged[key] = value
-    return merged, set(managed.keys())
-
-
-def _merge_newapi_env(current: dict[str, str], pg_env: dict[str, str], redis_env: dict[str, str]) -> tuple[dict[str, str], set[str]]:
-    managed = {
-        "SQL_DSN": _newapi_sql_dsn(pg_env),
-        "REDIS_CONN_STRING": _redis_url(redis_env),
-        "DATABASE_URL": _pg_url(pg_env),
-        "REDIS_URL": _redis_url(redis_env),
-    }
-    merged = {key: value for key, value in current.items() if key not in {"REDIS_USER", "REDIS_KEY_PREFIX"}}
-    for key, value in managed.items():
-        if value:
             merged[key] = value
     return merged, set(managed.keys())
 
@@ -265,8 +220,8 @@ def _projection_state(repo_root: Path, target: str, app_id: str) -> dict[str, An
 
     secret_root = app_resource_secret_dir(repo_root, target, app_id)
     formal_required = formal_prod0_required_kinds(app_id) if target == "prod0-main" else ()
-    pg_env = load_env_file(secret_root / "postgres.env") if "postgres" in formal_required or app_id in {"sub2api", "newapi"} else {}
-    redis_env = load_env_file(secret_root / "redis.env") if "redis" in formal_required or app_id in {"sub2api", "newapi"} else {}
+    pg_env = load_env_file(secret_root / "postgres.env") if "postgres" in formal_required or app_id == "sub2api" else {}
+    redis_env = load_env_file(secret_root / "redis.env") if "redis" in formal_required or app_id == "sub2api" else {}
     redis_runtime_env = _shared_runtime_redis_env(repo_root, target, redis_env)
 
     current_text = env_file.read_text(encoding="utf-8") if env_file.exists() else ""
@@ -275,8 +230,6 @@ def _projection_state(repo_root: Path, target: str, app_id: str) -> dict[str, An
 
     if app_id == "sub2api":
         merged, managed_keys = _merge_sub2api_env(current_values, pg_env, redis_runtime_env)
-    elif app_id == "newapi":
-        merged, managed_keys = _merge_newapi_env(current_values, pg_env, redis_runtime_env)
     else:
         merged = dict(current_values)
         managed_keys = set()
