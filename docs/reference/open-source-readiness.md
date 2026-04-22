@@ -1,3 +1,10 @@
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-22
+superseded_by: null
+---
+
 # Open Source Readiness
 
 This repository is being shaped as a one-checkout, cross-platform open source control plane template.
@@ -16,6 +23,6 @@ This repository is being shaped as a one-checkout, cross-platform open source co
 ## Remaining Hard-Cut Work
 
 - Retire remaining compatibility-only provider helpers once the formal CLI fully covers their use cases.
-- Split the largest historical test modules into smaller domain files as behavior changes.
-- Add hosted CI once the public repository is created.
-- Publish a release process and versioning policy after the first public tag.
+- Move remaining direct `tests/onepanel` script substrate coverage behind provider-level contracts where practical.
+- Run live gate with `--execute` only in an explicitly prepared WSL/SSH/Docker environment.
+- Publish a release process after the first public tag.

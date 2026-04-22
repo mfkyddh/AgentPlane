@@ -2,7 +2,7 @@
 status: active
 owner: control-plane
 last_verified: 2026-04-11
-superseded_by: none
+superseded_by: null
 ---
 
 # Control Plane Path Policy

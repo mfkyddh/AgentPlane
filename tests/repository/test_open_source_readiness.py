@@ -42,6 +42,43 @@ class OpenSourceReadinessTests(unittest.TestCase):
                 text = (REPO_ROOT / relative_path).read_text(encoding="utf-8")
                 self.assertIn("single checkout" if "open-source" in relative_path else "Default Gate", text)
 
+    def test_architecture_directory_contains_only_active_contract_docs(self) -> None:
+        actual = {path.name for path in (REPO_ROOT / "docs" / "architecture").glob("*.md")}
+        expected = {
+            "README.md",
+            "control-plane.md",
+            "linux-governance.md",
+            "agentplane-app-collaboration.md",
+        }
+        self.assertEqual(expected, actual)
+
+    def test_reference_and_maintainer_docs_have_standard_metadata(self) -> None:
+        roots = (
+            REPO_ROOT / "docs" / "reference",
+            REPO_ROOT / "docs" / "maintainers",
+        )
+        for root in roots:
+            for path in root.glob("*.md"):
+                with self.subTest(path=path.relative_to(REPO_ROOT)):
+                    text = path.read_text(encoding="utf-8")
+                    self.assertTrue(text.startswith("---\n"), "missing metadata block")
+                    header = text.split("---", 2)[1]
+                    self.assertRegex(header, r"(?m)^status: active$")
+                    self.assertRegex(header, r"(?m)^owner: .+$")
+                    self.assertRegex(header, r"(?m)^last_verified: \d{4}-\d{2}-\d{2}$")
+                    self.assertRegex(header, r"(?m)^superseded_by: null$")
+
+    def test_active_architecture_and_runbooks_do_not_keep_redirect_stubs(self) -> None:
+        forbidden = re.compile(
+            r"本文已 superseded|本手册已并入|正文已归档到|过渡 stub|redirect stub|跳转页|仅保留历史重定向|仅保留给历史引用|本页已降级",
+            re.IGNORECASE,
+        )
+        for root in (REPO_ROOT / "docs" / "architecture", REPO_ROOT / "docs" / "runbooks"):
+            for path in root.glob("*.md"):
+                with self.subTest(path=path.relative_to(REPO_ROOT)):
+                    text = path.read_text(encoding="utf-8")
+                    self.assertIsNone(forbidden.search(text))
+
     def test_readme_presents_cross_platform_first_run_path(self) -> None:
         text = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
 

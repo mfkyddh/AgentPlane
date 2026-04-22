@@ -107,7 +107,7 @@ workflow skill 可额外补：
 补充规则：
 
 - 长期文档不要写死 `.worktrees/` 绝对路径；需要保留现场路径时，只允许放在 `history` 或 handoff 的“执行快照”部分。
-- Phase 1 当前强制 `docs/reference/**/*.md` 与 `docs/maintainers/**/*.md` 在文首提供统一 metadata block，字段固定为 `status`、`owner`、`last_verified`、`superseded_by`；`last_verified` 必须使用 `YYYY-MM-DD`。
+- `docs/reference/**/*.md` 与 `docs/maintainers/**/*.md` 在文首提供统一 metadata block，字段固定为 `status`、`owner`、`last_verified`、`superseded_by`；`last_verified` 必须使用 `YYYY-MM-DD`。
 - 后续新增或再次改动的长期文档也必须沿用同一 metadata block，不允许再发明第二种写法。
 - compat 入口的替代关系、删除条件和最后验证时间统一记录到 [`docs/reference/compat-retirement-ledger.md`](../reference/compat-retirement-ledger.md)。
 - 跨层名称映射统一回指 [`docs/reference/control-plane-naming-registry.md`](../reference/control-plane-naming-registry.md)。
@@ -163,6 +163,7 @@ runbook 负责专题流程、风险边界、人工接力点与最小验证；需
 
 - active docs 与现行 code/test 优先于历史 spec、plan、handoff。
 - 不要把历史设计稿中的旧路径、旧文案、旧 rollback 形态重新抄回 active docs；历史材料只用于解释来路，不反向覆盖当前真源。
+- active `docs/architecture/` 与 `docs/runbooks/` 不保留旧链接占位文档；已经退出主流程的正文直接迁入 `docs/archive/`，当前入口只链接 active 真源或 archive 索引。
 
 ### 示例与测试
 
@@ -197,6 +198,6 @@ runbook 负责专题流程、风险边界、人工接力点与最小验证；需
 ## 关联文档
 
 - [../architecture/control-plane.md](../architecture/control-plane.md)
-- [../architecture/control-plane-cli-contract.md](../architecture/control-plane-cli-contract.md)
+- [../reference/control-plane-path-policy.md](../reference/control-plane-path-policy.md)
 - [../runbooks/control-plane-domain-onboarding.md](../runbooks/control-plane-domain-onboarding.md)
 - [../runbooks/control-plane-agent-execution-flow.md](../runbooks/control-plane-agent-execution-flow.md)

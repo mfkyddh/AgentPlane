@@ -1,3 +1,10 @@
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-22
+superseded_by: null
+---
+
 # Testing Architecture
 
 AgentPlane's test suite is organized around deterministic default tests and explicit live gates.
@@ -34,6 +41,8 @@ Shared helpers live under `tests/support/`:
 - `paths.py`: repository and tests root constants
 - `cli.py`: subprocess helpers for invoking `agentplane.cli`
 - `app_resources.py`: app resource path fixtures
+- `app_object.py`: app object CLI/catalog fixtures
+- `service_cli.py`: service CLI fixture builders
 - `markers.py`: pytest marker routing rules
 
 Do not add new cross-file helpers to large test modules. Put shared behavior under `tests/support/` first, then import it from tests.

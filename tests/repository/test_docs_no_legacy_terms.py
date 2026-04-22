@@ -10,7 +10,6 @@ ACTIVE_TEMPLATE_DOCS = (
     REPO_ROOT / "docs" / "architecture" / "control-plane.md",
     REPO_ROOT / "docs" / "architecture" / "agentplane-app-collaboration.md",
     REPO_ROOT / "docs" / "architecture" / "linux-governance.md",
-    REPO_ROOT / "docs" / "architecture" / "automation-stack.md",
     REPO_ROOT / "docs" / "reference" / "app-repository-standard.md",
     REPO_ROOT / "docs" / "runbooks" / "control-plane-domain-onboarding.md",
     REPO_ROOT / "docs" / "runbooks" / "control-plane-agent-execution-flow.md",
@@ -32,7 +31,6 @@ ARCHITECTURE_CORE_CONTRACT_LINKS = (
     "[agentplane-app-collaboration.md](agentplane-app-collaboration.md)",
 )
 ARCHITECTURE_TEMPLATE_LINKS = (
-    "[agent-first-template-truth-model.md](agent-first-template-truth-model.md)",
     "[control-plane-path-policy.md](../reference/control-plane-path-policy.md)",
     "[app-repository-standard.md](../reference/app-repository-standard.md)",
 )
@@ -159,9 +157,6 @@ class DocsNoLegacyTermsTests(unittest.TestCase):
         governance = (REPO_ROOT / "docs" / "architecture" / "linux-governance.md").read_text(
             encoding="utf-8"
         )
-        automation = (REPO_ROOT / "docs" / "architecture" / "automation-stack.md").read_text(
-            encoding="utf-8"
-        )
 
         self.assertIn("host inventory <target> --repo-root <repo-root>", control_plane)
         self.assertIn("service search --target <target> --repo-root <repo-root>", control_plane)
@@ -179,14 +174,14 @@ class DocsNoLegacyTermsTests(unittest.TestCase):
         )
         self.assertIn("本页只定义 Linux / WSL backend 约束，不改变宿主入口选择。", governance)
         self.assertIn("[bootstrap-secrets.md](../runbooks/bootstrap-secrets.md)", governance)
-        self.assertIn("host automation search <target> --repo-root <repo-root>", automation)
+        self.assertIn("`host automation` 管“何时执行、执行什么周期任务”", control_plane)
         self.assertIn(
             "projection verification run --target <target> --profile <profile> --repo-root <repo-root>",
-            automation,
+            control_plane,
         )
         self.assertIn(
             "projection ledger refresh --target <target> --repo-root <repo-root> --write",
-            automation,
+            control_plane,
         )
 
 

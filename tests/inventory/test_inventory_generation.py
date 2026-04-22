@@ -24,9 +24,9 @@ def run_cli(*args: str, cwd: Path) -> subprocess.CompletedProcess[str]:
 
 
 class InventoryGenerationTests(unittest.TestCase):
-    def test_phase4_lane12_acceptance_commands_are_documented_as_readonly_or_dry_run(self) -> None:
+    def test_focused_acceptance_commands_are_documented_as_readonly_or_dry_run(self) -> None:
         versioning_doc = (REPO_ROOT / "docs" / "reference" / "app-delivery-versioning.md").read_text(encoding="utf-8")
-        self.assertIn("Phase 4 / Lane 12", versioning_doc)
+        self.assertIn("Focused Acceptance", versioning_doc)
         self.assertIn("focused acceptance", versioning_doc)
         self.assertIn("host automation search wsl", versioning_doc)
         self.assertIn("projection ledger refresh --target wsl", versioning_doc)

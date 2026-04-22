@@ -12,7 +12,7 @@
 
 ## Historical Preconditions
 
-1. `docs/runbooks/prod0-main-openresty-certificate-management.md` 已标记“证书治理通过”。
+1. 当时的 OpenResty 证书治理前置检查已通过；当前 active 口径见 `docs/runbooks/prod0-main-1panel-public-access.md`。
 2. `1panel-openresty-prod` 运行中，且容器可读：
    - `/www/certs/zzzai-cloud/fullchain.pem`
    - `/www/certs/zzzai-cloud/privkey.pem`

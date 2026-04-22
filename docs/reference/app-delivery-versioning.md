@@ -48,9 +48,9 @@ packaging:
 - 以同一 `app_id`、同一 `upstream_version`、同一 `build_date` 的既有 `build-artifact` 记录为基线，下一次自动生成时取 `max(n)+1`
 - 无既有记录时，首个序号为 `v1`
 
-## Phase 4 / Lane 12 focused acceptance（只读与 dry-run）
+## Focused Acceptance（只读与 dry-run）
 
-本节用于 Phase 4 / Lane 12 的 focused acceptance 资产约束。验收命令仅允许只读或 dry-run，不在该车道执行写入型流程。
+本节用于版本规范相关的 focused acceptance 资产约束。验收命令仅允许只读或 dry-run，不在版本规范验证里执行写入型流程。
 
 - `uv run python -m agentplane.cli host automation search wsl --repo-root <repo-root>`
 - `uv run python -m agentplane.cli projection ledger refresh --target wsl --repo-root <repo-root>`

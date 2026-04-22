@@ -68,6 +68,23 @@ skill 负责路由正式入口、提示前置检查、说明验证与回写；sk
 
 runbook 负责专题步骤、人工接力点与风险解释，不承载第二份执行实现。根 `README.md` 与 `AGENTS.md` 只做稳定导航，不堆专题细节。
 
+### Canonical Truth, Runtime Resolution
+
+tracked truth 只保存可迁移的 canonical refs，例如 `apps/<app>`、`apps/<app>/contracts/<target>`、`inventory/servers/<target>/inventory.json`。Windows 盘符、WSL UNC、`/mnt/...`、`/root/...` 这类宿主访问路径只能出现在 runtime resolution 或 verification evidence 中。
+
+resolver / backend 可以把 canonical ref 解析成当前宿主可访问的 `resolved_path`，但 `resolved_path` 不是 tracked truth。`ledger` 可以保存稳定摘要，`verification` 才允许记录现场观察值。
+
+### Automation And Projection Boundary
+
+`host automation` 管“何时执行、执行什么周期任务”；`projection` 管“执行后如何验证并把机器证据写回结构化投影”。二者都不替代 `app delivery`、`service` 或 `website` 的业务执行。
+
+标准协作顺序：
+
+1. 先完成业务动作。
+2. 需要周期任务时，进入 `uv run python -m agentplane.cli host automation ...`。
+3. 需要状态投影回写时，进入 `uv run python -m agentplane.cli projection verification ...` 或 `projection ledger refresh ...`。
+4. 人类摘要与文档同步只消费投影结果，不反向充当真源。
+
 ## CLI Contract
 
 ### Command Shape
@@ -307,6 +324,7 @@ uv run python -m agentplane.cli <domain> <surface> <verb> [flags]
 2. 正式 `inventory` 是受管对象与摘要真源。
 3. `ledger` 是机器派生证据，不替代 `inventory` 总表。
 4. runbook 与 README 负责解释规则，不作为事实真源。
+5. tracked truth 不写宿主访问路径；宿主观察值只进入 runtime resolution 或 verification evidence。
 
 ### Refresh And Write-Back Order
 
@@ -403,8 +421,8 @@ uv run python -m agentplane.cli projection ledger refresh --target <target> --re
 
 ## Related Documents
 
-- [control-plane-skill-contract.md](control-plane-skill-contract.md)
-- [control-plane-governance-assets.md](control-plane-governance-assets.md)
+- [control-plane-authoring.md](../maintainers/control-plane-authoring.md)
+- [control-plane-path-policy.md](../reference/control-plane-path-policy.md)
 - [control-plane-agent-execution-flow.md](../runbooks/control-plane-agent-execution-flow.md)
 - [control-plane-legacy-migration.md](../runbooks/control-plane-legacy-migration.md)
 - [linux-governance.md](linux-governance.md)
