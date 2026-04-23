@@ -31,25 +31,25 @@
 ### WSL fixture
 
 ```bash
-uv run python -m agentplane.cli projection fixture plan --target wsl --profile wsl-fixture --repo-root <repo-root>
-uv run python -m agentplane.cli projection fixture apply --target wsl --profile wsl-fixture --repo-root <repo-root> --execute
-uv run python -m agentplane.cli projection verification run --target wsl --profile wsl-fixture --repo-root <repo-root> --write-report
-uv run python -m agentplane.cli projection fixture cleanup --target wsl --profile wsl-fixture --repo-root <repo-root> --execute
+agentplane projection fixture plan --target wsl --profile wsl-fixture --repo-root <repo-root>
+agentplane projection fixture apply --target wsl --profile wsl-fixture --repo-root <repo-root> --execute
+agentplane projection verification run --target wsl --profile wsl-fixture --repo-root <repo-root> --write-report
+agentplane projection fixture cleanup --target wsl --profile wsl-fixture --repo-root <repo-root> --execute
 ```
 
 ### prod0 readonly
 
 ```bash
-uv run python -m agentplane.cli projection verification run --target prod0-main --profile prod0-readonly --repo-root <repo-root>
-uv run python -m agentplane.cli projection ledger refresh --target prod0-main --repo-root <repo-root> --write
+agentplane projection verification run --target prod0-main --profile prod0-readonly --repo-root <repo-root>
+agentplane projection ledger refresh --target prod0-main --repo-root <repo-root> --write
 ```
 
 ### provider/debug
 
 ```bash
-uv run python -m agentplane.cli onepanel --env <target> panel get
-uv run python -m agentplane.cli onepanel --env <target> firewall search
-uv run python -m agentplane.cli onepanel --env <target> task search
+agentplane onepanel --env <target> panel get
+agentplane onepanel --env <target> firewall search
+agentplane onepanel --env <target> task search
 ```
 
 ## 使用原则

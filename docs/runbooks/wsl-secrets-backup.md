@@ -19,25 +19,25 @@
 ## Execution Entry
 
 任务 env 文件是 `secrets/services/secrets-backup.r2.wsl.env`。
-若本机 secrets 布局发生调整，先执行 `uv run python -m agentplane.cli host secrets sync-layout wsl --repo-root <repo-root> --write`，再重新核验自动化任务。
+若本机 secrets 布局发生调整，先执行 `agentplane infra secrets sync-layout wsl --repo-root <repo-root> --write`，再重新核验自动化任务。
 
 手动执行正式入口：
 
 ```bash
-env -C <repo-root> uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute
+env -C <repo-root> agentplane infra automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute
 ```
 
 核验并回写 WSL 本机计划任务：
 
 ```bash
-env -C <repo-root> uv run python -m agentplane.cli host automation verify wsl --name wsl-agentplane-secrets-backup --repo-root <repo-root>
-env -C <repo-root> uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation reconcile --execute --repo-root <repo-root>
+env -C <repo-root> agentplane infra automation verify wsl --name wsl-agentplane-secrets-backup --repo-root <repo-root>
+env -C <repo-root> agentplane infra automation apply wsl --name wsl-agentplane-secrets-backup --operation reconcile --execute --repo-root <repo-root>
 ```
 
 只读核对计划任务对象是否仍存在：
 
 ```bash
-env -C <repo-root> uv run python -m agentplane.cli onepanel \
+env -C <repo-root> agentplane onepanel \
   --env wsl \
   cronjob search \
   --info wsl-agentplane-secrets-backup
@@ -60,7 +60,7 @@ env -C <repo-root> uv run python -m agentplane.cli onepanel \
 - 周期：每 5 小时一次
 - Cron：`0 */5 * * *`
 - 工作目录：`<repo-root>`
-- 命令：`uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute`
+- 命令：`agentplane infra automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute`
 - 类型：`shell`
 - executor：`bash`
 - scriptMode：`input`
@@ -78,9 +78,9 @@ env -C <repo-root> uv run python -m pytest \
   tests/inventory/test_inventory_generation.py \
   tests/repository/test_docs_no_legacy_terms.py -q
 
-env -C <repo-root> uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute
-env -C <repo-root> uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation reconcile --execute --repo-root <repo-root>
-env -C <repo-root> uv run python -m agentplane.cli onepanel --env wsl cronjob search --info wsl-agentplane-secrets-backup
+env -C <repo-root> agentplane infra automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute
+env -C <repo-root> agentplane infra automation apply wsl --name wsl-agentplane-secrets-backup --operation reconcile --execute --repo-root <repo-root>
+env -C <repo-root> agentplane onepanel --env wsl cronjob search --info wsl-agentplane-secrets-backup
 ```
 
 ## Common Failures
@@ -95,7 +95,7 @@ env -C <repo-root> uv run python -m agentplane.cli onepanel --env wsl cronjob se
 处理：
 
 ```bash
-env -C <repo-root> uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute
+env -C <repo-root> agentplane infra automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute
 ```
 
 必要时核对 `secrets/services/secrets-backup.r2.wsl.env`。
@@ -131,4 +131,4 @@ find <repo-root>/secrets -type f | sort
 以下内容只能作为只读补充：
 
 - 打开 WSL 本机 1Panel 面板查看 cronjob 最近执行记录
-- 如需进一步核对对象层状态，继续使用 `uv run python -m agentplane.cli onepanel --env wsl cronjob ...`
+- 如需进一步核对对象层状态，继续使用 `agentplane onepanel --env wsl cronjob ...`

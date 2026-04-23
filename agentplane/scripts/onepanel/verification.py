@@ -15,7 +15,7 @@ from .object_api import (
     get_installed_app,
     get_panel_summary,
     get_task_count,
-    get_website,
+    get_ingress,
     load_cronjob,
     load_firewall_base,
     search_installed_apps,
@@ -114,9 +114,9 @@ def run_verification_suite(
     if website_alias:
         checks.append(
             _run_check(
-                "website",
-                lambda: get_website(executor, website_id=_website_id(executor, website_alias)),
-                lambda payload: payload.get("website"),
+                "ingress",
+                lambda: get_ingress(executor, website_id=_website_id(executor, website_alias)),
+                lambda payload: payload.get("ingress"),
             )
         )
 

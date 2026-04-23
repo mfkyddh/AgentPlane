@@ -9,7 +9,7 @@
   "hostname": "VM-0-15-ubuntu",
   "resource_policy": "primary-production-host",
   "ssh": {
-    "host": "175.178.114.192",
+    "infra": "175.178.114.192",
     "aliases": [
       "prod0-main",
       "zzzai.cloud"
@@ -121,7 +121,7 @@
       "app_version": "1.27.1.2-5-1-focal",
       "container_name": "1panel-openresty-prod",
       "status": "running",
-      "network_mode": "host",
+      "network_mode": "infra",
       "listen_ports": [
         8443
       ],
@@ -139,7 +139,7 @@
         }
       ]
     },
-    "public_websites": [
+    "public_ingresses": [
       {
         "alias": "1panel",
         "primary_domain": "1panel.zzzai.cloud",
@@ -204,9 +204,9 @@
   },
   "audit": {
     "documented_on": "2026-04-03",
-    "inventory_command": "uv run python -m agentplane.cli host inventory prod0-main --repo-root <repo-root>",
-    "audit_command": "uv run python -m agentplane.cli host audit prod0-main --repo-root <repo-root>",
-    "network_audit_command": "uv run python -m agentplane.cli host network audit prod0-main --repo-root <repo-root>"
+    "inventory_command": "uv run python -m agentplane.cli infra inventory prod0-main --repo-root <repo-root>",
+    "audit_command": "uv run python -m agentplane.cli infra audit prod0-main --repo-root <repo-root>",
+    "network_audit_command": "uv run python -m agentplane.cli infra network audit prod0-main --repo-root <repo-root>"
   },
   "secrets": {
     "host_first_path": "secrets/hosts/prod0-main",
@@ -215,7 +215,7 @@
       "secrets/services/sub2api.prod0.env"
     ],
     "app_resources_prefix": "secrets/hosts/prod0-main/apps/<app>/resources",
-    "notes": "主机级 secrets 映射至 host-first 路径；服务 env 仍在 secrets/services，应用资源凭据写入 secrets/hosts/prod0-main/apps/<app>/resources/，避免丢失验证痕迹。"
+    "notes": "基础设施级 secrets 映射至 host-first 路径；服务 env 仍在 secrets/services，应用资源凭据写入 secrets/hosts/prod0-main/apps/<app>/resources/，避免丢失验证痕迹。"
   },
   "network_baseline": {
     "bridge": {
@@ -238,7 +238,7 @@
     "audit_commands": [
       "ss -ltnp | grep ':8443'",
       "ss -ltnp | grep 7890",
-      "uv run python -m agentplane.cli host network audit prod0-main --repo-root <repo-root>"
+      "uv run python -m agentplane.cli infra network audit prod0-main --repo-root <repo-root>"
     ]
   },
   "probe": {
@@ -266,7 +266,7 @@
       "schedule": "daily at 05:00",
       "spec": "0 5 * * *",
       "cwd": "<repo-root>",
-      "command": "uv run python -m agentplane.cli host inventory prod0-main --repo-root <repo-root>",
+      "command": "uv run python -m agentplane.cli infra inventory prod0-main --repo-root <repo-root>",
       "docs": [
         "docs/runbooks/prod0-main-governance.md"
       ],
@@ -279,7 +279,7 @@
       "schedule": "daily at 05:15",
       "spec": "15 5 * * *",
       "cwd": "<repo-root>",
-      "command": "uv run python -m agentplane.cli host audit prod0-main --repo-root <repo-root>",
+      "command": "uv run python -m agentplane.cli infra audit prod0-main --repo-root <repo-root>",
       "docs": [
         "docs/runbooks/prod0-main-governance.md"
       ]
@@ -291,7 +291,7 @@
       "schedule": "daily at 05:30",
       "spec": "30 5 * * *",
       "cwd": "<repo-root>",
-      "command": "uv run python -m agentplane.cli host network audit prod0-main --repo-root <repo-root>",
+      "command": "uv run python -m agentplane.cli infra network audit prod0-main --repo-root <repo-root>",
       "docs": [
         "docs/runbooks/prod0-main-governance.md"
       ]

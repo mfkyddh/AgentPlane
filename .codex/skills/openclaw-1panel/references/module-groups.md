@@ -144,7 +144,7 @@ Primary endpoints:
 
 Common `files/read` log types:
 
-- `website`
+- `ingress`
 - `system`
 - `task`
 

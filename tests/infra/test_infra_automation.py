@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from agentplane.cli import host_automation
+from agentplane.cli import infra_automation
 
 
 class FakeExecutor:
@@ -69,7 +69,7 @@ def write_inventory(root: Path) -> None:
                         "controller": "1panel-cronjob",
                         "spec": "0 */2 * * *",
                         "cwd": "<repo-root>",
-                        "command": "uv run python -m agentplane.cli host automation apply wsl --name wsl-zzz-skills-sync --operation run --execute",
+                        "command": "uv run python -m agentplane.cli infra automation apply wsl --name wsl-zzz-skills-sync --operation run --execute",
                         "source_root": "external/codex-skills",
                         "target_repo": "external/zzz-skills",
                         "target_branch": "main",
@@ -79,7 +79,7 @@ def write_inventory(root: Path) -> None:
                         "controller": "1panel-cronjob",
                         "spec": "0 */5 * * *",
                         "cwd": "<repo-root>",
-                        "command": "uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute",
+                        "command": "uv run python -m agentplane.cli infra automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute",
                         "env_file": "secrets/services/secrets-backup.r2.wsl.env",
                     },
                 ]
@@ -91,21 +91,21 @@ def write_inventory(root: Path) -> None:
     )
 
 
-class HostAutomationTests(unittest.TestCase):
+class InfraAutomationTests(unittest.TestCase):
     def test_search_rejects_unknown_target(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory(root)
 
             with self.assertRaisesRegex(ValueError, "unsupported automation target"):
-                host_automation.search_host_automations(root, "prod9-unknown")
+                infra_automation.search_infra_automations(root, "prod9-unknown")
 
     def test_search_reads_inventory_automation_truth(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory(root)
 
-            payload = host_automation.search_host_automations(root, "wsl")
+            payload = infra_automation.search_infra_automations(root, "wsl")
 
             self.assertEqual(2, len(payload["items"]))
             self.assertEqual("wsl-zzz-skills-sync", payload["items"][0]["name"])
@@ -118,7 +118,7 @@ class HostAutomationTests(unittest.TestCase):
             root = Path(tmp)
             write_inventory(root)
 
-            payload = host_automation.plan_host_automation(
+            payload = infra_automation.plan_infra_automation(
                 root,
                 "wsl",
                 "wsl-zzz-skills-sync",
@@ -128,7 +128,7 @@ class HostAutomationTests(unittest.TestCase):
 
             self.assertTrue(payload["ok"])
             self.assertEqual("create", payload["actions"][0]["mode"])
-            self.assertIn("host automation apply wsl --name wsl-zzz-skills-sync --operation run --execute", payload["actions"][0]["body"]["script"])
+            self.assertIn("infra automation apply wsl --name wsl-zzz-skills-sync --operation run --execute", payload["actions"][0]["body"]["script"])
 
     def test_verify_detects_legacy_cronjob_script_drift(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -151,7 +151,7 @@ class HostAutomationTests(unittest.TestCase):
                 ]
             )
 
-            payload = host_automation.verify_host_automation(
+            payload = infra_automation.verify_infra_automation(
                 root,
                 "wsl",
                 "wsl-agentplane-secrets-backup",
@@ -183,7 +183,7 @@ class HostAutomationTests(unittest.TestCase):
                 ]
             )
 
-            payload = host_automation.apply_host_automation(
+            payload = infra_automation.apply_infra_automation(
                 root,
                 "wsl",
                 "wsl-agentplane-secrets-backup",
@@ -196,7 +196,7 @@ class HostAutomationTests(unittest.TestCase):
             self.assertEqual(["update", "status"], [item["mode"] for item in payload["results"]])
             self.assertEqual("Enable", executor.cronjobs[0]["status"])
             self.assertIn(
-                "host automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute",
+                "infra automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute",
                 str(executor.cronjobs[0]["script"]),
             )
 
@@ -204,13 +204,13 @@ class HostAutomationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory(root)
-            original = host_automation.AUTOMATION_DEFINITIONS["wsl-zzz-skills-sync"]
-            host_automation.AUTOMATION_DEFINITIONS["wsl-zzz-skills-sync"] = host_automation.HostAutomationDefinition(
+            original = infra_automation.AUTOMATION_DEFINITIONS["wsl-zzz-skills-sync"]
+            infra_automation.AUTOMATION_DEFINITIONS["wsl-zzz-skills-sync"] = infra_automation.InfraAutomationDefinition(
                 name="wsl-zzz-skills-sync",
                 runner=lambda repo_root, automation: {"status": "ok_no_changes", "repo_root": str(repo_root), "name": automation["name"]},
             )
             try:
-                payload = host_automation.apply_host_automation(
+                payload = infra_automation.apply_infra_automation(
                     root,
                     "wsl",
                     "wsl-zzz-skills-sync",
@@ -218,7 +218,7 @@ class HostAutomationTests(unittest.TestCase):
                     execute=True,
                 )
             finally:
-                host_automation.AUTOMATION_DEFINITIONS["wsl-zzz-skills-sync"] = original
+                infra_automation.AUTOMATION_DEFINITIONS["wsl-zzz-skills-sync"] = original
 
             self.assertTrue(payload["ok"])
             self.assertEqual("run", payload["operation"])
@@ -229,7 +229,7 @@ class HostAutomationTests(unittest.TestCase):
             root = Path(tmp)
             write_inventory(root)
 
-            payload = host_automation.plan_host_automation(
+            payload = infra_automation.plan_infra_automation(
                 root,
                 "wsl",
                 "wsl-agentplane-secrets-backup",

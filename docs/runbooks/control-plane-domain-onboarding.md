@@ -15,7 +15,7 @@
 
 ## 开场规则
 
-- 先跑 `uv run python -m agentplane.cli bootstrap inspect-local --repo-root <repo-root>`，确认当前 control root、workspace binding 与 backend 绑定。
+- 先跑 `agentplane bootstrap inspect-local --repo-root <repo-root>`，确认当前 control root、workspace binding 与 backend 绑定。
 - 如果是 fresh fork，再补 `bootstrap verify-secrets` 或 `bootstrap doctor`，确认 humans 只需要填 `secrets` 与少量 `identity`。
 - 领域设计只写 formal CLI、skill、runbook 与测试合同，不写第二控制面脚本。
 
@@ -99,9 +99,9 @@
 ## 最小命令示例
 
 ```bash
-uv run python -m agentplane.cli --help
-uv run python -m agentplane.cli bootstrap inspect-local --repo-root <repo-root>
-uv run python -m agentplane.cli host inventory <target> --repo-root <repo-root>
+agentplane --help
+agentplane bootstrap inspect-local --repo-root <repo-root>
+agentplane infra inventory <target> --repo-root <repo-root>
 ```
 
 ## 禁止事项

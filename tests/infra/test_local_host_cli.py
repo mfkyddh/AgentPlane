@@ -54,10 +54,10 @@ class LocalHostCliTests(unittest.TestCase):
             payload["workspace"]["artifact_staging_root"],
         )
 
-    def test_host_local_inspect_reports_windows_control_root(self) -> None:
-        payload = run_cli_json("host", "local", "inspect", "--repo-root", "C:/repos/agentplane")
+    def test_infra_local_inspect_reports_windows_control_root(self) -> None:
+        payload = run_cli_json("infra", "local", "inspect", "--repo-root", "C:/repos/agentplane")
 
-        self.assertEqual("host", payload["command"])
+        self.assertEqual("infra", payload["command"])
         self.assertEqual("local.inspect", payload["action"])
         self.assertEqual("local", payload["target"])
         self.assertTrue(payload["payload"]["control_root"].endswith("C:\\repos\\agentplane"))
@@ -69,9 +69,9 @@ class LocalHostCliTests(unittest.TestCase):
         self.assertTrue(payload["payload"]["workspace"]["local_command_root"].endswith("C:\\repos\\agentplane"))
         self.assertEqual("canonical-ref-only", payload["payload"]["path_policy"]["truth"])
 
-    def test_host_local_migration_entry_is_removed(self) -> None:
+    def test_infra_local_migration_entry_is_removed(self) -> None:
         result = subprocess.run(
-            [sys.executable, "-m", "agentplane.cli", "host", "local", "migrate", "plan"],
+            [sys.executable, "-m", "agentplane.cli", "infra", "local", "migrate", "plan"],
             cwd=REPO_ROOT,
             text=True,
             capture_output=True,

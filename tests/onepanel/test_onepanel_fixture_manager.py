@@ -111,7 +111,7 @@ class OnePanelFixtureManagerTests(unittest.TestCase):
         payload = plan_fixture(executor, spec)
 
         actions = {item["object"]: item["action"] for item in payload["items"]}
-        self.assertEqual("create", actions["website"])
+        self.assertEqual("create", actions["ingress"])
         self.assertEqual("create", actions["project"])
         self.assertEqual("create", actions["cronjob"])
 

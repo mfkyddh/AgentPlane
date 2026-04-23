@@ -8,11 +8,11 @@ from typing import Any
 
 from agentplane.cli.apps import add_app_parser, handle_app_command
 from agentplane.cli.bootstrap import add_bootstrap_parser, handle_bootstrap_command
-from agentplane.cli.host import add_host_parser, handle_host_command
-from agentplane.cli.onepanel import add_onepanel_parser, handle_onepanel_command, onepanel_error_payload, render_onepanel_text
+from agentplane.cli.infra import add_infra_parser, handle_infra_command
+from agentplane.cli.infra_onepanel import add_onepanel_parser, handle_onepanel_command, onepanel_error_payload, render_onepanel_text
+from agentplane.cli.ingress import add_ingress_parser, handle_ingress_command
 from agentplane.cli.projection import add_projection_parser, handle_projection_command
 from agentplane.cli.service import add_service_parser, handle_service_command
-from agentplane.cli.website import add_website_parser, handle_website_command
 
 
 def _emit(payload: dict[str, Any]) -> None:
@@ -20,7 +20,7 @@ def _emit(payload: dict[str, Any]) -> None:
 
 
 def _split_remote_bash_remainder(argv: list[str]) -> tuple[list[str], list[str]]:
-    if argv[:3] != ["host", "remote", "bash"]:
+    if argv[:3] != ["infra", "remote", "bash"]:
         return argv, []
     prefix = 3
     if "--" not in argv:
@@ -38,14 +38,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    add_onepanel_parser(subparsers)
-
     add_bootstrap_parser(subparsers)
-    add_host_parser(subparsers)
+    add_infra_parser(subparsers)
     add_service_parser(subparsers)
-    add_website_parser(subparsers)
+    add_ingress_parser(subparsers)
     add_app_parser(subparsers)
     add_projection_parser(subparsers)
+    add_onepanel_parser(subparsers)
 
     return parser
 
@@ -55,7 +54,7 @@ def main(argv: list[str] | None = None) -> int:
     parse_argv, remote_remainder = _split_remote_bash_remainder(raw_argv)
     parser = build_parser()
     args = parser.parse_args(parse_argv)
-    if remote_remainder and args.command == "host" and getattr(args, "host_action", None) == "remote" and getattr(args, "host_remote_action", None) == "bash":
+    if remote_remainder and args.command == "infra" and getattr(args, "infra_action", None) == "remote" and getattr(args, "infra_remote_action", None) == "bash":
         args.remote_args = [*getattr(args, "remote_args", []), *remote_remainder]
 
     if args.command == "onepanel":
@@ -76,9 +75,9 @@ def main(argv: list[str] | None = None) -> int:
                 print(render_onepanel_text(payload), end="")
             return 1
 
-    if args.command == "host":
+    if args.command == "infra":
         try:
-            payload = handle_host_command(args)
+            payload = handle_infra_command(args)
             _emit(payload)
             if payload.get("action") == "remote.bash":
                 return 0 if payload.get("payload", {}).get("ok", True) else 1
@@ -117,15 +116,15 @@ def main(argv: list[str] | None = None) -> int:
             print(str(exc), file=sys.stderr)
             return 1
 
-    if args.command == "website":
+    if args.command == "ingress":
         try:
-            payload = handle_website_command(args)
+            payload = handle_ingress_command(args)
             _emit(payload)
-            if args.website_action == "verify":
+            if args.ingress_action == "verify":
                 return 0 if payload.get("payload", {}).get("ok", True) else 1
-            if args.website_action == "apply":
+            if args.ingress_action == "apply":
                 return 0 if payload.get("payload", {}).get("ok", True) else 1
-            if args.website_action == "publish" and getattr(args, "website_publish_action", None) in {"apply", "verify"}:
+            if args.ingress_action == "publish" and getattr(args, "ingress_publish_action", None) in {"apply", "verify"}:
                 return 0 if payload.get("payload", {}).get("ok", True) else 1
             return 0
         except ValueError as exc:

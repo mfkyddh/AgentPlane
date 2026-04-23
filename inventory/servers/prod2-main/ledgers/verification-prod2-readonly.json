@@ -53,10 +53,10 @@
       }
     },
     {
-      "scope": "website",
+      "scope": "ingress",
       "ok": true,
       "payload": {
-        "website": {
+        "ingress": {
           "id": 2,
           "createdAt": "2026-03-27T14:16:14.963210438Z",
           "updatedAt": "2026-03-27T14:16:18.896671385Z",

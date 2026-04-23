@@ -24,7 +24,7 @@
 printf '%s\n' \
   'set -euo pipefail' \
   '1panel version' \
-| uv run python -m agentplane.cli remote bash prod0-main
+| agentplane remote bash prod0-main
 ```
 
 返回：
@@ -230,7 +230,7 @@ PANEL_EDITION=cn
 当生产机版本变化时，建议按这个顺序更新：
 
 1. 先实测生产机版本  
-   `printf '%s\n' 'set -euo pipefail' '1panel version' | uv run python -m agentplane.cli remote bash prod0-main`
+   `printf '%s\n' 'set -euo pipefail' '1panel version' | agentplane remote bash prod0-main`
 2. 看本地 `/root/github/1Panel` 是否已是相同 tag
 3. 如果不一致，直接按目标 tag 重新做浅克隆，或在现有仓库上只抓对应 tag
 

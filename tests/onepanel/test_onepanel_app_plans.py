@@ -29,7 +29,7 @@ class OnePanelAppPlanTests(unittest.TestCase):
     def test_plan_app_install_uses_empty_params_when_detail_params_is_none(self) -> None:
         plan = plan_app_install(
             app_key="openresty",
-            app_type="website",
+            app_type="ingress",
             detail={
                 "id": 22,
                 "params": None,

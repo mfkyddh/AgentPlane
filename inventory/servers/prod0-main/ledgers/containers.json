@@ -34,7 +34,7 @@
       "app_version": "1.27.1.2-5-1-focal",
       "container_name": "1panel-openresty-prod",
       "status": "running",
-      "network_mode": "host",
+      "network_mode": "infra",
       "listen_ports": [
         8443
       ],

@@ -31,7 +31,7 @@ from agentplane.domain.app.truth_lifecycle import (
     plan_app_resource_registry_onboard,
     scan_offboarding_orphans,
 )
-from agentplane.domain.projection.runtime_env import (
+from agentplane.domain.app.projection.runtime_env import (
     apply_runtime_env_projection,
     plan_runtime_env_projection,
     service_env_file,
@@ -43,13 +43,13 @@ from agentplane.domain.service.lifecycle import (
     plan_service_registry_offboard,
     plan_service_registry_onboard,
 )
-from agentplane.domain.website.lifecycle import (
-    apply_website_truth_offboard,
-    apply_website_truth_onboard,
-    plan_website_truth_offboard,
-    plan_website_truth_onboard,
+from agentplane.domain.ingress.lifecycle import (
+    apply_ingress_truth_offboard,
+    apply_ingress_truth_onboard,
+    plan_ingress_truth_offboard,
+    plan_ingress_truth_onboard,
 )
-from agentplane.domain.website.models import WebsiteDefinition
+from agentplane.domain.ingress.models import IngressDefinition
 from agentplane.runtime.execution import ExecutionBindings, ExecutionPlan, PlannedExecutionStep, shell_join
 from agentplane.ssh import SshTarget
 
@@ -403,7 +403,7 @@ def _service_entry_from_validated(validated: ValidatedDeliveryContract) -> dict[
     }
     if isinstance(host_binding, str) and host_binding:
         entry["host_binding"] = host_binding
-    public_sites = _website_sites(validated.contract)
+    public_sites = _ingress_sites(validated.contract)
     if public_sites:
         public_url = public_sites[0].get("public_url")
         if isinstance(public_url, str) and public_url:
@@ -411,7 +411,7 @@ def _service_entry_from_validated(validated: ValidatedDeliveryContract) -> dict[
     return entry
 
 
-def _website_sites(contract: dict[str, Any]) -> list[dict[str, Any]]:
+def _ingress_sites(contract: dict[str, Any]) -> list[dict[str, Any]]:
     top_level = contract.get("public_sites")
     if isinstance(top_level, list):
         return [site for site in top_level if isinstance(site, dict)]
@@ -421,16 +421,16 @@ def _website_sites(contract: dict[str, Any]) -> list[dict[str, Any]]:
     return []
 
 
-def _website_definitions(validated: ValidatedDeliveryContract) -> list[WebsiteDefinition]:
+def _ingress_definitions(validated: ValidatedDeliveryContract) -> list[IngressDefinition]:
     runtime = validated.contract.get("runtime", {})
     proxy = f"http://{runtime.get('host_binding', '127.0.0.1:80')}"
-    definitions: list[WebsiteDefinition] = []
-    for site in _website_sites(validated.contract):
+    definitions: list[IngressDefinition] = []
+    for site in _ingress_sites(validated.contract):
         alias = str(site.get("website_object") or site.get("alias") or validated.app)
         primary_domain = str(site.get("domain") or site.get("primary_domain") or alias)
         public_url = str(site.get("public_url") or "")
         definitions.append(
-            WebsiteDefinition(
+            IngressDefinition(
                 alias=alias,
                 primary_domain=primary_domain,
                 public_url=public_url,
@@ -769,12 +769,12 @@ def onboard_delivery_for_app(
     )
 
     website_steps: list[dict[str, Any]] = []
-    for definition in _website_definitions(validated):
+    for definition in _ingress_definitions(validated):
         if write_mode:
-            payload = apply_website_truth_onboard(repo_root, target, definition, execute=True)
+            payload = apply_ingress_truth_onboard(repo_root, target, definition, execute=True)
             changed = payload["result"]["action"] in {"created", "updated"}
         else:
-            payload = plan_website_truth_onboard(repo_root, target, definition)
+            payload = plan_ingress_truth_onboard(repo_root, target, definition)
             changed = bool(payload.get("steps"))
         website_steps.append(
             _record_step(
@@ -870,12 +870,12 @@ def offboard_delivery_for_app(
         ),
     ]
 
-    for definition in _website_definitions(validated):
+    for definition in _ingress_definitions(validated):
         if write_mode:
-            payload = apply_website_truth_offboard(repo_root, target, definition.alias, execute=True)
+            payload = apply_ingress_truth_offboard(repo_root, target, definition.alias, execute=True)
             changed = payload["result"]["action"] == "removed"
         else:
-            payload = plan_website_truth_offboard(repo_root, target, definition.alias)
+            payload = plan_ingress_truth_offboard(repo_root, target, definition.alias)
             changed = bool(payload.get("steps"))
         steps.append(
             _record_step(

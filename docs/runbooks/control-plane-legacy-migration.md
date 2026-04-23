@@ -15,7 +15,7 @@
 
 ## 正式入口
 
-迁移后的正式入口必须是 `uv run python -m agentplane.cli ...`。
+迁移后的正式入口必须是 `agentplane ...`。
 
 ## 识别第二控制面
 
@@ -42,8 +42,8 @@
 对每个旧入口，给出正式 CLI 对应物：
 
 ```bash
-uv run python -m agentplane.cli --help
-uv run python -m agentplane.cli host remote bash <target> --help
+agentplane --help
+agentplane infra remote bash <target> --help
 ```
 
 ### 3. 标注兼容状态
@@ -87,11 +87,11 @@ uv run python -m agentplane.cli host remote bash <target> --help
 正式入口：
 
 ```bash
-uv run python -m agentplane.cli host remote bash prod0-main --repo-root <repo-root> --dry-run
-uv run python -m agentplane.cli host inventory prod0-main --repo-root <repo-root>
+agentplane infra remote bash prod0-main --repo-root <repo-root> --dry-run
+agentplane infra inventory prod0-main --repo-root <repo-root>
 ```
 
-历史上曾存在 `uv run python -m agentplane.cli remote bash ...`、`uv run python -m agentplane.cli inventory ...` 等顶层入口；当前正式入口已经收口到 `host` 对象域与其他正式对象域，这些旧命令不再被 parser 接受。
+历史上曾存在 `agentplane remote bash ...`、`agentplane inventory ...` 等顶层入口；当前正式入口已经收口到 `infra` 对象域与其他正式对象域，这些旧命令不再被 parser 接受。
 
 兼容入口说明示例：
 

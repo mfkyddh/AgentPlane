@@ -56,7 +56,7 @@ def verify_container_service(repo_root: Path, target: str, definition: ServiceDe
         actual_network_mode = host_config.get("NetworkMode")
         checks["network_mode"] = {"ok": actual_network_mode == expected_network_mode, "actual": actual_network_mode, "expected": expected_network_mode}
 
-    host_network_mode = host_config.get("NetworkMode") == "host"
+    host_network_mode = host_config.get("NetworkMode") == "infra"
     expected_host_binding = declared.get("host_binding") if isinstance(declared, dict) else None
     if isinstance(expected_host_binding, str) and expected_host_binding:
         actual_bindings: list[str] = []

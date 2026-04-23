@@ -24,7 +24,7 @@
 - `--repo-root` 始终指 AgentPlane 仓库根。
 - Windows 与 WSL 默认共享同一份源码 checkout；WSL 侧验证通过 resolver/backend 路由到同一工作树。
 - 应用合同真源仍在应用仓库自己的 `deploy/agentplane/contract*.yaml`。
-- catalog 是 canonical truth；当正式仓库根不是控制面同级目录时，resolver 负责把 canonical ref 解析到实际应用仓库。
+- catalog 只保存逻辑路径（如 `apps/<app>`）；当正式仓库根不是控制面同级目录时，resolver 负责把逻辑路径解析到实际应用仓库的物理路径。
 - `--app-repo-root` 只用于临时 worktree 或显式覆盖，不应该成为长期主路径。
 
 ## 当前正式合同要点
@@ -52,7 +52,7 @@
 ### AgentPlane 必须已经具备
 
 - 目标环境 inventory
-- SSH 与 host secrets
+- SSH 与 infra secrets
 - 目标侧基础设施对象
 - 网站入口对象或 internal ingress 约束
 
@@ -60,9 +60,9 @@
 
 先过合同门禁，再做任何正式交付预演。
 
-- `uv run python -m agentplane.cli app delivery validate-contract --target <target> --app <app> --repo-root <repo-root>`
-- `uv run python -m agentplane.cli app delivery build-artifact --target <target> --app <app> --repo-root <repo-root> --image-tag <tag> --dry-run`
-- `uv run python -m agentplane.cli app delivery render-runtime --target <target> --app <app> --repo-root <repo-root> --image-ref <image:tag>`
+- `agentplane app delivery validate-contract --target <target> --app <app> --repo-root <repo-root>`
+- `agentplane app delivery build-artifact --target <target> --app <app> --repo-root <repo-root> --image-tag <tag> --dry-run`
+- `agentplane app delivery render-runtime --target <target> --app <app> --repo-root <repo-root> --image-ref <image:tag>`
 
 这是应用接入不变量的最早正式门禁。  
 未通过前不进入 `build-artifact`、`ship-image`、`render-runtime`、`deploy`、`rollback` 或 `verify`。  
@@ -70,8 +70,8 @@
 
 ### 4.5 新 target 首次纳管补充项
 
-- `uv run python -m agentplane.cli host network audit <target> --repo-root <repo-root>`
-- `uv run python -m agentplane.cli host network ensure <target> --repo-root <repo-root>`
+- `agentplane infra network audit <target> --repo-root <repo-root>`
+- `agentplane infra network ensure <target> --repo-root <repo-root>`
 
 ### 4.6 第二个应用接入前的预检
 
@@ -84,7 +84,7 @@
 ### 1. 合同校验
 
 ```bash
-uv run python -m agentplane.cli app delivery validate-contract --target <target> --app <app> --repo-root <repo-root>
+agentplane app delivery validate-contract --target <target> --app <app> --repo-root <repo-root>
 ```
 
 任何构建、部署、回滚、验证之前，都先过这里。
@@ -92,7 +92,7 @@ uv run python -m agentplane.cli app delivery validate-contract --target <target>
 ### 2. 构建交付物
 
 ```bash
-uv run python -m agentplane.cli app delivery build-artifact --target <target> --app <app> --repo-root <repo-root> --image-tag <tag>
+agentplane app delivery build-artifact --target <target> --app <app> --repo-root <repo-root> --image-tag <tag>
 ```
 
 当前推荐模式是：
@@ -104,13 +104,13 @@ uv run python -m agentplane.cli app delivery build-artifact --target <target> --
 ### 3. 上传镜像
 
 ```bash
-uv run python -m agentplane.cli app delivery ship-image --target <target> --app <app> --repo-root <repo-root> --image-ref <image:tag>
+agentplane app delivery ship-image --target <target> --app <app> --repo-root <repo-root> --image-ref <image:tag>
 ```
 
 ### 4. 渲染运行时
 
 ```bash
-uv run python -m agentplane.cli app delivery render-runtime --target <target> --app <app> --repo-root <repo-root> --image-ref <image:tag>
+agentplane app delivery render-runtime --target <target> --app <app> --repo-root <repo-root> --image-ref <image:tag>
 ```
 
 这里主要看 4 件事：
@@ -123,20 +123,20 @@ uv run python -m agentplane.cli app delivery render-runtime --target <target> --
 ### 5. 部署与验证
 
 ```bash
-uv run python -m agentplane.cli app delivery deploy --target <target> --app <app> --repo-root <repo-root> --image-ref <image:tag> --dry-run
-uv run python -m agentplane.cli app delivery deploy --target <target> --app <app> --repo-root <repo-root> --image-ref <image:tag> --execute
-uv run python -m agentplane.cli app delivery verify --target <target> --app <app> --repo-root <repo-root> --execute
+agentplane app delivery deploy --target <target> --app <app> --repo-root <repo-root> --image-ref <image:tag> --dry-run
+agentplane app delivery deploy --target <target> --app <app> --repo-root <repo-root> --image-ref <image:tag> --execute
+agentplane app delivery verify --target <target> --app <app> --repo-root <repo-root> --execute
 ```
 
 `deploy --dry-run` 是部署计划入口，不是合同校验入口。
 
-生产目标在 `deploy --execute` 和 `verify --execute` 前后，会自动联动 `host network ensure/audit`。
+生产目标在 `deploy --execute` 和 `verify --execute` 前后，会自动联动 `infra network ensure/audit`。
 
 ### 6. 回写
 
 ```bash
-uv run python -m agentplane.cli app delivery inventory-refresh --target <target> --app <app> --repo-root <repo-root> --write
-uv run python -m agentplane.cli app delivery doc-sync --target <target> --app <app> --repo-root <repo-root> --write
+agentplane app delivery inventory-refresh --target <target> --app <app> --repo-root <repo-root> --write
+agentplane app delivery doc-sync --target <target> --app <app> --repo-root <repo-root> --write
 ```
 
 ## `sub2api` 当前样板结论

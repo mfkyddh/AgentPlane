@@ -4,7 +4,7 @@ import tomllib
 
 import pytest
 
-from agentplane.domain.host.live_gate import (
+from agentplane.domain.infra.live_gate import (
     assert_live_gate_checkout,
     plan_live_gate,
     run_live_gate,
@@ -55,10 +55,10 @@ def test_wsl_live_gate_keeps_formal_cli_on_host_entry() -> None:
     assert steps["toolchain.uv"]["execution"] == "linux-backend"
     assert steps["toolchain.docker"]["execution"] == "linux-backend"
     assert steps["toolchain.docker-compose"]["execution"] == "linux-backend"
-    assert steps["host.inventory"]["execution"] == "host"
-    assert steps["projection.verification"]["execution"] == "host"
-    assert steps["projection.runtime-env.verify"]["execution"] == "host"
-    assert steps["service.verify"]["execution"] == "host"
+    assert steps["host.inventory"]["execution"] == "infra"
+    assert steps["projection.verification"]["execution"] == "infra"
+    assert steps["projection.runtime-env.verify"]["execution"] == "infra"
+    assert steps["service.verify"]["execution"] == "infra"
 
 
 def test_default_pytest_excludes_live_gate_marker() -> None:
@@ -76,7 +76,7 @@ def test_prod_live_gate_plan_uses_ssh_and_docker_capabilities() -> None:
     assert "ssh" in summarize_capabilities(payload["steps"])
     assert "docker" in summarize_capabilities(payload["steps"])
     assert payload["steps"][0]["argv"][:5] == ["uv", "run", "python", "-m", "agentplane.cli"]
-    assert payload["steps"][0]["argv"][5:9] == ["host", "remote", "bash", "prod0-main"]
+    assert payload["steps"][0]["argv"][5:9] == ["infra", "remote", "bash", "prod0-main"]
 
 
 def test_live_gate_run_without_execute_only_returns_plan() -> None:

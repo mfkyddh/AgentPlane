@@ -35,11 +35,11 @@ packaging:
 
 ## CLI 行为
 
-- `uv run python -m agentplane.cli app delivery build-artifact --dry-run` 会尽量输出推荐的：
+- `agentplane app delivery build-artifact --dry-run` 会尽量输出推荐的：
   - `fork_version`
   - `delivery_version`
   - `image_tag`
-- `uv run python -m agentplane.cli app delivery build-artifact --auto-version` 会使用这套规则自动生成本次构建的 `IMAGE_TAG`
+- `agentplane app delivery build-artifact --auto-version` 会使用这套规则自动生成本次构建的 `IMAGE_TAG`
 - 若应用仓库无法提供上游版本或 git short SHA，CLI 不会伪造版本号；自动生成会直接失败
 
 ## 序号来源
@@ -52,6 +52,6 @@ packaging:
 
 本节用于版本规范相关的 focused acceptance 资产约束。验收命令仅允许只读或 dry-run，不在版本规范验证里执行写入型流程。
 
-- `uv run python -m agentplane.cli host automation search wsl --repo-root <repo-root>`
-- `uv run python -m agentplane.cli projection ledger refresh --target wsl --repo-root <repo-root>`
-- `uv run python -m agentplane.cli app delivery build-artifact --target <target> --app <app> --repo-root <repo-root> --dry-run`
+- `agentplane infra automation search wsl --repo-root <repo-root>`
+- `agentplane projection ledger refresh --target wsl --repo-root <repo-root>`
+- `agentplane app delivery build-artifact --target <target> --app <app> --repo-root <repo-root> --dry-run`

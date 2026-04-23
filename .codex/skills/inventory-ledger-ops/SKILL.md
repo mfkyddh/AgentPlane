@@ -13,7 +13,7 @@ Refresh ledgers and summaries after infrastructure or app changes so tracked sta
 
 ```bash
 uv run python -m agentplane.cli projection ledger refresh --target <target> --repo-root <repo-root> --write
-uv run python -m agentplane.cli website refresh-ledger --target <target> --repo-root <repo-root> --write
+uv run python -m agentplane.cli ingress refresh-ledger --target <target> --repo-root <repo-root> --write
 uv run python -m agentplane.cli app object refresh-ledger --target <target> --repo-root <repo-root> --write
 uv run python -m agentplane.cli app delivery inventory-refresh --target <target> --app <app> --repo-root <repo-root> --write
 uv run python -m agentplane.cli app delivery doc-sync --target <target> --app <app> --repo-root <repo-root> --write

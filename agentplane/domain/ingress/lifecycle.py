@@ -5,10 +5,10 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from agentplane.runtime.workspace import resolve_workspace_from_repo
-from agentplane.domain.website.models import WebsiteDefinition, WebsiteFollowThrough
-from agentplane.domain.website.registry import (
-    SUPPORTED_WEBSITE_TARGETS,
-    resolve_website_verification_profile,
+from agentplane.domain.ingress.models import IngressDefinition, IngressFollowThrough
+from agentplane.domain.ingress.registry import (
+    SUPPORTED_INGRESS_TARGETS,
+    resolve_ingress_verification_profile,
 )
 
 PAYLOAD_KEYS = (
@@ -26,7 +26,7 @@ WORKSPACE = resolve_workspace_from_repo(Path(__file__).resolve().parents[3])
 REPO_ROOT = WORKSPACE.control_root
 
 
-def summarize_website(definition: WebsiteDefinition) -> dict[str, Any]:
+def summarize_ingress(definition: IngressDefinition) -> dict[str, Any]:
     return {
         "alias": definition.alias,
         "primary_domain": definition.primary_domain,
@@ -40,8 +40,8 @@ def summarize_website(definition: WebsiteDefinition) -> dict[str, Any]:
     }
 
 
-def build_website_follow_through(target: str, *, source_surface: str, alias: str | None = None) -> dict[str, Any]:
-    profile = resolve_website_verification_profile(target)
+def build_ingress_follow_through(target: str, *, source_surface: str, alias: str | None = None) -> dict[str, Any]:
+    profile = resolve_ingress_verification_profile(target)
     verify_cmd = (
         f"uv run python -m agentplane.cli projection verification run "
         f"--target {target} --profile {profile} --repo-root {REPO_ROOT}"
@@ -52,33 +52,33 @@ def build_website_follow_through(target: str, *, source_surface: str, alias: str
         f"uv run python -m agentplane.cli projection ledger refresh "
         f"--target {target} --repo-root {REPO_ROOT} --write"
     )
-    follow_through = WebsiteFollowThrough(
+    follow_through = IngressFollowThrough(
         owner_surface="projection",
         source_surface=source_surface,
         verification_profile=profile,
         verification_command=verify_cmd,
         ledger_refresh_command=ledger_cmd,
         notes=(
-            "website publish/reconcile 只负责入口对象变更，projection 承接验证与台帐刷新。",
+            "ingress publish/reconcile 只负责入口对象变更，projection 承接验证与台帐刷新。",
             "如需写入验证报告，可在 verification 命令追加 --write-report。",
         ),
     )
     return follow_through.as_dict()
 
 
-def plan_website_truth_onboard(repo_root: Path | str, target: str, definition: WebsiteDefinition) -> dict[str, Any]:
+def plan_ingress_truth_onboard(repo_root: Path | str, target: str, definition: IngressDefinition) -> dict[str, Any]:
     resolved_root = Path(repo_root).resolve()
     _validate_target(target)
     payload = _definition_payload(definition)
     inventory_path = _inventory_file(resolved_root, target)
-    entries = _public_websites_snapshot(_load_inventory(inventory_path))
+    entries = _public_ingresses_snapshot(_load_inventory(inventory_path))
     index, existing = _find_alias(entries, definition.alias)
     if index is None:
         drift = {"status": "missing", "failures": ["missing"]}
         steps = [
             {
                 "kind": "append",
-                "description": "add website truth entry to services.public_websites",
+                "description": "add website truth entry to services.public_ingresses",
                 "path": str(inventory_path),
                 "payload": dict(payload),
             }
@@ -92,7 +92,7 @@ def plan_website_truth_onboard(repo_root: Path | str, target: str, definition: W
             steps = [
                 {
                     "kind": "replace",
-                    "description": "update services.public_websites entry to match definition",
+                    "description": "update services.public_ingresses entry to match definition",
                     "path": str(inventory_path),
                     "payload": dict(payload),
                     "previous": dict(existing),
@@ -101,29 +101,29 @@ def plan_website_truth_onboard(repo_root: Path | str, target: str, definition: W
     return _build_plan(
         target=target,
         alias=definition.alias,
-        definition=summarize_website(definition),
+        definition=summarize_ingress(definition),
         operation="onboard",
         drift=drift,
         steps=steps,
-        source_surface="website.truth.onboard",
+        source_surface="ingress.truth.onboard",
     )
 
 
-def apply_website_truth_onboard(repo_root: Path | str, target: str, definition: WebsiteDefinition, *, execute: bool) -> dict[str, Any]:
+def apply_ingress_truth_onboard(repo_root: Path | str, target: str, definition: IngressDefinition, *, execute: bool) -> dict[str, Any]:
     if not execute:
         raise ValueError("website truth onboarding apply requires --execute")
     resolved_root = Path(repo_root).resolve()
-    plan = plan_website_truth_onboard(resolved_root, target, definition)
+    plan = plan_ingress_truth_onboard(resolved_root, target, definition)
     payload = _definition_payload(definition)
     action = "noop"
     drift_status = plan["drift"]["status"]
     if drift_status == "missing":
-        _append_website(resolved_root, target, payload)
+        _append_ingress(resolved_root, target, payload)
         action = "created"
     elif drift_status == "drift":
-        _replace_website(resolved_root, target, definition.alias, payload)
+        _replace_ingress(resolved_root, target, definition.alias, payload)
         action = "updated"
-    verified = plan_website_truth_onboard(resolved_root, target, definition)
+    verified = plan_ingress_truth_onboard(resolved_root, target, definition)
     return {
         "definition": plan["definition"],
         "operation": "onboard",
@@ -135,11 +135,11 @@ def apply_website_truth_onboard(repo_root: Path | str, target: str, definition: 
     }
 
 
-def plan_website_truth_offboard(repo_root: Path | str, target: str, alias: str) -> dict[str, Any]:
+def plan_ingress_truth_offboard(repo_root: Path | str, target: str, alias: str) -> dict[str, Any]:
     resolved_root = Path(repo_root).resolve()
     _validate_target(target)
     inventory_path = _inventory_file(resolved_root, target)
-    entries = _public_websites_snapshot(_load_inventory(inventory_path))
+    entries = _public_ingresses_snapshot(_load_inventory(inventory_path))
     index, existing = _find_alias(entries, alias)
     if index is None:
         drift = {"status": "matched", "failures": []}
@@ -149,7 +149,7 @@ def plan_website_truth_offboard(repo_root: Path | str, target: str, alias: str) 
         steps = [
             {
                 "kind": "remove",
-                "description": "remove website truth entry from services.public_websites",
+                "description": "remove website truth entry from services.public_ingresses",
                 "path": str(inventory_path),
                 "payload": dict(existing),
             }
@@ -161,20 +161,20 @@ def plan_website_truth_offboard(repo_root: Path | str, target: str, alias: str) 
         operation="offboard",
         drift=drift,
         steps=steps,
-        source_surface="website.truth.offboard",
+        source_surface="ingress.truth.offboard",
     )
 
 
-def apply_website_truth_offboard(repo_root: Path | str, target: str, alias: str, *, execute: bool) -> dict[str, Any]:
+def apply_ingress_truth_offboard(repo_root: Path | str, target: str, alias: str, *, execute: bool) -> dict[str, Any]:
     if not execute:
         raise ValueError("website truth offboarding apply requires --execute")
     resolved_root = Path(repo_root).resolve()
-    plan = plan_website_truth_offboard(resolved_root, target, alias)
+    plan = plan_ingress_truth_offboard(resolved_root, target, alias)
     action = "noop"
     if plan["drift"]["status"] == "drift":
-        _remove_website(resolved_root, target, alias)
+        _remove_ingress(resolved_root, target, alias)
         action = "removed"
-    verified = plan_website_truth_offboard(resolved_root, target, alias)
+    verified = plan_ingress_truth_offboard(resolved_root, target, alias)
     return {
         "definition": plan["definition"],
         "operation": "offboard",
@@ -205,11 +205,11 @@ def _build_plan(
         "steps": list(steps),
         "warnings": [],
         "verify_after_apply": {"surface": "website.truth", "action": "verify", "alias": alias},
-        "follow_through": build_website_follow_through(target, source_surface=source_surface, alias=alias),
+        "follow_through": build_ingress_follow_through(target, source_surface=source_surface, alias=alias),
     }
 
 
-def _definition_payload(definition: WebsiteDefinition) -> dict[str, Any]:
+def _definition_payload(definition: IngressDefinition) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "alias": definition.alias,
         "primary_domain": definition.primary_domain,
@@ -230,8 +230,8 @@ def _definition_payload(definition: WebsiteDefinition) -> dict[str, Any]:
 
 
 def _validate_target(target: str) -> None:
-    if target not in SUPPORTED_WEBSITE_TARGETS:
-        raise ValueError(f"unsupported website target: {target}")
+    if target not in SUPPORTED_INGRESS_TARGETS:
+        raise ValueError(f"unsupported ingress target: {target}")
 
 
 def _inventory_file(repo_root: Path, target: str) -> Path:
@@ -251,23 +251,23 @@ def _dump_inventory(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-def _public_websites_snapshot(inventory: dict[str, Any]) -> list[dict[str, Any]]:
+def _public_ingresses_snapshot(inventory: dict[str, Any]) -> list[dict[str, Any]]:
     services = inventory.get("services")
     if not isinstance(services, dict):
         return []
-    candidate = services.get("public_websites")
+    candidate = services.get("public_ingresses")
     if not isinstance(candidate, list):
         return []
     return [item for item in candidate if isinstance(item, dict)]
 
 
-def _ensure_public_websites(inventory: dict[str, Any]) -> list[dict[str, Any]]:
+def _ensure_public_ingresses(inventory: dict[str, Any]) -> list[dict[str, Any]]:
     services = inventory.setdefault("services", {})
     if not isinstance(services, dict):
         raise ValueError("inventory.services must be an object")
-    websites = services.setdefault("public_websites", [])
+    websites = services.setdefault("public_ingresses", [])
     if not isinstance(websites, list):
-        raise ValueError("inventory.services.public_websites must be a list")
+        raise ValueError("inventory.services.public_ingresses must be a list")
     return websites
 
 
@@ -285,33 +285,33 @@ def _payload_matches(existing: dict[str, Any], payload: dict[str, Any]) -> bool:
     return True
 
 
-def _append_website(repo_root: Path, target: str, payload: dict[str, Any]) -> None:
+def _append_ingress(repo_root: Path, target: str, payload: dict[str, Any]) -> None:
     inventory_path = _inventory_file(repo_root, target)
     inventory = _load_inventory(inventory_path)
-    websites = _ensure_public_websites(inventory)
+    websites = _ensure_public_ingresses(inventory)
     websites.append(dict(payload))
     _dump_inventory(inventory_path, inventory)
 
 
-def _replace_website(repo_root: Path, target: str, alias: str, payload: dict[str, Any]) -> None:
+def _replace_ingress(repo_root: Path, target: str, alias: str, payload: dict[str, Any]) -> None:
     inventory_path = _inventory_file(repo_root, target)
     inventory = _load_inventory(inventory_path)
-    websites = _ensure_public_websites(inventory)
+    websites = _ensure_public_ingresses(inventory)
     for index, item in enumerate(websites):
         if item.get("alias") == alias:
             websites[index] = dict(payload)
             _dump_inventory(inventory_path, inventory)
             return
-    raise RuntimeError(f"unable to replace website truth entry: {alias}")
+    raise RuntimeError(f"unable to replace ingress truth entry: {alias}")
 
 
-def _remove_website(repo_root: Path, target: str, alias: str) -> None:
+def _remove_ingress(repo_root: Path, target: str, alias: str) -> None:
     inventory_path = _inventory_file(repo_root, target)
     inventory = _load_inventory(inventory_path)
-    websites = _ensure_public_websites(inventory)
+    websites = _ensure_public_ingresses(inventory)
     for index, item in enumerate(websites):
         if item.get("alias") == alias:
             websites.pop(index)
             _dump_inventory(inventory_path, inventory)
             return
-    raise RuntimeError(f"unable to remove website truth entry: {alias}")
+    raise RuntimeError(f"unable to remove ingress truth entry: {alias}")

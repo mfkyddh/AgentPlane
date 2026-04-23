@@ -20,13 +20,13 @@
 手动执行正式入口：
 
 ```bash
-env -C <repo-root> uv run python -m agentplane.cli host automation apply wsl --name wsl-zzz-skills-sync --operation run --execute
+env -C <repo-root> agentplane infra automation apply wsl --name wsl-zzz-skills-sync --operation run --execute
 ```
 
 只读核对计划任务对象：
 
 ```bash
-env -C <repo-root> uv run python -m agentplane.cli onepanel \
+env -C <repo-root> agentplane onepanel \
   --env wsl \
   cronjob search \
   --info wsl-zzz-skills-sync
@@ -50,7 +50,7 @@ env -C <repo-root> uv run python -m agentplane.cli onepanel \
 - 周期：每 2 小时一次
 - Cron：`0 */2 * * *`
 - 工作目录：`<repo-root>`
-- 命令：`uv run python -m agentplane.cli host automation apply wsl --name wsl-zzz-skills-sync --operation run --execute`
+- 命令：`agentplane infra automation apply wsl --name wsl-zzz-skills-sync --operation run --execute`
 
 ## Verification
 
@@ -63,8 +63,8 @@ env -C <repo-root> uv run python -m unittest \
   tests.test_cli_entrypoints \
   tests.test_inventory_generation -v
 
-env -C <repo-root> uv run python -m agentplane.cli host automation apply wsl --name wsl-zzz-skills-sync --operation run --execute
-env -C <repo-root> uv run python -m agentplane.cli onepanel --env wsl cronjob search --info wsl-zzz-skills-sync
+env -C <repo-root> agentplane infra automation apply wsl --name wsl-zzz-skills-sync --operation run --execute
+env -C <repo-root> agentplane onepanel --env wsl cronjob search --info wsl-zzz-skills-sync
 ```
 
 ## Common Failures
@@ -132,8 +132,8 @@ ls -la <codex-skills-root>
 
 ## 人工接力边界
 
-- 本 runbook 的正式入口只有 `host automation apply ... --operation run`；不要把页面点击、Git 手工操作脚本或兼容 helper 写成默认流程。
-- 若 1Panel 任务对象丢失或参数漂移，正式修复入口应优先使用 `host automation apply ... --operation reconcile`，必要时再落到 `uv run python -m agentplane.cli onepanel --env wsl cronjob ...` 的低层对象能力。
+- 本 runbook 的正式入口只有 `infra automation apply ... --operation run`；不要把页面点击、Git 手工操作脚本或兼容 helper 写成默认流程。
+- 若 1Panel 任务对象丢失或参数漂移，正式修复入口应优先使用 `infra automation apply ... --operation reconcile`，必要时再落到 `agentplane onepanel --env wsl cronjob ...` 的低层对象能力。
 - 历史实验步骤、临时补救记录、一次性迁移过程应归档到 `docs/archive/runbooks/...`，不要继续留在 active 主体。
 
 ## Manual Inspection
@@ -141,4 +141,4 @@ ls -la <codex-skills-root>
 以下内容只能作为只读补充：
 
 - 打开 WSL 本机 1Panel 面板查看计划任务和最近执行记录
-- 如需进一步核对对象层状态，继续使用 `uv run python -m agentplane.cli onepanel --env wsl cronjob ...`
+- 如需进一步核对对象层状态，继续使用 `agentplane onepanel --env wsl cronjob ...`

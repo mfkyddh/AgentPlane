@@ -15,10 +15,10 @@
 
 - Windows 主控制面正式入口是 `pwsh`；PowerShell 只负责把参数送入 WSL，不负责拼最终远端 shell 文本。
 - 在 Windows 上优先 `wsl.exe -e <program> <args...>`；只有 WSL 内确实需要 shell 特性时才退回 `sh -lc` / `bash -lc`。
-- 正式远端 Bash 入口统一为 `uv run python -m agentplane.cli host remote bash ...`。
+- 正式远端 Bash 入口统一为 `agentplane infra remote bash ...`。
 - `agentplane/scripts/internal/` 下脚本只作为仓库内部实现与示例，属于兼容层，不再作为长期主命令面。
 - `agentplane/scripts/onepanel/api_request.py` 仅用于 provider/debug 低层核对，不进入 active execution path；旧 `app_lifecycle.py` / `project_lifecycle.py` 已退役。
-- Formal catalog apps with `schema_version: 2` must use `uv run python -m agentplane.cli app object ...`, `app delivery ...`, `service ...`, and `website ...`; lower-level helper surfaces are not the active execution path.
+- Formal catalog apps with `schema_version: 2` must use `agentplane app object ...`, `app delivery ...`, `service ...`, and `website ...`; lower-level helper surfaces are not the active execution path.
 - 从 `pwsh` 发起远端多语句 Bash 时，优先把脚本保存成 Linux 路径文件；stdin 只推荐在纯 Linux shell 内使用。
 - Windows 与 WSL 默认共享同一份源码 checkout；示例中的 Linux 路径均使用 `<repo-root>` 占位符。
 
@@ -27,20 +27,20 @@
 仓库正式入口：
 
 ```bash
-uv run python -m agentplane.cli host remote bash <target> [--repo-root <linux-path>] [--script-file <linux-path>] [--dry-run] [-- <arg>...]
+agentplane infra remote bash <target> [--repo-root <linux-path>] [--script-file <linux-path>] [--dry-run] [-- <arg>...]
 ```
 
 Windows 主控制面正式入口：
 
 ```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli host remote bash prod0-main --dry-run --script-file <repo-root>/agentplane/scripts/internal/remote/example.sh
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli infra remote bash prod0-main --dry-run --script-file <repo-root>/agentplane/scripts/internal/remote/example.sh
 ```
 
 如果当前已经在 WSL/Linux shell，直接执行正式 CLI：
 
 ```bash
 cd <repo-root>
-uv run python -m agentplane.cli host remote bash prod0-main \
+agentplane infra remote bash prod0-main \
   --script-file <repo-root>/agentplane/scripts/internal/remote/example.sh
 ```
 
@@ -74,7 +74,7 @@ docker ps --format 'table {{.Names}}\t{{.Status}}' | sed -n '1,10p'
 再执行：
 
 ```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli host remote bash prod0-main --script-file <repo-root>/agentplane/scripts/internal/remote/example.sh
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli infra remote bash prod0-main --script-file <repo-root>/agentplane/scripts/internal/remote/example.sh
 ```
 
 ### 2. 纯 Linux shell 内部直接 pipe
@@ -86,7 +86,7 @@ printf '%s\n' \
   'set -euo pipefail' \
   'echo "host=$(hostname)"' \
   'id' \
-| uv run python -m agentplane.cli host remote bash prod0-main
+| agentplane infra remote bash prod0-main
 ```
 
 ### 3. 远端脚本参数
@@ -94,7 +94,7 @@ printf '%s\n' \
 Windows 宿主：
 
 ```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli host remote bash prod0-main --script-file <repo-root>/agentplane/scripts/internal/remote/example-arg.sh -- postgres18-prod
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli infra remote bash prod0-main --script-file <repo-root>/agentplane/scripts/internal/remote/example-arg.sh -- postgres18-prod
 ```
 
 远端脚本：
@@ -143,13 +143,13 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-a
 最小 dry-run 验证：
 
 ```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli host remote bash prod0-main --dry-run --script-file <repo-root>/agentplane/scripts/internal/remote/example.sh
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli infra remote bash prod0-main --dry-run --script-file <repo-root>/agentplane/scripts/internal/remote/example.sh
 ```
 
 最小远端连通性验证：
 
 ```bash
-wsl.exe -u root -e sh -lc 'cd <repo-root> && printf "%s\n" "set -euo pipefail" "echo remote_ok" | uv run python -m agentplane.cli host remote bash prod0-main'
+wsl.exe -u root -e sh -lc 'cd <repo-root> && printf "%s\n" "set -euo pipefail" "echo remote_ok" | agentplane infra remote bash prod0-main'
 ```
 
 ## Cutover Guidance

@@ -22,7 +22,7 @@
 | 术语 | 含义 |
 | --- | --- |
 | `source of truth` | 某一类事实的正式真源 |
-| `object` | 控制面中的稳定对象，如 `host`、`app resource`、`app`、`website` |
+| `object` | 控制面中的稳定对象，如 `infra`、`app resource`、`app`、`ingress` |
 | `task-entry` | 面向 Agent 的正式任务入口，不等价于底层对象 CRUD |
 | `workflow` | 跨多个对象或多个阶段的正式编排动作 |
 | `ledger` | 围绕某类对象或某次验证生成的机器派生记录 |
@@ -32,21 +32,21 @@
 
 ### CLI-first
 
-正式执行真源固定为 `uv run python -m agentplane.cli ...`。新增能力时，先补正式 CLI，再补 skill、runbook、测试与索引。
+正式执行真源固定为 `agentplane ...`。新增能力时，先补正式 CLI，再补 skill、runbook、测试与索引。
 
-`host` 当前默认入口已经收口到 `uv run python -m agentplane.cli host ...`，公开动作固定为 `inventory`、`audit`、`cleanup`、`automation`、`network`、`remote bash`、`secrets`。其中 `automation` 已并入 `host`，`network` 已并入 `host`；`panel / firewall` 仍保留在 `onepanel` 域。
+`infra` 当前默认入口已经收口到 `agentplane infra ...`，公开动作固定为 `inventory`、`audit`、`cleanup`、`automation`、`network`、`remote bash`、`secrets`。其中 `automation` 已并入 `infra`，`network` 已并入 `infra`；`panel / firewall` 仍保留在 `onepanel` 域。
 
-`service` 当前默认入口已经开放到 `uv run python -m agentplane.cli service ...`，公开动作为 `search`、`get`、`verify`、`plan`、`apply`、`materialize`，以及 `service public-endpoint verify|plan|apply`。formal service 只接受 inventory 中已声明的受管运行服务对象；固定对象保留 `postgres`、`redis`、`minio`、`mihomo`、`onepanel_openresty`，同时扩展到 inventory 中声明且 `control_plane` 为 `compose`、`onepanel-app`、`onepanel-compose` 的 tracked runtime service。对外客户端交付物如 Clash Local Profile，应作为 service 附着产物由 `service materialize` 渲染；非 HTTP 公网端点的 DNS/证书续期对账应作为 service 附着事实由 `service public-endpoint` 处理，不再新开专题脚本域。`onepanel container / app / project` 已退出公开默认入口。
+`service` 当前默认入口已经开放到 `agentplane service ...`，公开动作为 `search`、`get`、`verify`、`plan`、`apply`、`materialize`，以及 `service public-endpoint verify|plan|apply`。formal service 只接受 inventory 中已声明的受管运行服务对象；固定对象保留 `postgres`、`redis`、`minio`、`mihomo`、`onepanel_openresty`，同时扩展到 inventory 中声明且 `control_plane` 为 `compose`、`onepanel-app`、`onepanel-compose` 的 tracked runtime service。对外客户端交付物如 Clash Local Profile，应作为 service 附着产物由 `service materialize` 渲染；非 HTTP 公网端点的 DNS/证书续期对账应作为 service 附着事实由 `service public-endpoint` 处理，不再新开专题脚本域。`onepanel container / app / project` 已退出公开默认入口。
 
-`website` 当前默认入口已经开放到 `uv run python -m agentplane.cli website ...`，公开动作为 `search`、`get`、`verify`、`plan`、`apply`、`refresh-ledger`、`publish`。`website` 聚合 `inventory.services.public_websites` 与 provider live state 做公网入口对象核验；`website publish` 是 Cloudflare + 1Panel 公网入口的正式任务入口，继续以配置文件作为外部输入，不公开 raw onepanel / cloudflare 参数。非 HTTP 协议入口继续附着在 `service` 事实中，不进入 `website publish`。
+`ingress` 当前默认入口已经开放到 `agentplane ingress ...`，公开动作为 `search`、`get`、`verify`、`plan`、`apply`、`refresh-ledger`、`publish`。`ingress` 聚合 `inventory.services.public_ingresses` 与 provider live state 做公网入口对象核验；`ingress publish` 是 Cloudflare + 1Panel 公网入口的正式任务入口，继续以配置文件作为外部输入，不公开 raw onepanel / cloudflare 参数。非 HTTP 协议入口继续附着在 `service` 事实中，不进入 `ingress publish`。
 
-`app resource` 当前默认入口已经开放到 `uv run python -m agentplane.cli app resource ...`，第一版公开动作为 `search`、`get`、`verify`、`refresh-ledger`。第一版只负责 app resource declaration truth、secret scope 与 projection consistency 的正式对象校验；不进入应用运行时 env 投影，也不把 live 资源写面混入 `app resource verify`。
+`app resource` 当前默认入口已经开放到 `agentplane app resource ...`，第一版公开动作为 `search`、`get`、`verify`、`refresh-ledger`。第一版只负责 app resource declaration truth、secret scope 与 projection consistency 的正式对象校验；不进入应用运行时 env 投影，也不把 live 资源写面混入 `app resource verify`。
 
-`app` 当前默认入口已经开放到 `uv run python -m agentplane.cli app ...`，分成 `object`、`resource` 与 `delivery` 三面。`app object` 只负责 `inventory/apps/catalog.json` 中登记的 catalog object；`app resource` 只负责正式资源归属 truth 与 projection consistency 核验；`app delivery` 只负责合同、构建、部署、验证与回滚，不重新公开 raw installed-app CRUD。
+`app` 当前默认入口已经开放到 `agentplane app ...`，分成 `object`、`resource` 与 `delivery` 三面。`app object` 只负责 `inventory/apps/catalog.json` 中登记的 catalog object；`app resource` 只负责正式资源归属 truth 与 projection consistency 核验；`app delivery` 只负责合同、构建、部署、验证与回滚，不重新公开 raw installed-app CRUD。
 
-`projection` 当前默认入口已经开放到 `uv run python -m agentplane.cli projection ...`，统一承接 `runtime-env`、`verification`、`fixture`、`ledger` 四个 surface。`verification run` 包装只读验证套件，`fixture plan/apply/cleanup` 包装 WSL fixture 生命周期，`ledger refresh` 负责 ledgers 与 inventory 投影刷新；它们继续保持 `command=projection` 的正式输出合同。
+`projection` 当前默认入口已经开放到 `agentplane projection ...`，统一承接 `runtime-env`、`verification`、`fixture`、`ledger` 四个 surface。`verification run` 包装只读验证套件，`fixture plan/apply/cleanup` 包装 WSL fixture 生命周期，`ledger refresh` 负责 ledgers 与 inventory 投影刷新；它们继续保持 `command=projection` 的正式输出合同。
 
-`onepanel` 当前只保留 provider/debug 低层对象面：`panel`、`firewall`、`cronjob`、`task`。其余公开能力全部迁出到 `website`、`service`、`app`、`projection`；`ops/scripts/onepanel/*` 与内部 object API 保留为 substrate，不再充当公开命令面。
+`onepanel` 当前只保留 provider/debug 低层对象面：`panel`、`firewall`、`cronjob`、`task`。其余公开能力全部迁出到 `ingress`、`service`、`app`、`projection`；`ops/scripts/onepanel/*` 与内部 object API 保留为 substrate，不再充当公开命令面。
 
 ### Task-Entry First
 
@@ -68,21 +68,23 @@ skill 负责路由正式入口、提示前置检查、说明验证与回写；sk
 
 runbook 负责专题步骤、人工接力点与风险解释，不承载第二份执行实现。根 `README.md` 与 `AGENTS.md` 只做稳定导航，不堆专题细节。
 
-### Canonical Truth, Runtime Resolution
+### Path Policy: 逻辑路径优先
 
-tracked truth 只保存可迁移的 canonical refs，例如 `apps/<app>`、`apps/<app>/contracts/<target>`、`inventory/servers/<target>/inventory.json`。Windows 盘符、WSL UNC、`/mnt/...`、`/root/...` 这类宿主访问路径只能出现在 runtime resolution 或 verification evidence 中。
+tracked truth 只保存与平台无关的**逻辑路径**，例如 `apps/<app>`、`apps/<app>/contracts/<target>`、`inventory/servers/<target>/inventory.json`。Windows 盘符、WSL UNC、`/mnt/...`、`/root/...` 这类**物理路径**只能出现在 runtime resolution 或 verification evidence 中。
 
-resolver / backend 可以把 canonical ref 解析成当前宿主可访问的 `resolved_path`，但 `resolved_path` 不是 tracked truth。`ledger` 可以保存稳定摘要，`verification` 才允许记录现场观察值。
+resolver / backend 可以把逻辑路径解析成当前宿主可访问的 `resolved_path`（物理路径），但 `resolved_path` 不是 tracked truth。`ledger` 可以保存稳定摘要，`verification` 才允许记录现场观察值（含物理路径）。
+
+> 详见 [control-plane-path-policy.md](../reference/control-plane-path-policy.md)
 
 ### Automation And Projection Boundary
 
-`host automation` 管“何时执行、执行什么周期任务”；`projection` 管“执行后如何验证并把机器证据写回结构化投影”。二者都不替代 `app delivery`、`service` 或 `website` 的业务执行。
+`infra automation` 管“何时执行、执行什么周期任务”；`projection` 管“执行后如何验证并把机器证据写回结构化投影”。二者都不替代 `app delivery`、`service` 或 `ingress` 的业务执行。
 
 标准协作顺序：
 
 1. 先完成业务动作。
-2. 需要周期任务时，进入 `uv run python -m agentplane.cli host automation ...`。
-3. 需要状态投影回写时，进入 `uv run python -m agentplane.cli projection verification ...` 或 `projection ledger refresh ...`。
+2. 需要周期任务时，进入 `agentplane infra automation ...`。
+3. 需要状态投影回写时，进入 `agentplane projection verification ...` 或 `projection ledger refresh ...`。
 4. 人类摘要与文档同步只消费投影结果，不反向充当真源。
 
 ## CLI Contract
@@ -92,7 +94,7 @@ resolver / backend 可以把 canonical ref 解析成当前宿主可访问的 `re
 目标命令形态：
 
 ```bash
-uv run python -m agentplane.cli <domain> <surface> <verb> [flags]
+agentplane <domain> <surface> <verb> [flags]
 ```
 
 其中：
@@ -190,11 +192,11 @@ uv run python -m agentplane.cli <domain> <surface> <verb> [flags]
 
 典型对象：
 
-- `host`
+- `infra`
 - `app resource`
 - `app`
 - `service`
-- `website`
+- `ingress`
 - `panel`
 - `cronjob`
 - `inventory-record`
@@ -203,7 +205,7 @@ uv run python -m agentplane.cli <domain> <surface> <verb> [flags]
 
 | 域 | 管什么 | 不管什么 |
 | --- | --- | --- |
-| `website` | 公网入口对象与发布任务 | provider/debug 原生对象 |
+| `ingress` | 公网入口对象与发布任务 | provider/debug 原生对象 |
 | `service` | 受管运行服务对象与稳定运行态操作 | raw provider id/name、未登记对象 |
 | `app` | catalog object 与正式交付流程 | 运行态 restart/reconcile |
 | `projection` | runtime-env、verification、fixture、ledger | 业务真源对象 |
@@ -249,12 +251,12 @@ uv run python -m agentplane.cli <domain> <surface> <verb> [flags]
 
 | 域 | 目标 | 建议公开动作 |
 | --- | --- | --- |
-| `host` | 主机基线与主机级治理 | `baseline`、`ssh-secure`、`mount-data`、`inventory-refresh` |
+| `infra` | 基础设施治理（主机、网络、Secrets、自动化） | `baseline`、`ssh-secure`、`mount-data`、`inventory-refresh` |
 | `infra` | 跨服务基础设施组件 | `network-ensure`、`volume-ensure`、`firewall-apply`、`secret-project` |
 | `service` | 单服务生命周期 | `restart`、`reconcile`、`verify` |
 | `app resource` | app resource 真源与投影校验 | `bind-secret`、`registry-verify`、`ownership-audit` |
 | `projection` | 派生产物与薄层投影 | `runtime-env-plan`、`runtime-env-verify`、`verification-run`、`fixture-plan`、`ledger-refresh` |
-| `website` | 公网入口与站点对象 | `publish`、`reconcile`、`origin-verify` |
+| `ingress` | 公网入口与站点对象 | `publish`、`reconcile`、`origin-verify` |
 | `app` | 应用交付合同与正式切换 | `build-delivery`、`ship`、`deploy`、`rollback`、`smoke` |
 
 ### Input And Output
@@ -338,7 +340,7 @@ uv run python -m agentplane.cli <domain> <surface> <verb> [flags]
 
 ## Required Rules
 
-1. 正式入口必须写成 `uv run python -m agentplane.cli ...`。
+1. 正式入口必须写成 `agentplane ...`。
 2. 新增能力前必须先定义：对象、任务入口、输入、输出、验证与回写位置。
 3. Agent 不得把底层文件改动、脚本调用或 ad-hoc shell 当成默认控制面。
 4. 所有写操作都必须具备至少一种正式验证路径。
@@ -371,36 +373,36 @@ uv run python -m agentplane.cli <domain> <surface> <verb> [flags]
 当前正式入口示例：
 
 ```bash
-uv run python -m agentplane.cli --help
-uv run python -m agentplane.cli host inventory <target> --repo-root <repo-root>
-uv run python -m agentplane.cli host audit <target> --repo-root <repo-root>
-uv run python -m agentplane.cli host automation search <target> --repo-root <repo-root>
-uv run python -m agentplane.cli host network audit <target> --repo-root <repo-root>
-uv run python -m agentplane.cli host remote bash <target> -- whoami
-uv run python -m agentplane.cli host secrets sync-layout <target> --repo-root <repo-root>
-uv run python -m agentplane.cli service search --target <target> --repo-root <repo-root>
-uv run python -m agentplane.cli service verify --target <target> --name <service> --repo-root <repo-root>
-uv run python -m agentplane.cli website search --target <target> --repo-root <repo-root>
-uv run python -m agentplane.cli website verify --target <target> --alias <alias> --repo-root <repo-root>
-uv run python -m agentplane.cli website publish plan --target <target> --config-file <config-file> --cloudflare-env-file <cloudflare-env-file> --repo-root <repo-root>
-uv run python -m agentplane.cli app resource search --target <target> --repo-root <repo-root>
-uv run python -m agentplane.cli app resource verify --target <target> --app <app> --repo-root <repo-root>
-uv run python -m agentplane.cli projection runtime-env plan --target <target> --app <app> --repo-root <repo-root>
-uv run python -m agentplane.cli projection verification run --target <target> --profile <profile> --repo-root <repo-root>
-uv run python -m agentplane.cli projection fixture plan --target <target> --profile <profile> --repo-root <repo-root>
-uv run python -m agentplane.cli projection ledger refresh --target <target> --repo-root <repo-root> --write
-uv run python -m agentplane.cli onepanel --env <target> panel get --json
+agentplane --help
+agentplane infra inventory <target> --repo-root <repo-root>
+agentplane infra audit <target> --repo-root <repo-root>
+agentplane infra automation search <target> --repo-root <repo-root>
+agentplane infra network audit <target> --repo-root <repo-root>
+agentplane infra remote bash <target> -- whoami
+agentplane infra secrets sync-layout <target> --repo-root <repo-root>
+agentplane service search --target <target> --repo-root <repo-root>
+agentplane service verify --target <target> --name <service> --repo-root <repo-root>
+agentplane ingress search --target <target> --repo-root <repo-root>
+agentplane ingress verify --target <target> --alias <alias> --repo-root <repo-root>
+agentplane ingress publish plan --target <target> --config-file <config-file> --cloudflare-env-file <cloudflare-env-file> --repo-root <repo-root>
+agentplane app resource search --target <target> --repo-root <repo-root>
+agentplane app resource verify --target <target> --app <app> --repo-root <repo-root>
+agentplane projection runtime-env plan --target <target> --app <app> --repo-root <repo-root>
+agentplane projection verification run --target <target> --profile <profile> --repo-root <repo-root>
+agentplane projection fixture plan --target <target> --profile <profile> --repo-root <repo-root>
+agentplane projection ledger refresh --target <target> --repo-root <repo-root> --write
+agentplane onepanel --env <target> panel get --json
 ```
 
 说明：
 
-- `host` 当前公开动作包括主机 inventory、审计、cleanup、automation、网络治理、远端 Bash 与主机 secrets。
-- `automation` 已并入 `host`，`network` 已并入 `host`；`panel / firewall` 仍保留在 `onepanel` 域。
-- `service` 当前默认入口已经开放到 `uv run python -m agentplane.cli service ...`。
+- `infra` 当前公开动作包括主机 inventory、审计、cleanup、automation、网络治理、远端 Bash 与主机 secrets。
+- `automation` 已并入 `infra`，`network` 已并入 `infra`；`panel / firewall` 仍保留在 `onepanel` 域。
+- `service` 当前默认入口已经开放到 `agentplane service ...`。
 - formal service 只接受 inventory 中已声明的受管运行服务对象。
 - `onepanel container / app / project` 已退出公开默认入口。
-- `website` 第一版以 `inventory.services.public_websites` 为声明真源，正式对象面独立于 `onepanel website` 原生 API。
-- `website publish` 是 Cloudflare + 1Panel 公网入口的正式任务入口。
+- `ingress` 第一版以 `inventory.services.public_ingresses` 为声明真源，正式对象面独立于 `onepanel website` 原生 API。
+- `ingress publish` 是 Cloudflare + 1Panel 公网入口的正式任务入口。
 - `app resource` 第一版以正式 declaration truth 为对象基线，正式对象面只覆盖 app resource 真源与 projection 校验；`app resource audit-live` 等历史专题动作不属于 `app resource v1` 默认对象入口。
 - `projection` 已不止 `runtime-env`，还包括 `verification`、`fixture`、`ledger`。
 - `onepanel` 只保留 provider/debug 低层对象面：`panel`、`firewall`、`cronjob`、`task`。
@@ -408,15 +410,15 @@ uv run python -m agentplane.cli onepanel --env <target> panel get --json
 目标命令形态示例：
 
 ```bash
-uv run python -m agentplane.cli website verify --target <target> --alias <alias> --json
-uv run python -m agentplane.cli website plan --target <target> --alias <alias> --operation reconcile --json
-uv run python -m agentplane.cli website publish plan --target <target> --config-file <config-file> --cloudflare-env-file <cloudflare-env-file> --repo-root <repo-root>
-uv run python -m agentplane.cli app object get --target <target> --app <app> --repo-root <repo-root> --json
-uv run python -m agentplane.cli app delivery deploy --target <target> --app <app> --repo-root <repo-root> --dry-run --json
-uv run python -m agentplane.cli app delivery verify --target <target> --app <app> --repo-root <repo-root> --execute --json
-uv run python -m agentplane.cli projection verification run --target <target> --profile <profile> --repo-root <repo-root>
-uv run python -m agentplane.cli projection fixture plan --target <target> --profile <profile> --repo-root <repo-root>
-uv run python -m agentplane.cli projection ledger refresh --target <target> --repo-root <repo-root> --write
+agentplane ingress verify --target <target> --alias <alias> --json
+agentplane ingress plan --target <target> --alias <alias> --operation reconcile --json
+agentplane ingress publish plan --target <target> --config-file <config-file> --cloudflare-env-file <cloudflare-env-file> --repo-root <repo-root>
+agentplane app object get --target <target> --app <app> --repo-root <repo-root> --json
+agentplane app delivery deploy --target <target> --app <app> --repo-root <repo-root> --dry-run --json
+agentplane app delivery verify --target <target> --app <app> --repo-root <repo-root> --execute --json
+agentplane projection verification run --target <target> --profile <profile> --repo-root <repo-root>
+agentplane projection fixture plan --target <target> --profile <profile> --repo-root <repo-root>
+agentplane projection ledger refresh --target <target> --repo-root <repo-root> --write
 ```
 
 ## Related Documents

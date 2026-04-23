@@ -17,7 +17,7 @@ Deploy nginxWebUI or the official nginx-ui container in a way that matches the h
 4. When the user wants data under `/data` and the host uses the official image, mount:
    - `/data/apps/nginx-ui-official/nginx:/etc/nginx`
    - `/data/apps/nginx-ui-official/nginx-ui:/etc/nginx-ui`
-5. For this repository's public Tencent Cloud deployment, keep `nginx-ui-prod` on Docker `host` network and let Nginx listen on `8443`.
+5. For this repository's public Tencent Cloud deployment, keep `nginx-ui-prod` on Docker `infra` network and let Nginx listen on `8443`.
 6. If browsers get `200` with an empty body in direct public tests, keep nginxWebUI itself behind loopback and add a tiny external reverse proxy as the stable workaround.
 7. When reverse-proxying nginx-ui on an explicit public port such as `8443`, use `proxy_set_header Host $http_host` instead of `$host`; otherwise nginx-ui WebSocket self-checks can fail with `request origin not allowed`.
 8. Do not treat the header banner `Self check failed, Nginx UI may not work properly` as proof that backend self-check items failed. The banner also depends on a frontend WebSocket probe to `/api/self_check/websocket`; if `/api/self_check` is all green and the WebSocket handshake returns `101 Switching Protocols`, the server-side configuration is usually fine and the remaining issue is often a stale browser session, stale token, or cached frontend state.

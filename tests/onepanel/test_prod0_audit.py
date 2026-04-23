@@ -123,7 +123,7 @@ def baseline_payload(*, include_app_resource_summary: bool = False) -> dict:
         ],
         "security": {"openresty_public_listen": {"ports": [8443]}},
         "services": {
-            "onepanel_openresty": {"network_mode": "host", "listen_ports": [8443]},
+            "onepanel_openresty": {"network_mode": "infra", "listen_ports": [8443]},
             "sampleapi": {
                 "docker_networks": ["zqf_network"],
                 "control_plane": "compose",
@@ -248,11 +248,11 @@ class Prod0AuditTests(unittest.TestCase):
 
             payload_missing_registry = baseline_payload(include_app_resource_summary=True)
             write_prod0_inventory(root, payload_missing_registry)
-            missing_registry = run_cli("host", "audit", "prod0-main", "--repo-root", str(root))
+            missing_registry = run_cli("infra", "audit", "prod0-main", "--repo-root", str(root))
             self.assertEqual(missing_registry.returncode, 0, msg=missing_registry.stderr)
             payload = json.loads(missing_registry.stdout)
             self.assertEqual({"command", "action", "target", "payload"}, set(payload))
-            self.assertEqual("host", payload["command"])
+            self.assertEqual("infra", payload["command"])
             self.assertEqual("audit", payload["action"])
             self.assertEqual("prod0-main", payload["target"])
             self.assertIn("violations", payload["payload"])
@@ -265,11 +265,11 @@ class Prod0AuditTests(unittest.TestCase):
             payload_missing_summary = baseline_payload()
             write_prod0_inventory(root, payload_missing_summary)
             write_app_resource_registry(root, baseline_app_resource_registry())
-            missing_summary = run_cli("host", "audit", "prod0-main", "--repo-root", str(root))
+            missing_summary = run_cli("infra", "audit", "prod0-main", "--repo-root", str(root))
             self.assertEqual(missing_summary.returncode, 0, msg=missing_summary.stderr)
             payload = json.loads(missing_summary.stdout)
             self.assertEqual({"command", "action", "target", "payload"}, set(payload))
-            self.assertEqual("host", payload["command"])
+            self.assertEqual("infra", payload["command"])
             self.assertEqual("audit", payload["action"])
             self.assertEqual("prod0-main", payload["target"])
             self.assertIn("violations", payload["payload"])
@@ -294,11 +294,11 @@ class Prod0AuditTests(unittest.TestCase):
             }
             write_prod0_inventory(root, payload_drift)
             write_app_resource_registry(root, tenant_registry)
-            drift = run_cli("host", "audit", "prod0-main", "--repo-root", str(root))
+            drift = run_cli("infra", "audit", "prod0-main", "--repo-root", str(root))
             self.assertEqual(drift.returncode, 0, msg=drift.stderr)
             payload = json.loads(drift.stdout)
             self.assertEqual({"command", "action", "target", "payload"}, set(payload))
-            self.assertEqual("host", payload["command"])
+            self.assertEqual("infra", payload["command"])
             self.assertEqual("audit", payload["action"])
             self.assertEqual("prod0-main", payload["target"])
             self.assertIn("violations", payload["payload"])
@@ -339,7 +339,7 @@ class Prod0AuditTests(unittest.TestCase):
         payload = {
             "security": {"openresty_public_listen": {"ports": [8443]}},
             "services": {
-                "onepanel_openresty": {"network_mode": "host", "listen_ports": [8443]},
+                "onepanel_openresty": {"network_mode": "infra", "listen_ports": [8443]},
                 "marketing_site": {
                     "control_plane": "compose",
                     "container_name": "marketing-site-prod",
@@ -423,7 +423,7 @@ class Prod0AuditTests(unittest.TestCase):
 {
   "security": {"openresty_public_listen": {"ports": [8443]}},
   "services": {
-    "onepanel_openresty": {"network_mode": "host", "listen_ports": [8443]},
+    "onepanel_openresty": {"network_mode": "infra", "listen_ports": [8443]},
     "sampleapi": {
       "docker_networks": ["zqf_network"],
       "control_plane": "compose",
@@ -508,7 +508,7 @@ class Prod0AuditTests(unittest.TestCase):
             ],
             "security": {"openresty_public_listen": {"ports": [443]}},
             "services": {
-                "onepanel_openresty": {"network_mode": "host", "listen_ports": [443]},
+                "onepanel_openresty": {"network_mode": "infra", "listen_ports": [443]},
             },
         }
         with tempfile.TemporaryDirectory() as tmp:
@@ -517,11 +517,11 @@ class Prod0AuditTests(unittest.TestCase):
 
             result = audit_filesystem(root, "prod2-main")
             self.assertEqual([], result["violations"], msg=json.dumps(result, ensure_ascii=False))
-            cli_result = run_cli("host", "audit", "prod2-main", "--repo-root", str(root))
+            cli_result = run_cli("infra", "audit", "prod2-main", "--repo-root", str(root))
             self.assertEqual(0, cli_result.returncode, msg=cli_result.stderr)
             cli_payload = json.loads(cli_result.stdout)
             self.assertEqual({"command", "action", "target", "payload"}, set(cli_payload))
-            self.assertEqual("host", cli_payload["command"])
+            self.assertEqual("infra", cli_payload["command"])
             self.assertEqual("audit", cli_payload["action"])
             self.assertEqual("prod2-main", cli_payload["target"])
             self.assertEqual([], cli_payload["payload"]["violations"], msg=json.dumps(cli_payload, ensure_ascii=False))

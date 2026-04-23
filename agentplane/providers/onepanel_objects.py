@@ -10,7 +10,7 @@ from agentplane.scripts.onepanel.object_api import (
     get_installed_app,
     get_panel_summary,
     get_task_count,
-    get_website,
+    get_ingress,
     load_cronjob,
     load_firewall_base,
     plan_compose_project_operation,
@@ -25,7 +25,7 @@ from agentplane.scripts.onepanel.object_api import (
     search_firewall_rules,
     search_installed_apps,
     search_tasks,
-    search_websites,
+    search_ingresses,
 )
 
 

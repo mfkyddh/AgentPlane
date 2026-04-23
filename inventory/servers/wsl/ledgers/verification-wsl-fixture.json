@@ -53,10 +53,10 @@
       }
     },
     {
-      "scope": "website",
+      "scope": "ingress",
       "ok": true,
       "payload": {
-        "website": {
+        "ingress": {
           "id": 1,
           "createdAt": "2026-03-30T14:53:07.262936741+08:00",
           "updatedAt": "2026-03-30T14:53:07.262936741+08:00",
@@ -358,7 +358,7 @@
         "user": "root",
         "scriptID": 0,
         "appID": "",
-        "website": "",
+        "ingress": "",
         "exclusionRules": "",
         "dbType": "",
         "dbName": "",

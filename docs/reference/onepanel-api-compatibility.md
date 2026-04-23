@@ -14,7 +14,7 @@ superseded_by: null
 - Upstream source mirror: `/root/github/1Panel`
 - Target compatibility baseline: `v2.1.7`
 - AgentPlane runtime principle: `CLI-first`
-- Canonical execution entry: `uv run python -m agentplane.cli onepanel ...`
+- 正式执行入口: `agentplane onepanel ...`
 
 ## Supported Targets
 
@@ -64,7 +64,7 @@ superseded_by: null
 - New object support should first land in WSL, then validate on `prod2-main`, then be considered for `prod0-main`.
 - When a stable 1Panel API is unavailable or unverified, AgentPlane may temporarily read from tracked inventory, but that boundary must be documented explicitly.
 - `plan` and `apply` remain separate states. `apply` must not execute unless `--execute` is present.
-- `projection verification run` remains read-only. Any WSL fixture mutation must go through `uv run python -m agentplane.cli projection fixture ...`.
+- `projection verification run` remains read-only. Any WSL fixture mutation must go through `agentplane projection fixture ...`.
 - On targets such as `prod2-main`, `suite run` may be used as a live compatibility audit even when some selectors intentionally do not resolve to 1Panel-native objects. A persisted failure report is valid audit evidence, not automatically a service-health failure.
 
 ## Error Model
@@ -87,7 +87,7 @@ Plugins and automations should branch on `error.code`, not on free-form message 
   - parameter collection
   - CLI dispatch
   - JSON result display
-- Skills and plugin groups must map back to `uv run python -m agentplane.cli onepanel ...` or adjacent AgentPlane CLI commands instead of becoming a second control-plane implementation.
+- Skills and plugin groups must map back to `agentplane onepanel ...` or adjacent AgentPlane CLI commands instead of becoming a second control-plane implementation.
 
 ## WSL Fixture Expectations
 

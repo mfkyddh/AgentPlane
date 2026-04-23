@@ -15,7 +15,7 @@ superseded_by: null
 
 唯一正式入口：
 
-- 所有 onboarding / offboarding 的正式动作都必须从 `AgentPlane` 发起，入口固定为 `uv run python -m agentplane.cli ...`。
+- 所有 onboarding / offboarding 的正式动作都必须从 `AgentPlane` 发起，入口固定为 `agentplane ...`。
 - 应用仓库不得维护第二套正式入口脚本；不要再维护第二控制面。
 
 生命周期闭环的目标是：新增项目和移除项目都能通过同一条 formal 路径把真源对象域与派生投影同步到一致状态，避免留下无人认领的 tracked truth。
@@ -96,7 +96,7 @@ tmp/
 
 1. 复制到哪里
 2. 是否真实敏感
-3. 是否 canonical 或 legacy reference
+3. 是逻辑路径还是遗留物理路径
 
 ## 4. `AGENTS.md` 与 Codex 环境
 
@@ -122,7 +122,7 @@ Codex 本地环境固定放在 `.codex/environments/`：
 - 如果控制面和源码都在同一宿主，直接使用宿主原生命令。
 - 如果控制面在 Windows、源码在 Linux backend，入口仍是 `pwsh`，源码绑定动作委托到对应 backend。
 - Windows 上的 Linux-only 动作优先 `wsl.exe -e <program> <args...>`；只有确实需要 shell 特性时才退回 `bash -lc`。
-- 远端 Linux 正式任务统一走 `uv run python -m agentplane.cli ...`，不要在应用仓库里自建远端执行旁路。
+- 远端 Linux 正式任务统一走 `agentplane ...`，不要在应用仓库里自建远端执行旁路。
 
 ## 6. 与控制面模板仓库的职责边界
 

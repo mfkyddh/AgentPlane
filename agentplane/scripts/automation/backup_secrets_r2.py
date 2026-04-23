@@ -417,7 +417,7 @@ def ensure_onepanel_task(*, env_file: Path, trigger_now: bool = False) -> dict[s
         "user": "root",
         "scriptID": 0,
         "appID": "",
-        "website": "",
+        "ingress": "",
         "exclusionRules": "",
         "dbType": "",
         "dbName": "",

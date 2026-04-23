@@ -116,7 +116,7 @@ class RemoteCliTests(unittest.TestCase):
             script_file.write_text("#!/usr/bin/env bash\nset -euo pipefail\necho ok\n", encoding="utf-8")
 
             result = run_cli(
-                "host",
+                "infra",
                 "remote",
                 "bash",
                 "prod0-main",
@@ -129,7 +129,7 @@ class RemoteCliTests(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             payload = json.loads(result.stdout)
-            self.assertEqual("host", payload.get("command"))
+            self.assertEqual("infra", payload.get("command"))
             self.assertEqual("remote.bash", payload.get("action"))
             operation = payload.get("payload", {}).get("operation", {})
             ledger_file = Path(operation["ledger_file"])
@@ -226,7 +226,7 @@ class RemoteCliTests(unittest.TestCase):
             script_file.write_text("#!/usr/bin/env bash\nset -euo pipefail\necho ok\n", encoding="utf-8")
 
             result = run_cli(
-                "host",
+                "infra",
                 "remote",
                 "bash",
                 "prod0-main",
@@ -241,7 +241,7 @@ class RemoteCliTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, msg=result.stderr)
         payload = json.loads(result.stdout)
         inner = payload.get("payload", {})
-        self.assertEqual("host", payload.get("command"))
+        self.assertEqual("infra", payload.get("command"))
         self.assertEqual("remote.bash", payload.get("action"))
         self.assertTrue(inner.get("ok"))
         self.assertEqual("prod0-main", payload.get("target"))
@@ -268,13 +268,13 @@ class RemoteCliTests(unittest.TestCase):
         self.assertEqual("ssh-linux", inner.get("backend", {}).get("backend_type"))
         self.assertIn("ledger_file", inner.get("operation", {}))
 
-    def test_host_remote_bash_rejects_non_formal_target(self) -> None:
+    def test_infra_remote_bash_rejects_non_formal_target(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             script_file = Path(tmp) / "example.sh"
             script_file.write_text("#!/usr/bin/env bash\nset -euo pipefail\necho ok\n", encoding="utf-8")
 
             result = run_cli(
-                "host",
+                "infra",
                 "remote",
                 "bash",
                 "retired-target",
@@ -293,7 +293,7 @@ class RemoteCliTests(unittest.TestCase):
         missing = REPO_ROOT / "agentplane" / "scripts" / "remote" / "missing-example.sh"
 
         result = run_cli(
-            "host",
+            "infra",
             "remote",
             "bash",
             "prod0-main",

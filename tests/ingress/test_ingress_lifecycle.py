@@ -1,13 +1,13 @@
 import json
 from pathlib import Path
 
-from agentplane.domain.website.lifecycle import (
-    apply_website_truth_offboard,
-    apply_website_truth_onboard,
-    plan_website_truth_offboard,
-    plan_website_truth_onboard,
+from agentplane.domain.ingress.lifecycle import (
+    apply_ingress_truth_offboard,
+    apply_ingress_truth_onboard,
+    plan_ingress_truth_offboard,
+    plan_ingress_truth_onboard,
 )
-from agentplane.domain.website.models import WebsiteDefinition
+from agentplane.domain.ingress.models import IngressDefinition
 
 TARGET = "wsl"
 
@@ -24,8 +24,8 @@ def _write_inventory(tmp_path: Path, target: str, payload: dict) -> Path:
     return inventory_file
 
 
-def _definition() -> WebsiteDefinition:
-    return WebsiteDefinition(
+def _definition() -> IngressDefinition:
+    return IngressDefinition(
         alias="lane5",
         primary_domain="lane5.example.com",
         public_url="https://lane5.example.com",
@@ -36,7 +36,7 @@ def _definition() -> WebsiteDefinition:
     )
 
 
-def _entry_from(definition: WebsiteDefinition) -> dict:
+def _entry_from(definition: IngressDefinition) -> dict:
     return {
         "alias": definition.alias,
         "primary_domain": definition.primary_domain,
@@ -50,8 +50,8 @@ def _entry_from(definition: WebsiteDefinition) -> dict:
 
 def test_plan_onboard_missing_appends_row(tmp_path: Path) -> None:
     definition = _definition()
-    _write_inventory(tmp_path, TARGET, {"services": {"public_websites": []}})
-    plan = plan_website_truth_onboard(tmp_path, TARGET, definition)
+    _write_inventory(tmp_path, TARGET, {"services": {"public_ingresses": []}})
+    plan = plan_ingress_truth_onboard(tmp_path, TARGET, definition)
     assert plan["drift"]["status"] == "missing"
     assert len(plan["steps"]) == 1
     assert plan["steps"][0]["kind"] == "append"
@@ -59,42 +59,41 @@ def test_plan_onboard_missing_appends_row(tmp_path: Path) -> None:
 
 def test_apply_onboard_creates_entry_and_verifies(tmp_path: Path) -> None:
     definition = _definition()
-    inventory_file = _write_inventory(tmp_path, TARGET, {"services": {"public_websites": []}})
-    result = apply_website_truth_onboard(tmp_path, TARGET, definition, execute=True)
+    inventory_file = _write_inventory(tmp_path, TARGET, {"services": {"public_ingresses": []}})
+    result = apply_ingress_truth_onboard(tmp_path, TARGET, definition, execute=True)
     assert result["result"]["action"] == "created"
     assert result["plan"]["drift"]["status"] == "missing"
     assert result["verified"]["drift"]["status"] == "matched"
-    assert result["follow_through"]["source_surface"] == "website.truth.onboard"
+    assert result["follow_through"]["source_surface"] == "ingress.truth.onboard"
     payload = json.loads(inventory_file.read_text(encoding="utf-8"))
-    websites = payload["services"]["public_websites"]
-    assert websites[0]["alias"] == definition.alias
+    ingresses = payload["services"]["public_ingresses"]
+    assert ingresses[0]["alias"] == definition.alias
 
 
 def test_plan_onboard_mismatch_triggers_replace(tmp_path: Path) -> None:
     definition = _definition()
     entry = _entry_from(definition)
     entry["public_url"] = "https://old.example.com"
-    _write_inventory(tmp_path, TARGET, {"services": {"public_websites": [entry]}})
-    plan = plan_website_truth_onboard(tmp_path, TARGET, definition)
+    _write_inventory(tmp_path, TARGET, {"services": {"public_ingresses": [entry]}})
+    plan = plan_ingress_truth_onboard(tmp_path, TARGET, definition)
     assert plan["drift"]["status"] == "drift"
     assert plan["steps"][0]["kind"] == "replace"
-    result = apply_website_truth_onboard(tmp_path, TARGET, definition, execute=True)
+    result = apply_ingress_truth_onboard(tmp_path, TARGET, definition, execute=True)
     assert result["result"]["action"] == "updated"
     payload = json.loads(_inventory_file(tmp_path, TARGET).read_text(encoding="utf-8"))
-    assert payload["services"]["public_websites"][0]["public_url"] == definition.public_url
+    assert payload["services"]["public_ingresses"][0]["public_url"] == definition.public_url
 
 
 def test_remove_and_offboard(tmp_path: Path) -> None:
     definition = _definition()
-    _write_inventory(tmp_path, TARGET, {"services": {"public_websites": [_entry_from(definition)]}})
-    plan = plan_website_truth_offboard(tmp_path, TARGET, definition.alias)
+    _write_inventory(tmp_path, TARGET, {"services": {"public_ingresses": [_entry_from(definition)]}})
+    plan = plan_ingress_truth_offboard(tmp_path, TARGET, definition.alias)
     assert plan["drift"]["status"] == "drift"
     assert plan["steps"][0]["kind"] == "remove"
-    result = apply_website_truth_offboard(tmp_path, TARGET, definition.alias, execute=True)
+    result = apply_ingress_truth_offboard(tmp_path, TARGET, definition.alias, execute=True)
     assert result["result"]["action"] == "removed"
     inventory_file = _inventory_file(tmp_path, TARGET)
     payload = json.loads(inventory_file.read_text(encoding="utf-8"))
-    assert payload["services"]["public_websites"] == []
+    assert payload["services"]["public_ingresses"] == []
     assert result["verified"]["drift"]["status"] == "matched"
-    assert result["follow_through"]["source_surface"] == "website.truth.offboard"
-
+    assert result["follow_through"]["source_surface"] == "ingress.truth.offboard"

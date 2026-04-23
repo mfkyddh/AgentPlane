@@ -300,7 +300,7 @@ class OnePanelPublicIngressTests(unittest.TestCase):
 
         self.assertEqual("unchanged", result["cloudflare_dns"]["action"])
         self.assertEqual(3, result["ssl"]["id"])
-        self.assertEqual(4, result["website"]["id"])
+        self.assertEqual(4, result["ingress"]["id"])
 
     def test_manager_creates_new_proxy_website_with_app_type_new(self) -> None:
         config = public_ingress.PublicIngressConfig(
@@ -346,7 +346,7 @@ class OnePanelPublicIngressTests(unittest.TestCase):
         self.assertEqual("new", create_request["appType"])
         self.assertEqual("proxy", create_request["type"])
         self.assertEqual([{"domain": "token.zzzai.fun", "port": 80, "ssl": False}], create_request["domains"])
-        self.assertEqual(5, result["website"]["id"])
+        self.assertEqual(5, result["ingress"]["id"])
 
 
 if __name__ == "__main__":

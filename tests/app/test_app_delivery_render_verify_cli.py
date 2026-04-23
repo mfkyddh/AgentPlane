@@ -537,7 +537,7 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
             write_fake_bridge_network_ssh(bin_dir)
 
             result = run_cli(
-                "host",
+                "infra",
                 "network",
                 "audit",
                 "prod2-main",
@@ -552,7 +552,7 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             payload = json.loads(result.stdout)
-            self.assertEqual("host", payload["command"])
+            self.assertEqual("infra", payload["command"])
             self.assertEqual("network.audit", payload["action"])
             self.assertFalse(payload["payload"]["ok"])
             network = payload["payload"]["networks"][0]
@@ -575,7 +575,7 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
             write_fake_bridge_network_ssh(bin_dir)
 
             result = run_cli(
-                "host",
+                "infra",
                 "network",
                 "ensure",
                 "prod2-main",
@@ -590,7 +590,7 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             payload = json.loads(result.stdout)
-            self.assertEqual("host", payload["command"])
+            self.assertEqual("infra", payload["command"])
             self.assertEqual("network.ensure", payload["action"])
             self.assertTrue(payload["payload"]["ok"])
             self.assertEqual(2, len(payload["payload"]["repairs"]))

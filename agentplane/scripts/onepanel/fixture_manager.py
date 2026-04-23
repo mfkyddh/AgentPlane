@@ -12,7 +12,7 @@ from .object_api import (
     plan_website_create,
     search_cronjobs,
     search_installed_apps,
-    search_websites,
+    search_ingresses,
 )
 from .compose_project import create_compose, operate_compose, search_compose, update_compose
 
@@ -128,7 +128,7 @@ def _fixture_compose(spec: FixtureSpec) -> str:
 
 
 def _find_existing_website(executor: Any, spec: FixtureSpec) -> dict[str, Any] | None:
-    payload = search_websites(executor, name=spec.website_alias)
+    payload = search_ingresses(executor, name=spec.website_alias)
     items = payload.get("items")
     if not isinstance(items, list):
         return None
@@ -191,7 +191,7 @@ def _cronjob_create_payload(spec: FixtureSpec, *, group_id: int, existing: dict[
         "user": "root",
         "scriptID": 0,
         "appID": "",
-        "website": "",
+        "ingress": "",
         "exclusionRules": "",
         "dbType": "",
         "dbName": "",
@@ -224,7 +224,7 @@ def plan_fixture(executor: Any, spec: FixtureSpec) -> dict[str, Any]:
     cronjob = _find_existing_cronjob(executor, spec)
     items = [
         {
-            "object": "website",
+            "object": "ingress",
             "action": "noop" if website else ("create" if website_runtime_ready else "blocked-missing-openresty"),
             "existing": website,
             "desired": {
@@ -267,7 +267,7 @@ def apply_fixture(executor: Any, spec: FixtureSpec, *, execute: bool) -> dict[st
     actions: list[dict[str, Any]] = []
     ok = True
     website = _find_existing_website(executor, spec)
-    website_item = next((item for item in payload["items"] if item["object"] == "website"), None)
+    website_item = next((item for item in payload["items"] if item["object"] == "ingress"), None)
     if website is None and website_item and website_item["action"] == "create":
         plan = plan_website_create(
             alias=spec.website_alias,
@@ -278,12 +278,12 @@ def apply_fixture(executor: Any, spec: FixtureSpec, *, execute: bool) -> dict[st
             ipv6=spec.website_ipv6,
         )
         result = executor.api_request("POST", plan.path, plan.body)
-        actions.append({"object": "website", "action": "create", "result": result})
+        actions.append({"object": "ingress", "action": "create", "result": result})
     elif website is None and website_item and website_item["action"] == "blocked-missing-openresty":
         ok = False
-        actions.append({"object": "website", "action": "blocked-missing-openresty", "reason": website_item["blocked_reason"]})
+        actions.append({"object": "ingress", "action": "blocked-missing-openresty", "reason": website_item["blocked_reason"]})
     else:
-        actions.append({"object": "website", "action": "noop", "result": {"id": website.get("id")}})
+        actions.append({"object": "ingress", "action": "noop", "result": {"id": website.get("id")}})
 
     project = _find_existing_project(executor, spec)
     compose_content = _fixture_compose(spec)
@@ -321,14 +321,14 @@ def cleanup_fixture(executor: Any, spec: FixtureSpec, *, execute: bool) -> dict[
     cronjob = _find_existing_cronjob(executor, spec)
     if not execute:
         payload["items"] = [
-            {"object": "website", "action": "keep"},
+            {"object": "ingress", "action": "keep"},
             {"object": "project", "action": "down-project" if project else "noop"},
             {"object": "cronjob", "action": "disable" if cronjob and cronjob.get("status") != "Disable" else "noop"},
         ]
         payload["ok"] = True
         return payload
 
-    actions: list[dict[str, Any]] = [{"object": "website", "action": "keep"}]
+    actions: list[dict[str, Any]] = [{"object": "ingress", "action": "keep"}]
     if project is not None:
         result = operate_compose(executor, name=spec.project_name, operation="down", with_file=True)
         actions.append({"object": "project", "action": "down-project", "result": result})

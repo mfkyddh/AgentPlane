@@ -16,5 +16,5 @@ uv run python -m agentplane.cli app resource search --target <target> --repo-roo
 uv run python -m agentplane.cli app resource get --target <target> --app <app> --repo-root <repo-root>
 uv run python -m agentplane.cli app resource verify --target <target> --app <app> --repo-root <repo-root>
 uv run python -m agentplane.cli app resource refresh-ledger --target <target> --repo-root <repo-root> --write
-uv run python -m agentplane.cli host secrets sync-layout <target> --repo-root <repo-root> --write
+uv run python -m agentplane.cli infra secrets sync-layout <target> --repo-root <repo-root> --write
 ```

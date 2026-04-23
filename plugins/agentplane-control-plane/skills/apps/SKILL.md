@@ -17,4 +17,4 @@ This plugin group is a thin distribution layer over the repository-owned skills 
 
 - Source repo skills: `onepanel-app-ops`
 - Primary domains: `app`
-- Stable entrypoint: `uv run python -m agentplane.cli app ...`
+- Stable entrypoint: `agentplane app ...`

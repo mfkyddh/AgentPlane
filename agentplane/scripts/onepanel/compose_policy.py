@@ -77,7 +77,7 @@ def enforce_host_network(raw_compose: str) -> str:
         if not isinstance(service, dict):
             raise ValueError(f"Service {service_name} must be a mapping")
         service.pop("networks", None)
-        service["network_mode"] = "host"
+        service["network_mode"] = "infra"
 
     return yaml.safe_dump(compose, sort_keys=False, allow_unicode=False)
 

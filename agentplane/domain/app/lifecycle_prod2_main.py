@@ -25,7 +25,7 @@ def _load_inventory(repo_root: Path) -> dict[str, Any]:
 def _normalize_services(raw_services: dict[str, Any]) -> list[dict[str, Any]]:
     services: list[dict[str, Any]] = []
     for name in sorted(raw_services):
-        if name == 'public_websites':
+        if name == 'public_ingresses':
             continue
         info = raw_services.get(name)
         if not isinstance(info, dict):
@@ -66,7 +66,7 @@ def describe_prod2_main_topology(repo_root: Path) -> dict[str, Any]:
     services_raw = inventory.get('services', {})
     services_dict = services_raw if isinstance(services_raw, dict) else {}
     services = _normalize_services(services_dict)
-    websites = _summaries(services_dict.get('public_websites', []), fields=('alias', 'primary_domain', 'public_url', 'proxy', 'config_file', 'certificate_mode', 'status'))
+    websites = _summaries(services_dict.get('public_ingresses', []), fields=('alias', 'primary_domain', 'public_url', 'proxy', 'config_file', 'certificate_mode', 'status'))
     automations = _summaries(inventory.get('automations', []), fields=('name', 'command', 'schedule'))
 
     app_resources: list[dict[str, Any]] = []

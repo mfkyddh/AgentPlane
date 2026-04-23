@@ -7,7 +7,7 @@
       "schedule": "daily at 05:00",
       "spec": "0 5 * * *",
       "cwd": "<repo-root>",
-      "command": "uv run python -m agentplane.cli host inventory prod0-main --repo-root <repo-root>",
+      "command": "uv run python -m agentplane.cli infra inventory prod0-main --repo-root <repo-root>",
       "docs": [
         "docs/runbooks/prod0-main-governance.md"
       ],
@@ -20,7 +20,7 @@
       "schedule": "daily at 05:15",
       "spec": "15 5 * * *",
       "cwd": "<repo-root>",
-      "command": "uv run python -m agentplane.cli host audit prod0-main --repo-root <repo-root>",
+      "command": "uv run python -m agentplane.cli infra audit prod0-main --repo-root <repo-root>",
       "docs": [
         "docs/runbooks/prod0-main-governance.md"
       ]
@@ -32,7 +32,7 @@
       "schedule": "daily at 05:30",
       "spec": "30 5 * * *",
       "cwd": "<repo-root>",
-      "command": "uv run python -m agentplane.cli host network audit prod0-main --repo-root <repo-root>",
+      "command": "uv run python -m agentplane.cli infra network audit prod0-main --repo-root <repo-root>",
       "docs": [
         "docs/runbooks/prod0-main-governance.md"
       ]

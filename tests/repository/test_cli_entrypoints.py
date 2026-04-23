@@ -56,7 +56,7 @@ class CliEntrypointsTests(unittest.TestCase):
         _assert_help_commands(
             self,
             result.stdout,
-            expected={"host", "onepanel", "website", "service", "app", "projection"},
+            expected={"infra", "onepanel", "ingress", "service", "app", "projection"},
             absent={"network", "tenant", "automation", "cleanup", "inventory", "audit", "remote", "secrets"},
         )
 
@@ -100,7 +100,7 @@ class CliEntrypointsTests(unittest.TestCase):
             expected={"search", "get", "verify", "plan", "apply"},
         )
 
-        website_help = run_cli("website", "--help")
+        website_help = run_cli("ingress", "--help")
         self.assertEqual(website_help.returncode, 0, msg=website_help.stderr)
         _assert_help_commands(
             self,
@@ -108,7 +108,7 @@ class CliEntrypointsTests(unittest.TestCase):
             expected={"search", "get", "verify", "plan", "apply", "refresh-ledger", "publish"},
         )
 
-        website_publish_help = run_cli("website", "publish", "--help")
+        website_publish_help = run_cli("ingress", "publish", "--help")
         self.assertEqual(website_publish_help.returncode, 0, msg=website_publish_help.stderr)
         _assert_help_commands(
             self,
@@ -156,7 +156,7 @@ class CliEntrypointsTests(unittest.TestCase):
             },
         )
 
-        host_help = run_cli("host", "--help")
+        host_help = run_cli("infra", "--help")
         self.assertEqual(host_help.returncode, 0, msg=host_help.stderr)
         _assert_help_commands(
             self,
@@ -165,15 +165,15 @@ class CliEntrypointsTests(unittest.TestCase):
             absent={"secrets-layout"},
         )
 
-        host_live_gate_help = run_cli("host", "live-gate", "--help")
+        host_live_gate_help = run_cli("infra", "live-gate", "--help")
         self.assertEqual(host_live_gate_help.returncode, 0, msg=host_live_gate_help.stderr)
         _assert_help_commands(self, host_live_gate_help.stdout, expected={"plan", "run"})
 
-        host_cleanup_help = run_cli("host", "cleanup", "--help")
+        host_cleanup_help = run_cli("infra", "cleanup", "--help")
         self.assertEqual(host_cleanup_help.returncode, 0, msg=host_cleanup_help.stderr)
         _assert_help_commands(self, host_cleanup_help.stdout, expected={"plan", "apply"})
 
-        host_automation_help = run_cli("host", "automation", "--help")
+        host_automation_help = run_cli("infra", "automation", "--help")
         self.assertEqual(host_automation_help.returncode, 0, msg=host_automation_help.stderr)
         _assert_help_commands(
             self,
@@ -181,7 +181,7 @@ class CliEntrypointsTests(unittest.TestCase):
             expected={"search", "get", "verify", "plan", "apply"},
         )
 
-        host_secrets_help = run_cli("host", "secrets", "--help")
+        host_secrets_help = run_cli("infra", "secrets", "--help")
         self.assertEqual(host_secrets_help.returncode, 0, msg=host_secrets_help.stderr)
         _assert_help_commands(
             self,
@@ -189,7 +189,7 @@ class CliEntrypointsTests(unittest.TestCase):
             expected={"init-data-services", "sync-layout"},
         )
 
-        host_network_help = run_cli("host", "network", "--help")
+        host_network_help = run_cli("infra", "network", "--help")
         self.assertEqual(host_network_help.returncode, 0, msg=host_network_help.stderr)
         _assert_help_commands(self, host_network_help.stdout, expected={"audit", "ensure"})
 
@@ -199,7 +199,7 @@ class CliEntrypointsTests(unittest.TestCase):
             self,
             onepanel_help.stdout,
             expected={"panel", "firewall", "cronjob", "task"},
-            absent={"website", "container", "app", "project", "ledger", "suite", "fixture", "ingress"},
+            absent={"ingress", "container", "app", "project", "ledger", "suite", "fixture", "ingress"},
         )
 
     def test_app_help_hides_legacy_flat_entrypoints(self) -> None:
@@ -226,14 +226,14 @@ class CliEntrypointsTests(unittest.TestCase):
 
     def test_required_subcommands_emit_json(self) -> None:
         cases = [
-            ("host", "local", "inspect", "--repo-root", "C:/repos/agentplane"),
-            ("host", "inventory", "wsl", "--repo-root", str(REPO_ROOT)),
-            ("host", "inventory", "prod0-main", "--repo-root", str(REPO_ROOT)),
-            ("host", "audit", "wsl", "--repo-root", str(REPO_ROOT)),
-            ("host", "audit", "prod0-main", "--repo-root", str(REPO_ROOT)),
-            ("host", "live-gate", "plan", "--profile", "wsl", "--repo-root", str(REPO_ROOT)),
-            ("host", "cleanup", "plan", "wsl", "--repo-root", str(REPO_ROOT)),
-            ("host", "automation", "search", "wsl", "--repo-root", str(REPO_ROOT)),
+            ("infra", "local", "inspect", "--repo-root", "C:/repos/agentplane"),
+            ("infra", "inventory", "wsl", "--repo-root", str(REPO_ROOT)),
+            ("infra", "inventory", "prod0-main", "--repo-root", str(REPO_ROOT)),
+            ("infra", "audit", "wsl", "--repo-root", str(REPO_ROOT)),
+            ("infra", "audit", "prod0-main", "--repo-root", str(REPO_ROOT)),
+            ("infra", "live-gate", "plan", "--profile", "wsl", "--repo-root", str(REPO_ROOT)),
+            ("infra", "cleanup", "plan", "wsl", "--repo-root", str(REPO_ROOT)),
+            ("infra", "automation", "search", "wsl", "--repo-root", str(REPO_ROOT)),
             ("onepanel", "--env", "wsl", "--json"),
         ]
         for args in cases:
@@ -273,30 +273,30 @@ class CliEntrypointsTests(unittest.TestCase):
         payload = json.loads(result.stdout)
         self.assertEqual("onepanel.invalid_json", payload["error"]["code"])
 
-    def test_host_cleanup_apply_emits_json(self) -> None:
+    def test_infra_cleanup_apply_emits_json(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             (root / ".playwright-cli").mkdir(parents=True)
-            result = run_cli("host", "cleanup", "apply", "wsl", "--repo-root", str(root), cwd=REPO_ROOT)
+            result = run_cli("infra", "cleanup", "apply", "wsl", "--repo-root", str(root), cwd=REPO_ROOT)
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             payload = json.loads(result.stdout)
-            self.assertEqual("host", payload.get("command"))
+            self.assertEqual("infra", payload.get("command"))
             self.assertEqual("cleanup.apply", payload.get("action"))
             self.assertEqual("wsl", payload.get("target"))
             self.assertIn("removed", payload["payload"])
 
-    def test_host_automation_search_emits_json(self) -> None:
-        result = run_cli("host", "automation", "search", "wsl", "--repo-root", str(REPO_ROOT), cwd=REPO_ROOT)
+    def test_infra_automation_search_emits_json(self) -> None:
+        result = run_cli("infra", "automation", "search", "wsl", "--repo-root", str(REPO_ROOT), cwd=REPO_ROOT)
 
         self.assertEqual(result.returncode, 0, msg=result.stderr)
         payload = json.loads(result.stdout)
-        self.assertEqual("host", payload.get("command"))
+        self.assertEqual("infra", payload.get("command"))
         self.assertEqual("automation.search", payload.get("action"))
         self.assertEqual("wsl", payload.get("target"))
         self.assertIn("items", payload["payload"])
 
-    def test_host_automation_help_lists_formal_targets(self) -> None:
-        result = run_cli("host", "automation", "search", "--help")
+    def test_infra_automation_help_lists_formal_targets(self) -> None:
+        result = run_cli("infra", "automation", "search", "--help")
 
         self.assertEqual(result.returncode, 0, msg=result.stderr)
         self.assertTrue({"wsl", "prod0-main", "prod2-main"}.issubset(_listed_targets(result.stdout)))
@@ -307,9 +307,9 @@ class CliEntrypointsTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("invalid choice", result.stderr)
 
-    def test_host_live_gate_run_without_execute_is_plan_only(self) -> None:
+    def test_infra_live_gate_run_without_execute_is_plan_only(self) -> None:
         result = run_cli(
-            "host",
+            "infra",
             "live-gate",
             "run",
             "--profile",

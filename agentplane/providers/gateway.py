@@ -7,10 +7,10 @@ from typing import Any, Protocol
 
 from agentplane.providers.onepanel_ledgers import refresh_onepanel_ledgers
 from agentplane.providers.onepanel_objects import (
-    get_website,
+    get_ingress,
     onepanel_target_executor,
     plan_website_create,
-    search_websites,
+    search_ingresses,
 )
 
 
@@ -66,10 +66,10 @@ class OnePanelProviderGateway:
         return onepanel_target_executor(target)
 
     def search_onepanel_websites(self, executor: object, *, name: str) -> dict[str, Any]:
-        return search_websites(executor, name=name)
+        return search_ingresses(executor, name=name)
 
     def get_onepanel_website(self, executor: object, *, website_id: int) -> dict[str, Any]:
-        return get_website(executor, website_id=website_id)
+        return get_ingress(executor, website_id=website_id)
 
     def plan_onepanel_website_create(self, *, alias: str, domain: str, proxy: str, remark: str, ipv6: bool) -> object:
         return plan_website_create(alias=alias, domain=domain, proxy=proxy, remark=remark, ipv6=ipv6)

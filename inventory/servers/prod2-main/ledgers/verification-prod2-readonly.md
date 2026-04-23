@@ -6,7 +6,7 @@
 ## checks
 
 - `panel`: `ok`
-- `website`: `ok`
+- `ingress`: `ok`
 - `container`: `ok`
 - `project`: `ok`
 - `firewall`: `ok`

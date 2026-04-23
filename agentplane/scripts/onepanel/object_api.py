@@ -23,7 +23,7 @@ def get_panel_summary(executor: FakeLikeExecutorProtocol) -> dict[str, Any]:
     return result
 
 
-def search_websites(
+def search_ingresses(
     executor: FakeLikeExecutorProtocol,
     *,
     name: str = "",
@@ -48,12 +48,12 @@ def search_websites(
     return result
 
 
-def get_website(executor: FakeLikeExecutorProtocol, *, website_id: int) -> dict[str, Any]:
+def get_ingress(executor: FakeLikeExecutorProtocol, *, website_id: int) -> dict[str, Any]:
     website = executor.api_request("GET", f"/api/v2/websites/{website_id}")
     https = executor.api_request("GET", f"/api/v2/websites/{website_id}/https")
     if not isinstance(website, dict) or not isinstance(https, dict):
         raise ValueError("website detail must be objects")
-    return {"website": website, "https": https}
+    return {"ingress": website, "https": https}
 
 
 def search_cronjobs(
@@ -90,7 +90,7 @@ def load_cronjob(executor: FakeLikeExecutorProtocol, *, cronjob_id: int) -> dict
 
 def find_website_id(executor: FakeLikeExecutorProtocol, *, name: str = "", alias: str = "") -> int:
     query = alias or name
-    payload = search_websites(executor, name=query)
+    payload = search_ingresses(executor, name=query)
     items = payload.get("items")
     if not isinstance(items, list):
         raise RuntimeError("website search returned no items")
@@ -381,7 +381,7 @@ def plan_website_create(
     ipv6: bool = True,
 ) -> ObjectPlan:
     return ObjectPlan(
-        "website",
+        "ingress",
         "create",
         "/api/v2/websites",
         {

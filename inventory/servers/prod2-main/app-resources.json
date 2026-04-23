@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "host": "prod2-main",
+    "infra": "prod2-main",
     "ledger_status": "business-app-resources-active",
     "updated_at": "2026-03-28T16:52:00+08:00",
     "notes": [
@@ -30,7 +30,7 @@
     "openresty": {
       "container_name": "1panel-openresty-prod",
       "status": "running",
-      "network_mode": "host",
+      "network_mode": "infra",
       "listen_port": 443
     }
   },

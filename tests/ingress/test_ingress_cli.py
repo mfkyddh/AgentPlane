@@ -50,7 +50,7 @@ def write_inventory(root: Path) -> None:
         json.dumps(
             {
                 "services": {
-                    "public_websites": [
+                    "public_ingresses": [
                         {
                             "alias": "token",
                             "primary_domain": "token.zzzai.fun",
@@ -122,13 +122,13 @@ class FakeWebsiteExecutor:
 
 
 class WebsiteCliTests(unittest.TestCase):
-    def test_website_apply_requires_execute(self) -> None:
+    def test_ingress_apply_requires_execute(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory(root)
 
             result = run_cli(
-                "website",
+                "ingress",
                 "apply",
                 "--target",
                 "prod2-main",
@@ -143,14 +143,14 @@ class WebsiteCliTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("--execute", result.stderr)
 
-    def test_website_search_lists_declared_public_websites(self) -> None:
-        from agentplane.domain.website.handlers import search_websites
+    def test_ingress_search_lists_declared_public_ingresses(self) -> None:
+        from agentplane.domain.ingress.handlers import search_ingresses
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory(root)
 
-            payload = search_websites(root, "prod2-main")
+            payload = search_ingresses(root, "prod2-main")
 
             self.assertEqual(
                 [
@@ -169,8 +169,8 @@ class WebsiteCliTests(unittest.TestCase):
                 payload["items"],
             )
 
-    def test_website_get_aggregates_declared_and_live_state(self) -> None:
-        from agentplane.domain.website.handlers import get_website
+    def test_ingress_get_aggregates_declared_and_live_state(self) -> None:
+        from agentplane.domain.ingress.handlers import get_ingress
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -186,16 +186,16 @@ class WebsiteCliTests(unittest.TestCase):
                 https={"enable": True, "httpsPort": "443", "SSL": {"id": 3}},
             )
 
-            with patch("agentplane.domain.website.handlers._executor_for_target", return_value=executor):
-                payload = get_website(root, "prod2-main", "token")
+            with patch("agentplane.domain.ingress.handlers._executor_for_target", return_value=executor):
+                payload = get_ingress(root, "prod2-main", "token")
 
-            self.assertEqual("token", payload["website"]["alias"])
-            self.assertEqual("token.zzzai.fun", payload["website"]["primary_domain"])
-            self.assertEqual(7, payload["live"]["website"]["id"])
+            self.assertEqual("token", payload["ingress"]["alias"])
+            self.assertEqual("token.zzzai.fun", payload["ingress"]["primary_domain"])
+            self.assertEqual(7, payload["live"]["ingress"]["id"])
             self.assertTrue(payload["live"]["https"]["enable"])
 
-    def test_website_verify_reports_structured_checks_for_drift(self) -> None:
-        from agentplane.domain.website.handlers import verify_website
+    def test_ingress_verify_reports_structured_checks_for_drift(self) -> None:
+        from agentplane.domain.ingress.handlers import verify_ingress
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -211,8 +211,8 @@ class WebsiteCliTests(unittest.TestCase):
                 https={"enable": False, "httpsPort": "", "SSL": {"id": 99}},
             )
 
-            with patch("agentplane.domain.website.handlers._executor_for_target", return_value=executor):
-                payload = verify_website(root, "prod2-main", "token")
+            with patch("agentplane.domain.ingress.handlers._executor_for_target", return_value=executor):
+                payload = verify_ingress(root, "prod2-main", "token")
 
             self.assertFalse(payload["ok"])
             self.assertTrue(payload["checks"]["alias"]["ok"])
@@ -220,16 +220,16 @@ class WebsiteCliTests(unittest.TestCase):
             self.assertFalse(payload["checks"]["https"]["ok"])
             self.assertEqual(["proxy", "https", "ssl_id"], payload["failures"])
 
-    def test_website_plan_reconcile_builds_create_step_for_missing_site(self) -> None:
-        from agentplane.domain.website.handlers import plan_website_operation
+    def test_ingress_plan_reconcile_builds_create_step_for_missing_site(self) -> None:
+        from agentplane.domain.ingress.handlers import plan_ingress_operation
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory(root)
             executor = FakeWebsiteExecutor(existing=None)
 
-            with patch("agentplane.domain.website.handlers._executor_for_target", return_value=executor):
-                payload = plan_website_operation(root, "prod2-main", "token", "reconcile")
+            with patch("agentplane.domain.ingress.handlers._executor_for_target", return_value=executor):
+                payload = plan_ingress_operation(root, "prod2-main", "token", "reconcile")
 
             self.assertEqual("reconcile", payload["operation"])
             self.assertEqual("missing", payload["drift"]["status"])
@@ -237,8 +237,8 @@ class WebsiteCliTests(unittest.TestCase):
             self.assertEqual("create", payload["steps"][0]["kind"])
             self.assertEqual("token", payload["steps"][0]["body"]["website_alias"])
 
-    def test_website_apply_reconcile_creates_missing_site_and_post_verifies(self) -> None:
-        from agentplane.cli.website import handle_website_command
+    def test_ingress_apply_reconcile_creates_missing_site_and_post_verifies(self) -> None:
+        from agentplane.cli.ingress import handle_ingress_command
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -246,7 +246,7 @@ class WebsiteCliTests(unittest.TestCase):
             executor = FakeWebsiteExecutor(existing=None)
 
             args = SimpleNamespace(
-                website_action="apply",
+                ingress_action="apply",
                 target="prod2-main",
                 alias="token",
                 operation="reconcile",
@@ -255,42 +255,42 @@ class WebsiteCliTests(unittest.TestCase):
                 write=False,
             )
 
-            with patch("agentplane.domain.website.handlers._executor_for_target", return_value=executor):
-                payload = handle_website_command(args)
+            with patch("agentplane.domain.ingress.handlers._executor_for_target", return_value=executor):
+                payload = handle_ingress_command(args)
 
-            self.assertEqual("website", payload["command"])
+            self.assertEqual("ingress", payload["command"])
             self.assertEqual("apply", payload["action"])
             self.assertTrue(payload["payload"]["ok"])
             self.assertEqual("created", payload["payload"]["result"]["action"])
             self.assertTrue(payload["payload"]["verified"]["ok"])
             follow_through = payload["payload"]["follow_through"]
             self.assertEqual("projection", follow_through["owner_surface"])
-            self.assertEqual("website", follow_through["source_surface"])
+            self.assertEqual("ingress", follow_through["source_surface"])
             self.assertIn("projection verification run", follow_through["commands"]["verification"])
             self.assertIn("--website-alias token", follow_through["commands"]["verification"])
             self.assertIn("projection ledger refresh", follow_through["commands"]["ledger_refresh"])
 
-    def test_website_refresh_ledger_updates_projection_without_mutating_declared_rows(self) -> None:
-        from agentplane.cli.website import handle_website_command
+    def test_ingress_refresh_ledger_updates_projection_without_mutating_declared_rows(self) -> None:
+        from agentplane.cli.ingress import handle_ingress_command
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory(root)
 
             args = SimpleNamespace(
-                website_action="refresh-ledger",
+                ingress_action="refresh-ledger",
                 target="prod2-main",
                 repo_root=str(root),
                 write=True,
             )
 
-            payload = handle_website_command(args)
+            payload = handle_ingress_command(args)
 
-            self.assertEqual("website", payload["command"])
+            self.assertEqual("ingress", payload["command"])
             self.assertEqual(1, payload["payload"]["counts"]["websites"])
             self.assertTrue((root / "inventory" / "servers" / "prod2-main" / "ledgers" / "websites.json").is_file())
             persisted_inventory = json.loads((root / "inventory" / "servers" / "prod2-main" / "inventory.json").read_text(encoding="utf-8"))
-            self.assertEqual("token", persisted_inventory["services"]["public_websites"][0]["alias"])
+            self.assertEqual("token", persisted_inventory["services"]["public_ingresses"][0]["alias"])
             self.assertEqual(1, persisted_inventory["object_ledgers"]["counts"]["websites"])
 
 

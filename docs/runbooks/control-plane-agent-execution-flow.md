@@ -6,7 +6,7 @@
 
 ## 适用范围
 
-- 主机治理
+- 基础设施治理
 - provider/debug 对象核对
 - 运行服务操作
 - 公网入口发布
@@ -22,12 +22,12 @@
 
 ## 正式入口
 
-- 所有正式操作都从 `uv run python -m agentplane.cli ...` 进入。
+- 所有正式操作都从 `agentplane ...` 进入。
 - Windows 主机以 `pwsh` 为入口；Linux / macOS 继续使用原生 shell。
 - Windows 与 WSL 默认共享同一份源码 checkout；WSL 源码绑定动作通过 resolver/backend 映射执行，且每个 checkout 只保留根目录 `.venv`。
-- 真实 WSL/SSH/Docker live integration gate 只通过 `host live-gate` 运行，默认本地 `pytest` 不执行真实 backend。
+- 真实 WSL/SSH/Docker live integration gate 只通过 `infra live-gate` 运行，默认本地 `pytest` 不执行真实 backend。
 - `onepanel` 公开面只剩 `panel`、`firewall`、`cronjob`、`task`。
-- `service`、`website`、`app`、`projection` 是对外默认 domain；不要把 provider/debug helper 当默认入口。
+- `service`、`ingress`、`app`、`projection` 是对外默认 domain；不要把 provider/debug helper 当默认入口。
 
 ## 标准执行顺序
 
@@ -36,8 +36,8 @@
 先确认当前模板仓库已经具备可执行上下文：
 
 ```bash
-uv run python -m agentplane.cli bootstrap inspect-local --repo-root <repo-root>
-uv run python -m agentplane.cli bootstrap doctor --repo-root <repo-root>
+agentplane bootstrap inspect-local --repo-root <repo-root>
+agentplane bootstrap doctor --repo-root <repo-root>
 ```
 
 如果是在 Windows 宿主执行，正式入口仍然是 `pwsh`。后续 remote/backend 动作落到对应 backend，WSL backend 使用 resolver 生成的同 checkout 路径。
@@ -46,7 +46,7 @@ uv run python -m agentplane.cli bootstrap doctor --repo-root <repo-root>
 
 优先顺序：
 
-1. `uv run python -m agentplane.cli --help`
+1. `agentplane --help`
 2. 对应 domain / object 的 `--help`
 3. 对应 architecture / runbook / skill
 
@@ -55,9 +55,9 @@ uv run python -m agentplane.cli bootstrap doctor --repo-root <repo-root>
 对副作用动作，优先运行计划或 dry-run：
 
 ```bash
-uv run python -m agentplane.cli service plan --target <target> --name <service> --operation reconcile --repo-root <repo-root>
-uv run python -m agentplane.cli website publish plan --target <target> --config-file <file> --cloudflare-env-file <file> --repo-root <repo-root>
-uv run python -m agentplane.cli app delivery deploy --target <target> --app <app> --repo-root <repo-root> --dry-run
+agentplane service plan --target <target> --name <service> --operation reconcile --repo-root <repo-root>
+agentplane ingress publish plan --target <target> --config-file <file> --cloudflare-env-file <file> --repo-root <repo-root>
+agentplane app delivery deploy --target <target> --app <app> --repo-root <repo-root> --dry-run
 ```
 
 ### 4. 执行阶段
@@ -65,9 +65,9 @@ uv run python -m agentplane.cli app delivery deploy --target <target> --app <app
 只有在前置检查与计划阶段通过后，才进入正式执行：
 
 ```bash
-uv run python -m agentplane.cli service apply --target <target> --name <service> --operation reconcile --repo-root <repo-root> --execute
-uv run python -m agentplane.cli website publish apply --target <target> --config-file <file> --cloudflare-env-file <file> --repo-root <repo-root> --execute
-uv run python -m agentplane.cli app delivery deploy --target <target> --app <app> --repo-root <repo-root> --execute
+agentplane service apply --target <target> --name <service> --operation reconcile --repo-root <repo-root> --execute
+agentplane ingress publish apply --target <target> --config-file <file> --cloudflare-env-file <file> --repo-root <repo-root> --execute
+agentplane app delivery deploy --target <target> --app <app> --repo-root <repo-root> --execute
 ```
 
 ### 5. 验证阶段
@@ -75,17 +75,17 @@ uv run python -m agentplane.cli app delivery deploy --target <target> --app <app
 执行后必须验证 live state：
 
 ```bash
-uv run python -m agentplane.cli service verify --target <target> --name <service> --repo-root <repo-root>
-uv run python -m agentplane.cli website publish verify --target <target> --config-file <file> --cloudflare-env-file <file> --repo-root <repo-root>
-uv run python -m agentplane.cli app delivery verify --target <target> --app <app> --repo-root <repo-root> --execute
-uv run python -m agentplane.cli projection verification run --target <target> --profile <profile> --repo-root <repo-root>
-uv run python -m agentplane.cli host live-gate plan --profile <target> --repo-root <repo-root>
+agentplane service verify --target <target> --name <service> --repo-root <repo-root>
+agentplane ingress publish verify --target <target> --config-file <file> --cloudflare-env-file <file> --repo-root <repo-root>
+agentplane app delivery verify --target <target> --app <app> --repo-root <repo-root> --execute
+agentplane projection verification run --target <target> --profile <profile> --repo-root <repo-root>
+agentplane infra live-gate plan --profile <target> --repo-root <repo-root>
 ```
 
 如果需要执行真实 live gate，使用当前 checkout 显式运行；Windows 宿主会按 profile 路由到 WSL/SSH backend：
 
 ```bash
-uv run python -m agentplane.cli host live-gate run --profile <target> --repo-root <repo-root> --execute
+agentplane infra live-gate run --profile <target> --repo-root <repo-root> --execute
 ```
 
 ### 6. 回写阶段
@@ -93,9 +93,9 @@ uv run python -m agentplane.cli host live-gate run --profile <target> --repo-roo
 当动作影响正式状态或摘要时，继续回写：
 
 ```bash
-uv run python -m agentplane.cli projection ledger refresh --target <target> --repo-root <repo-root> --write
-uv run python -m agentplane.cli app delivery inventory-refresh --target <target> --app <app> --repo-root <repo-root> --write
-uv run python -m agentplane.cli app delivery doc-sync --target <target> --app <app> --repo-root <repo-root> --write
+agentplane projection ledger refresh --target <target> --repo-root <repo-root> --write
+agentplane app delivery inventory-refresh --target <target> --app <app> --repo-root <repo-root> --write
+agentplane app delivery doc-sync --target <target> --app <app> --repo-root <repo-root> --write
 ```
 
 ## 人工接力点

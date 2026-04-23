@@ -97,7 +97,7 @@ if [[ "$cmd" == *"docker inspect minio-prod --format"* ]]; then
   exit 0
 fi
 if [[ "$cmd" == *"docker inspect 1panel-openresty-prod --format"* ]]; then
-  emit_container "1panel-openresty-prod" "1panel/openresty:1.27.1.2-5-1-focal" "running" "host"
+  emit_container "1panel-openresty-prod" "1panel/openresty:1.27.1.2-5-1-focal" "running" "infra"
   exit 0
 fi
 if [[ "$cmd" == *"docker inspect sampleapi-prod --format"* ]]; then
@@ -109,7 +109,7 @@ if [[ "$cmd" == *"docker inspect relay-trojan-prod --format"* ]]; then
   exit 0
 fi
 if [[ "$cmd" == *"docker inspect relay-trojan-host-prod --format"* ]]; then
-  emit_container "relay-trojan-host-prod" "ghcr.io/xtls/xray-core:25.3.6" "running" "host"
+  emit_container "relay-trojan-host-prod" "ghcr.io/xtls/xray-core:25.3.6" "running" "infra"
   exit 0
 fi
 if [[ "$cmd" == *"docker inspect legacy-runtime-prod --format"* ]]; then
@@ -209,7 +209,7 @@ def write_inventory(root: Path) -> None:
                     "onepanel_openresty": {
                         "container_name": "1panel-openresty-prod",
                         "status": "running",
-                        "network_mode": "host",
+                        "network_mode": "infra",
                         "listen_ports": [8443],
                     },
                     "sampleapi": {
@@ -258,7 +258,7 @@ def write_inventory(root: Path) -> None:
                     "image": "ghcr.io/xtls/xray-core:25.3.6",
                     "status": "running",
                     "host_binding": "0.0.0.0:24444",
-                    "network_mode": "host",
+                    "network_mode": "infra",
                 },
                     "legacy_runtime": {
                         "control_plane": "onepanel-app",

@@ -14,6 +14,6 @@
 
 ## Boundary
 
-- 当前正式入口仍是 uv run python -m agentplane.cli ... 与 active runbook。
+- 当前正式入口仍是 agentplane ... 与 active runbook。
 - archive 资产可以被引用，但不得重新回到仓库根主导航里的 active 操作路径。
 - 如果某份材料重新进入当前流程，应迁回 docs/runbooks/、docs/reference/ 或 docs/architecture/，而不是继续在 archive 内增量维护。

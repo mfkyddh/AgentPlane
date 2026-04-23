@@ -1,12 +1,12 @@
 # [ARCHIVED] prod0-main 8443 OpenResty 配置切换手册
 
 > 历史窗口快照。该文档仅保留当时 `8443` 切换窗口的操作记录，不是当前正式入口。
-> 当前决策请回到 `inventory/servers/prod0-main/`、active runbook，以及 `uv run python -m agentplane.cli ...` 的现行控制面口径。
+> 当前决策请回到 `inventory/servers/prod0-main/`、active runbook，以及 `agentplane ...` 的现行控制面口径。
 
 ## Historical Scope
 
 - 本手册仅处理 `1panel-openresty-prod` 的 `8443` 配置更新。
-- 正式链路固定为：`1Panel 网站对象 -> 1panel-openresty-prod:8443 -> 站点 upstream`。
+- 正式链路固定为：`1Panel 入口对象 -> 1panel-openresty-prod:8443 -> 站点 upstream`。
 - 证书仅允许来自 `/data/1panel/www/certs/`（容器内 `/www/certs/`）。
 - 不包含任何已退役 legacy 入口组件的回退链路；相关历史远程脚本已退役。
 
@@ -18,7 +18,7 @@
    - `/www/certs/zzzai-cloud/privkey.pem`
    - `/www/certs/1panel-zzzai-cloud/fullchain.pem`
    - `/www/certs/1panel-zzzai-cloud/privkey.pem`
-3. 1Panel 网站对象中至少存在：`1panel`、`newapi`、`pay`、`token`。
+3. 1Panel 入口对象中至少存在：`1panel`、`newapi`、`pay`、`token`。
 
 ## Historical Change Procedure
 

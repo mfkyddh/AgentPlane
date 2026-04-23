@@ -522,7 +522,7 @@ def _audit_openresty_contract(scope: str, inventory_file: Path, payload: dict[st
         )
 
     network_mode = payload.get("services", {}).get("onepanel_openresty", {}).get("network_mode")
-    if isinstance(payload.get("services", {}).get("onepanel_openresty"), dict) and network_mode != "host":
+    if isinstance(payload.get("services", {}).get("onepanel_openresty"), dict) and network_mode != "infra":
         violations.append(
             _violation(
                 scope,

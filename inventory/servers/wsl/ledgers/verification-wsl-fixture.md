@@ -9,7 +9,7 @@
 ## checks
 
 - `panel`: `ok`
-- `website`: `ok`
+- `ingress`: `ok`
 - `container`: `ok`
 - `project`: `ok`
 - `cronjob`: `ok`

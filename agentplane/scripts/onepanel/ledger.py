@@ -15,7 +15,7 @@ from .redaction import scrub_persisted_payload
 
 LEDGER_NAMES = ("websites", "containers", "firewall", "cronjobs", "apps", "app_resources", "automations")
 LEDGER_SCOPE_NAMES = {
-    "websites": "website",
+    "websites": "ingress",
     "containers": "container",
     "firewall": "firewall",
     "cronjobs": "cronjob",
@@ -45,14 +45,14 @@ def _services(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _website_rows(inventory: dict[str, Any]) -> list[dict[str, Any]]:
-    rows = _services(inventory).get("public_websites")
+    rows = _services(inventory).get("public_ingresses")
     return [item for item in rows if isinstance(item, dict)] if isinstance(rows, list) else []
 
 
 def _container_rows(inventory: dict[str, Any]) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for key, value in _services(inventory).items():
-        if key == "public_websites" or not isinstance(value, dict):
+        if key == "public_ingresses" or not isinstance(value, dict):
             continue
         if "container_name" in value:
             row = dict(value)

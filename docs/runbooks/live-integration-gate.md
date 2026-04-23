@@ -19,7 +19,7 @@
 
 ```bash
 uv run python -m pytest
-uv run python -m agentplane.cli --help
+agentplane --help
 ```
 
 `pyproject.toml` 默认排除这些真实现场标记：
@@ -36,8 +36,8 @@ uv run python -m agentplane.cli --help
 计划入口可以在任意控制面 checkout 生成，不触碰现场：
 
 ```bash
-uv run python -m agentplane.cli host live-gate plan --profile wsl --repo-root <repo-root>
-uv run python -m agentplane.cli host live-gate plan --profile prod0-main --repo-root <repo-root>
+agentplane infra live-gate plan --profile wsl --repo-root <repo-root>
+agentplane infra live-gate plan --profile prod0-main --repo-root <repo-root>
 ```
 
 `plan` 输出会列出每一步命令、所需能力与单 checkout 执行策略。
@@ -47,15 +47,15 @@ uv run python -m agentplane.cli host live-gate plan --profile prod0-main --repo-
 执行入口使用当前 checkout 运行：
 
 ```bash
-uv run python -m agentplane.cli host live-gate run --profile wsl --repo-root <repo-root> --execute
-uv run python -m agentplane.cli host live-gate run --profile prod0-main --repo-root <repo-root> --execute
+agentplane infra live-gate run --profile wsl --repo-root <repo-root> --execute
+agentplane infra live-gate run --profile prod0-main --repo-root <repo-root> --execute
 ```
 
 `wsl` profile 覆盖：
 
 - `uv`、Docker daemon、Docker Compose 基线。
-- `host inventory wsl`。
-- `host audit wsl`。
+- `infra inventory wsl`。
+- `infra audit wsl`。
 - `projection verification run --target wsl --profile wsl-fixture`。
 - `projection runtime-env verify --target wsl --app <app>`。
 - `service verify --target wsl --name <app>`。

@@ -1,7 +1,7 @@
 # [ARCHIVED] prod0 PostgreSQL App Resource Ops
 
 > 历史窗口快照。该文档仅保留 `2026-03-26` 前后租户化对账窗口的现场记录，不是当前正式入口。
-> 当前决策请回到 `inventory/servers/prod0-main/`、active runbook，以及 `uv run python -m agentplane.cli app resource ...` 的现行控制面口径。
+> 当前决策请回到 `inventory/servers/prod0-main/`、active runbook，以及 `agentplane app resource ...` 的现行控制面口径。
 
 ## 2026-03-26 现场状态
 

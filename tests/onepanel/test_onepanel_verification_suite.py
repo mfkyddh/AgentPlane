@@ -81,7 +81,7 @@ class OnePanelVerificationSuiteTests(unittest.TestCase):
         self.assertEqual("wsl-fixture", payload["profile"])
         scopes = [item["scope"] for item in payload["checks"]]
         self.assertEqual(
-            ["panel", "website", "container", "project", "cronjob", "firewall", "app", "task"],
+            ["panel", "ingress", "container", "project", "cronjob", "firewall", "app", "task"],
             scopes,
         )
 

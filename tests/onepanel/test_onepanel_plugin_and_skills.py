@@ -8,7 +8,7 @@ import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CATALOG_FILE = REPO_ROOT / ".codex" / "skills" / "catalog.yaml"
-REQUIRED_DOMAINS = {"host", "service", "website", "app-resource", "app", "projection"}
+REQUIRED_DOMAINS = {"infra", "service", "ingress", "app-resource", "app", "projection"}
 REQUIRED_PLUGIN_GROUPS = {"websites", "containers", "firewall", "cronjobs", "apps", "ledgers", "hosts"}
 COMPAT_SKILLS = {"onepanel-app-lifecycle", "openclaw-1panel"}
 
@@ -165,7 +165,7 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
         self.assertNotIn("op-linux-control-plane", plugin_readme)
         self.assertNotIn("ops/scripts/", plugin_readme)
 
-    def test_website_skill_and_plugin_route_to_formal_website_cli(self) -> None:
+    def test_ingress_skill_and_plugin_route_to_formal_website_cli(self) -> None:
         repo_skill_text = (REPO_ROOT / ".codex" / "skills" / "onepanel-website-ops" / "SKILL.md").read_text(encoding="utf-8")
         plugin_skill_text = (
             REPO_ROOT / "plugins" / "agentplane-control-plane" / "skills" / "websites" / "SKILL.md"
@@ -202,7 +202,7 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
         self.assertNotIn("op-linux-control-plane", plugin_skill_text)
         self.assertIn("entrypoint: uv run python -m agentplane.cli service", catalog_text)
 
-    def test_host_plugin_routes_to_formal_host_cli(self) -> None:
+    def test_infra_plugin_routes_to_formal_host_cli(self) -> None:
         plugin_skill_text = (
             REPO_ROOT / "plugins" / "agentplane-control-plane" / "skills" / "hosts" / "SKILL.md"
         ).read_text(encoding="utf-8")
@@ -258,7 +258,7 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
                 for snippet in expected_snippets:
                     self.assertIn(snippet, text)
 
-    def test_host_skill_drops_author_site_specific_automation_names(self) -> None:
+    def test_infra_skill_drops_author_site_specific_automation_names(self) -> None:
         text = (REPO_ROOT / ".codex" / "skills" / "host-ops" / "SKILL.md").read_text(encoding="utf-8")
 
         self.assertIn("host automation search <target> --repo-root <repo-root>", text)

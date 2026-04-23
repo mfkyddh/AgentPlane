@@ -5,29 +5,29 @@ from pathlib import Path
 from typing import Any
 
 from agentplane.cli.audit import audit_filesystem
-from agentplane.cli.host_automation import (
+from agentplane.cli.infra_automation import (
     SUPPORTED_AUTOMATION_OPERATIONS,
     SUPPORTED_AUTOMATION_TARGETS,
-    apply_host_automation,
-    get_host_automation,
-    plan_host_automation,
-    search_host_automations,
-    verify_host_automation,
+    apply_infra_automation,
+    get_infra_automation,
+    plan_infra_automation,
+    search_infra_automations,
+    verify_infra_automation,
 )
 from agentplane.cli.cleanup import SUPPORTED_CLEANUP_TARGETS, apply_cleanup_plan, build_cleanup_plan
 from agentplane.cli.inventory import generate_inventory_snapshot
-from agentplane.cli.local_host import add_local_host_parser, handle_local_host_command
+from agentplane.cli.local_infra import add_local_infra_parser, handle_local_infra_command
 from agentplane.cli.networks import SUPPORTED_NETWORK_TARGETS, audit_managed_bridge_networks, ensure_managed_bridge_networks
 from agentplane.cli.remote import execute_remote_bash
 from agentplane.cli.secrets import SUPPORTED_SECRET_TARGETS, init_data_services, materialize_legacy_host_layout
-from agentplane.domain.host.live_gate import DEFAULT_APP, DEFAULT_WSL_PROJECTION_PROFILE, LIVE_GATE_PROFILES, plan_live_gate, run_live_gate
-from agentplane.domain.targets import SUPPORTED_HOST_TARGETS
+from agentplane.domain.infra.live_gate import DEFAULT_APP, DEFAULT_WSL_PROJECTION_PROFILE, LIVE_GATE_PROFILES, plan_live_gate, run_live_gate
+from agentplane.domain.targets import SUPPORTED_INFRA_TARGETS
 from agentplane.runtime.wsl_bridge import normalize_repo_root_for_current_host
 
 
-FORMAL_HOST_TARGETS = ("wsl", "prod0-main", "prod2-main")
+FORMAL_INFRA_TARGETS = ("wsl", "prod0-main", "prod2-main")
 
-HOST_ACTION_SCOPE_HELP = (
+INFRA_ACTION_SCOPE_HELP = (
     "三正式目标通用动作: inventory / audit / remote bash / "
     "secrets init-data-services|sync-layout\n"
     "local: inspect\n"
@@ -40,45 +40,45 @@ def _target_help(*, scope: str, targets: tuple[str, ...]) -> str:
     return f"{scope}（可选: {', '.join(targets)}）"
 
 
-def add_host_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
-    if tuple(SUPPORTED_HOST_TARGETS) != FORMAL_HOST_TARGETS:
+def add_infra_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    if tuple(SUPPORTED_INFRA_TARGETS) != FORMAL_INFRA_TARGETS:
         raise ValueError(
-            f"host formal targets drift: expected {FORMAL_HOST_TARGETS}, got {tuple(SUPPORTED_HOST_TARGETS)}"
+            f"infra formal targets drift: expected {FORMAL_INFRA_TARGETS}, got {tuple(SUPPORTED_INFRA_TARGETS)}"
         )
 
-    host_parser = subparsers.add_parser(
-        "host",
-        help="主机基线与主机级治理",
-        description="统一 host 治理入口（Phase 3 formal targets: wsl / prod0-main / prod2-main）",
-        epilog=HOST_ACTION_SCOPE_HELP,
+    infra_parser = subparsers.add_parser(
+        "infra",
+        help="基础设施治理（主机、网络、Secrets、自动化）",
+        description="统一 infra 治理入口（Phase 3 formal targets: wsl / prod0-main / prod2-main）",
+        epilog=INFRA_ACTION_SCOPE_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    host_subparsers = host_parser.add_subparsers(dest="host_action", required=True)
-    add_local_host_parser(host_subparsers)
+    infra_subparsers = infra_parser.add_subparsers(dest="infra_action", required=True)
+    add_local_infra_parser(infra_subparsers)
 
-    inventory_parser = host_subparsers.add_parser("inventory", help="生成主机结构化清单")
+    inventory_parser = infra_subparsers.add_parser("inventory", help="生成基础设施结构化清单")
     inventory_parser.add_argument(
         "target",
-        choices=SUPPORTED_HOST_TARGETS,
-        help=_target_help(scope="三正式目标通用", targets=FORMAL_HOST_TARGETS),
+        choices=SUPPORTED_INFRA_TARGETS,
+        help=_target_help(scope="三正式目标通用", targets=FORMAL_INFRA_TARGETS),
     )
     inventory_parser.add_argument("--repo-root", default=".", help="仓库根目录")
     inventory_parser.add_argument("--write", action="store_true", help="写回 inventory 文件")
 
-    audit_parser = host_subparsers.add_parser("audit", help="执行主机基线审计")
+    audit_parser = infra_subparsers.add_parser("audit", help="执行基础设施基线审计")
     audit_parser.add_argument(
         "target",
-        choices=SUPPORTED_HOST_TARGETS,
-        help=_target_help(scope="三正式目标通用", targets=FORMAL_HOST_TARGETS),
+        choices=SUPPORTED_INFRA_TARGETS,
+        help=_target_help(scope="三正式目标通用", targets=FORMAL_INFRA_TARGETS),
     )
     audit_parser.add_argument("--repo-root", default=".", help="仓库根目录")
 
-    live_gate_parser = host_subparsers.add_parser(
+    live_gate_parser = infra_subparsers.add_parser(
         "live-gate",
         help="独立真实 WSL/SSH/Docker live integration gate",
         description="真实 live gate 与默认 pytest 分离；run --execute 使用当前单 checkout，并按宿主路由到 WSL/SSH/Docker backend。",
     )
-    live_gate_subparsers = live_gate_parser.add_subparsers(dest="host_live_gate_action", required=True)
+    live_gate_subparsers = live_gate_parser.add_subparsers(dest="infra_live_gate_action", required=True)
     for action in ("plan", "run"):
         parser = live_gate_subparsers.add_parser(action, help=f"{action} live integration gate")
         parser.add_argument("--profile", required=True, choices=LIVE_GATE_PROFILES, help="live gate profile")
@@ -92,9 +92,9 @@ def add_host_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentPars
         if action == "run":
             parser.add_argument("--execute", action="store_true", help="执行真实 WSL/SSH/Docker live gate")
 
-    cleanup_parser = host_subparsers.add_parser("cleanup", help="执行主机级清理流程")
-    cleanup_subparsers = cleanup_parser.add_subparsers(dest="host_cleanup_action", required=True)
-    cleanup_plan_parser = cleanup_subparsers.add_parser("plan", help="生成主机级清理计划")
+    cleanup_parser = infra_subparsers.add_parser("cleanup", help="执行基础设施级清理流程")
+    cleanup_subparsers = cleanup_parser.add_subparsers(dest="infra_cleanup_action", required=True)
+    cleanup_plan_parser = cleanup_subparsers.add_parser("plan", help="生成基础设施级清理计划")
     cleanup_plan_parser.add_argument(
         "target",
         choices=SUPPORTED_CLEANUP_TARGETS,
@@ -109,8 +109,8 @@ def add_host_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentPars
     )
     cleanup_apply_parser.add_argument("--repo-root", default=".", help="仓库根目录")
 
-    automation_parser = host_subparsers.add_parser("automation", help="主机自动化任务与 1Panel 调度器收口")
-    automation_subparsers = automation_parser.add_subparsers(dest="host_automation_action", required=True)
+    automation_parser = infra_subparsers.add_parser("automation", help="基础设施自动化任务与 1Panel 调度器收口")
+    automation_subparsers = automation_parser.add_subparsers(dest="infra_automation_action", required=True)
     automation_search_parser = automation_subparsers.add_parser("search", help="列出受管自动化任务")
     automation_search_parser.add_argument(
         "target",
@@ -149,8 +149,8 @@ def add_host_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentPars
         if action == "apply":
             parser.add_argument("--execute", action="store_true", help="执行计划")
 
-    network_parser = host_subparsers.add_parser("network", help="治理受管 Docker bridge 网络")
-    network_subparsers = network_parser.add_subparsers(dest="host_network_action", required=True)
+    network_parser = infra_subparsers.add_parser("network", help="治理受管 Docker bridge 网络")
+    network_subparsers = network_parser.add_subparsers(dest="infra_network_action", required=True)
     network_audit_parser = network_subparsers.add_parser("audit", help="审计受管 bridge 网络")
     network_audit_parser.add_argument(
         "target",
@@ -166,34 +166,34 @@ def add_host_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentPars
     )
     network_ensure_parser.add_argument("--repo-root", default=".", help="仓库根目录")
 
-    remote_parser = host_subparsers.add_parser("remote", help="主机远端执行入口")
-    remote_subparsers = remote_parser.add_subparsers(dest="host_remote_action", required=True)
+    remote_parser = infra_subparsers.add_parser("remote", help="基础设施远端执行入口")
+    remote_subparsers = remote_parser.add_subparsers(dest="infra_remote_action", required=True)
     bash_parser = remote_subparsers.add_parser("bash", help="通过 ssh -T 执行远端 bash")
     bash_parser.add_argument(
         "target",
-        choices=SUPPORTED_HOST_TARGETS,
-        help=_target_help(scope="三正式目标通用 (SSH alias)", targets=FORMAL_HOST_TARGETS),
+        choices=SUPPORTED_INFRA_TARGETS,
+        help=_target_help(scope="三正式目标通用 (SSH alias)", targets=FORMAL_INFRA_TARGETS),
     )
     bash_parser.add_argument("--repo-root", default=".", help="仓库根目录")
     bash_parser.add_argument("--script-file", help="Linux 脚本文件路径")
     bash_parser.add_argument("--dry-run", action="store_true", help="只输出结构化执行计划")
     bash_parser.add_argument("remote_args", nargs="*", help="透传给远端 bash -s -- 的参数")
 
-    secrets_parser = host_subparsers.add_parser("secrets", help="主机级 secrets 正式入口")
-    secrets_subparsers = secrets_parser.add_subparsers(dest="host_secrets_action", required=True)
+    secrets_parser = infra_subparsers.add_parser("secrets", help="基础设施级 secrets 正式入口")
+    secrets_subparsers = secrets_parser.add_subparsers(dest="infra_secrets_action", required=True)
     secrets_init_parser = secrets_subparsers.add_parser("init-data-services", help="初始化 PostgreSQL/Redis/MinIO 管理员凭据")
     secrets_init_parser.add_argument(
         "target",
-        choices=SUPPORTED_HOST_TARGETS,
-        help=_target_help(scope="三正式目标通用", targets=FORMAL_HOST_TARGETS),
+        choices=SUPPORTED_INFRA_TARGETS,
+        help=_target_help(scope="三正式目标通用", targets=FORMAL_INFRA_TARGETS),
     )
     secrets_init_parser.add_argument("--repo-root", default=".", help="仓库根目录")
     secrets_init_parser.add_argument("--force", action="store_true", help="覆盖已存在的目标 secrets 文件")
-    secrets_sync_parser = secrets_subparsers.add_parser("sync-layout", help="从 host-first secrets 真源投影旧布局")
+    secrets_sync_parser = secrets_subparsers.add_parser("sync-layout", help="从 infra-first secrets 真源投影旧布局")
     secrets_sync_parser.add_argument(
         "target",
-        choices=SUPPORTED_HOST_TARGETS,
-        help=_target_help(scope="三正式目标通用", targets=FORMAL_HOST_TARGETS),
+        choices=SUPPORTED_INFRA_TARGETS,
+        help=_target_help(scope="三正式目标通用", targets=FORMAL_INFRA_TARGETS),
     )
     secrets_sync_parser.add_argument("--repo-root", default=".", help="仓库根目录")
     secrets_sync_parser.add_argument("--write", action="store_true", help="写入投影路径")
@@ -201,7 +201,7 @@ def add_host_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentPars
 
 def _wrap(*, action: str, target: str, payload: dict[str, Any]) -> dict[str, Any]:
     return {
-        "command": "host",
+        "command": "infra",
         "action": action,
         "target": target,
         "payload": payload,
@@ -220,14 +220,14 @@ def _normalize_repo_root(path: Path | str) -> Path:
     return normalize_repo_root_for_current_host(path)
 
 
-def handle_host_command(args: argparse.Namespace) -> dict[str, Any]:
-    if args.host_action == "local":
-        action, payload = handle_local_host_command(args)
+def handle_infra_command(args: argparse.Namespace) -> dict[str, Any]:
+    if args.infra_action == "local":
+        action, payload = handle_local_infra_command(args)
         return _wrap(action=action, target="local", payload=payload)
 
     repo_root = _normalize_repo_root(getattr(args, "repo_root", "."))
 
-    if args.host_action == "inventory":
+    if args.infra_action == "inventory":
         result = generate_inventory_snapshot(repo_root, args.target, write=bool(args.write))
         return _wrap(
             action="inventory",
@@ -239,7 +239,7 @@ def handle_host_command(args: argparse.Namespace) -> dict[str, Any]:
             },
         )
 
-    if args.host_action == "audit":
+    if args.infra_action == "audit":
         result = audit_filesystem(repo_root, args.target)
         return _wrap(
             action="audit",
@@ -251,7 +251,7 @@ def handle_host_command(args: argparse.Namespace) -> dict[str, Any]:
             },
         )
 
-    if args.host_action == "live-gate" and args.host_live_gate_action == "plan":
+    if args.infra_action == "live-gate" and args.infra_live_gate_action == "plan":
         return _wrap(
             action="live-gate.plan",
             target=args.profile,
@@ -263,7 +263,7 @@ def handle_host_command(args: argparse.Namespace) -> dict[str, Any]:
             ),
         )
 
-    if args.host_action == "live-gate" and args.host_live_gate_action == "run":
+    if args.infra_action == "live-gate" and args.infra_live_gate_action == "run":
         return _wrap(
             action="live-gate.run",
             target=args.profile,
@@ -276,7 +276,7 @@ def handle_host_command(args: argparse.Namespace) -> dict[str, Any]:
             ),
         )
 
-    if args.host_action == "cleanup" and args.host_cleanup_action == "plan":
+    if args.infra_action == "cleanup" and args.infra_cleanup_action == "plan":
         result = build_cleanup_plan(repo_root, args.target)
         return _wrap(
             action="cleanup.plan",
@@ -284,7 +284,7 @@ def handle_host_command(args: argparse.Namespace) -> dict[str, Any]:
             payload=_without_public_envelope(result),
         )
 
-    if args.host_action == "cleanup" and args.host_cleanup_action == "apply":
+    if args.infra_action == "cleanup" and args.infra_cleanup_action == "apply":
         result = apply_cleanup_plan(repo_root, args.target)
         return _wrap(
             action="cleanup.apply",
@@ -292,32 +292,32 @@ def handle_host_command(args: argparse.Namespace) -> dict[str, Any]:
             payload=_without_public_envelope(result),
         )
 
-    if args.host_action == "automation" and args.host_automation_action == "search":
+    if args.infra_action == "automation" and args.infra_automation_action == "search":
         return _wrap(
             action="automation.search",
             target=args.target,
-            payload=search_host_automations(repo_root, args.target),
+            payload=search_infra_automations(repo_root, args.target),
         )
 
-    if args.host_action == "automation" and args.host_automation_action == "get":
+    if args.infra_action == "automation" and args.infra_automation_action == "get":
         return _wrap(
             action="automation.get",
             target=args.target,
-            payload=get_host_automation(repo_root, args.target, args.name),
+            payload=get_infra_automation(repo_root, args.target, args.name),
         )
 
-    if args.host_action == "automation" and args.host_automation_action == "verify":
+    if args.infra_action == "automation" and args.infra_automation_action == "verify":
         return _wrap(
             action="automation.verify",
             target=args.target,
-            payload=verify_host_automation(repo_root, args.target, args.name, env_file=getattr(args, "env_file", None)),
+            payload=verify_infra_automation(repo_root, args.target, args.name, env_file=getattr(args, "env_file", None)),
         )
 
-    if args.host_action == "automation" and args.host_automation_action == "plan":
+    if args.infra_action == "automation" and args.infra_automation_action == "plan":
         return _wrap(
             action="automation.plan",
             target=args.target,
-            payload=plan_host_automation(
+            payload=plan_infra_automation(
                 repo_root,
                 args.target,
                 args.name,
@@ -326,11 +326,11 @@ def handle_host_command(args: argparse.Namespace) -> dict[str, Any]:
             ),
         )
 
-    if args.host_action == "automation" and args.host_automation_action == "apply":
+    if args.infra_action == "automation" and args.infra_automation_action == "apply":
         return _wrap(
             action="automation.apply",
             target=args.target,
-            payload=apply_host_automation(
+            payload=apply_infra_automation(
                 repo_root,
                 args.target,
                 args.name,
@@ -340,23 +340,23 @@ def handle_host_command(args: argparse.Namespace) -> dict[str, Any]:
             ),
         )
 
-    if args.host_action == "network" and args.host_network_action == "audit":
+    if args.infra_action == "network" and args.infra_network_action == "audit":
         return {
-            "command": "host",
+            "command": "infra",
             "action": "network.audit",
             "target": args.target,
             "payload": audit_managed_bridge_networks(repo_root, args.target),
         }
 
-    if args.host_action == "network" and args.host_network_action == "ensure":
+    if args.infra_action == "network" and args.infra_network_action == "ensure":
         return {
-            "command": "host",
+            "command": "infra",
             "action": "network.ensure",
             "target": args.target,
             "payload": ensure_managed_bridge_networks(repo_root, args.target),
         }
 
-    if args.host_action == "remote" and args.host_remote_action == "bash":
+    if args.infra_action == "remote" and args.infra_remote_action == "bash":
         result = execute_remote_bash(
             repo_root=repo_root,
             target=args.target,
@@ -370,7 +370,7 @@ def handle_host_command(args: argparse.Namespace) -> dict[str, Any]:
             payload=_without_public_envelope(result),
         )
 
-    if args.host_action == "secrets" and args.host_secrets_action == "init-data-services":
+    if args.infra_action == "secrets" and args.infra_secrets_action == "init-data-services":
         result = init_data_services(repo_root, args.target, force=bool(args.force))
         return _wrap(
             action="secrets.init-data-services",
@@ -378,7 +378,7 @@ def handle_host_command(args: argparse.Namespace) -> dict[str, Any]:
             payload=_without_public_envelope(result),
         )
 
-    if args.host_action == "secrets" and args.host_secrets_action == "sync-layout":
+    if args.infra_action == "secrets" and args.infra_secrets_action == "sync-layout":
         result = materialize_legacy_host_layout(repo_root, args.target, write=bool(args.write))
         return _wrap(
             action="secrets.sync-layout",
@@ -386,4 +386,4 @@ def handle_host_command(args: argparse.Namespace) -> dict[str, Any]:
             payload=_without_public_envelope(result),
         )
 
-    raise ValueError(f"Unsupported host action: {args.host_action}")
+    raise ValueError(f"Unsupported infra action: {args.infra_action}")

@@ -172,7 +172,7 @@ class PublicIngressManager:
                 "dir": ssl["dir"],
                 "autoRenew": ssl["autoRenew"],
             },
-            "website": {
+            "ingress": {
                 "id": website["id"],
                 "alias": website["alias"],
                 "primaryDomain": website["primaryDomain"],
@@ -332,14 +332,14 @@ class PublicIngressManager:
             time.sleep(5)
         raise TimeoutError(f"Timed out waiting for SSL ready: {self.config.cert_primary_domain}")
 
-    def _search_websites(self) -> list[dict[str, Any]]:
+    def _search_ingresses(self) -> list[dict[str, Any]]:
         return self._page_items(
             "/api/v2/websites/search",
             {"page": 1, "pageSize": 100, "name": "", "websiteGroupId": 0, "orderBy": "created_at", "order": "descending"},
         )
 
     def find_website(self) -> dict[str, Any] | None:
-        for item in self._search_websites():
+        for item in self._search_ingresses():
             if item.get("primaryDomain") == self.config.domain or item.get("alias") == self.config.website_alias:
                 return item
         return None
@@ -428,7 +428,7 @@ class PublicIngressManager:
                 "actual": ssl.get("status") if isinstance(ssl, dict) else None,
                 "expected": "ready",
             },
-            "website": {"ok": website is not None},
+            "ingress": {"ok": website is not None},
             "website_alias": {
                 "ok": isinstance(website, dict) and website.get("alias") == self.config.website_alias,
                 "actual": website.get("alias") if isinstance(website, dict) else None,
@@ -478,7 +478,7 @@ class PublicIngressManager:
                 "acme_account": acme or {"found": False},
                 "dns_account": dns_account or {"found": False},
                 "ssl": ssl or {"found": False},
-                "website": website or {"found": False},
+                "ingress": website or {"found": False},
                 "https": https or {"found": False},
             },
         }

@@ -37,14 +37,14 @@
 - 管理 Linux 主机、SSH 连接、IP/域名/别名映射、密钥和生产 secrets。
 - 管理 `1Panel`、`OpenResty`、`Docker`、`PostgreSQL`、`Redis`、`MinIO` 等基础设施。
 - 管理正式部署、发布切换、网站入口、回滚、inventory、服务器摘要和跨仓库文档回写。
-- 维护通用命令入口：`uv run python -m agentplane.cli ...`
+- 维护通用命令入口：`agentplane ...`
 - 维护正式 inventory：`inventory/servers/<target>/inventory.json`
 
 ### 3.2 应用层项目负责
 
 - 业务代码、测试、Dockerfile、镜像构建脚本、非敏感 env 模板。
 - `deploy/agentplane/contract.yaml`
-- 对外说明自己的运行需求、依赖容器、监听端口、健康检查、数据挂载、网站对象需求。
+- 对外说明自己的运行需求、依赖容器、监听端口、健康检查、数据挂载、入口对象需求。
 - 在 AgentPlane 的规范下构建交付物，不直接持有正式生产控制面。
 - 需要隔离开发时，优先使用仓库内 `.worktrees/<branch>/` 作为默认工作区根目录。
 
@@ -77,8 +77,8 @@
 
 硬边界：
 
-- 唯一正式入口固定为 `uv run python -m agentplane.cli ...`，不允许在应用仓库或人类文档里形成第二入口。
-- Add/Remove 都必须同时覆盖：`catalog`、`app`、`app resource`、`service`、`website`、`projection`、`inventory`、`docs`。
+- 唯一正式入口固定为 `agentplane ...`，不允许在应用仓库或人类文档里形成第二入口。
+- Add/Remove 都必须同时覆盖：`catalog`、`app`、`app resource`、`service`、`ingress`、`projection`、`inventory`、`docs`。
 - `inventory` 和 `docs` 永远是投影；任何“只改 README/摘要”但不改对象域的动作都不算生命周期完成。
 
 Add（Onboarding）最小闭环语义：
@@ -111,8 +111,8 @@ Remove（Offboarding）最小闭环语义：
 | --- | --- | --- | --- |
 | 服务器身份、SSH、密钥、secrets | AgentPlane | `secrets/`、`inventory/servers/*/inventory.json` | 只保留索引说明 |
 | 正式基础设施状态 | AgentPlane | `inventory/servers/*/inventory.json` | 非敏感部署摘要 |
-| 正式应用对象与交付执行 | AgentPlane | `uv run python -m agentplane.cli app object ...` / `uv run python -m agentplane.cli app delivery ...` | 只保留交付合同 |
-| 1Panel 网站对象、OpenResty、证书 | AgentPlane | `agentplane.cli onepanel` 及相关 runbook | 只声明入口需求 |
+| 正式应用对象与交付执行 | AgentPlane | `agentplane app object ...` / `agentplane app delivery ...` | 只保留交付合同 |
+| 1Panel 入口对象、OpenResty、证书 | AgentPlane | `agentplane.cli onepanel` 及相关 runbook | 只声明入口需求 |
 | 应用构建产物定义 | 应用仓库 | `deploy/agentplane/contract.yaml`、Dockerfile、构建脚本 | 真源 |
 | 应用业务代码与测试 | 应用仓库 | 源码与测试目录 | 真源 |
 
@@ -127,7 +127,7 @@ Remove（Offboarding）最小闭环语义：
 约束：
 
 - `app object` 回答“应用对象是什么”；`app delivery` 回答“正式要怎么交付”；投影链回答“现场结果如何沉淀”。
-- 合同前置校验只有一个正式入口：`uv run python -m agentplane.cli app delivery validate-contract ...`；门禁执行细节统一见 [应用项目接入 AgentPlane 工作流](../runbooks/app-project-delivery-workflow.md) 的步骤 1。
+- 合同前置校验只有一个正式入口：`agentplane app delivery validate-contract ...`；门禁执行细节统一见 [应用项目接入 AgentPlane 工作流](../runbooks/app-project-delivery-workflow.md) 的步骤 1。
 - 模板文档与 runbook 可以解释输入骨架和流程，但不应复制出第二套正式控制面。
 - `ledger` 在 `app` 域当前表现为自动写入的 operation ledger，而不是单独的人工维护命令。
 
@@ -136,8 +136,8 @@ Remove（Offboarding）最小闭环语义：
 | 场景 | 推荐控制面 | 说明 |
 | --- | --- | --- |
 | 正式 Docker 化业务应用 | AgentPlane 托管 Docker Compose | 标准方案。应用仓库只交付镜像和合同。 |
-| 正式网站入口 | 1Panel 网站对象 + OpenResty | 统一承载正式域名、证书和反代。 |
-| 基础设施型容器 | AgentPlane 管理的 Compose 或 1Panel 应用 | 以主机治理为主，不属于应用仓库。 |
+| 正式网站入口 | 1Panel 入口对象 + OpenResty | 统一承载正式域名、证书和反代。 |
+| 基础设施型容器 | AgentPlane 管理的 Compose 或 1Panel 应用 | 以基础设施治理为主，不属于应用仓库。 |
 | 本地 WSL 开发验证 | WSL Docker Compose | 用于开发、联调、预打包。不是正式生产控制面。 |
 | 紧急回退 | 上一已知良好控制面 | 回退入口必须在合同和 inventory 中可追溯。 |
 
@@ -145,7 +145,7 @@ Remove（Offboarding）最小闭环语义：
 
 - 构建：WSL 宿主机先构建 runtime artifacts，再打包 runtime image
 - 正式运行：AgentPlane 托管 Compose
-- 公网入口：`1Panel` 网站对象 `token` + `OpenResty`
+- 公网入口：`1Panel` 入口对象 `token` + `OpenResty`
 - 应用容器名：`sub2api-prod`
 - 依赖容器名：`postgres18-prod`、`redis7-prod`
 
@@ -220,7 +220,7 @@ inventory:
 - `runtime.healthcheck.path`：供部署后健康检查使用。
 - `runtime.env_template`：非敏感 env 模板路径。
 - `infra.depends_on_containers`：正式依赖容器名列表，必须与 AgentPlane inventory 一致。
-- `ingress.public_sites`：域名、公开入口、1Panel 网站对象名。
+- `ingress.public_sites`：域名、公开入口、1Panel 入口对象名。
 - `ingress.mode: internal`：适用于无公网入口的 worker；`public_sites` 可为空，验证时只做容器和本机探针检查。
 - `data.mounts`：持久化挂载，宿主机路径必须收口到 `/data/<app>/...`
 - `rollback.previous_control_plane`：上一控制面；如果已经没有旧控制面，显式写 `kind: none`。
@@ -259,7 +259,7 @@ inventory:
 - `deploy/agentplane/contract.yaml` 已填写
 - 非敏感 env 模板已更新
 - 如使用 Git worktree，默认工作区目录为仓库内 `.worktrees/`，且 `.gitignore` 已覆盖该目录
-- 若变更了端口、网站对象、容器名、依赖容器或数据目录，必须同步更新合同
+- 若变更了端口、入口对象、容器名、依赖容器或数据目录，必须同步更新合同
 
 Docker 类应用的推荐正式路径：
 
@@ -275,7 +275,7 @@ Docker 类应用的推荐正式路径：
 2. `build-artifact`
 3. `ship-image`
 4. `render-runtime`
-5. 创建或确认 1Panel 网站对象
+5. 创建或确认 1Panel 入口对象
 6. `deploy --dry-run` 并人工复核
 7. `deploy --execute`；如失败则生成并执行 `rollback`
 8. `verify`
@@ -304,29 +304,29 @@ Docker 类应用的推荐正式路径：
 所有正式动作都从 AgentPlane 执行，公开稳定输入统一是 `target + app`：
 
 ```bash
-uv run python -m agentplane.cli app object search --target <target> --repo-root <repo-root>
-uv run python -m agentplane.cli app object get --target <target> --app <app> --repo-root <repo-root>
-uv run python -m agentplane.cli app delivery validate-contract --target <target> --app <app> --repo-root <repo-root>
-uv run python -m agentplane.cli app delivery build-artifact --target <target> --app <app> --repo-root <repo-root> --image-tag <tag>
-uv run python -m agentplane.cli app delivery ship-image --target <target> --app <app> --repo-root <repo-root> --image-ref <image:tag>
-uv run python -m agentplane.cli app delivery render-runtime --target <target> --app <app> --repo-root <repo-root> --image-ref <image:tag>
-uv run python -m agentplane.cli app delivery deploy --target <target> --app <app> --repo-root <repo-root> --image-ref <image:tag> --dry-run
-uv run python -m agentplane.cli app delivery deploy --target <target> --app <app> --repo-root <repo-root> --image-ref <image:tag> --execute
-uv run python -m agentplane.cli app delivery verify --target <target> --app <app> --repo-root <repo-root> --execute
-uv run python -m agentplane.cli app delivery inventory-refresh --target <target> --app <app> --repo-root <repo-root> --write
-uv run python -m agentplane.cli app delivery doc-sync --target <target> --app <app> --repo-root <repo-root> --write
+agentplane app object search --target <target> --repo-root <repo-root>
+agentplane app object get --target <target> --app <app> --repo-root <repo-root>
+agentplane app delivery validate-contract --target <target> --app <app> --repo-root <repo-root>
+agentplane app delivery build-artifact --target <target> --app <app> --repo-root <repo-root> --image-tag <tag>
+agentplane app delivery ship-image --target <target> --app <app> --repo-root <repo-root> --image-ref <image:tag>
+agentplane app delivery render-runtime --target <target> --app <app> --repo-root <repo-root> --image-ref <image:tag>
+agentplane app delivery deploy --target <target> --app <app> --repo-root <repo-root> --image-ref <image:tag> --dry-run
+agentplane app delivery deploy --target <target> --app <app> --repo-root <repo-root> --image-ref <image:tag> --execute
+agentplane app delivery verify --target <target> --app <app> --repo-root <repo-root> --execute
+agentplane app delivery inventory-refresh --target <target> --app <app> --repo-root <repo-root> --write
+agentplane app delivery doc-sync --target <target> --app <app> --repo-root <repo-root> --write
 ```
 
 ## 10. 1Panel 与网站入口规则
 
-- 正式公网域名必须先在 `1Panel` 中存在网站对象。
-- 网站对象负责把公网请求转发到宿主机回环绑定，例如 `http://127.0.0.1:18080`。
+- 正式公网域名必须先在 `1Panel` 中存在入口对象。
+- 入口对象负责把公网请求转发到宿主机回环绑定，例如 `http://127.0.0.1:18080`。
 - 证书、OpenResty、反向代理和公网监听属于 AgentPlane 基础设施职责。
-- 应用仓库只在合同中声明：域名、公开 URL、网站对象名、目标回环绑定。
+- 应用仓库只在合同中声明：域名、公开 URL、入口对象名、目标回环绑定。
 
 `sub2api` 样板：
 
-- 网站对象：`token`
+- 入口对象：`token`
 - 公网入口：`https://token.zzzai.cloud:8443`
 - 回环绑定：`127.0.0.1:18080`
 - 宿主机反代目标：`http://127.0.0.1:18080`

@@ -65,13 +65,13 @@ def write_publish_files(root: Path) -> tuple[Path, Path]:
 
 
 class WebsitePublishCliTests(unittest.TestCase):
-    def test_website_publish_apply_requires_execute(self) -> None:
+    def test_ingress_publish_apply_requires_execute(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             config_file, cloudflare_env_file = write_publish_files(root)
 
             result = run_cli(
-                "website",
+                "ingress",
                 "publish",
                 "apply",
                 "--target",
@@ -87,15 +87,15 @@ class WebsitePublishCliTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("--execute", result.stderr)
 
-    def test_website_publish_plan_wraps_formal_publish_surface(self) -> None:
-        from agentplane.cli.website import handle_website_command
+    def test_ingress_publish_plan_wraps_formal_publish_surface(self) -> None:
+        from agentplane.cli.ingress import handle_ingress_command
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             config_file, cloudflare_env_file = write_publish_files(root)
             args = SimpleNamespace(
-                website_action="publish",
-                website_publish_action="plan",
+                ingress_action="publish",
+                ingress_publish_action="plan",
                 target="prod0-main",
                 config_file=config_file.name,
                 cloudflare_env_file=cloudflare_env_file.name,
@@ -103,26 +103,26 @@ class WebsitePublishCliTests(unittest.TestCase):
             )
 
             with patch(
-                "agentplane.cli.website.plan_public_ingress",
+                "agentplane.cli.ingress.plan_public_ingress",
                 return_value={"domain": "token.zzzai.cloud", "steps": [{"kind": "cloudflare_dns"}], "execute_required": True},
             ):
-                payload = handle_website_command(args)
+                payload = handle_ingress_command(args)
 
-        self.assertEqual("website", payload["command"])
+        self.assertEqual("ingress", payload["command"])
         self.assertEqual("publish.plan", payload["action"])
         self.assertEqual("prod0-main", payload["target"])
         self.assertEqual("token.zzzai.cloud", payload["payload"]["domain"])
         self.assertTrue(payload["payload"]["execute_required"])
 
-    def test_website_publish_apply_runs_post_verify(self) -> None:
-        from agentplane.cli.website import handle_website_command
+    def test_ingress_publish_apply_runs_post_verify(self) -> None:
+        from agentplane.cli.ingress import handle_ingress_command
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             config_file, cloudflare_env_file = write_publish_files(root)
             args = SimpleNamespace(
-                website_action="publish",
-                website_publish_action="apply",
+                ingress_action="publish",
+                ingress_publish_action="apply",
                 target="prod0-main",
                 config_file=str(config_file),
                 cloudflare_env_file=str(cloudflare_env_file),
@@ -131,19 +131,19 @@ class WebsitePublishCliTests(unittest.TestCase):
             )
 
             with patch(
-                "agentplane.cli.website.ensure_public_ingress",
-                return_value={"payload": {"website": {"id": 9, "alias": "token"}}},
+                "agentplane.cli.ingress.ensure_public_ingress",
+                return_value={"payload": {"ingress": {"id": 9, "alias": "token"}}},
             ) as ensure_publish, patch(
-                "agentplane.cli.website.verify_public_ingress",
-                return_value={"payload": {"ok": True, "failures": [], "checks": {"website": {"ok": True}}}},
+                "agentplane.cli.ingress.verify_public_ingress",
+                return_value={"payload": {"ok": True, "failures": [], "checks": {"ingress": {"ok": True}}}},
             ) as verify_publish:
-                payload = handle_website_command(args)
+                payload = handle_ingress_command(args)
 
         ensure_publish.assert_called_once()
         verify_publish.assert_called_once()
         self.assertEqual("publish.apply", payload["action"])
         self.assertTrue(payload["payload"]["ok"])
-        self.assertEqual(9, payload["payload"]["result"]["website"]["id"])
+        self.assertEqual(9, payload["payload"]["result"]["ingress"]["id"])
         follow_through = payload["payload"]["follow_through"]
         self.assertEqual("projection", follow_through["owner_surface"])
         self.assertEqual("website.publish", follow_through["source_surface"])
@@ -152,15 +152,15 @@ class WebsitePublishCliTests(unittest.TestCase):
         self.assertIn("projection ledger refresh", follow_through["commands"]["ledger_refresh"])
         self.assertIn("--target prod0-main", follow_through["commands"]["ledger_refresh"])
 
-    def test_website_publish_verify_exposes_structured_failures(self) -> None:
-        from agentplane.cli.website import handle_website_command
+    def test_ingress_publish_verify_exposes_structured_failures(self) -> None:
+        from agentplane.cli.ingress import handle_ingress_command
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             config_file, cloudflare_env_file = write_publish_files(root)
             args = SimpleNamespace(
-                website_action="publish",
-                website_publish_action="verify",
+                ingress_action="publish",
+                ingress_publish_action="verify",
                 target="prod0-main",
                 config_file=str(config_file),
                 cloudflare_env_file=str(cloudflare_env_file),
@@ -168,10 +168,10 @@ class WebsitePublishCliTests(unittest.TestCase):
             )
 
             with patch(
-                "agentplane.cli.website.verify_public_ingress",
+                "agentplane.cli.ingress.verify_public_ingress",
                 return_value={"payload": {"ok": False, "failures": ["dns_content"], "checks": {"dns_content": {"ok": False}}}},
             ):
-                payload = handle_website_command(args)
+                payload = handle_ingress_command(args)
 
         self.assertEqual("publish.verify", payload["action"])
         self.assertFalse(payload["payload"]["ok"])

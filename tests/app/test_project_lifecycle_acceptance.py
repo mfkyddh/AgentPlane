@@ -182,8 +182,8 @@ def _write_minimal_repo_fixture(root: Path, *, app_id: str, target: str) -> Path
                 "redis7": {"container_name": profile["redis_container"]},
                 # Dynamic service definition for the app itself.
                 app_id: {"control_plane": "compose", "container_name": f"{app_id}-{profile['container_suffix']}"},
-                # Website truth lives under services.public_websites.
-                "public_websites": [
+                # Website truth lives under services.public_ingresses.
+                "public_ingresses": [
                     {
                         "alias": app_id,
                         "primary_domain": f"{app_id}.example.invalid",
@@ -281,7 +281,7 @@ class ProjectLifecycleAcceptanceTests(unittest.TestCase):
             self.assertIn("postgres", declared)
             self.assertIn("redis", declared)
 
-            result = run_cli("website", "search", "--target", target, "--repo-root", str(root))
+            result = run_cli("ingress", "search", "--target", target, "--repo-root", str(root))
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             websites = json.loads(result.stdout)["payload"]["items"]
             self.assertEqual([app_id], [item["alias"] for item in websites])

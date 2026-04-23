@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from agentplane.cli.onepanel import (
+from agentplane.cli.infra_onepanel import (
     _handle_cronjob_action,
     _handle_firewall_action,
     _handle_panel_action,
@@ -146,7 +146,7 @@ class OnePanelObjectCliHandlerTests(unittest.TestCase):
             },
         )()
 
-        with patch("agentplane.cli.onepanel._executor_for", return_value=FakeExecutor()):
+        with patch("agentplane.cli.infra_onepanel._executor_for", return_value=FakeExecutor()):
             payload = _handle_panel_action(args)
 
         self.assertEqual("panel", payload["scope"])
@@ -167,7 +167,7 @@ class OnePanelObjectCliHandlerTests(unittest.TestCase):
             },
         )()
 
-        with patch("agentplane.cli.onepanel._executor_for", return_value=executor):
+        with patch("agentplane.cli.infra_onepanel._executor_for", return_value=executor):
             payload = _handle_panel_action(args)
 
         self.assertEqual("panel", payload["scope"])
@@ -191,7 +191,7 @@ class OnePanelObjectCliHandlerTests(unittest.TestCase):
             },
         )()
 
-        with patch("agentplane.cli.onepanel._executor_for", return_value=FakeExecutor()):
+        with patch("agentplane.cli.infra_onepanel._executor_for", return_value=FakeExecutor()):
             payload = _handle_firewall_action(args)
 
         self.assertEqual("firewall", payload["scope"])
@@ -210,7 +210,7 @@ class OnePanelObjectCliHandlerTests(unittest.TestCase):
             },
         )()
 
-        with patch("agentplane.cli.onepanel._executor_for", return_value=FakeExecutor()):
+        with patch("agentplane.cli.infra_onepanel._executor_for", return_value=FakeExecutor()):
             payload = _handle_cronjob_action(args)
 
         self.assertEqual("cronjob", payload["scope"])
@@ -228,7 +228,7 @@ class OnePanelObjectCliHandlerTests(unittest.TestCase):
             },
         )()
 
-        with patch("agentplane.cli.onepanel._executor_for", return_value=FakeExecutor()):
+        with patch("agentplane.cli.infra_onepanel._executor_for", return_value=FakeExecutor()):
             payload = _handle_task_action(args)
 
         self.assertEqual("task", payload["scope"])
@@ -239,13 +239,13 @@ class OnePanelObjectCliHandlerTests(unittest.TestCase):
 
         self.assertEqual("onepanel", payload["command"])
         self.assertIn("<panel|firewall|cronjob|task>", payload["hint"])
-        self.assertNotIn("website", payload["hint"])
+        self.assertNotIn("ingress", payload["hint"])
         self.assertNotIn("container", payload["hint"])
         self.assertNotIn("app", payload["hint"])
         self.assertNotIn("project", payload["hint"])
 
     def test_removed_onepanel_subcommands_are_rejected_by_argparse(self) -> None:
-        for scope in ("website", "container", "app", "project", "ledger", "suite", "fixture", "ingress"):
+        for scope in ("ingress", "container", "app", "project", "ledger", "suite", "fixture", "ingress"):
             with self.subTest(scope=scope):
                 result = run_cli("onepanel", "--env", "wsl", scope, "--help")
                 self.assertNotEqual(result.returncode, 0)

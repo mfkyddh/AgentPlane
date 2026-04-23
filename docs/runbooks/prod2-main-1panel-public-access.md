@@ -3,7 +3,7 @@
 ## 定位
 
 - 本手册定义 `prod2-main` 已上线的 active 公网入口口径。
-- AgentPlane 的正式运维控制面是 `uv run python -m agentplane.cli ...`；runbook 只解释专题流程、风险与人工接力点。
+- AgentPlane 的正式运维控制面是 `agentplane ...`；runbook 只解释专题流程、风险与人工接力点。
 - `api_request.py` 与页面点击只保留给 provider/debug、troubleshooting 或现场只读核对；旧 `ops/scripts/onepanel/*` lifecycle 入口不再作为正式路径。
 - 主机目标摘要由 `inventory/servers/prod2-main/README.md`（公开摘要）与 `inventory/servers/prod2-main/inventory.json`（运行级真源）共同构成，所有公开网站描述均以这两个文件为依据，避免出现漂移的个别“单点口径”。
 
@@ -16,41 +16,41 @@
 - DNS 托管：`Cloudflare`
 - 证书签发与续签：`Let's Encrypt DNS-01`
 - 正式公网入口基础设施层：`1panel-openresty-prod`
-- OpenResty 网络模式：Docker `host`
+- OpenResty 网络模式：Docker `infra`
 - 共享 Docker 网络：`zqf_network`
 - `zqf_network` 现场子网：`172.19.0.0/16`
-- 站点治理：必须先创建为 1Panel 网站对象，再由 OpenResty 承载
+- 站点治理：必须先创建为 1Panel 入口对象，再由 OpenResty 承载
 - 证书目录真源：`/data/1panel/www/certs/`
-- `uv run python -m agentplane.cli host inventory prod2-main --repo-root <repo-root>` 当前是 tracked inventory readback，不是 live host collector；它与 `inventory/servers/prod2-main/inventory.json` 共同定义 prod2-main 的仓库级主机真值。
-- `uv run python -m agentplane.cli projection ledger refresh --target prod2-main --repo-root <repo-root> --write` 只刷新 object ledger / `ledgers/*.json|md` / README；若需要新的 `verification-prod2-*.json|md`，必须单独执行 `projection verification run --write-report`。
+- `agentplane infra inventory prod2-main --repo-root <repo-root>` 当前是 tracked inventory readback，不是 live host collector；它与 `inventory/servers/prod2-main/inventory.json` 共同定义 prod2-main 的仓库级主机真值。
+- `agentplane projection ledger refresh --target prod2-main --repo-root <repo-root> --write` 只刷新 object ledger / `ledgers/*.json|md` / README；若需要新的 `verification-prod2-*.json|md`，必须单独执行 `projection verification run --write-report`。
 
-### 主机级公开网站对象（来自 `inventory/servers/prod2-main/inventory.json`）
+### 主机级公开入口对象（来自 `inventory/servers/prod2-main/inventory.json`）
 
 | 别名 | 域名 | 公共 URL | 说明 |
 | --- | --- | --- | --- |
 | `1panel` | `1panel.zzzai.fun` | `https://1panel.zzzai.fun/p2panel443` | `1panel-openresty-prod`（host 网络 443）向 `http://127.0.0.1:2096` 反代；证书由 `1panel-zzzai-fun`（`/data/1panel/www/certs/1panel-zzzai-fun`）提供。 |
-| `token` | `token.zzzai.fun` | `https://token.zzzai.fun` | `sub2api-prod`（AgentPlane compose）绑定 `127.0.0.1:18080`，依赖 `zqf_network`；`inventory` 中的 `public_url` 与 CLI `website get/verify` 自此处读取。 |
+| `token` | `token.zzzai.fun` | `https://token.zzzai.fun` | `sub2api-prod`（AgentPlane compose）绑定 `127.0.0.1:18080`，依赖 `zqf_network`；`inventory` 中的 `public_url` 与 CLI `ingress get/verify` 自此处读取。 |
 | `vmail` | `vmail.zzzai.fun` | `https://vmail.zzzai.fun` | `vmail-prod`（compose）绑定 `127.0.0.1:3001`，借助 `1panel-openresty-prod` 提供外部 HTTPS。 |
 
 ## 正式主入口
 
-当前 active 默认姿态是只读验证；公网入口变更只在受控窗口内通过 `website publish` 执行。
+当前 active 默认姿态是只读验证；公网入口变更只在受控窗口内通过 `ingress publish` 执行。
 
 正式只读校验与台帐刷新：
 
 ```bash
-env -C <repo-root> uv run python -m agentplane.cli website verify \
+env -C <repo-root> agentplane ingress verify \
   --target prod2-main \
   --alias 1panel \
   --repo-root <repo-root>
 
-env -C <repo-root> uv run python -m agentplane.cli projection verification run \
+env -C <repo-root> agentplane projection verification run \
   --target prod2-main \
   --profile prod2-readonly \
   --repo-root <repo-root> \
   --write-report
 
-env -C <repo-root> uv run python -m agentplane.cli projection ledger refresh \
+env -C <repo-root> agentplane projection ledger refresh \
   --target prod2-main \
   --repo-root <repo-root> \
   --write
@@ -59,20 +59,20 @@ env -C <repo-root> uv run python -m agentplane.cli projection ledger refresh \
 如需在受控窗口内修复或重放公网入口，正式任务入口是：
 
 ```bash
-env -C <repo-root> uv run python -m agentplane.cli website publish plan \
+env -C <repo-root> agentplane ingress publish plan \
   --target prod2-main \
   --config-file <repo-root>/secrets/services/onepanel-public-ingress.prod2.env \
   --cloudflare-env-file <repo-root>/secrets/env/prod-jump.env \
   --repo-root <repo-root>
 
-env -C <repo-root> uv run python -m agentplane.cli website publish apply \
+env -C <repo-root> agentplane ingress publish apply \
   --target prod2-main \
   --config-file <repo-root>/secrets/services/onepanel-public-ingress.prod2.env \
   --cloudflare-env-file <repo-root>/secrets/env/prod-jump.env \
   --repo-root <repo-root> \
   --execute
 
-env -C <repo-root> uv run python -m agentplane.cli website publish verify \
+env -C <repo-root> agentplane ingress publish verify \
   --target prod2-main \
   --config-file <repo-root>/secrets/services/onepanel-public-ingress.prod2.env \
   --cloudflare-env-file <repo-root>/secrets/env/prod-jump.env \
@@ -82,11 +82,11 @@ env -C <repo-root> uv run python -m agentplane.cli website publish verify \
 bridge 网络是正式控制面前置条件；需要现场核对或修复时走：
 
 ```bash
-env -C <repo-root> uv run python -m agentplane.cli host network audit \
+env -C <repo-root> agentplane infra network audit \
   prod2-main \
   --repo-root <repo-root>
 
-env -C <repo-root> uv run python -m agentplane.cli host network ensure \
+env -C <repo-root> agentplane infra network ensure \
   prod2-main \
   --repo-root <repo-root>
 ```
@@ -101,7 +101,7 @@ env -C <repo-root> uv run python -m agentplane.cli host network ensure \
 ## Bridge 事件归档
 
 - 2026-03-28 时 `br-66f7da1be943` 丢失 `172.19.0.1/16` 与 `172.19.0.0/16` 路由，导致 `127.0.0.1:18080` 无法再转到 `sub2api-prod:8080`，随之 OpenResty 对外反代失效；该事件作为知识留存，活跃口径仍以 `inventory/servers/prod2-main/inventory.json` 中的 `managed_bridge_networks` 项为准。
-- 现阶段正式治理是用 `inventory/servers/prod2-main/inventory.json` 的 `managed_bridge_networks`（`zqf_network 172.19.0.0/16`）与 `uv run python -m agentplane.cli host network audit prod2-main` / `host network ensure prod2-main` 保持一致，避免该网桥漂移。
+- 现阶段正式治理是用 `inventory/servers/prod2-main/inventory.json` 的 `managed_bridge_networks`（`zqf_network 172.19.0.0/16`）与 `agentplane infra network audit prod2-main` / `infra network ensure prod2-main` 保持一致，避免该网桥漂移。
 
 ## Live-State 验证
 
@@ -121,9 +121,9 @@ docker exec 1panel-openresty-prod nginx -s reload
 
 通过标准：
 
-- `website verify --target prod2-main --alias 1panel --repo-root <repo-root>` 返回 `ok=true`
+- `ingress verify --target prod2-main --alias 1panel --repo-root <repo-root>` 返回 `ok=true`
 - `projection verification run --target prod2-main --profile prod2-readonly` 只出现已知对象边界差异
-- 如执行了公网入口变更，`website publish verify` 与 live-state 结论一致
+- 如执行了公网入口变更，`ingress publish verify` 与 live-state 结论一致
 - `curl` 与 `nginx -T` 结论一致
 - bridge 网络 audit/ensure 不再报告 gateway 与路由漂移
 
@@ -132,7 +132,7 @@ docker exec 1panel-openresty-prod nginx -s reload
 以下内容只用于排障或现场只读核对，不是正式主入口：
 
 - `python3 /opt/agentplane/ops/scripts/onepanel/api_request.py GET /api/v2/websites/list ...`
-- 直接打开 1Panel 面板核对网站对象、证书对象或 cronjob 页面
+- 直接打开 1Panel 面板核对入口对象、证书对象或 cronjob 页面
 - 宿主机底层 bridge 检查：
 
 ```bash
@@ -162,5 +162,5 @@ docker compose run --rm --entrypoint /usr/local/openresty/bin/openresty openrest
 ## 禁止事项
 
 - 不允许把 `8443` 继承为 `prod2-main` 的默认正式公网端口
-- 不允许绕过 1Panel 网站对象，直接用手工 vhost 作为最终交付
+- 不允许绕过 1Panel 入口对象，直接用手工 vhost 作为最终交付
 - 不允许把历史迁移端口、临时入口或 legacy 组件恢复成正式公网入口

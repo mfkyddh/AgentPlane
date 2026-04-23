@@ -1,11 +1,11 @@
 # [ARCHIVED] prod0-main Sub2 Control-Plane Convergence History
 
 > 历史窗口快照。该文档只保留 `2026-03-25` 收口窗口及 `2026-03-30` 后续补记，不是当前正式入口。
-> 当前决策请回到 `inventory/servers/prod0-main/`、active runbook，以及 `uv run python -m agentplane.cli ...` 的现行控制面口径。
+> 当前决策请回到 `inventory/servers/prod0-main/`、active runbook，以及 `agentplane ...` 的现行控制面口径。
 
 ## 历史目标（2026-03-25 视角）
 
-在不破坏现有 `pay.zzzai.cloud:8443/pay` 与 `token.zzzai.cloud:8443` 的前提下，把 `sub2api` 与 `sub2apipay` 的运行控制面进一步收口，减少 `systemd + 手工 compose + 网站对象` 并存的状态。
+在不破坏现有 `pay.zzzai.cloud:8443/pay` 与 `token.zzzai.cloud:8443` 的前提下，把 `sub2api` 与 `sub2apipay` 的运行控制面进一步收口，减少 `systemd + 手工 compose + 入口对象` 并存的状态。
 
 > 这份 runbook 保留为 `2026-03-25` 收口窗口的历史记录，不再代表当前正式真源。当前正式口径以 `inventory/servers/prod0-main/inventory.json`、`inventory/servers/prod0-main/README.md` 与最新应用交付 runbook 为准。
 > 追加结果：`sub2apipay` 已于 `2026-03-30` 切换到 OP_Linux `compose`，旧 `sub2apipay-prod.service` 仅保留为 disabled rollback entry。
@@ -14,12 +14,12 @@
 
 - `sub2api`
   - 运行模型：宿主机二进制 + `systemd`
-  - 当时正式入口：1Panel 网站对象 `token`
+  - 当时正式入口：1Panel 入口对象 `token`
   - 目录已收口：`/data/sub2api/{app,config,data}`
   - 兼容路径：`/opt/sub2api`、`/var/lib/sub2api`、`/etc/sub2api/sub2api-prod.env`
 - `sub2apipay`
   - 运行模型：容器化运行，计划从 `systemd` 兼容层进一步收口到统一控制面
-  - 当时正式入口：1Panel 网站对象 `pay`
+  - 当时正式入口：1Panel 入口对象 `pay`
   - 目录已收口：`/data/sub2apipay/{app,config}`
   - 兼容路径：`/opt/sub2apipay`、`/etc/sub2apipay/sub2apipay-prod.env`
   - 当时评估的 1Panel 项目目录：`/data/1panel/docker/compose/sub2apipay-prod`
@@ -56,7 +56,7 @@
 - 继续使用现有镜像 tag
 - 继续绑定 `127.0.0.1:18091:3000`
 - 继续接入 `zqf_network`
-- 继续由 1Panel 网站对象 `pay` 对外暴露
+- 继续由 1Panel 入口对象 `pay` 对外暴露
 - 生命周期控制从 `sub2apipay-prod.service` 切到 1Panel 编排对象
 
 ### 历史前置条件（计划时）
@@ -115,7 +115,7 @@ python3 ops/scripts/onepanel/project_lifecycle.py \
 ### 历史讨论稿：保守方案
 
 - 继续保留宿主机二进制 + `systemd`
-- 维持 1Panel 只管理网站对象和证书
+- 维持 1Panel 只管理入口对象和证书
 - 目录与配置已收口到 `/data/sub2api/...`，先不切运行模型
 
 ### 历史讨论稿：激进方案
@@ -136,7 +136,7 @@ python3 ops/scripts/onepanel/project_lifecycle.py \
 
 ## 历史验收口径
 
-- 网站对象仍由 1Panel 承接
+- 入口对象仍由 1Panel 承接
 - `/data/sub2api`、`/data/sub2apipay` 仍为唯一正式数据与配置根
 - 不新增新的 `/opt`、`/etc`、`/var/lib` 实体目录散落
 - 切换后公网入口继续返回成功

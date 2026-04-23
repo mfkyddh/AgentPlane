@@ -5,7 +5,7 @@
 ## Core Contracts
 
 - [control-plane.md](control-plane.md): 正式 CLI、task-entry、truth / projection 和对外 domain 语义。
-- [linux-governance.md](linux-governance.md): Linux 主机治理与长期运行基线。
+- [linux-governance.md](linux-governance.md): Linux 基础设施治理与长期运行基线。
 - [agentplane-app-collaboration.md](agentplane-app-collaboration.md): 控制面模板仓库与应用仓库的职责边界。
 
 ## Reference

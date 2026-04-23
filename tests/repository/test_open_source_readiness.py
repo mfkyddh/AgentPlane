@@ -121,7 +121,7 @@ class OpenSourceReadinessTests(unittest.TestCase):
         expected_dirs = {
             "app",
             "compose",
-            "host",
+            "infra",
             "inventory",
             "onepanel",
             "projection",
@@ -129,7 +129,7 @@ class OpenSourceReadinessTests(unittest.TestCase):
             "runtime",
             "secret_management",
             "service",
-            "website",
+            "ingress",
         }
         actual_dirs = {
             path.name for path in (REPO_ROOT / "tests").iterdir() if path.is_dir() and not path.name.startswith("__")

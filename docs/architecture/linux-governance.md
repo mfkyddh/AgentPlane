@@ -20,7 +20,7 @@
 - 默认采用 `host-entry-first, backend-aware`。
 - Windows 宿主场景固定走 `pwsh -> formal CLI -> WSL/SSH backend`；Linux/macOS 继续使用原生 POSIX shell。
 - Windows 与 WSL 默认共享同一份源码 checkout；WSL backend 的工作目录由 resolver 映射到同一工作树。
-- 真实 WSL/SSH/Docker live integration gate 必须通过 `host live-gate` 单独执行；默认本地 `pytest` 不触发真实 backend。
+- 真实 WSL/SSH/Docker live integration gate 必须通过 `infra live-gate` 单独执行；默认本地 `pytest` 不触发真实 backend。
 - 当前已经处于 Linux/macOS 源码根时，源码绑定动作直接在该 backend 内执行，不再重复包一层宿主入口。
 - 只有 WSL 内确实需要 shell 特性时才使用 `sh -lc` / `bash -lc`。
 - 默认以 `root` 在 WSL 本地执行；仅在需要用户态环境或文件归属控制时切换用户。
@@ -34,7 +34,7 @@
 - Bash 只作为薄包装层，不作为仓库主编排语言。
 - Node.js 不是仓库主控制面；只用于临时工具调用或必要生态桥接。
 - 仓库日常自动化正式入口统一为：
-  `uv run python -m agentplane.cli ...`
+  `agentplane ...`
 - 之所以采用 Python + `uv`，是因为该组合更适合承载运维编排、配置治理、HTTP API 调用、结构化校验与可测试模块边界。
 - `python -m` 入口必须与模块边界绑定，避免把仓库重新拉回零散脚本集合。
 - Python 类项目的依赖安装、虚拟环境和命令执行优先使用 `uv`。
@@ -47,7 +47,7 @@
 - 旧 Bash 流程改造时，优先变更为“Bash 调 Python CLI”，而不是继续扩展 Bash 业务逻辑。
 - 新增或重构自动化能力时，优先落到 Python 模块并由 `agentplane.cli` 暴露命令入口。
 - 仅在 Python 不可行或代价显著过高时，才引入新的 Bash/Node 常驻逻辑。
-- live gate 正式入口为 `uv run python -m agentplane.cli host live-gate ...`；`plan` 可在任意 checkout 查看，`run --execute` 使用当前单 checkout 并按宿主路由到 WSL/SSH/Docker backend。
+- live gate 正式入口为 `agentplane infra live-gate ...`；`plan` 可在任意 checkout 查看，`run --execute` 使用当前单 checkout 并按宿主路由到 WSL/SSH/Docker backend。
 - WSL 本机 `1Panel` 计划任务只负责按周期触发，不在面板页面中保存业务逻辑。
 - 新增 WSL 本机自动化任务时，必须同时提供：
   - 稳定的 `agentplane.cli` 命令入口
@@ -66,7 +66,7 @@
   - 生产环境：`-prod`
 - 仓库管理的宿主机发布端口默认绑定 `0.0.0.0`。
 - 生产环境项目容器默认接入 `zqf_network`。
-- `openresty` 相关 1Panel 容器是例外，必须使用 Docker `host` 网络。
+- `openresty` 相关 1Panel 容器是例外，必须使用 Docker `infra` 网络。
 
 ## Secrets 治理
 

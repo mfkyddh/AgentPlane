@@ -54,7 +54,7 @@ FIXED_SERVICE_DEFINITIONS: dict[str, ServiceDefinition] = {
         metadata={"container_name_key": "container_name"},
     ),
 }
-_RESERVED_SERVICE_KEYS = {"public_websites", "docker", "onepanel"}
+_RESERVED_SERVICE_KEYS = {"public_ingresses", "docker", "onepanel"}
 _DYNAMIC_CONTROL_PLANES = {"compose", "onepanel-app", "onepanel-compose"}
 RESERVED_SERVICE_KEYS = frozenset(_RESERVED_SERVICE_KEYS)
 DYNAMIC_CONTROL_PLANES = frozenset(_DYNAMIC_CONTROL_PLANES)

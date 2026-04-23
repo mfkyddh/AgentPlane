@@ -207,7 +207,7 @@ class ServiceCliTests(unittest.TestCase):
             payload = json.loads(result.stdout)
             host_binding_check = payload["payload"]["checks"]["host_binding"]
             self.assertTrue(host_binding_check["ok"])
-            self.assertEqual("host", payload["payload"]["checks"]["network_mode"]["actual"])
+            self.assertEqual("infra", payload["payload"]["checks"]["network_mode"]["actual"])
 
     def test_service_materialize_renders_relay_clash_profile_from_service_contract(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -335,7 +335,7 @@ class ServiceCliTests(unittest.TestCase):
             self.assertEqual("service", payload["command"])
             self.assertEqual("verify", payload["action"])
             self.assertTrue(payload["payload"]["ok"])
-            self.assertEqual("host", payload["payload"]["checks"]["network_mode"]["actual"])
+            self.assertEqual("infra", payload["payload"]["checks"]["network_mode"]["actual"])
             self.assertFalse(payload["payload"]["projection_handoff"]["required"])
             self.assertEqual("projection", payload["payload"]["projection_handoff"]["steps"][0]["command"])
             self.assertEqual("ledger.refresh", payload["payload"]["projection_handoff"]["steps"][0]["action"])

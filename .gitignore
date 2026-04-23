@@ -31,3 +31,6 @@ node_modules/
 .venv/
 
 .workbuddy/
+
+# 本地协作（不纳入开源仓库）
+local/

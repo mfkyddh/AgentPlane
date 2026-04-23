@@ -16,5 +16,5 @@ Generated from `.codex/skills/catalog.yaml`.
 This plugin group is a thin distribution layer over the repository-owned skills and CLI.
 
 - Source repo skills: `host-ops`
-- Primary domains: `host`
-- Stable entrypoint: `uv run python -m agentplane.cli host ...`
+- Primary domains: `infra`
+- Stable entrypoint: `agentplane infra ...`

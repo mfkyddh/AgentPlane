@@ -35,11 +35,11 @@ class InventoryGenerationTests(unittest.TestCase):
         self.assertIn("仅允许只读或 dry-run", versioning_doc)
 
     def test_phase4_lane12_host_automation_search_acceptance_is_readonly(self) -> None:
-        result = run_cli("host", "automation", "search", "wsl", "--repo-root", str(REPO_ROOT), cwd=REPO_ROOT)
+        result = run_cli("infra", "automation", "search", "wsl", "--repo-root", str(REPO_ROOT), cwd=REPO_ROOT)
         self.assertEqual(result.returncode, 0, msg=result.stderr)
 
         payload = json.loads(result.stdout)
-        self.assertEqual("host", payload.get("command"))
+        self.assertEqual("infra", payload.get("command"))
         self.assertEqual("automation.search", payload.get("action"))
         self.assertEqual("wsl", payload.get("target"))
         self.assertIn("items", payload["payload"])
@@ -110,7 +110,7 @@ class InventoryGenerationTests(unittest.TestCase):
             registry_file.write_text(
                 json.dumps(
                     {
-                        "_meta": {"host": "prod2-main"},
+                        "_meta": {"infra": "prod2-main"},
                         "infrastructure": {"postgres": {"status": "running"}},
                         "app_resources": {"sampleapi": {"owner_app": "sampleapi"}},
                         "sampleapi": {"owner_app": "sampleapi"},
@@ -201,12 +201,12 @@ class InventoryGenerationTests(unittest.TestCase):
             self.assertEqual(["foreign-service"], [item["name"] for item in payload["unmanaged_docker_containers"]])
 
     def test_inventory_command_outputs_wsl_snapshot(self) -> None:
-        result = run_cli("host", "inventory", "wsl", "--repo-root", str(REPO_ROOT), cwd=REPO_ROOT)
+        result = run_cli("infra", "inventory", "wsl", "--repo-root", str(REPO_ROOT), cwd=REPO_ROOT)
         self.assertEqual(result.returncode, 0, msg=result.stderr)
 
         payload = json.loads(result.stdout)
         self.assertEqual({"command", "action", "target", "payload"}, set(payload))
-        self.assertEqual("host", payload.get("command"))
+        self.assertEqual("infra", payload.get("command"))
         self.assertEqual("inventory", payload.get("action"))
         self.assertEqual("wsl", payload.get("target"))
         self.assertIsInstance(payload["payload"], dict)
@@ -268,12 +268,12 @@ class InventoryGenerationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             (root / "inventory" / "servers").mkdir(parents=True, exist_ok=True)
-            result = run_cli("host", "inventory", "prod0-main", "--repo-root", str(root), cwd=REPO_ROOT)
+            result = run_cli("infra", "inventory", "prod0-main", "--repo-root", str(root), cwd=REPO_ROOT)
             self.assertEqual(result.returncode, 0, msg=result.stderr)
 
             payload = json.loads(result.stdout)
             self.assertEqual({"command", "action", "target", "payload"}, set(payload))
-            self.assertEqual("host", payload.get("command"))
+            self.assertEqual("infra", payload.get("command"))
             self.assertEqual("inventory", payload.get("action"))
             self.assertEqual("prod0-main", payload.get("target"))
             self.assertIsInstance(payload["payload"], dict)

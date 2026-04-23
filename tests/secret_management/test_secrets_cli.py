@@ -35,11 +35,11 @@ class SecretsCliTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
 
-            result = run_cli("host", "secrets", "init-data-services", "prod0-main", "--repo-root", str(root))
+            result = run_cli("infra", "secrets", "init-data-services", "prod0-main", "--repo-root", str(root))
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             payload = json.loads(result.stdout)
             self.assertEqual({"command", "action", "target", "payload"}, set(payload))
-            self.assertEqual("host", payload.get("command"))
+            self.assertEqual("infra", payload.get("command"))
             self.assertEqual("secrets.init-data-services", payload.get("action"))
             self.assertEqual("prod0-main", payload.get("target"))
             self.assertIn("files", payload["payload"])
@@ -78,11 +78,11 @@ class SecretsCliTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            result = run_cli("host", "secrets", "init-data-services", "wsl", "--repo-root", str(root))
+            result = run_cli("infra", "secrets", "init-data-services", "wsl", "--repo-root", str(root))
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             payload = json.loads(result.stdout)
             self.assertEqual({"command", "action", "target", "payload"}, set(payload))
-            self.assertEqual("host", payload.get("command"))
+            self.assertEqual("infra", payload.get("command"))
             self.assertEqual("secrets.init-data-services", payload.get("action"))
             self.assertEqual("wsl", payload.get("target"))
             statuses = {item["path"]: item["status"] for item in payload["payload"]["files"]}
@@ -95,12 +95,12 @@ class SecretsCliTests(unittest.TestCase):
     def test_init_data_services_supports_prod2_target(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            result = run_cli("host", "secrets", "init-data-services", "prod2-main", "--repo-root", str(root))
+            result = run_cli("infra", "secrets", "init-data-services", "prod2-main", "--repo-root", str(root))
             self.assertEqual(result.returncode, 0, msg=result.stderr)
 
             payload = json.loads(result.stdout)
             self.assertEqual({"command", "action", "target", "payload"}, set(payload))
-            self.assertEqual("host", payload.get("command"))
+            self.assertEqual("infra", payload.get("command"))
             self.assertEqual("secrets.init-data-services", payload.get("action"))
             self.assertEqual("prod2-main", payload.get("target"))
             self.assertIn("files", payload["payload"])
@@ -122,7 +122,7 @@ class SecretsCliTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            result = run_cli("host", "secrets", "sync-layout", "wsl", "--write", "--repo-root", str(root))
+            result = run_cli("infra", "secrets", "sync-layout", "wsl", "--write", "--repo-root", str(root))
             self.assertEqual(result.returncode, 0, msg=result.stderr)
 
             projected = root / "secrets" / "services" / "secrets-backup.r2.wsl.env"

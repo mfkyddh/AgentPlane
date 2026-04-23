@@ -13,7 +13,7 @@ from agentplane.runtime.redaction import redact_execution_payload
 LIVE_GATE_PROFILES: tuple[str, ...] = ("wsl", "prod0-main", "prod2-main")
 DEFAULT_APP = "sub2api"
 DEFAULT_WSL_PROJECTION_PROFILE = "wsl-fixture"
-LiveGateExecution = Literal["host", "linux-backend"]
+LiveGateExecution = Literal["infra", "linux-backend"]
 
 
 @dataclass(frozen=True)
@@ -22,7 +22,7 @@ class LiveGateStep:
     argv: tuple[str, ...]
     capabilities: tuple[str, ...]
     cwd: Path
-    execution: LiveGateExecution = "host"
+    execution: LiveGateExecution = "infra"
     timeout: int = 300
 
     def to_payload(self) -> dict[str, Any]:
@@ -47,7 +47,7 @@ def _remote_cli(repo_root: Path, target: str, *remote_args: str) -> tuple[str, .
         "python",
         "-m",
         "agentplane.cli",
-        "host",
+        "infra",
         "remote",
         "bash",
         target,
@@ -83,13 +83,13 @@ def _wsl_steps(repo_root: Path, *, app: str, projection_profile: str) -> list[Li
         ),
         LiveGateStep(
             key="host.inventory",
-            argv=_cli(repo_root, "host", "inventory", "wsl"),
+            argv=_cli(repo_root, "infra", "inventory", "wsl"),
             cwd=repo_root,
             capabilities=("uv",),
         ),
         LiveGateStep(
             key="host.audit",
-            argv=_cli(repo_root, "host", "audit", "wsl"),
+            argv=_cli(repo_root, "infra", "audit", "wsl"),
             cwd=repo_root,
             capabilities=("uv",),
         ),

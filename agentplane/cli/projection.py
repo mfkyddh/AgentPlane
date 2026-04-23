@@ -4,7 +4,7 @@ import argparse
 from pathlib import Path
 from typing import Any
 
-from agentplane.domain.projection.runtime_env import (
+from agentplane.domain.app.projection.runtime_env import (
     SUPPORTED_RUNTIME_ENV_TARGETS,
     apply_runtime_env_projection,
     plan_runtime_env_projection,

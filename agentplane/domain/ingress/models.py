@@ -5,7 +5,7 @@ from typing import Any
 
 
 @dataclass(frozen=True)
-class WebsiteDefinition:
+class IngressDefinition:
     alias: str
     primary_domain: str
     public_url: str
@@ -18,7 +18,7 @@ class WebsiteDefinition:
 
 
 @dataclass(frozen=True)
-class WebsiteFollowThrough:
+class IngressFollowThrough:
     owner_surface: str
     source_surface: str
     verification_profile: str

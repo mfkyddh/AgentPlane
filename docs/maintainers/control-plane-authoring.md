@@ -55,7 +55,7 @@ superseded_by: null
 | 层级 | 责任 | 不应承载什么 |
 | --- | --- | --- |
 | 共享 skill | Windows 上 `pwsh` 优先、backend-aware 正式入口基线、真源优先级、写后验证纪律 | 不要把所有领域细节重复一遍 |
-| 领域 skill | 围绕对象域做意图路由，如 `host`、`app-resource`、`onepanel`、`app-delivery` | 不要把专题流程塞成正文 |
+| 领域 skill | 围绕对象域做意图路由，如 `infra`、`app-resource`、`onepanel`、`app-delivery` | 不要把专题流程塞成正文 |
 | workflow skill | 编排多个领域、阶段顺序、失败回退点、人工确认点 | 不要替代领域 skill 的原子规范 |
 | reference 文档 | 补充单个正式动作或单个稳定流程的细节 | 不要复制整份 runbook 或架构合同 |
 
@@ -178,7 +178,7 @@ runbook 负责专题流程、风险边界、人工接力点与最小验证；需
 
 ## 强制规则
 
-1. 正式控制面能力优先写成 `uv run python -m agentplane.cli ...`。
+1. 正式控制面能力优先写成 `agentplane ...`。
 2. skill 不得把兼容脚本包装成正式能力。
 3. skill 不得复制大段 runbook 内容。
 4. skill 与文档都不得要求 Agent 手工维护 `inventory` 真源或台账文件。

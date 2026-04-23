@@ -19,7 +19,7 @@ Runner = Callable[[Path, dict[str, Any]], dict[str, Any]]
 
 
 @dataclass(frozen=True)
-class HostAutomationDefinition:
+class InfraAutomationDefinition:
     name: str
     runner: Runner
 
@@ -37,9 +37,9 @@ def _run_backup_secrets(repo_root: Path, automation: dict[str, Any]) -> dict[str
     return run_backup(load_config(env_file))
 
 
-AUTOMATION_DEFINITIONS: dict[str, HostAutomationDefinition] = {
-    "wsl-zzz-skills-sync": HostAutomationDefinition(name="wsl-zzz-skills-sync", runner=_run_sync_zzz_skills),
-    "wsl-agentplane-secrets-backup": HostAutomationDefinition(name="wsl-agentplane-secrets-backup", runner=_run_backup_secrets),
+AUTOMATION_DEFINITIONS: dict[str, InfraAutomationDefinition] = {
+    "wsl-zzz-skills-sync": InfraAutomationDefinition(name="wsl-zzz-skills-sync", runner=_run_sync_zzz_skills),
+    "wsl-agentplane-secrets-backup": InfraAutomationDefinition(name="wsl-agentplane-secrets-backup", runner=_run_backup_secrets),
 }
 
 
@@ -180,7 +180,7 @@ def _desired_cronjob_payload(
         "user": "root",
         "scriptID": 0,
         "appID": "",
-        "website": "",
+        "ingress": "",
         "exclusionRules": "",
         "dbType": "",
         "dbName": "",
@@ -264,17 +264,17 @@ def _reconcile_actions(
     return actions, live
 
 
-def search_host_automations(repo_root: Path, target: str) -> dict[str, Any]:
+def search_infra_automations(repo_root: Path, target: str) -> dict[str, Any]:
     items = [_normalize_automation(repo_root, target, item) for item in _load_declared_automations(repo_root, target)]
     return {"items": items}
 
 
-def get_host_automation(repo_root: Path, target: str, name: str) -> dict[str, Any]:
+def get_infra_automation(repo_root: Path, target: str, name: str) -> dict[str, Any]:
     automation = _find_declared_automation(repo_root, target, name)
     return {"automation": _normalize_automation(repo_root, target, automation)}
 
 
-def verify_host_automation(
+def verify_infra_automation(
     repo_root: Path,
     target: str,
     name: str,
@@ -311,7 +311,7 @@ def verify_host_automation(
     return {"ok": ok, "automation": normalized, "checks": checks, "live": live}
 
 
-def plan_host_automation(
+def plan_infra_automation(
     repo_root: Path,
     target: str,
     name: str,
@@ -371,7 +371,7 @@ def _run_task(repo_root: Path, automation: dict[str, Any]) -> dict[str, Any]:
     return definition.runner(repo_root, automation)
 
 
-def apply_host_automation(
+def apply_infra_automation(
     repo_root: Path,
     target: str,
     name: str,
@@ -381,7 +381,7 @@ def apply_host_automation(
     executor: object | None = None,
     env_file: str | None = None,
 ) -> dict[str, Any]:
-    plan = plan_host_automation(repo_root, target, name, operation, executor=executor, env_file=env_file)
+    plan = plan_infra_automation(repo_root, target, name, operation, executor=executor, env_file=env_file)
     if not execute:
         return plan
 
@@ -420,7 +420,7 @@ def apply_host_automation(
             "verified": {"ok": True},
         }
 
-    verified = verify_host_automation(repo_root, target, name, executor=resolved_executor)
+    verified = verify_infra_automation(repo_root, target, name, executor=resolved_executor)
     return {
         "ok": bool(verified.get("ok")),
         "operation": operation,

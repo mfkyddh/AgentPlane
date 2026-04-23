@@ -27,21 +27,21 @@
 
 ### 仓库命令面
 
-- `bootstrap inspect-local`、`host local inspect` 在当前 Windows 控制面 + WSL backend 组合下可正常返回路径绑定结果。
+- `bootstrap inspect-local`、`infra local inspect` 在当前 Windows 控制面 + WSL backend 组合下可正常返回路径绑定结果。
 - 当前本轮修复后，仓库 `pytest` 已恢复到全绿；之前卡住的 10 个失败都已收口。
-- 默认 `pytest` 不执行真实 WSL/SSH/Docker live gate；真实验证已收口到 `host live-gate`，并使用当前单 checkout 路由到 backend。
+- 默认 `pytest` 不执行真实 WSL/SSH/Docker live gate；真实验证已收口到 `infra live-gate`，并使用当前单 checkout 路由到 backend。
 - 本地 Python 环境统一使用当前 checkout 根目录 `.venv`；不再维护 `.venv-win` / `.venv-wsl` 分叉。
 
 ### WSL
 
-- `host inventory wsl`、`host audit wsl` 已通过。
+- `infra inventory wsl`、`infra audit wsl` 已通过。
 - `projection verification run --target wsl --profile wsl-fixture` 已通过。
 - `sub2api` 在 `wsl` 上通过 `projection runtime-env verify` 与 `service verify` 核对。
 - 当前 `sub2api` WSL 探针为 `http://127.0.0.1:18080/health`，本轮验证返回 `{"status":"ok"}`。
 
 ### prod0-main
 
-- `host remote bash prod0-main` 的 Windows 入口与实际 SSH backend 都可用。
+- `infra remote bash prod0-main` 的 Windows 入口与实际 SSH backend 都可用。
 - `sub2api` 在 `prod0-main` 上的部署模板已切到官方镜像 `ghcr.io/wei-shaw/sub2api:latest`，并启用 `pull_policy: always`。
 - 本轮验证确认了两条健康链路：
   - 宿主机回环：`http://127.0.0.1:18080/health`
@@ -59,10 +59,10 @@
 
 ### 生产机环境侧
 
-1. `host audit prod0-main` 仍然认为 `sub2api` 的 config file 没有收口到目标目录。
+1. `infra audit prod0-main` 仍然认为 `sub2api` 的 config file 没有收口到目标目录。
 当前 live path 仍指向 `/opt/agentplane/secrets/services/*.env`，而不是预期的 `/data/<app>/...` 语义。
 
-2. `host network audit prod0-main` 显示 `zqf_network` 缺少声明中的必需容器。
+2. `infra network audit prod0-main` 显示 `zqf_network` 缺少声明中的必需容器。
 当前缺口以 `inventory/servers/prod0-main/inventory.json` 中声明为准；已退役应用不再作为 required container。
 
 ## 建议优先级

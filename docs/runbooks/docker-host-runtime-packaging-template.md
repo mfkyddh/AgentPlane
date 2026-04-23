@@ -231,7 +231,7 @@ docker image inspect <image-name>:test >/dev/null
 在 `AgentPlane` 中再验证：
 
 ```bash
-uv run python -m agentplane.cli app delivery build-artifact \
+agentplane app delivery build-artifact \
   --target <target> \
   --app <app> \
   --repo-root <repo-root> \

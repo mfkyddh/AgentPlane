@@ -11,7 +11,7 @@ Windows 宿主请统一通过 `invoke-agentplane-windows-uv.ps1` 进入 CLI，�
 
 完成填写后运行：
 
-- `uv run python -m agentplane.cli bootstrap verify-secrets --repo-root <repo-root>`
-- `uv run python -m agentplane.cli bootstrap doctor --repo-root <repo-root>`
+- `agentplane bootstrap verify-secrets --repo-root <repo-root>`
+- `agentplane bootstrap doctor --repo-root <repo-root>`
 
 `../../env/prod-jump.env` 这类 projection/compat 文件只在相关后续 flow 需要时再单独处理。
