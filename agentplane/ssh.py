@@ -2,11 +2,25 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shlex
 from dataclasses import dataclass
 from pathlib import Path
 
+from agentplane.runtime.wsl_bridge import windows_path_to_wsl_posix
 from agentplane.runtime.secret_resolver import SecretResolver
+
+
+def _local_backend_arg(value: str) -> str:
+    if os.name != "nt":
+        return value
+    return windows_path_to_wsl_posix(value) or value
+
+
+def _local_backend_argv(argv: list[str]) -> list[str]:
+    if os.name != "nt" or os.environ.get("AGENTPLANE_DISABLE_WSL_SSH") == "1":
+        return argv
+    return ["wsl.exe", "-e", *[_local_backend_arg(part) for part in argv]]
 
 
 @dataclass(frozen=True)
@@ -48,6 +62,9 @@ class SshTarget:
     def ssh_args_for_bash_stdin(self, argv: list[str] | None = None) -> list[str]:
         return ["ssh", "-T", "-F", str(self.config_path), self.connection_target, self.wrap_bash_stdin(argv)]
 
+    def local_ssh_args_for_bash_stdin(self, argv: list[str] | None = None) -> list[str]:
+        return _local_backend_argv(self.ssh_args_for_bash_stdin(argv))
+
     def display_ssh_bash_stdin(self, argv: list[str] | None = None) -> str:
         return " ".join(
             [
@@ -63,8 +80,14 @@ class SshTarget:
     def ssh_args_for_argv(self, argv: list[str]) -> list[str]:
         return ["ssh", "-F", str(self.config_path), self.connection_target, self.wrap_argv(argv)]
 
+    def local_ssh_args_for_argv(self, argv: list[str]) -> list[str]:
+        return _local_backend_argv(self.ssh_args_for_argv(argv))
+
     def ssh_args_for_shell(self, command: str) -> list[str]:
         return ["ssh", "-F", str(self.config_path), self.connection_target, self.wrap_shell(command)]
+
+    def local_ssh_args_for_shell(self, command: str) -> list[str]:
+        return _local_backend_argv(self.ssh_args_for_shell(command))
 
     def display_ssh_command(self, command: str) -> str:
         return " ".join(
@@ -90,6 +113,12 @@ class SshTarget:
 
     def scp_destination(self, remote_path: str) -> str:
         return f"{self.connection_target}:{remote_path}"
+
+    def scp_args(self, local_path: str, remote_path: str) -> list[str]:
+        return ["scp", "-F", str(self.config_path), str(local_path), self.scp_destination(remote_path)]
+
+    def local_scp_args(self, local_path: str, remote_path: str) -> list[str]:
+        return _local_backend_argv(self.scp_args(local_path, remote_path))
 
     def display_scp_command(self, local_path: str, remote_path: str) -> str:
         return " ".join(

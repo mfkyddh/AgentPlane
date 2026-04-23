@@ -1,3 +1,5 @@
+import os
+import subprocess
 from pathlib import Path
 
 from agentplane.runtime.backends import WindowsWslBackend, build_backend_runner
@@ -47,6 +49,44 @@ def test_backend_runner_renders_ssh_linux_shell_plan() -> None:
     )
 
     assert rendered.backend_type == "ssh-linux"
-    assert rendered.argv[:4] == ("ssh", "-F", str(ssh_config), "root@prod0-main")
+    if os.name == "nt":
+        assert rendered.argv[:3] == ("wsl.exe", "-e", "ssh")
+        assert rendered.argv[3:6] == ("-F", str(ssh_config), "root@prod0-main")
+    else:
+        assert rendered.argv[:4] == ("ssh", "-F", str(ssh_config), "root@prod0-main")
     assert rendered.metadata["remote_command"] == "docker inspect sub2api-prod"
+
+
+def test_backend_runner_uses_binary_stdin_for_windows_wsl(monkeypatch) -> None:
+    monkeypatch.setattr("agentplane.runtime.execution.os.name", "nt")
+    monkeypatch.setattr("agentplane.runtime.backends.windows_wsl.require_local_executable", lambda _name: None)
+    captured: dict[str, object] = {}
+
+    def fake_run(argv: list[str], **kwargs: object) -> subprocess.CompletedProcess[bytes]:
+        captured.update(kwargs)
+        return subprocess.CompletedProcess(argv, 0, stdout=b"ok\n", stderr=b"")
+
+    monkeypatch.setattr("agentplane.runtime.execution.subprocess.run", fake_run)
+    plan = ExecutionPlan(
+        backend_type="windows-wsl",
+        cwd_ref="workspace.control_root",
+        argv=("bash", "-s", "--"),
+        env_refs=(),
+        input_refs=("remote.stdin",),
+        expected_outputs=(),
+        capabilities=("bash",),
+        timeout=300,
+    )
+
+    result = build_backend_runner().execute(
+        plan,
+        bindings=ExecutionBindings(
+            cwd_values={"workspace.control_root": "D:/Projects/AgentPlane"},
+            input_values={"remote.stdin": "set -euo pipefail\n"},
+        ),
+    )
+
+    assert result.ok
+    assert captured["input"] == b"set -euo pipefail\n"
+    assert captured["text"] is False
 

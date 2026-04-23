@@ -113,7 +113,7 @@ class OnePanelExecutor:
         else:
             command = build_api_request_command(self.target, method, path, body=body)
             result = subprocess.run(
-                self.target.build_ssh_target().ssh_args_for_argv(command),
+                self.target.build_ssh_target().local_ssh_args_for_argv(command),
                 text=True,
                 capture_output=True,
                 check=False,

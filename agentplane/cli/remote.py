@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import select
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -22,6 +23,9 @@ def _strip_remainder_separator(args: list[str]) -> list[str]:
 def _read_piped_stdin() -> str | None:
     if sys.stdin.closed or sys.stdin.isatty():
         return None
+    if os.name == "nt":
+        text = sys.stdin.read()
+        return text or None
     ready, _, _ = select.select([sys.stdin], [], [], 0)
     if not ready:
         return None
@@ -45,6 +49,8 @@ def _build_remote_execution(
         effective_stdin = script_file.read_text(encoding="utf-8")
     if script_file is None and effective_stdin is None:
         effective_stdin = _read_piped_stdin()
+    if effective_stdin is not None:
+        effective_stdin = effective_stdin.replace("\r\n", "\n").replace("\r", "\n")
 
     if target_resolution.is_local:
         backend_type = str(target_resolution.execution_backend)

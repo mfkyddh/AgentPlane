@@ -3,9 +3,9 @@
 - 这是 AgentPlane 受管的应用层 Compose 资产，不是基础数据服务模板。
 - WSL 模板：`docker-compose.wsl.yml`
 - 生产模板：`docker-compose.prod0.yml`、`docker-compose.prod2.yml`
-- WSL 运行时直接使用官方镜像 `ghcr.io/wei-shaw/sub2api:latest`，不再从本地二开应用仓库构建镜像。
-- WSL 模板启用 `pull_policy: always`，每次 reconcile 都从官方源拉取最新 `latest` manifest。
-- prod0-main/prod2-main 仍保留当前生产模板，后续窗口再从本地二开镜像切到官方镜像。
+- WSL 与 prod0-main 运行时直接使用官方镜像 `ghcr.io/wei-shaw/sub2api:latest`，不再从本地二开应用仓库构建镜像。
+- WSL 与 prod0-main 模板启用 `pull_policy: always`，每次 reconcile 都从官方源拉取最新 `latest` manifest。
+- prod2-main 仍保留当前生产模板，后续窗口再从本地二开镜像切到官方镜像。
 - 生产容器名固定为 `sub2api-prod`，依赖容器固定为 `postgres18-prod` 与 `redis7-prod`
 - 生产容器接入 `zqf_network`，通过容器名通信；容器名变更必须先同步合同、inventory、Compose 与验证用例
 - 生产入口固定绑定 `127.0.0.1:18080:8080`，再由 1Panel 网站对象 `token` 与 OpenResty 对外暴露

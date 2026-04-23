@@ -33,7 +33,7 @@
 <!-- BEGIN AGENTPLANE_ONEPANEL_LEDGER -->
 ## 1Panel 对象台帐投影
 
-- 生成时间：`2026-04-22T10:57:19.197265+00:00`
+- 生成时间：`2026-04-23T00:49:57.933149+00:00`
 - 刷新命令：`uv run python -m agentplane.cli projection ledger refresh --target prod0-main --repo-root <repo-root> --write`
 
 ### 对象计数
@@ -48,5 +48,6 @@
 
 ### 最近 CLI 动作
 
-- `panel`: `verify` / `verified` / `2026-04-21T08:10:54.184774+00:00`
+- `cronjob`: `search` / `queried` / `2026-04-23T00:21:31.938681+00:00`
+- `panel`: `verify` / `verified` / `2026-04-23T00:48:56.864599+00:00`
 <!-- END AGENTPLANE_ONEPANEL_LEDGER -->

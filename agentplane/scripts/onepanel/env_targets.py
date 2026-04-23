@@ -60,7 +60,22 @@ def repo_root() -> Path:
 
 
 def _remote_api_path_candidates(default_env_file: Path, default_script: Path) -> tuple[tuple[Path, Path], ...]:
-    return ((default_env_file, default_script),)
+    legacy_env = Path("/opt/env_ubuntu/secrets/services/onepanel-api.env")
+    legacy_script = Path("/opt/env_ubuntu/agentplane/scripts/onepanel/api_request.py")
+    return (
+        (default_env_file, default_script),
+        (legacy_env, default_script),
+        (legacy_env, legacy_script),
+    )
+
+
+def _remote_posix_path(path: Path) -> str:
+    rendered = str(path)
+    if rendered.startswith("\\"):
+        return "/" + rendered.lstrip("\\").replace("\\", "/")
+    if "\\" in rendered and not (len(rendered) >= 2 and rendered[1] == ":"):
+        return rendered.replace("\\", "/")
+    return rendered
 
 
 @lru_cache(maxsize=None)
@@ -84,17 +99,17 @@ def _resolve_remote_api_paths(
 
     probe_lines = ["set -euo pipefail"]
     for env_file, script in candidates:
-        quoted_env = shlex.quote(str(env_file))
-        quoted_script = shlex.quote(str(script))
+        quoted_env = shlex.quote(_remote_posix_path(env_file))
+        quoted_script = shlex.quote(_remote_posix_path(script))
         probe_lines.append(
             f"if [ -f {quoted_env} ] && [ -f {quoted_script} ]; then printf '%s\\n%s\\n' {quoted_env} {quoted_script}; exit 0; fi"
         )
     probe_lines.append(
         "printf '%s\\n%s\\n' "
-        f"{shlex.quote(str(default_env_path))} {shlex.quote(str(default_script_path))}"
+        f"{shlex.quote(_remote_posix_path(default_env_path))} {shlex.quote(_remote_posix_path(default_script_path))}"
     )
 
-    result = run_command(ssh_target.ssh_args_for_shell("; ".join(probe_lines)))
+    result = run_command(ssh_target.local_ssh_args_for_shell("; ".join(probe_lines)))
     if result.returncode != 0:
         return default_env_path, default_script_path
     lines = [line.strip() for line in result.stdout.splitlines() if line.strip()]
@@ -118,6 +133,8 @@ def resolve_api_paths(target: TargetConfig) -> tuple[Path, Path]:
 
 
 def _path_for_target_backend(target: TargetConfig, path: Path) -> str:
+    if target.mode == "ssh":
+        return _remote_posix_path(path)
     if target.mode == "local" and target.linux_backend and target.linux_backend.backend_type == "wsl-linux":
         return windows_path_to_wsl_posix(path) or str(path)
     return str(path)

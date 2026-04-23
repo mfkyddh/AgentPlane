@@ -17,7 +17,7 @@ superseded_by: null
 | --- | --- | --- |
 | `app_id` | 必须匹配 `^[a-z0-9]+(?:-[a-z0-9]+)*$` | 在 `inventory/apps/catalog.json` 当前对应 `apps[].app` 字段；仅允许小写字母、数字、单个短横线；禁止前后短横线、连续短横线、下划线、大写。 |
 | `inventory.service_key` | 必须与 `app_id` 完全相等 | 当前不接受别名，不接受运行态再命名。 |
-| `image_family` | 正式 app 交付镜像 family 固定为 `<app_id>-prod` | 指镜像名去掉 tag / digest 后的 family，例如 `sub2api-prod:latest` 与 `sub2api-prod@sha256:...` 的 family 都是 `sub2api-prod`。 |
+| `image_family` | 默认正式 app 交付镜像 family 固定为 `<app_id>-prod`；登记为第三方官方镜像的目标可使用上游 family | 指镜像名去掉 tag / digest 后的 family，例如 `sub2api-prod:latest` 与 `sub2api-prod@sha256:...` 的 family 都是 `sub2api-prod`；`ghcr.io/wei-shaw/sub2api:latest` 的 family 是 `ghcr.io/wei-shaw/sub2api`。 |
 | `prod_container` | 必须等于 `<app_id>-prod` | 不是“包含 `-prod`”，是完整等值。 |
 | `dev_container` | 必须等于 `<app_id>-dev` | 不是“包含 `-dev`”，是完整等值。 |
 
@@ -25,7 +25,7 @@ superseded_by: null
 
 | app_id | compose_dir | image_family | prod_container | dev_container | inventory.service_key |
 | --- | --- | --- | --- | --- | --- |
-| `sub2api` | `infra/compose/sub2api` | `sub2api-prod` | `sub2api-prod` | `sub2api-dev` | `sub2api` |
+| `sub2api` | `infra/compose/sub2api` | `wsl/prod0-main: ghcr.io/wei-shaw/sub2api`; `prod2-main: sub2api-prod` | `sub2api-prod` | `sub2api-dev` | `sub2api` |
 
 ## 使用要求
 

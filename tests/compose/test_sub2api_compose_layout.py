@@ -5,7 +5,7 @@ import yaml
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-OFFICIAL_WSL_IMAGE = "${SUB2API_IMAGE_REF:-ghcr.io/wei-shaw/sub2api:latest}"
+OFFICIAL_IMAGE = "${SUB2API_IMAGE_REF:-ghcr.io/wei-shaw/sub2api:latest}"
 
 
 def load_compose(path: Path) -> dict:
@@ -17,7 +17,7 @@ class Sub2ApiComposeLayoutTests(unittest.TestCase):
         compose = load_compose(REPO_ROOT / "infra" / "compose" / "sub2api" / "docker-compose.wsl.yml")
         service = compose["services"]["sub2api"]
 
-        self.assertEqual(OFFICIAL_WSL_IMAGE, service["image"])
+        self.assertEqual(OFFICIAL_IMAGE, service["image"])
         self.assertEqual("always", service["pull_policy"])
         self.assertEqual("sub2api-dev", service["container_name"])
         self.assertIn("0.0.0.0:18080:8080", service["ports"])
@@ -28,6 +28,8 @@ class Sub2ApiComposeLayoutTests(unittest.TestCase):
         compose = load_compose(REPO_ROOT / "infra" / "compose" / "sub2api" / "docker-compose.prod0.yml")
         service = compose["services"]["sub2api"]
 
+        self.assertEqual(OFFICIAL_IMAGE, service["image"])
+        self.assertEqual("always", service["pull_policy"])
         self.assertEqual("sub2api-prod", service["container_name"])
         self.assertIn("127.0.0.1:18080:8080", service["ports"])
         self.assertIn("/data/sub2api/data:/app/data", service["volumes"])

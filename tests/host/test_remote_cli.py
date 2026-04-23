@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -26,6 +27,15 @@ def common_repo_root(repo_root: Path) -> Path:
 
 
 MAIN_REPO_ROOT = common_repo_root(REPO_ROOT)
+
+
+def expected_ssh_stdin_argv(config_path: Path, remote_command: str) -> list[str]:
+    if os.name == "nt":
+        drive = config_path.drive.rstrip(":").lower()
+        tail = config_path.as_posix().split(":", 1)[1].lstrip("/") if config_path.drive else config_path.as_posix().lstrip("/")
+        rendered_config = f"/mnt/{drive}/{tail}" if drive else config_path.as_posix()
+        return ["wsl.exe", "-e", "ssh", "-T", "-F", rendered_config, "root@prod0-main", remote_command]
+    return ["ssh", "-T", "-F", str(config_path), "root@prod0-main", remote_command]
 
 
 def run_cli(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
@@ -68,30 +78,30 @@ class RemoteCliTests(unittest.TestCase):
                     repo_root=root,
                     target="prod0-main",
                     remote_args=["echo"],
-                    stdin_text="echo ok\n",
+                    stdin_text="echo ok\r\n",
                 )
 
             self.assertTrue(payload["ok"])
             self.assertEqual("stdin", payload["transport"])
-            run_mock.assert_called_once_with(
-                [
-                    "ssh",
-                    "-T",
-                    "-F",
-                    str(root / "secrets" / "ssh" / "config"),
-                    "root@prod0-main",
-                    "bash -s -- echo",
-                ],
-                cwd=None,
-                env=None,
-                input="echo ok\n",
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                capture_output=True,
-                check=False,
-                timeout=300,
+            run_mock.assert_called_once()
+            self.assertEqual(
+                expected_ssh_stdin_argv(root / "secrets" / "ssh" / "config", "bash -s -- echo"),
+                run_mock.call_args.args[0],
             )
+            call_kwargs = run_mock.call_args.kwargs
+            self.assertEqual(None, call_kwargs["cwd"])
+            self.assertEqual(None, call_kwargs["env"])
+            self.assertEqual(True, call_kwargs["capture_output"])
+            self.assertEqual(False, call_kwargs["check"])
+            self.assertEqual(300, call_kwargs["timeout"])
+            if os.name == "nt":
+                self.assertEqual(b"echo ok\n", call_kwargs["input"])
+                self.assertEqual(False, call_kwargs["text"])
+            else:
+                self.assertEqual("echo ok\n", call_kwargs["input"])
+                self.assertEqual(True, call_kwargs["text"])
+                self.assertEqual("utf-8", call_kwargs["encoding"])
+                self.assertEqual("replace", call_kwargs["errors"])
 
     def test_remote_bash_dry_run_writes_operation_ledger(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -188,24 +198,10 @@ class RemoteCliTests(unittest.TestCase):
                 payload["operation"],
             )
             op_id_mock.assert_called_once_with("remote-bash")
-            run_mock.assert_called_once_with(
-                [
-                    "ssh",
-                    "-T",
-                    "-F",
-                    str(resolved_root / "secrets" / "ssh" / "config"),
-                    "root@prod0-main",
-                    "bash -s -- echo",
-                ],
-                cwd=None,
-                env=None,
-                input="echo ok\n",
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                capture_output=True,
-                check=False,
-                timeout=300,
+            run_mock.assert_called_once()
+            self.assertEqual(
+                expected_ssh_stdin_argv(resolved_root / "secrets" / "ssh" / "config", "bash -s -- echo"),
+                run_mock.call_args.args[0],
             )
             ledger_mock.assert_called_once_with(
                 resolved_root,
@@ -262,14 +258,10 @@ class RemoteCliTests(unittest.TestCase):
             inner.get("remote_command"),
         )
         self.assertEqual(
-            [
-                "ssh",
-                "-T",
-                "-F",
-                str(MAIN_REPO_ROOT / "secrets" / "ssh" / "config"),
-                "root@prod0-main",
+            expected_ssh_stdin_argv(
+                MAIN_REPO_ROOT / "secrets" / "ssh" / "config",
                 "bash -s -- postgres18-prod 'value with spaces'",
-            ],
+            ),
             inner.get("ssh_argv"),
         )
         self.assertEqual("ssh-linux", inner.get("execution_plan", {}).get("backend_type"))

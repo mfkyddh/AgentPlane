@@ -2,6 +2,7 @@ import unittest
 from pathlib import Path
 import json
 import tempfile
+from unittest.mock import patch
 
 from agentplane.ssh import SshTarget, resolve_ssh_target, resolve_ssh_config_path
 
@@ -48,6 +49,23 @@ class SshTargetTests(unittest.TestCase):
         command = target.wrap_bash_stdin(["--flag", "value with spaces"])
 
         self.assertEqual("bash -s -- --flag 'value with spaces'", command)
+
+    def test_local_ssh_args_route_windows_hosts_through_wsl(self) -> None:
+        target = SshTarget(
+            alias="prod0-main",
+            config_path=Path("D:/Projects/AgentPlane/secrets/ssh/config"),
+            user="root",
+            os_family="linux",
+            environment="production",
+        )
+
+        with patch("agentplane.ssh.os.name", "nt"), patch.dict("agentplane.ssh.os.environ", {}, clear=True):
+            command = target.local_ssh_args_for_shell("hostname")
+
+        self.assertEqual("wsl.exe", command[0])
+        self.assertEqual("-e", command[1])
+        self.assertEqual("ssh", command[2])
+        self.assertIn("/mnt/d/Projects/AgentPlane/secrets/ssh/config", command)
 
     def test_non_root_target_wraps_remote_bash_stdin_with_sudo(self) -> None:
         target = SshTarget(

@@ -3,6 +3,7 @@ from __future__ import annotations
 import shlex
 import shutil
 import subprocess
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal, Mapping
@@ -164,26 +165,43 @@ class BackendRunner:
 
     def execute(self, plan: ExecutionPlan, *, bindings: ExecutionBindings | None = None) -> ExecutionResult:
         rendered = self.render(plan, bindings=bindings)
-        completed = subprocess.run(
-            list(rendered.argv),
-            cwd=self._local_cwd(rendered.cwd),
-            env=dict(rendered.env) if rendered.env else None,
-            input=rendered.stdin_text,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            capture_output=True,
-            check=False,
-            timeout=plan.timeout if plan.timeout > 0 else None,
-        )
+        binary_stdin = rendered.backend_type in {"ssh-linux", "windows-wsl"} and os.name == "nt" and rendered.stdin_text is not None
+        if binary_stdin:
+            completed = subprocess.run(
+                list(rendered.argv),
+                cwd=self._local_cwd(rendered.cwd),
+                env=dict(rendered.env) if rendered.env else None,
+                input=rendered.stdin_text.encode("utf-8"),
+                text=False,
+                capture_output=True,
+                check=False,
+                timeout=plan.timeout if plan.timeout > 0 else None,
+            )
+            stdout = completed.stdout.decode("utf-8", errors="replace") if isinstance(completed.stdout, bytes) else completed.stdout
+            stderr = completed.stderr.decode("utf-8", errors="replace") if isinstance(completed.stderr, bytes) else completed.stderr
+        else:
+            completed = subprocess.run(
+                list(rendered.argv),
+                cwd=self._local_cwd(rendered.cwd),
+                env=dict(rendered.env) if rendered.env else None,
+                input=rendered.stdin_text,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                capture_output=True,
+                check=False,
+                timeout=plan.timeout if plan.timeout > 0 else None,
+            )
+            stdout = completed.stdout
+            stderr = completed.stderr
         return ExecutionResult(
             backend_type=rendered.backend_type,
             argv=rendered.argv,
             display_command=rendered.display_command,
             cwd=rendered.cwd,
             returncode=completed.returncode,
-            stdout=completed.stdout,
-            stderr=completed.stderr,
+            stdout=stdout,
+            stderr=stderr,
             ok=completed.returncode == 0,
         )
 

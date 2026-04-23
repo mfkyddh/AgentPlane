@@ -100,7 +100,7 @@
       "data_dir": "/data/postgres/data"
     },
     "onepanel": {
-      "version": "v2.1.6",
+      "version": "v2.1.8",
       "mode": "host install",
       "data_dir": "/data/1panel",
       "panel_port": 2096,
@@ -323,7 +323,7 @@
     "历史 legacy 入口组件不属于该主机正式公网链路。"
   ],
   "object_ledgers": {
-    "generated_at": "2026-04-22T10:57:19.196981+00:00",
+    "generated_at": "2026-04-23T00:49:57.932935+00:00",
     "counts": {
       "websites": 2,
       "containers": 5,
@@ -346,8 +346,15 @@
       "panel": {
         "action": "verify",
         "result": "verified",
-        "op_id": "onepanel-panel-20260421T081054Z-7098d2d6",
-        "timestamp": "2026-04-21T08:10:54.184774+00:00",
+        "op_id": "onepanel-panel-20260423T004856Z-bf3b3475",
+        "timestamp": "2026-04-23T00:48:56.864599+00:00",
+        "dry_run": false
+      },
+      "cronjob": {
+        "action": "search",
+        "result": "queried",
+        "op_id": "onepanel-cronjob-20260423T002131Z-807ead67",
+        "timestamp": "2026-04-23T00:21:31.938681+00:00",
         "dry_run": false
       }
     }

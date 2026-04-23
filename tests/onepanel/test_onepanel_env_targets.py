@@ -82,6 +82,20 @@ class OnePanelEnvTargetsTests(unittest.TestCase):
         self.assertEqual("/mnt/d/Projects/AgentPlane/agentplane/scripts/onepanel/api_request.py", command[1])
         self.assertIn("/mnt/d/Projects/AgentPlane/secrets/hosts/wsl/onepanel/api.env", command)
 
+    def test_ssh_api_request_command_preserves_remote_posix_paths(self) -> None:
+        target = env_targets.TargetConfig(
+            name="prod0-main",
+            mode="ssh",
+            api_env_file=Path("/opt/agentplane/secrets/services/onepanel-api.env"),
+            api_request_script=Path("/opt/agentplane/agentplane/scripts/onepanel/api_request.py"),
+        )
+
+        command = env_targets.build_api_request_command(target, "GET", "/api/v2/core/settings/search")
+
+        self.assertEqual("python3", command[0])
+        self.assertEqual("/opt/agentplane/agentplane/scripts/onepanel/api_request.py", command[1])
+        self.assertIn("/opt/agentplane/secrets/services/onepanel-api.env", command)
+
     def test_resolve_remote_api_paths_uses_declared_agentplane_remote_root(self) -> None:
         target = env_targets.get_target("prod0-main")
         completed = subprocess.CompletedProcess(

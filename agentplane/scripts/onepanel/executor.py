@@ -34,7 +34,7 @@ class TargetExecutor:
             backend = self.target.linux_backend or default_linux_backend()
             result = run_command(backend.program_argv(*command))
         else:
-            result = run_command(self.target.build_ssh_target().ssh_args_for_argv(command))
+            result = run_command(self.target.build_ssh_target().local_ssh_args_for_argv(command))
 
         if result.returncode != 0:
             raise RuntimeError(result.stdout.strip() or result.stderr.strip() or f"API command failed: {method} {path}")
@@ -50,7 +50,7 @@ class TargetExecutor:
             backend = self.target.linux_backend or default_linux_backend()
             result = run_command(backend.shell_argv(command))
         else:
-            result = run_command(self.target.build_ssh_target().ssh_args_for_shell(command))
+            result = run_command(self.target.build_ssh_target().local_ssh_args_for_shell(command))
         if result.returncode != 0:
             raise RuntimeError(result.stdout.strip() or result.stderr.strip() or f"Shell command failed: {command}")
         return result.stdout.strip()

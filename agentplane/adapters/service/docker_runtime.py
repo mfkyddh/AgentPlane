@@ -5,8 +5,9 @@ import shlex
 from pathlib import Path
 from typing import Any
 
-from agentplane.adapters.service.common import run_shell_command, shell_command_spec, remote_repo_root
+from agentplane.adapters.service.common import copy_file_spec, run_shell_command, shell_command_spec, remote_repo_root
 from agentplane.domain.service.models import ServiceDefinition
+from agentplane.runtime.redaction import redact_execution_payload
 
 
 def _container_name(definition: ServiceDefinition, declared: dict[str, Any] | None) -> str:
@@ -23,7 +24,7 @@ def inspect_container(repo_root: Path, target: str, definition: ServiceDefinitio
         target,
         f"docker inspect {shlex.quote(container_name)} --format '{{{{json .}}}}'",
     )
-    payload: dict[str, Any] = {"probe": result, "container_name": container_name}
+    payload: dict[str, Any] = {"probe": redact_execution_payload(result), "container_name": container_name}
     if result["ok"]:
         stdout = str(result["stdout"]).strip()
         payload["live"] = json.loads(stdout) if stdout else {}
@@ -92,9 +93,21 @@ def plan_container_operation(repo_root: Path, target: str, definition: ServiceDe
     elif operation == "reconcile":
         repo_path = remote_repo_root(target, repo_root)
         target_alias = "wsl" if target == "wsl" else ("prod0" if target == "prod0-main" else "prod2")
-        commands = [
-            f"cd {repo_path}/infra/compose/{definition.name} && docker compose -f docker-compose.{target_alias}.yml up -d"
-        ]
+        compose_filename = f"docker-compose.{target_alias}.yml"
+        remote_compose_dir = f"{repo_path}/infra/compose/{definition.name}"
+        remote_compose_path = f"{remote_compose_dir}/{compose_filename}"
+        local_compose_path = repo_root / "infra" / "compose" / definition.name / compose_filename
+        commands = [f"mkdir -p {shlex.quote(remote_compose_dir)}"]
+        if target != "wsl":
+            commands.append(
+                f"if [ ! -e {shlex.quote(f'{repo_path}/secrets')} ] && [ -d /opt/env_ubuntu/secrets ]; then ln -s /opt/env_ubuntu/secrets {shlex.quote(f'{repo_path}/secrets')}; fi"
+            )
+        commands.append(f"cd {shlex.quote(remote_compose_dir)} && docker compose -f {shlex.quote(compose_filename)} up -d")
+        specs = [shell_command_spec(repo_root, target, command) for command in commands[:-1]]
+        if local_compose_path.is_file():
+            specs.append(copy_file_spec(repo_root, target, local_compose_path, remote_compose_path))
+        specs.append(shell_command_spec(repo_root, target, commands[-1]))
+        return [{"argv": spec.argv, "display": spec.display} for spec in specs]
     elif operation == "reload" and definition.name == "onepanel_openresty":
         commands = [f"docker exec {shlex.quote(container_name)} nginx -t && docker exec {shlex.quote(container_name)} nginx -s reload"]
     else:

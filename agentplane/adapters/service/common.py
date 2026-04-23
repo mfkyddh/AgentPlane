@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import shlex
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -27,7 +28,18 @@ def shell_command_spec(repo_root: Path, target: str, command: str) -> CommandSpe
             return CommandSpec(argv=["wsl.exe", "-e", "bash", "-lc", command], display=f"wsl.exe -e bash -lc {command}")
         return CommandSpec(argv=["bash", "-lc", command], display=command)
     ssh_target = resolve_ssh_target(repo_root, target)
-    return CommandSpec(argv=ssh_target.ssh_args_for_shell(command), display=ssh_target.display_ssh_command(command))
+    return CommandSpec(argv=ssh_target.local_ssh_args_for_shell(command), display=ssh_target.display_ssh_command(command))
+
+
+def copy_file_spec(repo_root: Path, target: str, local_path: Path, remote_path: str) -> CommandSpec:
+    if target == "wsl":
+        rendered_local = windows_path_to_wsl_posix(local_path) or str(local_path)
+        command = f"install -D {shlex.quote(rendered_local)} {shlex.quote(remote_path)}"
+        if os.name == "nt":
+            return CommandSpec(argv=["wsl.exe", "-e", "bash", "-lc", command], display=f"wsl.exe -e bash -lc {command}")
+        return CommandSpec(argv=["bash", "-lc", command], display=command)
+    ssh_target = resolve_ssh_target(repo_root, target)
+    return CommandSpec(argv=ssh_target.local_scp_args(str(local_path), remote_path), display=ssh_target.display_scp_command(str(local_path), remote_path))
 
 
 def run_shell_command(repo_root: Path, target: str, command: str) -> dict[str, object]:

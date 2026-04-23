@@ -104,7 +104,7 @@ def _execute_step(*, argv: list[str], display: str) -> dict[str, Any]:
 def _remote_step(repo_root: Path, target: str, command: str) -> dict[str, Any]:
     ssh_target = resolve_ssh_target(repo_root, target)
     return _execute_step(
-        argv=ssh_target.ssh_args_for_shell(command),
+        argv=ssh_target.local_ssh_args_for_shell(command),
         display=ssh_target.display_ssh_command(command),
     )
 
@@ -209,6 +209,8 @@ def _network_state(repo_root: Path, target: str, declaration: dict[str, Any]) ->
         problems.append("subnet_mismatch")
     if not docker_gateway_matches:
         problems.append("docker_gateway_mismatch")
+    if missing_required_containers:
+        problems.append("required_containers_missing")
 
     if bridge_interface:
         addr_step = _remote_step(repo_root, target, f"ip -json -4 addr show dev {shlex.quote(bridge_interface)}")

@@ -6,8 +6,10 @@ import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import patch
 
 from agentplane.cli.inventory import generate_inventory_snapshot
+from agentplane.domain import networks as network_domain
 from agentplane.runtime.host_profile import HostProfile
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -22,6 +24,8 @@ def run_cli(
     if env_overrides:
         env = os.environ.copy()
         env.update(env_overrides)
+        if "FAKE_CMD_LOG" in env_overrides:
+            env.setdefault("AGENTPLANE_DISABLE_WSL_SSH", "1")
     return subprocess.run(
         [sys.executable, "-m", "agentplane.cli", *args],
         cwd=cwd or REPO_ROOT,
@@ -50,7 +54,7 @@ state_dir="${FAKE_NETWORK_STATE_DIR:?}"
 bridge="br-66f7da1be943"
 if [[ "$cmd" == *"docker network inspect zqf_network --format"* ]]; then
   cat <<'JSON'
-{"Name":"zqf_network","Id":"66f7da1be943bc160d7df638561fe15ccc1ceea6912e9c753dd40d087e23d8b3","Driver":"bridge","IPAM":{"Config":[{"Subnet":"172.19.0.0/16","Gateway":"172.19.0.1"}]}}
+{"Name":"zqf_network","Id":"66f7da1be943bc160d7df638561fe15ccc1ceea6912e9c753dd40d087e23d8b3","Driver":"bridge","IPAM":{"Config":[{"Subnet":"172.19.0.0/16","Gateway":"172.19.0.1"}]},"Containers":{"sub2api":{"Name":"sub2api-prod"}}}
 JSON
   exit 0
 fi
@@ -318,6 +322,65 @@ class HostCliTests(unittest.TestCase):
             self.assertEqual("network.audit", payload["action"])
             self.assertEqual("prod2-main", payload["target"])
             self.assertFalse(payload["payload"]["ok"])
+
+    def test_network_audit_fails_when_required_container_is_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            inventory_dir = root / "inventory" / "servers" / "prod2-main"
+            inventory_dir.mkdir(parents=True, exist_ok=True)
+            inventory_dir.joinpath("inventory.json").write_text(
+                json.dumps(
+                    {
+                        "ssh": {"aliases": ["prod2-main"], "user": "root"},
+                        "managed_bridge_networks": [
+                            {
+                                "name": "zqf_network",
+                                "driver": "bridge",
+                                "subnet": "172.19.0.0/16",
+                                "gateway_ip": "172.19.0.1/16",
+                                "required_for": ["missing-prod"],
+                            }
+                        ],
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+
+            def fake_remote_step(repo_root: Path, target: str, command: str) -> dict[str, object]:
+                if "docker network inspect zqf_network --format" in command:
+                    return {
+                        "ok": True,
+                        "stdout": json.dumps(
+                            {
+                                "Name": "zqf_network",
+                                "Id": "66f7da1be943bc160d7df638561fe15ccc1ceea6912e9c753dd40d087e23d8b3",
+                                "Driver": "bridge",
+                                "IPAM": {"Config": [{"Subnet": "172.19.0.0/16", "Gateway": "172.19.0.1"}]},
+                                "Containers": {"sub2api": {"Name": "sub2api-prod"}},
+                            }
+                        ),
+                    }
+                if "ip -json -4 addr show dev br-66f7da1be943" in command:
+                    return {
+                        "ok": True,
+                        "stdout": '[{"ifname":"br-66f7da1be943","addr_info":[{"local":"172.19.0.1","prefixlen":16}]}]',
+                    }
+                if "ip -json route show 172.19.0.0/16" in command:
+                    return {
+                        "ok": True,
+                        "stdout": '[{"dst":"172.19.0.0/16","dev":"br-66f7da1be943","prefsrc":"172.19.0.1"}]',
+                    }
+                return {"ok": False, "stdout": ""}
+
+            with patch("agentplane.domain.networks._remote_step", side_effect=fake_remote_step):
+                payload = network_domain.audit_managed_bridge_networks(root, "prod2-main")
+
+            network = payload["networks"][0]
+            self.assertFalse(payload["ok"])
+            self.assertEqual(["missing-prod"], network["missing_required_containers"])
+            self.assertIn("required_containers_missing", network["problems"])
 
     def test_host_network_ensure_uses_formal_host_shape_without_compat_source(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

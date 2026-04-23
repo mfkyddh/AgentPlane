@@ -7,6 +7,8 @@ from unittest.mock import patch
 
 import yaml
 
+from agentplane.adapters.service import docker_runtime
+from agentplane.domain.service.models import ServiceDefinition
 from tests.support.service_cli import (
     _FakeCloudflareClient,
     run_cli,
@@ -101,6 +103,37 @@ class ServiceCliTests(unittest.TestCase):
             self.assertEqual("sampleapi", payload["payload"]["service"]["name"])
             self.assertEqual("compose", payload["payload"]["service"]["control_plane"])
             self.assertEqual(["restart", "reconcile"], payload["payload"]["service"]["supported_operations"])
+
+    def test_service_plan_reconcile_syncs_tracked_compose_asset(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_inventory(root)
+            compose_file = root / "infra" / "compose" / "sampleapi" / "docker-compose.prod0.yml"
+            compose_file.parent.mkdir(parents=True, exist_ok=True)
+            compose_file.write_text("services:\n  sampleapi:\n    image: ghcr.io/example/sampleapi:2026.04\n", encoding="utf-8")
+
+            result = run_cli(
+                "service",
+                "plan",
+                "--target",
+                "prod0-main",
+                "--name",
+                "sampleapi",
+                "--operation",
+                "reconcile",
+                "--repo-root",
+                str(root),
+            )
+
+            self.assertEqual(result.returncode, 0, msg=result.stderr)
+            payload = json.loads(result.stdout)
+            steps = payload["payload"]["steps"]
+            self.assertEqual(4, len(steps))
+            self.assertIn("mkdir -p /opt/agentplane/infra/compose/sampleapi", steps[0]["display"])
+            self.assertIn("ln -s /opt/env_ubuntu/secrets /opt/agentplane/secrets", steps[1]["display"])
+            self.assertIn("scp", steps[2]["argv"])
+            self.assertIn("docker-compose.prod0.yml", steps[2]["display"])
+            self.assertIn("docker compose -f docker-compose.prod0.yml up -d", steps[3]["display"])
 
     def test_service_get_and_verify_relay_trojan_contract(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -306,6 +339,49 @@ class ServiceCliTests(unittest.TestCase):
             self.assertFalse(payload["payload"]["projection_handoff"]["required"])
             self.assertEqual("projection", payload["payload"]["projection_handoff"]["steps"][0]["command"])
             self.assertEqual("ledger.refresh", payload["payload"]["projection_handoff"]["steps"][0]["action"])
+
+    def test_container_service_verify_redacts_inspect_stdout_evidence(self) -> None:
+        definition = ServiceDefinition(
+            name="minio",
+            runtime_kind="docker",
+            control_plane="compose",
+            supported_operations=("restart",),
+            supported_targets=("prod0-main",),
+        )
+        inspect_payload = {
+            "Name": "minio-prod",
+            "Config": {
+                "Image": "minio/minio:RELEASE.2025-04-22T22-12-26Z",
+                "Env": ["MINIO_ROOT_PASSWORD=super-secret", "SERVER_PORT=9000"],
+            },
+            "State": {"Status": "running", "Running": True},
+            "HostConfig": {"NetworkMode": "zqf_network"},
+        }
+        probe = {
+            "argv": ["ssh", "prod0-main", "docker inspect minio-prod"],
+            "display": "ssh prod0-main docker inspect minio-prod",
+            "returncode": 0,
+            "stdout": json.dumps(inspect_payload),
+            "stderr": "",
+            "ok": True,
+        }
+
+        with patch("agentplane.adapters.service.docker_runtime.run_shell_command", return_value=probe):
+            payload = docker_runtime.verify_container_service(
+                Path("."),
+                "prod0-main",
+                definition,
+                {
+                    "container_name": "minio-prod",
+                    "image": "minio/minio:RELEASE.2025-04-22T22-12-26Z",
+                },
+            )
+
+        stdout = payload["evidence"][0]["stdout"]
+        self.assertTrue(payload["ok"])
+        self.assertNotIn("super-secret", stdout)
+        self.assertIn("MINIO_ROOT_PASSWORD=<redacted>", stdout)
+        self.assertIn("SERVER_PORT=9000", stdout)
 
     def test_service_plan_rejects_unsupported_operation(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import shlex
+import os
 from pathlib import Path
 
 from agentplane.runtime.execution import ExecutionBindings, ExecutionPlan, RenderedExecution, env_prefixed_command, require_local_executable
@@ -18,10 +19,10 @@ class SshLinuxBackend:
         stdin_text = bindings.resolve_input(plan.input_refs)
 
         if transport == "copy-to-remote":
-            require_local_executable("scp")
+            require_local_executable("wsl.exe" if os.name == "nt" else "scp")
             local_path = self._require_path(bindings.metadata.get("local_path"), field="local_path")
             remote_path = self._require_str(bindings.metadata.get("remote_path"), field="remote_path")
-            argv = ("scp", "-F", str(ssh_target.config_path), str(local_path), ssh_target.scp_destination(remote_path))
+            argv = tuple(ssh_target.local_scp_args(str(local_path), remote_path))
             display = ssh_target.display_scp_command(str(local_path), remote_path)
             metadata = {
                 "transport": transport,
@@ -40,12 +41,12 @@ class SshLinuxBackend:
                 metadata=metadata,
             )
 
-        require_local_executable("ssh")
+        require_local_executable("wsl.exe" if os.name == "nt" else "ssh")
         cwd = bindings.resolve_cwd(plan.cwd_ref)
         env = bindings.resolve_env(plan.env_refs)
         if transport == "bash-stdin":
             remote_args = list(plan.argv)
-            argv = tuple(ssh_target.ssh_args_for_bash_stdin(remote_args))
+            argv = tuple(ssh_target.local_ssh_args_for_bash_stdin(remote_args))
             remote_command = ssh_target.wrap_bash_stdin(remote_args)
             display = ssh_target.display_ssh_bash_stdin(remote_args)
         else:
@@ -56,7 +57,7 @@ class SshLinuxBackend:
                 remote_command = env_prefixed_command(plan.argv, env)
             if cwd is not None:
                 remote_command = f"cd {shlex.quote(str(cwd))} && {remote_command}"
-            argv = tuple(ssh_target.ssh_args_for_shell(remote_command))
+            argv = tuple(ssh_target.local_ssh_args_for_shell(remote_command))
             display = ssh_target.display_ssh_command(remote_command)
         metadata = {
             "transport": transport,

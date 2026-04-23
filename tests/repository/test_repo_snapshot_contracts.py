@@ -11,10 +11,10 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 EXPECTED_MANAGED_SERVICES = {
     "sub2api": {
         "wsl": "infra/compose/sub2api/docker-compose.wsl.yml",
-        "prod": [
-            "infra/compose/sub2api/docker-compose.prod0.yml",
-            "infra/compose/sub2api/docker-compose.prod2.yml",
-        ],
+        "prod": {
+            "infra/compose/sub2api/docker-compose.prod0.yml": "ghcr.io/wei-shaw/sub2api",
+            "infra/compose/sub2api/docker-compose.prod2.yml": "sub2api-prod",
+        },
     },
 }
 EXPECTED_COMPAT_ENTRIES = {
@@ -178,10 +178,10 @@ class RepoSnapshotContractsTests(unittest.TestCase):
         self.assertIn("`inventory.service_key`", text)
         self.assertIn("必须与 `app_id` 完全相等", text)
         self.assertIn("`image_family`", text)
-        self.assertIn("正式 app 交付镜像 family 固定为 `<app_id>-prod`", text)
+        self.assertIn("默认正式 app 交付镜像 family 固定为 `<app_id>-prod`", text)
         self.assertIn("必须等于 `<app_id>-prod`", text)
         self.assertIn("必须等于 `<app_id>-dev`", text)
-        self.assertIn("| `sub2api` | `infra/compose/sub2api` | `sub2api-prod` | `sub2api-prod` | `sub2api-dev` | `sub2api` |", text)
+        self.assertIn("| `sub2api` | `infra/compose/sub2api` | `wsl/prod0-main: ghcr.io/wei-shaw/sub2api`; `prod2-main: sub2api-prod` | `sub2api-prod` | `sub2api-dev` | `sub2api` |", text)
         self.assertNotIn("| `newapi` | `infra/compose/newapi` | `newapi-prod` | `newapi-prod` | `newapi-dev` | `newapi` |", text)
         self.assertNotIn(
             "| `sub2apipay` | `infra/compose/sub2apipay` | `sub2apipay-prod` | `sub2apipay-prod` | `sub2apipay-dev` | `sub2apipay` |",
@@ -205,13 +205,13 @@ class RepoSnapshotContractsTests(unittest.TestCase):
                 self.assertEqual("ghcr.io/wei-shaw/sub2api", image_family(wsl_service["image"]))
                 self.assertEqual("always", wsl_service["pull_policy"])
 
-            for relative_path in paths["prod"]:
+            for relative_path, expected_image_family in paths["prod"].items():
                 compose = load_compose(REPO_ROOT / relative_path)
                 service = compose["services"][app_id]
                 with self.subTest(app_id=app_id, path=relative_path, check="prod-container"):
                     self.assertEqual(f"{app_id}-prod", service["container_name"])
                 with self.subTest(app_id=app_id, path=relative_path, check="image-family"):
-                    self.assertEqual(f"{app_id}-prod", image_family(service["image"]))
+                    self.assertEqual(expected_image_family, image_family(service["image"]))
 
     def test_compat_retirement_ledger_rows_are_contractual(self) -> None:
         rows = ledger_rows()

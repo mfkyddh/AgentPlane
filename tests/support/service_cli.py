@@ -38,6 +38,8 @@ def run_cli(*args: str, cwd: Path | None = None, env_overrides: dict[str, str] |
     if env_overrides:
         env = dict(env or os.environ.copy())
         env.update(env_overrides)
+        if "FAKE_CMD_LOG" in env_overrides:
+            env.setdefault("AGENTPLANE_DISABLE_WSL_SSH", "1")
     return subprocess.run(
         [sys.executable, "-m", "agentplane.cli", *args],
         cwd=cwd or REPO_ROOT,

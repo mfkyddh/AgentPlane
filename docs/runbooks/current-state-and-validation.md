@@ -13,7 +13,7 @@
 | --- | --- | --- |
 | 控制面源码根 | `<repo-root>` | 用户 fork / clone 后的唯一源码 checkout。 |
 | WSL backend 工作目录 | resolver 派生 | Windows 宿主通过 WSL bridge 访问同一 checkout；Linux/macOS 直接使用本地源码根。 |
-| 官方镜像应用 | `sub2api` | WSL 先从官方 `ghcr.io/wei-shaw/sub2api:latest` 拉取运行；生产切换另开窗口。 |
+| 官方镜像应用 | `sub2api` | WSL 与 prod0-main 从官方 `ghcr.io/wei-shaw/sub2api:latest` 拉取运行；prod2-main 仍保留当前生产模板。 |
 
 ### 本轮重点样板
 
@@ -21,7 +21,7 @@
 | --- | --- | --- |
 | 本地/开发面 | `wsl` | 本地 fixture、回归验证、`sub2api-dev` 运行面。 |
 | 生产面 | `prod0-main` | 0 号生产机；`AgentPlane compose + 1Panel/OpenResty` 联合控制面。 |
-| 应用层 | `sub2api` | 当前唯一保留的应用层运行面；本轮 WSL 改为官方镜像部署。 |
+| 应用层 | `sub2api` | 当前唯一保留的应用层运行面；WSL 与 prod0-main 使用官方镜像部署。 |
 
 ## 已验证结论
 
@@ -42,7 +42,7 @@
 ### prod0-main
 
 - `host remote bash prod0-main` 的 Windows 入口与实际 SSH backend 都可用。
-- `sub2api` 在 `prod0-main` 上仍保持现有生产运行面；官方镜像切换后续单独执行。
+- `sub2api` 在 `prod0-main` 上的部署模板已切到官方镜像 `ghcr.io/wei-shaw/sub2api:latest`，并启用 `pull_policy: always`。
 - 本轮验证确认了两条健康链路：
   - 宿主机回环：`http://127.0.0.1:18080/health`
   - 公网入口：`https://token.zzzai.cloud:8443/health`

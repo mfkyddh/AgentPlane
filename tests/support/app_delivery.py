@@ -52,6 +52,8 @@ def run_cli(*args: str, cwd: Path | None = None, env_overrides: dict[str, str] |
     if env_overrides:
         env = dict(env or os.environ.copy())
         env.update(env_overrides)
+        if "FAKE_CMD_LOG" in env_overrides:
+            env.setdefault("AGENTPLANE_DISABLE_WSL_SSH", "1")
     return subprocess.run(
         [sys.executable, "-m", "agentplane.cli", *args],
         cwd=cwd or REPO_ROOT,
@@ -992,7 +994,7 @@ state_dir="${FAKE_NETWORK_STATE_DIR:?}"
 bridge="br-66f7da1be943"
 if [[ "$cmd" == *"docker network inspect zqf_network --format"* ]]; then
   cat <<'JSON'
-{"Name":"zqf_network","Id":"66f7da1be943bc160d7df638561fe15ccc1ceea6912e9c753dd40d087e23d8b3","Driver":"bridge","IPAM":{"Config":[{"Subnet":"172.19.0.0/16","Gateway":"172.19.0.1"}]}}
+{"Name":"zqf_network","Id":"66f7da1be943bc160d7df638561fe15ccc1ceea6912e9c753dd40d087e23d8b3","Driver":"bridge","IPAM":{"Config":[{"Subnet":"172.19.0.0/16","Gateway":"172.19.0.1"}]},"Containers":{"sub2api":{"Name":"sub2api-prod"}}}
 JSON
   exit 0
 fi

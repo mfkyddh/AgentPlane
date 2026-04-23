@@ -411,7 +411,7 @@ def _systemd_transition_step(repo_root: Path, *, target: str, operate: str, roll
         command = f"systemctl enable --now {service_name} || true"
     else:
         raise ValueError(f"不支持的 systemd 过渡动作: {operate}")
-    return ssh_target.ssh_args_for_shell(command), ssh_target.display_ssh_command(command)
+    return ssh_target.local_ssh_args_for_shell(command), ssh_target.display_ssh_command(command)
 
 
 def _control_plane_transition_step(
@@ -1519,10 +1519,10 @@ def ship_image(contract: dict[str, Any], *, repo_root: Path, target: str, image_
     result = _run(["docker", "save", "-o", str(archive_path), effective_image])
     if result.returncode != 0:
         raise ValueError(result.stdout or result.stderr or "docker save 失败")
-    result = _run(["scp", "-F", str(ssh_target.config_path), str(archive_path), ssh_target.scp_destination(f"/tmp/{archive_path.name}")])
+    result = _run(ssh_target.local_scp_args(str(archive_path), f"/tmp/{archive_path.name}"))
     if result.returncode != 0:
         raise ValueError(result.stdout or result.stderr or "scp 镜像失败")
-    result = _run(ssh_target.ssh_args_for_shell(f"docker load -i /tmp/{archive_path.name}"))
+    result = _run(ssh_target.local_ssh_args_for_shell(f"docker load -i /tmp/{archive_path.name}"))
     if result.returncode != 0:
         raise ValueError(result.stdout or result.stderr or "远端 docker load 失败")
     operation = _record_app_operation(
@@ -1673,7 +1673,7 @@ def deploy_app(
     rendered_compose.write_text(str(rendered["compose"]), encoding="utf-8")
     steps = [
         (
-            ssh_target.ssh_args_for_shell(
+            ssh_target.local_ssh_args_for_shell(
                 f"mkdir -p /opt/agentplane/infra/compose/{contract['app_id']} {remote_env_parent}"
             ),
             ssh_target.display_ssh_command(
@@ -1681,15 +1681,15 @@ def deploy_app(
             ),
         ),
         (
-            ["scp", "-F", str(ssh_target.config_path), str(rendered_compose), ssh_target.scp_destination(remote_compose)],
+            ssh_target.local_scp_args(str(rendered_compose), remote_compose),
             ssh_target.display_scp_command(str(rendered_compose), remote_compose),
         ),
         (
-            ["scp", "-F", str(ssh_target.config_path), str(env_path), ssh_target.scp_destination(f"/tmp/{env_path.name}")],
+            ssh_target.local_scp_args(str(env_path), f"/tmp/{env_path.name}"),
             ssh_target.display_scp_command(str(env_path), f"/tmp/{env_path.name}"),
         ),
         (
-            ssh_target.ssh_args_for_shell(f"install -Dm600 /tmp/{env_path.name} {remote_env} && rm -f /tmp/{env_path.name}"),
+            ssh_target.local_ssh_args_for_shell(f"install -Dm600 /tmp/{env_path.name} {remote_env} && rm -f /tmp/{env_path.name}"),
             ssh_target.display_ssh_command(f"install -Dm600 /tmp/{env_path.name} {remote_env} && rm -f /tmp/{env_path.name}"),
         ),
     ]
@@ -1698,7 +1698,7 @@ def deploy_app(
         steps.append(transition_step)
     steps.append(
         (
-            ssh_target.ssh_args_for_shell(
+            ssh_target.local_ssh_args_for_shell(
                 f"cd /opt/agentplane/infra/compose/{contract['app_id']} && docker compose -f {remote_compose_name} up -d --pull never"
             ),
             ssh_target.display_ssh_command(
@@ -1814,11 +1814,11 @@ def verify_app(contract: dict[str, Any], *, repo_root: Path, target: str, dry_ru
     network_preflight = _production_network_preflight(repo_root, target)
     origin_checks = [
         _execute_step(
-            argv=ssh_target.ssh_args_for_shell(f"docker inspect {container_name}"),
+            argv=ssh_target.local_ssh_args_for_shell(f"docker inspect {container_name}"),
             display=ssh_target.display_ssh_command(f"docker inspect {container_name}"),
         ),
         _execute_step(
-            argv=ssh_target.ssh_args_for_shell(origin_health_wait),
+            argv=ssh_target.local_ssh_args_for_shell(origin_health_wait),
             display=ssh_target.display_ssh_command(origin_health_wait),
         ),
     ]
@@ -1925,7 +1925,7 @@ def rollback_app(contract: dict[str, Any], *, repo_root: Path, target: str, dry_
         }
     steps = [
         (
-            ssh_target.ssh_args_for_shell(f"cd /opt/agentplane/infra/compose/{contract['app_id']} && docker compose -f {_remote_compose_filename(target)} down || true"),
+            ssh_target.local_ssh_args_for_shell(f"cd /opt/agentplane/infra/compose/{contract['app_id']} && docker compose -f {_remote_compose_filename(target)} down || true"),
             ssh_target.display_ssh_command(f"cd /opt/agentplane/infra/compose/{contract['app_id']} && docker compose -f {_remote_compose_filename(target)} down || true"),
         ),
     ]
