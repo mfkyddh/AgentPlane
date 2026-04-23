@@ -6,7 +6,7 @@
 
 ---
 
-## 📌 必读摘要（先读这 8 条）
+## 📌 必读摘要（先读这 10 条）
 
 以下规则优先级最高，每次工作时都应首先检查：
 
@@ -16,6 +16,8 @@
 | 2 | **Secrets 绝不提交**：敏感信息只放 `secrets/` 目录 | 🔴 | 防止密码泄露到 Git 历史 |
 | 3 | **单份源码**：Windows 和 WSL 共用同一个仓库目录 | 🔴 | 避免配置分叉、状态不一致 |
 | 4 | **单虚拟环境**：只使用根目录 `.venv`，不创建 `.venv-win` 等变种 | 🔴 | 保持环境一致性 |
+| 5 | **原子提交**：每个逻辑变更单元独立提交，禁止大批量混提交 | 🔴 | 便于 bisect、revert、cherry-pick |
+| 6 | **Conventional Commits**：提交消息必须使用 `type(scope): description` 格式 | 🔴 | 可按类型过滤，自动生成 changelog |
 | 5 | **先计划后执行**：高风险操作必须有 `plan` 阶段 | 🔴 | 避免误操作造成损失 |
 | 6 | **执行后必验证**：每次变更都要运行最小验证 | 🟡 | 确保变更生效且无副作用 |
 | 7 | **用 `pwsh` 而非 `cmd`**：Windows 上默认用 PowerShell | 🟡 | 统一命令语法、兼容性好 |
@@ -122,12 +124,135 @@ agentplane <domain> <surface> <verb> [flags]
 
 ### Git 规范
 
+#### 提交原子性
+
+| # | 规则 | 级别 | 原因 |
+|---|------|------|------|
+| 1 | 每个逻辑变更单元必须独立提交 | 🔴 | 便于 bisect、revert、cherry-pick |
+| 2 | 暂存文件数超过 15 个时，必须评估是否拆分为多个提交 | 🔴 | 大批量混提交 = 追踪困难 |
+| 3 | 禁止"先全做完再一次性提交"的工作模式 | 🔴 | 变更越大，出错概率越高，回退成本越高 |
+| 4 | 无关变更不得混入同一提交（如：修 bug 顺手改格式） | 🔴 | 格式变更会掩盖实质变更，干扰 review 和 bisect |
+
+**逻辑变更单元**：一个不可再分的最小有意义变更。例如：
+- ✅ 重命名一个域（CLI + domain + tests + ledgers + skills + 文档引用）
+- ✅ 修复一个 bug 及其对应的测试
+- ✅ 新增一个 CLI 子命令及其文档
+- ❌ 只改了一个文件的一行（可合并到同逻辑单元的提交中）
+- ❌ 修 bug 时顺手格式化了其他无关文件
+
+#### 提交消息（Commit Message）
+
+所有提交消息必须遵循 [Conventional Commits](https://www.conventionalcommits.org/) 格式：
+
+```
+<type>(<scope>): <description>
+
+[可选 body：补充说明]
+
+[可选 footer：关联信息]
+```
+
+**Type 枚举**（只允许以下值）：
+
+| type | 用途 | 示例 |
+|------|------|------|
+| `feat` | 新功能 | `feat(cli): add infra automation subcommand` |
+| `fix` | 修复 bug | `fix(projection): resolve path resolution on Windows` |
+| `refactor` | 重构（不改行为） | `refactor(domain): rename host to infra` |
+| `docs` | 仅文档变更 | `docs(architecture): update control-plane spec` |
+| `test` | 仅测试变更 | `test(infra): add live gate integration tests` |
+| `chore` | 构建/工具/配置 | `chore: unify line endings via .gitattributes` |
+| `style` | 格式调整（不影响逻辑） | `style: remove trailing whitespace` |
+| `perf` | 性能优化 | `perf(ledger): cache inventory lookups` |
+
+**Scope 枚举**（按项目实际模块）：
+
+| scope | 对应模块 |
+|-------|---------|
+| `cli` | `agentplane/cli/` |
+| `domain` | `agentplane/domain/` |
+| `adapters` | `agentplane/adapters/` |
+| `providers` | `agentplane/providers/` |
+| `runtime` | `agentplane/runtime/` |
+| `scripts` | `agentplane/scripts/` |
+| `infra` | 基础设施相关 |
+| `ingress` | 入口治理相关 |
+| `app` | 应用生命周期相关 |
+| `plugin` | `plugins/` |
+
+**Description 规则**：
+
+| # | 规则 | 级别 | 原因 |
+|---|------|------|------|
+| 1 | 使用祈使句、现在时（`add` 不用 `added`，`fix` 不用 `fixed`） | 🔴 | 与 Git 自身风格一致（`Merge branch` 而非 `Merged branch`） |
+| 2 | 首字母小写，结尾不加句号 | 🟡 | 保持简洁，避免与正文混淆 |
+| 3 | 不超过 72 个字符 | 🔴 | `git log --oneline` 和 GitHub PR 列表有截断 |
+| 4 | 说明"做了什么"而非"怎么做的" | 🟡 | `rename host to infra` > `change all references from host to infra` |
+
+**Body 规则**（可选但推荐）：
+
+| # | 规则 | 级别 | 原因 |
+|---|------|------|------|
+| 1 | 超过 3 个文件或涉及跨模块变更时，必须有 body | 🔴 | 一行说不清"为什么" |
+| 2 | Body 用条目式列出具体变更 | 🟡 | 可读性优于散文 |
+| 3 | Body 解释"为什么"而非"做了什么"（做了什么看 diff） | 🟡 | diff 已经说明了 what |
+
+**正确示例**：
+```
+refactor(domain): rename host to infra
+
+- Replace 'host' domain with 'infra' across CLI, domain logic,
+  tests, ledgers, and skills
+- Update all documentation and plugin references
+- Move projection/runtime_env into app/projection package
+
+'host' is ambiguous with /etc/hosts and SSH host keys.
+'infra' better reflects infrastructure management scope.
+```
+
+**错误示例**：
+```
+❌ refactor: rename host->infra and website->ingress domains
+   （两个独立重命名混在一个提交）
+
+❌ Fixed the bug where paths were wrong on Windows
+   （非祈使句，无 type 前缀）
+
+❌ feat: update stuff
+   （描述无信息量）
+```
+
+#### 分支策略
+
+| # | 规则 | 级别 | 原因 |
+|---|------|------|------|
+| 1 | `main` 分支始终可部署 | 🔴 | 主线必须稳定 |
+| 2 | 功能开发使用 `feat/<简述>` 分支 | 🟡 | 隔离开发，便于 review |
+| 3 | Bug 修复使用 `fix/<简述>` 分支 | 🟡 | 同上 |
+| 4 | 重构使用 `refactor/<简述>` 分支 | 🟡 | 同上 |
+| 5 | 合并到 `main` 前必须通过测试 | 🔴 | 不合入已知故障 |
+| 6 | 禁止 `push --force` 到 `main` | 🔴 | 不可逆操作，会覆盖他人工作 |
+
+> 🟢 **当前阶段**：单人项目，直接在 `main` 上提交是可接受的。当项目进入多人协作或有 CI 后，应切换到分支 + 合并模式。
+
+#### 换行符与编码
+
+| # | 规则 | 级别 | 原因 |
+|---|------|------|------|
+| 1 | `.gitattributes` 为换行符唯一权威，仓库级 `core.autocrlf=false` | 🔴 | Windows+WSL 共用 checkout 必须统一 LF |
+| 2 | 所有文本文件入库 LF（`* text=auto eol=lf`） | 🔴 | 跨平台一致性 |
+| 3 | 仅 `*.bat` / `*.cmd` 例外允许 CRLF | 🟡 | Windows 原生脚本必须 CRLF |
+
+#### 仓库配置
+
 | # | 规则 | 级别 | 原因 |
 |---|------|------|------|
 | 1 | 提交前确保已配置 `user.name` 和 `user.email` | 🟡 | 避免匿名提交 |
 | 2 | 避免并行写入 Git 配置文件 | 🟢 | 防止配置冲突 |
 | 3 | AgentPlane 管理的应用仓库，Git worktree 必须放在 `<repo>/.worktrees/` | 🟡 | 统一存放位置 |
 | 4 | 创建 worktree 前，应用仓库的 `.gitignore` 必须已忽略 `.worktrees/` | 🔴 | 防止 worktree 被误提交 |
+| 5 | `secrets/` 必须在 `.gitignore` 中 | 🔴 | 防止敏感信息泄露到 Git 历史 |
+| 6 | 提交前检查 `git diff --cached`，确认无意外文件混入 | 🟡 | 最后一道防线 |
 
 ---
 
@@ -190,6 +315,11 @@ agentplane <domain> <surface> <verb> [flags]
 | 直接设置 `UV_PROJECT_ENVIRONMENT` 为 `.venv-win` | 破坏单环境约定 | 让 `uv` 自动使用 `.venv` |
 | 在共享文档中硬编码 SSH 别名 | 环境特定信息会泄露或过时 | 从 `secrets/ssh/config` 读取 |
 | 只更新文档、不更新 ledger 或 inventory | 台账与实际状态脱节 | 执行 → 验证 → 刷新 ledger → 同步文档 |
+| 大批量变更一次性提交 | 无法 revert、bisect、cherry-pick 单个逻辑单元 | 按逻辑变更单元拆分提交 |
+| Commit Message 无 type 前缀 | 无法按类型过滤（如只看 bug 修复） | 使用 Conventional Commits 格式 |
+| Commit Message 描述"怎么做的" | diff 已经说明了 what，浪费信息位 | 描述"做了什么"和"为什么" |
+| 格式调整混入功能变更 | 格式 diff 噪音掩盖实质变更，干扰 review | 格式调整独立提交（type=`style`） |
+| `git push --force` 到 main | 不可逆，会覆盖他人工作 | 永远不要 force push 到 main |
 
 ---
 
