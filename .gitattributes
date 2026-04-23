@@ -1,4 +1,14 @@
+# 全局兜底：所有文本文件入库 LF、出库 LF
+# Windows+WSL 共用 checkout，工作区必须统一 LF
+* text=auto eol=lf
+
+# Windows 原生脚本需要 CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# 以下规则已由全局兜底覆盖，显式声明便于阅读
 *.sh text eol=lf
+*.py text eol=lf
 *.yml text eol=lf
 *.yaml text eol=lf
 *.toml text eol=lf
