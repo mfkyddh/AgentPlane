@@ -4,7 +4,7 @@ description: Generated plugin skill group for firewall; routes to AgentPlane CLI
 generated_from: .codex/skills/catalog.yaml
 group: firewall
 domains:
-  - host
+  - infra
 source_skills:
   - onepanel-firewall-ops
 ---
@@ -17,4 +17,4 @@ This plugin group is a thin distribution layer over the repository-owned skills 
 
 - Source repo skills: `onepanel-firewall-ops`
 - Primary domains: `infra`
-- Stable entrypoint: `agentplane onepanel --env <target> ... --json`
+- Stable entrypoint: `uv run python -m agentplane.cli onepanel --env <target> ... --json`

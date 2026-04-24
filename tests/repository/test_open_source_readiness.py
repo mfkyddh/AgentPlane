@@ -153,9 +153,8 @@ class OpenSourceReadinessTests(unittest.TestCase):
         for workflow in (REPO_ROOT / ".github" / "workflows").glob("*.yml"):
             text = workflow.read_text(encoding="utf-8")
             with self.subTest(path=workflow.name):
-                self.assertIsNone(re.search(r"host\s+live-gate\s+run[\s\S]{0,200}--execute", text))
+                self.assertIsNone(re.search(r"infra\s+live-gate\s+run[\s\S]{0,200}--execute", text))
 
 
 if __name__ == "__main__":
     unittest.main()
-

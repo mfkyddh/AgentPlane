@@ -96,8 +96,8 @@ def build_prod2_main_onboarding_plan(repo_root: Path) -> dict[str, Any]:
     cloudflare_shell = shlex.quote(str((repo_root / _CLOUDFLARE_ENV).resolve()))
     topology = describe_prod2_main_topology(repo_root)
     commands_base = [
-        f'uv run python -m agentplane.cli host inventory {PRODUCTION_TARGET} --repo-root {repo_root_shell} --write',
-        f'uv run python -m agentplane.cli host audit {PRODUCTION_TARGET} --repo-root {repo_root_shell}',
+        f'uv run python -m agentplane.cli infra inventory {PRODUCTION_TARGET} --repo-root {repo_root_shell} --write',
+        f'uv run python -m agentplane.cli infra audit {PRODUCTION_TARGET} --repo-root {repo_root_shell}',
         f'uv run python -m agentplane.cli projection ledger refresh --target {PRODUCTION_TARGET} --repo-root {repo_root_shell} --write',
     ]
 
@@ -106,8 +106,8 @@ def build_prod2_main_onboarding_plan(repo_root: Path) -> dict[str, Any]:
     if topology['networks']:
         network = topology['networks'][0]
         host_network = [
-            f'uv run python -m agentplane.cli host network audit {PRODUCTION_TARGET} --repo-root {repo_root_shell}',
-            f'uv run python -m agentplane.cli host network ensure {PRODUCTION_TARGET} --repo-root {repo_root_shell}',
+            f'uv run python -m agentplane.cli infra network audit {PRODUCTION_TARGET} --repo-root {repo_root_shell}',
+            f'uv run python -m agentplane.cli infra network ensure {PRODUCTION_TARGET} --repo-root {repo_root_shell}',
         ]
         network_details = [
             f'managed bridge: {network.get('name')} {network.get('subnet')}',
@@ -127,9 +127,9 @@ def build_prod2_main_onboarding_plan(repo_root: Path) -> dict[str, Any]:
 
     website_verify_cmds: list[str] = []
     for alias in ('1panel', 'token', 'vmail'):
-        website_verify_cmds.append(f'uv run python -m agentplane.cli website verify --target {PRODUCTION_TARGET} --alias {alias} --repo-root {repo_root_shell}')
+        website_verify_cmds.append(f'uv run python -m agentplane.cli ingress verify --target {PRODUCTION_TARGET} --alias {alias} --repo-root {repo_root_shell}')
     website_verify_cmds.append(
-        f'uv run python -m agentplane.cli website publish verify --target {PRODUCTION_TARGET} --config-file {ingress_config_shell} --cloudflare-env-file {cloudflare_shell} --repo-root {repo_root_shell}'
+        f'uv run python -m agentplane.cli ingress publish verify --target {PRODUCTION_TARGET} --config-file {ingress_config_shell} --cloudflare-env-file {cloudflare_shell} --repo-root {repo_root_shell}'
     )
 
     return {
@@ -186,10 +186,10 @@ def build_prod2_main_offboarding_plan(repo_root: Path) -> dict[str, Any]:
     removal_commands: list[str] = []
     for alias in ('1panel', 'token', 'vmail'):
         removal_commands.append(
-            f'uv run python -m agentplane.cli website publish plan --target {PRODUCTION_TARGET} --config-file {ingress_config_shell} --cloudflare-env-file {cloudflare_shell} --repo-root {repo_root_shell}'
+            f'uv run python -m agentplane.cli ingress publish plan --target {PRODUCTION_TARGET} --config-file {ingress_config_shell} --cloudflare-env-file {cloudflare_shell} --repo-root {repo_root_shell}'
         )
         removal_commands.append(
-            f'uv run python -m agentplane.cli website publish apply --target {PRODUCTION_TARGET} --config-file {ingress_config_shell} --cloudflare-env-file {cloudflare_shell} --repo-root {repo_root_shell} --execute'
+            f'uv run python -m agentplane.cli ingress publish apply --target {PRODUCTION_TARGET} --config-file {ingress_config_shell} --cloudflare-env-file {cloudflare_shell} --repo-root {repo_root_shell} --execute'
         )
 
     app_remove_commands: list[str] = []
@@ -200,7 +200,7 @@ def build_prod2_main_offboarding_plan(repo_root: Path) -> dict[str, Any]:
 
     service_cleanup_commands = [
         f'uv run python -m agentplane.cli service verify --target {PRODUCTION_TARGET} --name onepanel_openresty --repo-root {repo_root_shell}',
-        f'uv run python -m agentplane.cli host network audit {PRODUCTION_TARGET} --repo-root {repo_root_shell}',
+        f'uv run python -m agentplane.cli infra network audit {PRODUCTION_TARGET} --repo-root {repo_root_shell}',
     ]
 
     return {
@@ -234,7 +234,7 @@ def build_prod2_main_offboarding_plan(repo_root: Path) -> dict[str, Any]:
                 'id': 'docs-and-inventory',
                 'summary': 'Remove prod2-main entries from inventory, ledgers, and runbooks',
                 'commands': [
-                    f'uv run python -m agentplane.cli host inventory {PRODUCTION_TARGET} --repo-root {repo_root_shell} --write',
+                    f'uv run python -m agentplane.cli infra inventory {PRODUCTION_TARGET} --repo-root {repo_root_shell} --write',
                 ],
                 'notes': [
                     f'Archive {_RUNBOOK_DOC} references into docs/archive if the host is retired.',

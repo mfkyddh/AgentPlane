@@ -17,4 +17,4 @@ This plugin group is a thin distribution layer over the repository-owned skills 
 
 - Source repo skills: `onepanel-container-ops`
 - Primary domains: `service`
-- Stable entrypoint: `agentplane service ...`
+- Stable entrypoint: `uv run python -m agentplane.cli service ...`

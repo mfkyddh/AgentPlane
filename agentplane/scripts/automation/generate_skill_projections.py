@@ -93,14 +93,14 @@ def _plugin_description(group_name: str) -> str:
 
 
 def _plugin_entrypoint(group_name: str) -> str:
-    if group_name == "websites":
-        return "uv run python -m agentplane.cli website ..."
+    if group_name == "ingress":
+        return "uv run python -m agentplane.cli ingress ..."
     if group_name == "containers":
         return "uv run python -m agentplane.cli service ..."
     if group_name == "apps":
         return "uv run python -m agentplane.cli app ..."
-    if group_name == "hosts":
-        return "uv run python -m agentplane.cli host ..."
+    if group_name == "infra":
+        return "uv run python -m agentplane.cli infra ..."
     if group_name == "ledgers":
         return "uv run python -m agentplane.cli projection ..."
     if group_name in {"cronjobs", "firewall"}:
@@ -191,4 +191,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

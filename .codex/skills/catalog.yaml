@@ -20,7 +20,7 @@ skills:
     frontmatter_name: host-ops
     source_path: .codex/skills/host-ops/SKILL.md
     kind: canonical
-    domains: [host]
+    domains: [infra]
     aliases: []
     entrypoint: uv run python -m agentplane.cli
     projection_targets: [agents_pointer]
@@ -36,7 +36,7 @@ skills:
     frontmatter_name: maven-setup
     source_path: .codex/skills/maven-setup/SKILL.md
     kind: canonical
-    domains: [host]
+    domains: [infra]
     aliases: []
     entrypoint: bash
     projection_targets: [agents_pointer]
@@ -52,7 +52,7 @@ skills:
     frontmatter_name: nginxui-letsencrypt-cloudflare-dns01
     source_path: .codex/skills/nginxui-letsencrypt-cloudflare-dns01/SKILL.md
     kind: canonical
-    domains: [website, service]
+    domains: [ingress, service]
     aliases: []
     entrypoint: uv run python -m agentplane.cli
     projection_targets: [agents_pointer]
@@ -68,7 +68,7 @@ skills:
     frontmatter_name: nodejs-lts-setup
     source_path: .codex/skills/nodejs-lts-setup/SKILL.md
     kind: canonical
-    domains: [host]
+    domains: [infra]
     aliases: []
     entrypoint: bash
     projection_targets: [agents_pointer]
@@ -108,7 +108,7 @@ skills:
     frontmatter_name: onepanel-firewall-ops
     source_path: .codex/skills/onepanel-firewall-ops/SKILL.md
     kind: canonical
-    domains: [host]
+    domains: [infra]
     aliases: []
     entrypoint: uv run python -m agentplane.cli onepanel
     projection_targets: [agents_pointer]
@@ -116,7 +116,7 @@ skills:
     frontmatter_name: onepanel-host-setup
     source_path: .codex/skills/onepanel-host-setup/SKILL.md
     kind: canonical
-    domains: [host]
+    domains: [infra]
     aliases: []
     entrypoint: bash
     projection_targets: [agents_pointer]
@@ -124,15 +124,15 @@ skills:
     frontmatter_name: onepanel-openresty-site-migration
     source_path: .codex/skills/onepanel-openresty-site-migration/SKILL.md
     kind: canonical
-    domains: [website]
+    domains: [ingress]
     aliases: []
-    entrypoint: uv run python -m agentplane.cli website
+    entrypoint: uv run python -m agentplane.cli ingress
     projection_targets: [agents_pointer]
   - name: onepanel-panel-ops
     frontmatter_name: onepanel-panel-ops
     source_path: .codex/skills/onepanel-panel-ops/SKILL.md
     kind: canonical
-    domains: [host]
+    domains: [infra]
     aliases: []
     entrypoint: uv run python -m agentplane.cli onepanel
     projection_targets: [agents_pointer]
@@ -140,15 +140,15 @@ skills:
     frontmatter_name: onepanel-website-ops
     source_path: .codex/skills/onepanel-website-ops/SKILL.md
     kind: canonical
-    domains: [website]
+    domains: [ingress]
     aliases: []
-    entrypoint: uv run python -m agentplane.cli website
+    entrypoint: uv run python -m agentplane.cli ingress
     projection_targets: [agents_pointer]
   - name: openclaw-1panel
     frontmatter_name: onepanel-ops
     source_path: .codex/skills/openclaw-1panel/SKILL.md
     kind: compat
-    domains: [host, website, service, app, projection]
+    domains: [infra, ingress, service, app, projection]
     aliases:
       - onepanel-panel-ops
       - onepanel-website-ops
@@ -178,7 +178,7 @@ skills:
     frontmatter_name: openclaw-windows-chrome-bridge
     source_path: .codex/skills/openclaw-windows-chrome-bridge/SKILL.md
     kind: canonical
-    domains: [host]
+    domains: [infra]
     aliases: []
     entrypoint: bash
     projection_targets: [agents_pointer]
@@ -210,7 +210,7 @@ skills:
     frontmatter_name: ssh-root-login-setup
     source_path: .codex/skills/ssh-root-login-setup/SKILL.md
     kind: canonical
-    domains: [host]
+    domains: [infra]
     aliases: []
     entrypoint: bash
     projection_targets: [agents_pointer]
@@ -234,7 +234,7 @@ skills:
     frontmatter_name: tencent-host-mihomo-openai-tuning
     source_path: .codex/skills/tencent-host-mihomo-openai-tuning/SKILL.md
     kind: canonical
-    domains: [host]
+    domains: [infra]
     aliases: []
     entrypoint: uv run python -m agentplane.cli
     projection_targets: [agents_pointer]
@@ -242,7 +242,7 @@ skills:
     frontmatter_name: ubuntu-ssh-security-baseline
     source_path: .codex/skills/ubuntu-ssh-security-baseline/SKILL.md
     kind: canonical
-    domains: [host]
+    domains: [infra]
     aliases: []
     entrypoint: bash
     projection_targets: [agents_pointer]
@@ -250,7 +250,7 @@ skills:
     frontmatter_name: windows-mihomo-cloudflare-latency-debug
     source_path: .codex/skills/windows-mihomo-cloudflare-latency-debug/SKILL.md
     kind: canonical
-    domains: [website, host]
+    domains: [ingress, infra]
     aliases: []
     entrypoint: pwsh
     projection_targets: [agents_pointer]
@@ -269,17 +269,17 @@ plugin_groups:
     source_skills: [onepanel-cronjob-ops]
   firewall:
     name: firewall
-    domains: [host]
+    domains: [infra]
     source_skills: [onepanel-firewall-ops]
-  hosts:
-    name: hosts
-    domains: [host]
+  infra:
+    name: infra
+    domains: [infra]
     source_skills: [host-ops]
   ledgers:
     name: ledgers
     domains: [projection]
     source_skills: [inventory-ledger-ops, projection-ops]
-  websites:
-    name: websites
-    domains: [website]
+  ingress:
+    name: ingress
+    domains: [ingress]
     source_skills: [onepanel-website-ops]

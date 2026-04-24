@@ -28,7 +28,7 @@ class InventoryGenerationTests(unittest.TestCase):
         versioning_doc = (REPO_ROOT / "docs" / "reference" / "app-delivery-versioning.md").read_text(encoding="utf-8")
         self.assertIn("Focused Acceptance", versioning_doc)
         self.assertIn("focused acceptance", versioning_doc)
-        self.assertIn("host automation search wsl", versioning_doc)
+        self.assertIn("infra automation search wsl", versioning_doc)
         self.assertIn("projection ledger refresh --target wsl", versioning_doc)
         self.assertIn("app delivery build-artifact", versioning_doc)
         self.assertIn("--dry-run", versioning_doc)
@@ -246,7 +246,7 @@ class InventoryGenerationTests(unittest.TestCase):
                 json.dumps(
                     {
                         "host_truth": {
-                            "control_plane_inventory": "uv run python -m agentplane.cli host inventory wsl --repo-root <repo-root>",
+                            "control_plane_inventory": "uv run python -m agentplane.cli infra inventory wsl --repo-root <repo-root>",
                             "last_ledger_refresh": "2026-04-02T12:04:12.394460+00:00",
                         }
                     },
@@ -260,7 +260,7 @@ class InventoryGenerationTests(unittest.TestCase):
 
             self.assertIn("host_truth", payload)
             self.assertEqual(
-                "uv run python -m agentplane.cli host inventory wsl --repo-root <repo-root>",
+                "uv run python -m agentplane.cli infra inventory wsl --repo-root <repo-root>",
                 payload["host_truth"]["control_plane_inventory"],
             )
 
@@ -281,4 +281,3 @@ class InventoryGenerationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

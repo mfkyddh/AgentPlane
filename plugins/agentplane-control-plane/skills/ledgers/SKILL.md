@@ -18,4 +18,4 @@ This plugin group is a thin distribution layer over the repository-owned skills 
 
 - Source repo skills: `inventory-ledger-ops`, `projection-ops`
 - Primary domains: `projection`
-- Stable entrypoint: `agentplane projection ...`
+- Stable entrypoint: `uv run python -m agentplane.cli projection ...`

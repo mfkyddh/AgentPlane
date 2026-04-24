@@ -18,7 +18,7 @@
 - 正式远端 Bash 入口统一为 `agentplane infra remote bash ...`。
 - `agentplane/scripts/internal/` 下脚本只作为仓库内部实现与示例，属于兼容层，不再作为长期主命令面。
 - `agentplane/scripts/onepanel/api_request.py` 仅用于 provider/debug 低层核对，不进入 active execution path；旧 `app_lifecycle.py` / `project_lifecycle.py` 已退役。
-- Formal catalog apps with `schema_version: 2` must use `agentplane app object ...`, `app delivery ...`, `service ...`, and `website ...`; lower-level helper surfaces are not the active execution path.
+- Formal catalog apps with `schema_version: 2` must use `agentplane app object ...`, `app delivery ...`, `service ...`, and `ingress ...`; lower-level helper surfaces are not the active execution path.
 - 从 `pwsh` 发起远端多语句 Bash 时，优先把脚本保存成 Linux 路径文件；stdin 只推荐在纯 Linux shell 内使用。
 - Windows 与 WSL 默认共享同一份源码 checkout；示例中的 Linux 路径均使用 `<repo-root>` 占位符。
 

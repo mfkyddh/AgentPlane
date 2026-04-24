@@ -3,7 +3,7 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).ProviderPath
 $windowsUvHelper = (Resolve-Path (Join-Path $PSScriptRoot "..\lib\invoke-agentplane-windows-uv.ps1")).ProviderPath
-$formalCli = "pwsh -NoProfile -ExecutionPolicy Bypass -File $windowsUvHelper -RepoRoot $repoRoot -PreferRepoRoot python -m agentplane.cli host local inspect --repo-root $repoRoot"
+$formalCli = "pwsh -NoProfile -ExecutionPolicy Bypass -File $windowsUvHelper -RepoRoot $repoRoot -PreferRepoRoot python -m agentplane.cli infra local inspect --repo-root $repoRoot"
 $wsl = Get-Command wsl.exe -ErrorAction Stop
 $backendProbe = & $wsl.Source -e pwd
 if ($LASTEXITCODE -ne 0) {

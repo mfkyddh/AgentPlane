@@ -31,15 +31,11 @@ class WslFirstDocsTests(unittest.TestCase):
     def test_repo_agents_doc_declares_pwsh_entry_and_backend_aware_routing(self) -> None:
         text = (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")
 
-        self.assertIn("On Windows hosts, use `pwsh` as the default local entry shell.", text)
-        self.assertIn("`wsl.exe -e <program> <args...>`", text)
-        self.assertIn("Default to a host-entry-first, backend-aware workflow.", text)
-        self.assertIn("Windows and WSL use one checkout by default.", text)
-        self.assertIn("Each physical checkout must keep exactly one project virtualenv at `.venv`", text)
-        self.assertIn(
-            "Control plane location determines the entry host; backend execution must route through resolver-provided workspace bindings.",
-            text,
-        )
+        self.assertIn("Windows 上默认用 PowerShell", text)
+        self.assertIn("`wsl.exe -e <程序>`", text)
+        self.assertIn("Windows 和 WSL 共用同一个仓库目录", text)
+        self.assertIn("只使用根目录 `.venv`", text)
+        self.assertIn("远程 Linux 走 `agentplane infra remote bash`", text)
 
     def test_linux_governance_declares_backend_role_not_wsl_first_entry(self) -> None:
         text = (REPO_ROOT / "docs" / "architecture" / "linux-governance.md").read_text(
@@ -75,4 +71,3 @@ class WslFirstDocsTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

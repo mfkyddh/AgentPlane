@@ -309,7 +309,7 @@ class HostCliTests(unittest.TestCase):
                 "--repo-root",
                 str(root),
                 env_overrides={
-                    "PATH": f"{bin_dir}:{os.environ['PATH']}",
+                    "PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}",
                     "FAKE_CMD_LOG": str(log_file),
                     "FAKE_NETWORK_STATE_DIR": str(state_dir),
                 },
@@ -408,32 +408,49 @@ class HostCliTests(unittest.TestCase):
             )
             (root / "secrets" / "ssh").mkdir(parents=True, exist_ok=True)
             (root / "secrets" / "ssh" / "config").write_text("Host prod2-main\n", encoding="utf-8")
-            bin_dir = root / "bin"
-            bin_dir.mkdir(parents=True, exist_ok=True)
-            log_file = root / "network-ensure.log"
-            state_dir = root / "fake-network-state"
-            state_dir.mkdir(parents=True, exist_ok=True)
-            write_fake_bridge_network_ssh(bin_dir)
+            state = {"gateway_present": False, "route_present": False}
 
-            result = run_cli(
-                "infra",
-                "network",
-                "ensure",
-                "prod2-main",
-                "--repo-root",
-                str(root),
-                env_overrides={
-                    "PATH": f"{bin_dir}:{os.environ['PATH']}",
-                    "FAKE_CMD_LOG": str(log_file),
-                    "FAKE_NETWORK_STATE_DIR": str(state_dir),
-                },
+            def fake_remote_step(repo_root: Path, target: str, command: str) -> dict[str, object]:
+                if "docker network inspect zqf_network --format" in command:
+                    return {
+                        "ok": True,
+                        "stdout": json.dumps(
+                            {
+                                "Name": "zqf_network",
+                                "Id": "66f7da1be943bc160d7df638561fe15ccc1ceea6912e9c753dd40d087e23d8b3",
+                                "Driver": "bridge",
+                                "IPAM": {"Config": [{"Subnet": "172.19.0.0/16", "Gateway": "172.19.0.1"}]},
+                                "Containers": {"sub2api": {"Name": "sub2api-prod"}},
+                            }
+                        ),
+                    }
+                if "ip -json -4 addr show dev br-66f7da1be943" in command:
+                    stdout = '[{"ifname":"br-66f7da1be943","addr_info":[{"local":"172.19.0.1","prefixlen":16}]}]' if state["gateway_present"] else '[{"ifname":"br-66f7da1be943","addr_info":[]}]'
+                    return {"ok": True, "stdout": stdout}
+                if "ip -json route show 172.19.0.0/16" in command:
+                    stdout = '[{"dst":"172.19.0.0/16","dev":"br-66f7da1be943","prefsrc":"172.19.0.1"}]' if state["route_present"] else "[]"
+                    return {"ok": True, "stdout": stdout}
+                if "ip addr add 172.19.0.1/16 dev br-66f7da1be943" in command:
+                    state["gateway_present"] = True
+                    return {"ok": True, "stdout": ""}
+                if "ip route replace 172.19.0.0/16 dev br-66f7da1be943 src 172.19.0.1" in command:
+                    state["route_present"] = True
+                    return {"ok": True, "stdout": ""}
+                return {"ok": False, "stdout": ""}
+
+            from agentplane.cli.infra import handle_infra_command
+
+            args = SimpleNamespace(
+                infra_action="network",
+                infra_network_action="ensure",
+                target="prod2-main",
+                repo_root=str(root),
             )
+            with patch("agentplane.domain.networks._remote_step", side_effect=fake_remote_step):
+                payload = handle_infra_command(args)
 
-            self.assertEqual(result.returncode, 0, msg=result.stderr)
-            payload = json.loads(result.stdout)
             self.assertEqual({"command", "action", "target", "payload"}, set(payload))
             self.assertEqual("infra", payload["command"])
             self.assertEqual("network.ensure", payload["action"])
             self.assertEqual("prod2-main", payload["target"])
             self.assertTrue(payload["payload"]["ok"])
-

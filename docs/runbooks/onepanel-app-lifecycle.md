@@ -12,7 +12,7 @@
 - `onepanel` 公开面只剩 provider/debug 对象：`panel`、`firewall`、`cronjob`、`task`
 
 `api_request.py` 与内部 object API 继续保留为 provider/debug substrate；旧 `app_lifecycle.py` / `project_lifecycle.py` 脚本入口已退役。
-Formal catalog apps with `schema_version: 2` must use `agentplane app object ...`, `app delivery ...`, `service ...`, and `website ...`; these compat helpers are not the active execution path.
+Formal catalog apps with `schema_version: 2` must use `agentplane app object ...`, `app delivery ...`, `service ...`, and `ingress ...`; these compat helpers are not the active execution path.
 
 ## 当前边界
 

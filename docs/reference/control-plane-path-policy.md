@@ -11,7 +11,7 @@ superseded_by: null
 
 控制面 tracked 文件只保存**逻辑路径**（与平台无关的仓库内相对路径）；宿主物理路径只存在于 runtime resolution 和 verification 结果里。
 
-> 💡 **逻辑路径 vs 物理路径**：逻辑路径如 `apps/sub2api/contracts/prod0-main`，不含 Windows 盘符、WSL 挂载点或 Linux 绝对前缀，在所有平台都一样。物理路径如 `D:\Projects\AgentPlane\apps\...` 或 `/opt/agentplane/apps/...`，是 Resolver 在运行时动态生成的。
+> 💡 **逻辑路径 vs 物理路径**：逻辑路径如 `apps/sub2api/contracts/prod0-main`，不含 Windows 盘符、WSL 挂载点或 Linux 绝对前缀，在所有平台都一样。物理路径如 `<repo-root>\apps\...` 或 `/opt/agentplane/apps/...`，是 Resolver 在运行时动态生成的。
 
 ## Allowed In Tracked Truth
 

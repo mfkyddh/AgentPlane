@@ -54,7 +54,7 @@ def _parse_ssh_config(text: str) -> dict[str, dict[str, str]]:
             continue
         parts = line.split(None, 1)
         keyword = parts[0].lower()
-        if keyword == "infra":
+        if keyword == "host":
             active_hosts = parts[1].split() if len(parts) > 1 else []
             for alias in active_hosts:
                 stanzas.setdefault(alias, {})

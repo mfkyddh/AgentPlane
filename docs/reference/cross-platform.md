@@ -1,3 +1,10 @@
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-24
+superseded_by: null
+---
+
 # 跨平台工作流规范
 
 > 本文档定义 AgentPlane 在 Windows + WSL 双环境下的完整工作流规范。核心约束见 `AGENTS.md` 必读摘要。

@@ -4,7 +4,11 @@
 
 > **让 AI Agent 安全、规范地接管你的基础设施。**
 
-AgentPlane 是一个面向 AI Agent 的控制平面模板仓库。简单说：它给 AI 提供了一套**标准化的"遥控器"**，让 AI 能够帮你管理服务器、部署应用、配置服务——而且所有操作都有记录、可审计、可回滚。
+AgentPlane 是一个 Agent-first control plane template repository。简单说：它给 AI 提供了一套**标准化的"遥控器"**，让 AI 能够帮你管理服务器、部署应用、配置服务，而且所有操作都有记录、可审计、可回滚。
+
+核心模型是 Git tracked truth + local secrets：普通配置放在 Git 中，真实 secrets 留在本地；Windows / Linux / macOS 只在 `resolver / backend` 层分叉，同一个项目只保留 single checkout。Windows 入口 shell 使用 `pwsh`，需要封装 `uv` 时使用 `invoke-agentplane-windows-uv.ps1`。人类输入面只剩 `secrets` 和少量 `identity`，不再默认引用作者现场目录。
+
+完成 bootstrap 体检后，就可以让 Agent 接管后续 `infra`、`service`、`ingress`、`app` 与 `projection` 动作。
 
 ---
 
@@ -45,7 +49,7 @@ AgentPlane 是一个面向 AI Agent 的控制平面模板仓库。简单说：�
 - [uv](https://docs.astral.sh/uv/)（Python 包管理器）
 - Git
 
-### 第一步：Clone 仓库
+### 第一步：fork / clone 仓库
 
 ```bash
 git clone <你的仓库地址>
@@ -60,14 +64,16 @@ Doctor 会检查你的环境是否就绪，并报告：
 - ✅ Backend（WSL/SSH/Docker）可用性
 - ✅ Secrets 配置状态
 
-**Windows（PowerShell）：**
+### Windows
 ```powershell
-uv run agentplane bootstrap doctor --repo-root .
+uv run python -m agentplane.cli bootstrap inspect-local --repo-root .
+uv run python -m agentplane.cli bootstrap doctor --repo-root .
 ```
 
-**macOS / Linux：**
+### macOS / Linux
 ```bash
-uv run agentplane bootstrap doctor --repo-root .
+uv run python -m agentplane.cli bootstrap inspect-local --repo-root .
+uv run python -m agentplane.cli bootstrap doctor --repo-root .
 ```
 
 > 💡 **预期输出**：你应该看到类似 `host: ok`、`backend: wsl available` 的状态报告。如果有 ❌，按照提示修复即可。
@@ -86,10 +92,10 @@ uv tool install -e .
 
 ```bash
 # 创建 secrets 目录结构
-agentplane bootstrap init-secrets --repo-root .
+uv run python -m agentplane.cli bootstrap init-secrets --repo-root .
 
 # 验证 secrets 配置
-agentplane bootstrap verify-secrets --repo-root .
+uv run python -m agentplane.cli bootstrap verify-secrets --repo-root .
 ```
 
 > 🔐 **说明**：`secrets/` 目录已被 `.gitignore` 排除，你的密码和密钥不会意外提交到 Git。
@@ -97,7 +103,7 @@ agentplane bootstrap verify-secrets --repo-root .
 ### 第五步：查看全部命令
 
 ```bash
-agentplane --help
+uv run python -m agentplane.cli --help
 ```
 
 ### 第六步：运行测试（可选）
@@ -107,6 +113,14 @@ uv run python -m pytest
 ```
 
 > 默认只跑离线测试，不会触碰真实的 WSL/SSH/Docker。
+
+### Live Gate
+
+真实 WSL、SSH、Docker 或远端 provider 验证必须显式进入 live gate，先 `plan`，需要执行时再加 `--execute`：
+
+```bash
+uv run python -m agentplane.cli infra live-gate plan --profile wsl --repo-root .
+```
 
 ---
 
@@ -285,7 +299,10 @@ agentplane projection ledger refresh --target <target> --write
 ### 📚 参考文档
 - [app-repository-standard.md](docs/reference/app-repository-standard.md) — 应用仓库标准
 - [testing-architecture.md](docs/reference/testing-architecture.md) — 测试架构
+- [compat-retirement-ledger.md](docs/reference/compat-retirement-ledger.md) — 兼容入口退役台账
 - [control-plane-naming-registry.md](docs/reference/control-plane-naming-registry.md) — 命名规范
+- [docs/history/index.md](docs/history/index.md) — 历史说明索引
+- [docs/archive/README.md](docs/archive/README.md) — 已退出主流程的归档索引
 
 ---
 

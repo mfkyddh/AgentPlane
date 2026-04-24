@@ -52,12 +52,12 @@ Do not add new cross-file helpers to large test modules. Put shared behavior und
 Tests are grouped by domain directory:
 
 - `tests/app/`
-- `tests/host/`
+- `tests/infra/`
 - `tests/onepanel/`
 - `tests/projection/`
 - `tests/runtime/`
 - `tests/service/`
-- `tests/website/`
+- `tests/ingress/`
 - `tests/inventory/`
 - `tests/repository/`
 - `tests/secret_management/`

@@ -101,7 +101,7 @@ AgentPlane 支持 Windows、Linux、macOS 三种宿主环境。Resolver / Backen
 | | 路径 |
 |---|---|
 | **逻辑路径**（真源中保存的） | `infra/compose/sub2api/docker-compose.prod0.yml` |
-| **Windows 物理** | `D:\Projects\AgentPlane\infra\compose\sub2api\docker-compose.prod0.yml` |
+| **Windows 物理** | `<repo-root>\infra\compose\sub2api\docker-compose.prod0.yml` |
 | **WSL 物理** | `/mnt/d/Projects/AgentPlane/infra/compose/sub2api/docker-compose.prod0.yml` |
 | **Linux 物理** | `/opt/agentplane/infra/compose/sub2api/docker-compose.prod0.yml` |
 
@@ -384,7 +384,7 @@ agentplane app delivery verify --target prod0-main --app sub2api --execute
 | **Task-Entry** | 面向 AI 的标准化操作入口 | 不是直接操作底层资源，而是通过高层语义化命令 |
 | **Resolver** | 把逻辑路径解析为当前平台的物理路径 | Windows 路径 → WSL 路径 → Linux 路径的自动转换 |
 | **逻辑路径** | 与平台无关的仓库内相对路径 | `infra/compose/sub2api/docker-compose.prod0.yml` |
-| **物理路径** | 操作系统实际访问文件的绝对路径 | `D:\Projects\AgentPlane\...` 或 `/opt/agentplane/...` |
+| **物理路径** | 操作系统实际访问文件的绝对路径 | `<repo-root>\...` 或 `/opt/agentplane/...` |
 | **Live State** | 通过现场命令/API 获取的真实状态 | `docker ps`、HTTP 健康检查的结果 |
 | **Ledger** | 机器生成的操作证据 | 每次 CLI 操作的完整记录，用于审计 |
 | **Inventory** | 结构化状态台账 | 目标环境所有受管对象的摘要快照 |

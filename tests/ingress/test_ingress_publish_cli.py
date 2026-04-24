@@ -146,7 +146,7 @@ class WebsitePublishCliTests(unittest.TestCase):
         self.assertEqual(9, payload["payload"]["result"]["ingress"]["id"])
         follow_through = payload["payload"]["follow_through"]
         self.assertEqual("projection", follow_through["owner_surface"])
-        self.assertEqual("website.publish", follow_through["source_surface"])
+        self.assertEqual("ingress.publish", follow_through["source_surface"])
         self.assertIn("projection verification run", follow_through["commands"]["verification"])
         self.assertIn("--target prod0-main", follow_through["commands"]["verification"])
         self.assertIn("projection ledger refresh", follow_through["commands"]["ledger_refresh"])
@@ -178,9 +178,8 @@ class WebsitePublishCliTests(unittest.TestCase):
         self.assertEqual(["dns_content"], payload["payload"]["failures"])
         follow_through = payload["payload"]["follow_through"]
         self.assertEqual("projection", follow_through["owner_surface"])
-        self.assertEqual("website.publish", follow_through["source_surface"])
+        self.assertEqual("ingress.publish", follow_through["source_surface"])
 
 
 if __name__ == "__main__":
     unittest.main()
-

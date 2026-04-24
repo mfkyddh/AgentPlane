@@ -11,12 +11,12 @@ The default gate is offline and excludes live WSL, Docker, SSH, remote provider,
 ## Layout
 
 - `app/`: app object, resource, delivery, contract, build, render, deploy, verify, inventory, and doc-sync tests.
-- `host/`: host governance, WSL boundary, SSH, remote command, and live-gate contract tests.
+- `infra/`: infra governance, WSL boundary, SSH, remote command, and live-gate contract tests.
 - `onepanel/`: provider substrate, object API plans, fixture, verification, plugin, and target-specific audit tests.
 - `projection/`: formal projection CLI tests.
 - `runtime/`: platform, workspace, backend runner, and resolver tests.
 - `service/`: service object and lifecycle tests.
-- `website/`: website object and publish workflow tests.
+- `ingress/`: ingress object and publish workflow tests.
 - `inventory/`: inventory generation and observation payload tests.
 - `repository/`: repo-wide docs, CLI entrypoints, snapshot, bootstrap, pyproject, and readiness tests.
 - `secret_management/`: secrets layout and backup tests.

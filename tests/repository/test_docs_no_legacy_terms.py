@@ -102,18 +102,10 @@ class DocsNoLegacyTermsTests(unittest.TestCase):
     def test_agents_doc_declares_template_backend_aware_rules(self) -> None:
         text = (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")
 
-        self.assertIn("Agent-first control plane template repository", text)
-        self.assertIn("Default to a host-entry-first, backend-aware workflow.", text)
-        self.assertIn("On Windows hosts, use `pwsh` as the default local entry shell.", text)
-        self.assertIn("`wsl.exe -e <program> <args...>`", text)
-        self.assertIn(
-            "Formal host-scoped remote execution must prefer `uv run python -m agentplane.cli host remote bash ...`.",
-            text,
-        )
-        self.assertIn(
-            "Control plane location determines the entry host; backend execution must route through resolver-provided workspace bindings.",
-            text,
-        )
+        self.assertIn("所有正式操作必须从 `agentplane ...` 进入", text)
+        self.assertIn("Windows 默认 `pwsh`", text)
+        self.assertIn("`wsl.exe -e <程序>`", text)
+        self.assertIn("远程 Linux 走 `agentplane infra remote bash`", text)
         self.assertNotIn("retained as the WSL/Linux backend path during migration", text)
 
     def test_app_repository_standard_defines_template_boundary(self) -> None:
@@ -137,7 +129,7 @@ class DocsNoLegacyTermsTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
 
         self.assertIn("bootstrap inspect-local --repo-root <repo-root>", onboarding_text)
-        self.assertIn("host inventory <target> --repo-root <repo-root>", onboarding_text)
+        self.assertIn("infra inventory <target> --repo-root <repo-root>", onboarding_text)
         self.assertIn("只写 formal CLI、skill、runbook 与测试合同", onboarding_text)
 
         self.assertIn("bootstrap inspect-local --repo-root <repo-root>", flow_text)
@@ -158,10 +150,10 @@ class DocsNoLegacyTermsTests(unittest.TestCase):
             encoding="utf-8"
         )
 
-        self.assertIn("host inventory <target> --repo-root <repo-root>", control_plane)
+        self.assertIn("infra inventory <target> --repo-root <repo-root>", control_plane)
         self.assertIn("service search --target <target> --repo-root <repo-root>", control_plane)
         self.assertIn(
-            "website publish plan --target <target> --config-file <config-file> --cloudflare-env-file <cloudflare-env-file> --repo-root <repo-root>",
+            "ingress publish plan --target <target> --config-file <config-file> --cloudflare-env-file <cloudflare-env-file> --repo-root <repo-root>",
             control_plane,
         )
         self.assertIn(
@@ -174,7 +166,7 @@ class DocsNoLegacyTermsTests(unittest.TestCase):
         )
         self.assertIn("本页只定义 Linux / WSL backend 约束，不改变宿主入口选择。", governance)
         self.assertIn("[bootstrap-secrets.md](../runbooks/bootstrap-secrets.md)", governance)
-        self.assertIn("`host automation` 管“何时执行、执行什么周期任务”", control_plane)
+        self.assertIn("`infra automation` 管“何时执行、执行什么周期任务”", control_plane)
         self.assertIn(
             "projection verification run --target <target> --profile <profile> --repo-root <repo-root>",
             control_plane,
@@ -187,4 +179,3 @@ class DocsNoLegacyTermsTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

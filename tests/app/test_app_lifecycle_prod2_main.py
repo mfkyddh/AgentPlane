@@ -27,13 +27,12 @@ class Prod2MainLifecyclePolicyTests(unittest.TestCase):
 
         self.assertEqual(PRODUCTION_TARGET, plan['target'])
         self.assertGreaterEqual(len(plan['steps']), 2)
-        self.assertIn('host inventory', plan['steps'][0]['commands'][0])
-        self.assertIn('host network audit', plan['steps'][1]['commands'][0])
+        self.assertIn('infra inventory', plan['steps'][0]['commands'][0])
+        self.assertIn('infra network audit', plan['steps'][1]['commands'][0])
 
     def test_offboarding_plan_mentions_website_publish(self) -> None:
         plan = build_prod2_main_offboarding_plan(self.repo_root)
 
         self.assertEqual(PRODUCTION_TARGET, plan['target'])
         commands = [cmd for step in plan['steps'] for cmd in step['commands']]
-        self.assertTrue(any('website publish plan' in cmd for cmd in commands))
-
+        self.assertTrue(any('ingress publish plan' in cmd for cmd in commands))

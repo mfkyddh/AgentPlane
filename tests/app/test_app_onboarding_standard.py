@@ -125,7 +125,7 @@ class AppOnboardingStandardTests(unittest.TestCase):
         )
 
         self.assertIn("wsl.exe", windows_setup)
-        self.assertIn("host local inspect", windows_setup)
+        self.assertIn("infra local inspect", windows_setup)
         self.assertIn("invoke-agentplane-windows-uv.ps1", windows_setup)
         self.assertIn("Workspace policy: single checkout", windows_setup)
         self.assertNotIn("UV_PROJECT_ENVIRONMENT", windows_setup)
@@ -135,7 +135,7 @@ class AppOnboardingStandardTests(unittest.TestCase):
         self.assertNotIn("/root/work/AgentPlane", windows_setup)
         self.assertIn("setup.windows.ps1", setup_sh)
         self.assertIn("Windows_NT", setup_sh)
-        self.assertIn("host local inspect", linux_setup)
+        self.assertIn("infra local inspect", linux_setup)
 
     def test_windows_uv_wrapper_uses_repo_local_venv_and_rejects_unc_repo_roots(self) -> None:
         wrapper = (REPO_ROOT / ".codex" / "environments" / "lib" / "invoke-agentplane-windows-uv.ps1").read_text(
@@ -176,12 +176,12 @@ class AppOnboardingStandardTests(unittest.TestCase):
     def test_agents_doc_uses_compact_contract_sections(self) -> None:
         text = (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")
         required_headings = (
-            "## Scope",
-            "## Repo Map",
-            "## Standard Commands",
-            "## Working Rules",
-            "## Definition Of Done",
-            "## Docs",
+            "## 必读摘要",
+            "## 执行入口",
+            "## 跨平台核心约束",
+            "## 安全核心约束",
+            "## Git 核心约束",
+            "## 文档索引",
         )
         for heading in required_headings:
             with self.subTest(heading=heading):
@@ -245,4 +245,3 @@ class AppOnboardingStandardTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

@@ -35,7 +35,7 @@ TASK_NAME = "wsl-agentplane-secrets-backup"
 TASK_SPEC = "0 */5 * * *"
 TASK_COMMAND = (
     f"cd {REPO_ROOT} && "
-    "uv run python -m agentplane.cli host automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute"
+    "uv run python -m agentplane.cli infra automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute"
 )
 
 
@@ -464,4 +464,3 @@ def ensure_onepanel_task(*, env_file: Path, trigger_now: bool = False) -> dict[s
         result["triggered"] = True
         result["task_id"] = int(task["id"])
     return result
-

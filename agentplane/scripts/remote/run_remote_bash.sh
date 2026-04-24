@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Historical wrapper for shell callers. Formal entrypoint is `uv run python -m agentplane.cli host remote bash ...`.
+# Historical wrapper for shell callers. Formal entrypoint is `uv run python -m agentplane.cli infra remote bash ...`.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
@@ -12,7 +12,7 @@ Usage:
   run_remote_bash.sh <host-alias> [--script-file <linux-path>] [-- <arg>...]
 
 Notes:
-  - Wrapper only. Formal entrypoint: uv run python -m agentplane.cli host remote bash ...
+  - Wrapper only. Formal entrypoint: uv run python -m agentplane.cli infra remote bash ...
   - Prefer --script-file when the current shell is not already in WSL.
   - Without --script-file, the script body is read from stdin and sent to remote bash.
   - Extra args after -- become $1..$N inside the remote bash script.
@@ -41,7 +41,7 @@ if [[ $# -gt 0 && "$1" == "--" ]]; then
   shift
 fi
 
-cmd=(python3 -m agentplane.cli host remote bash "$host" --repo-root "$REPO_ROOT")
+cmd=(python3 -m agentplane.cli infra remote bash "$host" --repo-root "$REPO_ROOT")
 if [[ -n "$script_file" ]]; then
   cmd+=(--script-file "$script_file")
 fi

@@ -15,7 +15,7 @@ from agentplane.scripts.onepanel.compose_policy import (  # type: ignore  # noqa
 
 
 class ComposePolicyTests(unittest.TestCase):
-    def test_openresty_requires_host_network(self) -> None:
+    def test_openresty_requires_infra_network_mode(self) -> None:
         self.assertTrue(requires_host_network("openresty"))
         self.assertFalse(requires_host_network("new-api"))
         self.assertFalse(requires_host_network("demo-app"))
@@ -54,7 +54,7 @@ networks:
         self.assertIn("zqf_network", rendered)
         self.assertIn("app-private", rendered)
 
-    def test_openresty_is_normalized_to_host_network(self) -> None:
+    def test_openresty_is_normalized_to_infra_network_mode(self) -> None:
         raw = """
 services:
   openresty:
@@ -68,7 +68,7 @@ networks:
 
         rendered = normalize_compose_for_app("openresty", raw)
 
-        self.assertIn("network_mode: host", rendered)
+        self.assertIn("network_mode: infra", rendered)
         self.assertNotIn("zqf_network", rendered)
         self.assertNotIn("1panel-network", rendered)
 
@@ -87,4 +87,3 @@ services:
 
 if __name__ == "__main__":
     unittest.main()
-

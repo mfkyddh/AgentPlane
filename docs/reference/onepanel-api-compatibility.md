@@ -34,7 +34,7 @@ superseded_by: null
 | Object | CLI Scope | Status | Primary Backing |
 | --- | --- | --- | --- |
 | Panel | `onepanel panel` | supported | `core/settings/search`, `core/settings/update` |
-| Website | `agentplane.cli website ...` | supported through website domain | `websites/search`, `websites/:id`, `websites/:id/https`, `websites` |
+| Website | `agentplane.cli ingress ...` | supported through ingress domain | `websites/search`, `websites/:id`, `websites/:id/https`, `websites` |
 | Container | provider-internal / service domain | supported for read/verify + low-risk op plan/apply | `containers/search`, `containers/info`, `containers/operate` |
 | Cronjob | `onepanel cronjob` | supported | `cronjobs/search`, `cronjobs/load/info`, `cronjobs*` mutation paths |
 | App | provider-internal / app delivery domain | supported for read/verify + low-risk op plan/apply | `apps/installed/search`, `apps/installed/info/:id`, `apps/installed/op` |

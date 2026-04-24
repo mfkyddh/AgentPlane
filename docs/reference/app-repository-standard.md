@@ -28,7 +28,7 @@ superseded_by: null
 | app object | 能被 `agentplane.cli app object ...` 检索/校验，且台账可刷新 | 在移除映射后，台账刷新不再出现该对象；若仍出现，必须先处理残留引用再继续 |
 | app resource | 能被 `agentplane.cli app resource ...` 检索/校验，且台账可刷新 | 台账刷新后不再出现残留资源引用；如有残留，必须先完成资源退役或解绑 |
 | service | 运行服务对象能被 `agentplane.cli service ...` 计划/核验并与 live state 对齐 | 先确保服务不再承载正式流量与关键任务，再完成服务退役；退役后不得继续出现在受管对象检索里 |
-| website | 公网入口对象能被 `agentplane.cli website ...` 核验并与 provider 对齐 | 先完成入口撤销或下线（证书、反代、域名解析等），再刷新网站台账避免“入口已死但对象仍在” |
+| ingress | 公网入口对象能被 `agentplane.cli ingress ...` 核验并与 provider 对齐 | 先完成入口撤销或下线（证书、反代、域名解析等），再刷新入口台账避免“入口已死但对象仍在” |
 | projection | `agentplane.cli projection runtime-env ...` 与 `agentplane.cli projection ledger refresh` 能把派生物写回到一致状态 | 在对象移除后，projection 必须重新生成或清理派生物，避免旧派生物继续影响 inventory 或验证 |
 | inventory | `app delivery inventory-refresh` 后，`inventory/servers/<target>/inventory.json` 反映新增对象 | `inventory-refresh` 后，inventory 不再包含已移除对象的状态残影 |
 | docs | `app delivery doc-sync` 后，控制面模板仓库与应用仓库摘要一致 | `doc-sync` 后，人类可读摘要不再宣称该项目仍受管或仍有公网入口 |

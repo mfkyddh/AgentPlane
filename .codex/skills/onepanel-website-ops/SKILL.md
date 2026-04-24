@@ -7,7 +7,7 @@ description: Use when the task is about 1Panel website objects, proxy targets, H
 
 ## Overview
 
-This skill routes formal website-object inspection, verification, and low-risk reconcile planning through `agentplane.cli website`.
+This skill routes formal ingress-object inspection, verification, and low-risk reconcile planning through `agentplane.cli ingress`.
 
 ## Commands
 
@@ -23,7 +23,7 @@ uv run python -m agentplane.cli ingress publish verify --target <target> --confi
 
 ## Rules
 
-- Treat website objects as infrastructure truth, not app-repo truth.
+- Treat ingress objects as infrastructure truth, not app-repo truth.
 - `ingress` 是正式公网入口域；对象核验和 `publish` 任务都从这里进入。
 - `onepanel website` 已退出公开默认入口，只保留 provider/API substrate 语义。
 - After tracked changes, run `uv run python -m agentplane.cli ingress refresh-ledger --target <target> --repo-root <repo-root> --write`.

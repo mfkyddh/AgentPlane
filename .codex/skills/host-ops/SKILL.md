@@ -7,7 +7,7 @@ description: Use when the task is about host identity, SSH topology, host-level 
 
 ## Overview
 
-In the template repository, host truth stays in Git-tracked truth plus local secrets. Route host work through the formal `uv run python -m agentplane.cli host ...` entrypoints instead of calling legacy helpers or author-site wrappers directly.
+In the template repository, host truth stays in Git-tracked truth plus local secrets. Route host work through the formal `uv run python -m agentplane.cli infra ...` entrypoints instead of calling legacy helpers or author-site wrappers directly.
 
 ## Boundaries
 

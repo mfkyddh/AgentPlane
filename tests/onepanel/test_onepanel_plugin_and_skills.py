@@ -9,7 +9,7 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CATALOG_FILE = REPO_ROOT / ".codex" / "skills" / "catalog.yaml"
 REQUIRED_DOMAINS = {"infra", "service", "ingress", "app-resource", "app", "projection"}
-REQUIRED_PLUGIN_GROUPS = {"websites", "containers", "firewall", "cronjobs", "apps", "ledgers", "hosts"}
+REQUIRED_PLUGIN_GROUPS = {"ingress", "containers", "firewall", "cronjobs", "apps", "ledgers", "infra"}
 COMPAT_SKILLS = {"onepanel-app-lifecycle", "openclaw-1panel"}
 
 
@@ -165,23 +165,23 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
         self.assertNotIn("op-linux-control-plane", plugin_readme)
         self.assertNotIn("ops/scripts/", plugin_readme)
 
-    def test_ingress_skill_and_plugin_route_to_formal_website_cli(self) -> None:
+    def test_ingress_skill_and_plugin_route_to_formal_ingress_cli(self) -> None:
         repo_skill_text = (REPO_ROOT / ".codex" / "skills" / "onepanel-website-ops" / "SKILL.md").read_text(encoding="utf-8")
         plugin_skill_text = (
-            REPO_ROOT / "plugins" / "agentplane-control-plane" / "skills" / "websites" / "SKILL.md"
+            REPO_ROOT / "plugins" / "agentplane-control-plane" / "skills" / "ingress" / "SKILL.md"
         ).read_text(encoding="utf-8")
         catalog_text = CATALOG_FILE.read_text(encoding="utf-8")
 
-        self.assertIn("uv run python -m agentplane.cli website search --target <target>", repo_skill_text)
-        self.assertIn("uv run python -m agentplane.cli website get --target <target> --alias <alias>", repo_skill_text)
+        self.assertIn("uv run python -m agentplane.cli ingress search --target <target>", repo_skill_text)
+        self.assertIn("uv run python -m agentplane.cli ingress get --target <target> --alias <alias>", repo_skill_text)
         self.assertIn(
-            "uv run python -m agentplane.cli website publish plan --target <target> --config-file <config-file> --cloudflare-env-file <cloudflare-env-file> --repo-root <repo-root>",
+            "uv run python -m agentplane.cli ingress publish plan --target <target> --config-file <config-file> --cloudflare-env-file <cloudflare-env-file> --repo-root <repo-root>",
             repo_skill_text,
         )
-        self.assertIn("uv run python -m agentplane.cli website ...", plugin_skill_text)
+        self.assertIn("uv run python -m agentplane.cli ingress ...", plugin_skill_text)
         self.assertNotIn("uv run python -m agentplane.cli onepanel --env <target> website", plugin_skill_text)
         self.assertNotIn("op-linux-control-plane", plugin_skill_text)
-        self.assertIn("entrypoint: uv run python -m agentplane.cli website", catalog_text)
+        self.assertIn("entrypoint: uv run python -m agentplane.cli ingress", catalog_text)
 
     def test_service_skill_and_plugin_route_to_formal_service_cli(self) -> None:
         repo_skill_text = (REPO_ROOT / ".codex" / "skills" / "onepanel-container-ops" / "SKILL.md").read_text(encoding="utf-8")
@@ -204,17 +204,17 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
 
     def test_infra_plugin_routes_to_formal_host_cli(self) -> None:
         plugin_skill_text = (
-            REPO_ROOT / "plugins" / "agentplane-control-plane" / "skills" / "hosts" / "SKILL.md"
+            REPO_ROOT / "plugins" / "agentplane-control-plane" / "skills" / "infra" / "SKILL.md"
         ).read_text(encoding="utf-8")
 
-        self.assertIn("uv run python -m agentplane.cli host ...", plugin_skill_text)
+        self.assertIn("uv run python -m agentplane.cli infra ...", plugin_skill_text)
         self.assertNotIn("uv run python -m agentplane.cli ...`", plugin_skill_text)
 
     def test_template_surface_skills_use_repo_root_placeholders(self) -> None:
         cases = {
             "host-ops": (
                 "--repo-root <repo-root>",
-                "host automation get <target> --name <automation-name>",
+                "infra automation get <target> --name <automation-name>",
             ),
             "app-delivery-ops": (
                 "--repo-root <repo-root>",
@@ -246,7 +246,7 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
             ),
             "onepanel-website-ops": (
                 "--repo-root <repo-root>",
-                "website refresh-ledger --target <target> --repo-root <repo-root> --write",
+                "ingress refresh-ledger --target <target> --repo-root <repo-root> --write",
             ),
         }
 
@@ -261,8 +261,8 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
     def test_infra_skill_drops_author_site_specific_automation_names(self) -> None:
         text = (REPO_ROOT / ".codex" / "skills" / "host-ops" / "SKILL.md").read_text(encoding="utf-8")
 
-        self.assertIn("host automation search <target> --repo-root <repo-root>", text)
-        self.assertIn("host automation verify <target> --name <automation-name> --repo-root <repo-root>", text)
+        self.assertIn("infra automation search <target> --repo-root <repo-root>", text)
+        self.assertIn("infra automation verify <target> --name <automation-name> --repo-root <repo-root>", text)
         self.assertNotIn("wsl-agentplane-secrets-backup", text)
         self.assertNotIn("wsl-zzz-skills-sync", text)
 
@@ -325,4 +325,3 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

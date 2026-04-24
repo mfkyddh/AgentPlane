@@ -26,7 +26,7 @@ fi
 
 if [[ -n "${WSL_DISTRO_NAME:-}" ]]; then
   echo "Linux backend: WSL (${WSL_DISTRO_NAME})"
-  echo "Formal local host inspect: uv run python -m agentplane.cli host local inspect"
+  echo "Formal local infra inspect: uv run python -m agentplane.cli infra local inspect"
 fi
 
 echo "setup complete: $REPO_ROOT"
