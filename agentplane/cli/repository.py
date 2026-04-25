@@ -62,10 +62,14 @@ def _secret_scan_check(repo_root: Path) -> dict[str, Any]:
 
 def _docs_sanity_check(repo_root: Path) -> dict[str, Any]:
     issues = run_docs_sanity(repo_root)
+    errors = [i for i in issues if i.severity == "error"]
+    warnings = [i for i in issues if i.severity == "warning"]
     return {
         "name": "docs-sanity",
-        "ok": not issues,
+        "ok": not errors,
         "issues": [issue.to_dict() for issue in issues],
+        "warnings_count": len(warnings),
+        "errors_count": len(errors),
     }
 
 
@@ -118,12 +122,16 @@ def run_health_check(args: argparse.Namespace) -> dict[str, Any]:
 def run_docs_sanity_command(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = args.repo_root.resolve()
     issues = run_docs_sanity(repo_root)
+    errors = [i for i in issues if i.severity == "error"]
+    warnings = [i for i in issues if i.severity == "warning"]
     return {
         "command": "repo",
         "action": "docs-sanity",
         "repo_root": str(repo_root),
-        "ok": not issues,
+        "ok": not errors,
         "issues": [issue.to_dict() for issue in issues],
+        "warnings_count": len(warnings),
+        "errors_count": len(errors),
     }
 
 
