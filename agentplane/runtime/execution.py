@@ -332,6 +332,21 @@ class BackendRunner:
             ok=True,
         )
 
+    def execute_batch(
+        self,
+        plan: ExecutionPlan,
+        *,
+        bindings_list: list[ExecutionBindings],
+        on_each: Callable[[ExecutionResult], None] | None = None,
+    ) -> list[ExecutionResult]:
+        results: list[ExecutionResult] = []
+        for bindings in bindings_list:
+            result = self.execute(plan, bindings=bindings)
+            results.append(result)
+            if on_each is not None:
+                on_each(result)
+        return results
+
     def execute_stream(
         self,
         plan: ExecutionPlan,

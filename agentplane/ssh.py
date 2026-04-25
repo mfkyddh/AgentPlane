@@ -30,6 +30,10 @@ class SshTarget:
     user: str | None = None
     os_family: str = "linux"
     environment: str = "production"
+    allocate_tty: bool = False
+
+    def _tty_flag(self) -> str:
+        return "-t" if self.allocate_tty else "-T"
 
     @property
     def connection_target(self) -> str:
@@ -60,7 +64,7 @@ class SshTarget:
         return self.wrap_argv(effective)
 
     def ssh_args_for_bash_stdin(self, argv: list[str] | None = None) -> list[str]:
-        return ["ssh", "-T", "-F", str(self.config_path), self.connection_target, self.wrap_bash_stdin(argv)]
+        return ["ssh", self._tty_flag(), "-F", str(self.config_path), self.connection_target, self.wrap_bash_stdin(argv)]
 
     def local_ssh_args_for_bash_stdin(self, argv: list[str] | None = None) -> list[str]:
         return _local_backend_argv(self.ssh_args_for_bash_stdin(argv))
@@ -69,7 +73,7 @@ class SshTarget:
         return " ".join(
             [
                 "ssh",
-                "-T",
+                self._tty_flag(),
                 "-F",
                 shlex.quote(str(self.config_path)),
                 shlex.quote(self.connection_target),
@@ -78,13 +82,13 @@ class SshTarget:
         )
 
     def ssh_args_for_argv(self, argv: list[str]) -> list[str]:
-        return ["ssh", "-F", str(self.config_path), self.connection_target, self.wrap_argv(argv)]
+        return ["ssh", self._tty_flag(), "-F", str(self.config_path), self.connection_target, self.wrap_argv(argv)]
 
     def local_ssh_args_for_argv(self, argv: list[str]) -> list[str]:
         return _local_backend_argv(self.ssh_args_for_argv(argv))
 
     def ssh_args_for_shell(self, command: str) -> list[str]:
-        return ["ssh", "-F", str(self.config_path), self.connection_target, self.wrap_shell(command)]
+        return ["ssh", self._tty_flag(), "-F", str(self.config_path), self.connection_target, self.wrap_shell(command)]
 
     def local_ssh_args_for_shell(self, command: str) -> list[str]:
         return _local_backend_argv(self.ssh_args_for_shell(command))
@@ -93,6 +97,7 @@ class SshTarget:
         return " ".join(
             [
                 "ssh",
+                self._tty_flag(),
                 "-F",
                 shlex.quote(str(self.config_path)),
                 shlex.quote(self.connection_target),
@@ -104,6 +109,7 @@ class SshTarget:
         return " ".join(
             [
                 "ssh",
+                self._tty_flag(),
                 "-F",
                 shlex.quote(str(self.config_path)),
                 shlex.quote(self.connection_target),
