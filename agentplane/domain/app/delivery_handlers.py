@@ -439,8 +439,8 @@ def _plan_delivery_verify_steps(
             capabilities=("ssh", "docker", "curl"),
         ),
     ]
-    if include_public and app_cli._has_public_ingress(contract):
-        public_root = str(app_cli._public_sites(contract)[0]["public_url"]).rstrip("/")
+    if include_public and app_cli.has_public_ingress(contract):
+        public_root = str(app_cli.public_sites(contract)[0]["public_url"]).rstrip("/")
         local_backend = detect_host_profile().linux_backend
         steps.extend(
             [
