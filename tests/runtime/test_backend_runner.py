@@ -51,9 +51,10 @@ def test_backend_runner_renders_ssh_linux_shell_plan() -> None:
     assert rendered.backend_type == "ssh-linux"
     if os.name == "nt":
         assert rendered.argv[:3] == ("wsl.exe", "-e", "ssh")
-        assert rendered.argv[3:6] == ("-F", str(ssh_config), "root@prod0-main")
+        assert rendered.argv[3] == "-T"
+        assert rendered.argv[4:7] == ("-F", str(ssh_config), "root@prod0-main")
     else:
-        assert rendered.argv[:4] == ("ssh", "-F", str(ssh_config), "root@prod0-main")
+        assert rendered.argv[:5] == ("ssh", "-T", "-F", str(ssh_config), "root@prod0-main")
     assert rendered.metadata["remote_command"] == "docker inspect sub2api-prod"
 
 
