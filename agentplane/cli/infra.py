@@ -38,11 +38,13 @@ from agentplane.runtime.wsl_bridge import normalize_repo_root_for_current_host
 FORMAL_INFRA_TARGETS = ("wsl", "prod0-main", "prod2-main")
 
 INFRA_ACTION_SCOPE_HELP = (
-    "三正式目标通用动作: inventory / audit / remote bash / "
-    "secrets init-data-services|sync-layout\n"
-    "local: inspect\n"
-    "live-gate: plan / run explicit WSL/SSH/Docker integration gates\n"
-    "target-specific: cleanup= wsl|prod0-main; automation= wsl|prod0-main|prod2-main; network= prod0-main|prod2-main"
+    "基座治理: inventory / audit / live-gate\n"
+    "执行通道: remote bash\n"
+    "安全配置: secrets init-data-services | sync-layout\n"
+    "网络治理: network audit | ensure\n"
+    "周期调度: automation search | get | verify | plan | apply\n"
+    "生命周期: cleanup plan | apply\n"
+    "本地: inspect"
 )
 
 
@@ -82,6 +84,7 @@ def add_infra_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         help=_target_help(scope="三正式目标通用", targets=FORMAL_INFRA_TARGETS),
     )
     audit_parser.add_argument("--repo-root", default=".", help="仓库根目录")
+    audit_parser.add_argument("--write", action="store_true", help="将审计结果写入操作记录")
 
     live_gate_parser = infra_subparsers.add_parser(
         "live-gate",
@@ -201,6 +204,7 @@ def add_infra_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         default="mutation",
         help="声明命令意图 (diagnostic=诊断, read-only=只读, mutation=可修改). 默认 mutation",
     )
+    bash_parser.add_argument("--stream", action="store_true", help="实时流式输出 stdout/stderr")
     bash_parser.add_argument("remote_args", nargs="*", help="透传给远端 bash -s -- 的参数")
 
     secrets_parser = infra_subparsers.add_parser("secrets", help="基础设施级 secrets 正式入口")
@@ -265,6 +269,22 @@ def handle_infra_command(args: argparse.Namespace) -> dict[str, Any]:
 
     if args.infra_action == "audit":
         result = audit_filesystem(repo_root, args.target)
+        if args.write:
+            from agentplane.cli.operations import append_operation_ledger, next_operation_id
+
+            append_operation_ledger(
+                repo_root,
+                command="infra",
+                action="audit",
+                target=args.target,
+                op_id=next_operation_id("audit"),
+                dry_run=False,
+                result="pass" if result["ok"] else "fail",
+                details={
+                    "violations_count": len(result["violations"]),
+                    "path_check_mode": result.get("path_check_mode"),
+                },
+            )
         return _wrap(
             action="audit",
             target=args.target,
@@ -396,6 +416,7 @@ def handle_infra_command(args: argparse.Namespace) -> dict[str, Any]:
             script_file=args.script_file,
             dry_run=bool(args.dry_run),
             intent=args.intent,
+            stream=bool(args.stream),
         )
         return _wrap(
             action="remote.bash",
