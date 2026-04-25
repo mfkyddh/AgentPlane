@@ -1,3 +1,11 @@
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-25
+superseded_by: null
+audience: both
+---
+
 # Contributing
 
 Thanks for helping improve AgentPlane.

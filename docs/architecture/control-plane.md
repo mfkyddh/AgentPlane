@@ -1,3 +1,11 @@
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-25
+superseded_by: null
+audience: agent
+---
+
 # AgentPlane Unified Control Plane
 
 结论：`docs/architecture/control-plane.md` 是 `AgentPlane` 控制面核心合同的唯一正文真源。方法论、CLI 合同、task-entry 模型、inventory / ledger 投影模型的长期稳定内容统一维护在本文；专题步骤继续放在对应 runbook。

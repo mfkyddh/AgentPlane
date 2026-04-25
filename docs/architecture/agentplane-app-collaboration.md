@@ -1,4 +1,14 @@
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-25
+superseded_by: null
+audience: agent
+---
+
 # AgentPlane 与应用层项目协作规范
+
+结论：本文定义 AgentPlane 控制面仓库与应用仓库之间的边界、交付合同和变更流程，确保控制面收口到 AgentPlane，应用仓库只保留业务代码和交付合同。
 
 ## 1. 目的
 

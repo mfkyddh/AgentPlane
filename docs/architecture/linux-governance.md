@@ -1,4 +1,14 @@
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-25
+superseded_by: null
+audience: agent
+---
+
 # Linux Governance Specification
+
+结论：本文定义 Linux/WSL 环境下的统一治理约束，确保自动化可复用、可验证、可审计，且不改变宿主入口选择。
 
 ## 目标
 

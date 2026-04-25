@@ -3,7 +3,9 @@ status: active
 owner: AgentPlane maintainers
 last_verified: 2026-04-24
 superseded_by: null
+audience: agent
 ---
+
 
 # 容器与服务规范
 

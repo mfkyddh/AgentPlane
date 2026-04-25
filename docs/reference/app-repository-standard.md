@@ -3,6 +3,8 @@ status: active
 owner: AgentPlane maintainers
 last_verified: 2026-04-12
 superseded_by: null
+audience: agent
+
 ---
 
 # 应用仓库统一接入规范

@@ -3,6 +3,8 @@ status: active
 owner: AgentPlane maintainers
 last_verified: 2026-04-25
 superseded_by: null
+audience: both
+
 ---
 
 # 🚨 App Delivery 失败处理

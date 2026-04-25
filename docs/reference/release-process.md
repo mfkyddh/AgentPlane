@@ -3,6 +3,8 @@ status: active
 owner: AgentPlane maintainers
 last_verified: 2026-04-24
 superseded_by: null
+audience: agent
+
 ---
 
 # 发布与持续健康规范

@@ -1,3 +1,11 @@
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-25
+superseded_by: null
+audience: agent
+---
+
 # Architecture Docs
 
 结论：`docs/architecture/` 只保留 Agent-first control plane template repository 的长期合同正文；旧链接占位文档、阶段性迁移说明和窄主题 reference 不放在本目录。
