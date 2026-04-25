@@ -198,6 +198,7 @@ def execute_remote_bash(
     stdin_text: str | None = None,
     dry_run: bool = False,
     intent: Intent = "mutation",
+    stream: bool = False,
 ) -> dict[str, Any]:
     repo_root = Path(repo_root).resolve()
     remote_args = _strip_remainder_separator(list(remote_args or []))
@@ -245,7 +246,15 @@ def execute_remote_bash(
         )
         return payload
 
-    result = runner.execute(plan, bindings=bindings)
+    if stream:
+        import sys
+        result = runner.execute_stream(
+            plan,
+            bindings=bindings,
+            on_chunk=lambda chunk: sys.stdout.write(chunk.text) if chunk.stream == "stdout" else sys.stderr.write(chunk.text),
+        )
+    else:
+        result = runner.execute(plan, bindings=bindings)
     payload["ok"] = result.ok
     payload["result"] = result.to_payload()
     _record_operation(

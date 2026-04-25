@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import os
+import queue
 import shlex
 import shutil
 import subprocess
+import threading
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Literal, Mapping
+from typing import Any, Callable, Literal, Mapping
 
 BackendType = Literal["linux-native", "windows-wsl", "macos-lima", "ssh-linux"]
 ErrorCategory = Literal["backend_unavailable", "network", "auth", "command", "timeout", "unknown"]
@@ -56,6 +58,12 @@ class ExecutionPlan:
             "capabilities": list(self.capabilities),
             "timeout": self.timeout,
         }
+
+
+@dataclass(frozen=True)
+class StreamChunk:
+    stream: Literal["stdout", "stderr"]
+    text: str
 
 
 @dataclass(frozen=True)
@@ -319,6 +327,139 @@ class BackendRunner:
             display_command=rendered.display_command,
             cwd=rendered.cwd,
             returncode=completed.returncode,
+            stdout=stdout,
+            stderr=stderr,
+            ok=True,
+        )
+
+    def execute_stream(
+        self,
+        plan: ExecutionPlan,
+        *,
+        bindings: ExecutionBindings | None = None,
+        on_chunk: Callable[[StreamChunk], None] | None = None,
+    ) -> ExecutionResult:
+        rendered = self.render(plan, bindings=bindings)
+        binary_stdin = rendered.backend_type in {"ssh-linux", "windows-wsl"} and os.name == "nt" and rendered.stdin_text is not None
+
+        def _reader(pipe: Any, q: queue.Queue[str], name: str) -> None:
+            try:
+                for line in iter(pipe.readline, b"" if binary_stdin else ""):
+                    if not line:
+                        break
+                    if not isinstance(line, (bytes, str)):
+                        break
+                    text = line.decode("utf-8", errors="replace") if isinstance(line, bytes) else line
+                    q.put(text)
+                    if on_chunk is not None:
+                        on_chunk(StreamChunk(stream=name, text=text))  # type: ignore[arg-type]
+            finally:
+                pipe.close()
+
+        try:
+            if binary_stdin:
+                proc = subprocess.Popen(
+                    list(rendered.argv),
+                    cwd=self._local_cwd(rendered.cwd),
+                    env=dict(rendered.env) if rendered.env else None,
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+                if rendered.stdin_text is not None:
+                    proc.stdin.write(rendered.stdin_text.encode("utf-8"))
+                proc.stdin.close()
+            else:
+                proc = subprocess.Popen(
+                    list(rendered.argv),
+                    cwd=self._local_cwd(rendered.cwd),
+                    env=dict(rendered.env) if rendered.env else None,
+                    stdin=subprocess.PIPE if rendered.stdin_text is not None else None,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                )
+                if rendered.stdin_text is not None and proc.stdin is not None:
+                    proc.stdin.write(rendered.stdin_text)
+                    proc.stdin.close()
+
+            stdout_q: queue.Queue[str] = queue.Queue()
+            stderr_q: queue.Queue[str] = queue.Queue()
+            t_out = threading.Thread(target=_reader, args=(proc.stdout, stdout_q, "stdout"))
+            t_err = threading.Thread(target=_reader, args=(proc.stderr, stderr_q, "stderr"))
+            t_out.start()
+            t_err.start()
+
+            t_out.join()
+            t_err.join()
+            returncode = proc.wait()
+
+            stdout_lines: list[str] = []
+            while not stdout_q.empty():
+                stdout_lines.append(stdout_q.get_nowait())
+            stderr_lines: list[str] = []
+            while not stderr_q.empty():
+                stderr_lines.append(stderr_q.get_nowait())
+
+            stdout = "".join(stdout_lines)
+            stderr = "".join(stderr_lines)
+        except FileNotFoundError as exc:
+            return ExecutionResult(
+                backend_type=rendered.backend_type,
+                argv=rendered.argv,
+                display_command=rendered.display_command,
+                cwd=rendered.cwd,
+                returncode=-1,
+                stdout="",
+                stderr=str(exc),
+                ok=False,
+                error=ExecutionError(
+                    category="backend_unavailable",
+                    message=f"Backend executable not found: {exc}",
+                    retryable=False,
+                    escalation="human",
+                ),
+            )
+        except OSError as exc:
+            return ExecutionResult(
+                backend_type=rendered.backend_type,
+                argv=rendered.argv,
+                display_command=rendered.display_command,
+                cwd=rendered.cwd,
+                returncode=-1,
+                stdout="",
+                stderr=str(exc),
+                ok=False,
+                error=ExecutionError(
+                    category="unknown",
+                    message=str(exc),
+                    retryable=False,
+                    escalation="human",
+                ),
+            )
+
+        if returncode != 0:
+            error = _classify_error(returncode, stderr)
+            return ExecutionResult(
+                backend_type=rendered.backend_type,
+                argv=rendered.argv,
+                display_command=rendered.display_command,
+                cwd=rendered.cwd,
+                returncode=returncode,
+                stdout=stdout,
+                stderr=stderr,
+                ok=False,
+                error=error,
+            )
+
+        return ExecutionResult(
+            backend_type=rendered.backend_type,
+            argv=rendered.argv,
+            display_command=rendered.display_command,
+            cwd=rendered.cwd,
+            returncode=returncode,
             stdout=stdout,
             stderr=stderr,
             ok=True,
