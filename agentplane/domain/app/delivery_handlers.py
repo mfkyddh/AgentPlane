@@ -45,6 +45,28 @@ def _load_validated_contract(
     return app_runtime, contract, contract_file
 
 
+def _check_delivery_preconditions(
+    repo_root: Path,
+    *,
+    target: str,
+    app: str,
+    app_repo_root: str | None = None,
+) -> dict[str, Any]:
+    """在 deploy 等写操作前检查 app object 与 app resource 是否就绪。"""
+    from agentplane.domain.app.object_handlers import verify_app_object
+    from agentplane.domain.app.resource_handlers import verify_app_resource
+
+    object_result = verify_app_object(repo_root, target, app, app_repo_root=app_repo_root)
+    resource_result = verify_app_resource(repo_root, target, app)
+
+    preconditions = {
+        "app_object": {"ok": bool(object_result.get("ok")), "checks": object_result.get("checks", {})},
+        "app_resource": {"ok": bool(resource_result.get("ok")), "checks": resource_result.get("checks", {})},
+    }
+    ok = all(v["ok"] for v in preconditions.values())
+    return {"ok": ok, "preconditions": preconditions}
+
+
 def _candidate_host_binding(app_cli: Any, host_binding: str) -> str:
     host_ip, host_port = app_cli._split_host_binding(host_binding)
     port = int(host_port)
@@ -771,6 +793,25 @@ def deploy_for_app(
     app_repo_root: str | None = None,
 ) -> dict[str, Any]:
     app_cli, contract, _ = _load_validated_contract(repo_root, target=target, app=app, app_repo_root=app_repo_root)
+
+    if execute:
+        preconditions = _check_delivery_preconditions(repo_root, target=target, app=app, app_repo_root=app_repo_root)
+        if not preconditions["ok"]:
+            return {
+                "command": "app",
+                "action": "deploy",
+                "target": target,
+                "payload": {
+                    "ok": False,
+                    "error": {
+                        "code": "app.delivery.precondition_failed",
+                        "message": "deploy 前置检查未通过",
+                        "hint": "先执行 `app object verify` 和 `app resource verify` 查看详情",
+                    },
+                    "preconditions": preconditions["preconditions"],
+                },
+            }
+
     rollback_entry = contract["rollback"]["previous_control_plane"]
 
     if target == "wsl":

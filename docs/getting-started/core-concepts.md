@@ -67,7 +67,7 @@ $ agentplane service verify --target prod0-main --name myapp
 
 **对象分层**：
 
-AgentPlane 把基础设施抽象为 4 个对象域：
+AgentPlane 把基础设施抽象为 **4 个核心对象域**：
 
 | 对象域 | 管理内容 | 典型命令 |
 |--------|---------|---------|
@@ -75,6 +75,13 @@ AgentPlane 把基础设施抽象为 4 个对象域：
 | `service` | 运行中的服务（容器、数据库等） | `service search`、`service verify`、`service apply` |
 | `ingress` | 公网入口、域名、证书 | `ingress publish plan`、`ingress verify` |
 | `app` | 应用交付（构建、部署、回滚） | `app delivery validate-contract`、`app delivery deploy` |
+
+此外还有 2 个配套域，辅助核心域完成工作：
+
+| 配套域 | 作用 |
+|--------|------|
+| `app resource` | 管理应用关联的资源归属和密码文件校验 |
+| `projection` | 自动整理操作记录、刷新状态台账、同步运行时环境 |
 
 ---
 
