@@ -44,6 +44,8 @@ audience: agent
 
 `infra` 当前默认入口已经收口到 `agentplane infra ...`，公开动作固定为 `inventory`、`audit`、`cleanup`、`automation`、`network`、`remote bash`、`secrets`。其中 `automation` 已并入 `infra`，`network` 已并入 `infra`；`panel / firewall` 仍保留在 `onepanel` 域。
 
+`infra` 内部按职责划分为 6 个子域：基座治理（inventory / audit / live-gate）、执行通道（remote bash）、安全配置（secrets）、网络治理（network）、周期调度（automation）、生命周期（cleanup）。子域边界用于文档分组和 help 组织，不改变 CLI 命令形态。
+
 `service` 当前默认入口已经开放到 `agentplane service ...`，公开动作为 `search`、`get`、`verify`、`plan`、`apply`、`materialize`，以及 `service public-endpoint verify|plan|apply`。formal service 只接受 inventory 中已声明的受管运行服务对象；固定对象保留 `postgres`、`redis`、`minio`、`mihomo`、`onepanel_openresty`，同时扩展到 inventory 中声明且 `control_plane` 为 `compose`、`onepanel-app`、`onepanel-compose` 的 tracked runtime service。对外客户端交付物如 Clash Local Profile，应作为 service 附着产物由 `service materialize` 渲染；非 HTTP 公网端点的 DNS/证书续期对账应作为 service 附着事实由 `service public-endpoint` 处理，不再新开专题脚本域。`onepanel container / app / project` 已退出公开默认入口。
 
 `ingress` 当前默认入口已经开放到 `agentplane ingress ...`，公开动作为 `search`、`get`、`verify`、`plan`、`apply`、`refresh-ledger`、`publish`。`ingress` 聚合 `inventory.services.public_ingresses` 与 provider live state 做公网入口对象核验；`ingress publish` 是 Cloudflare + 1Panel 公网入口的正式任务入口，继续以配置文件作为外部输入，不公开 raw onepanel / cloudflare 参数。非 HTTP 协议入口继续附着在 `service` 事实中，不进入 `ingress publish`。
@@ -54,7 +56,7 @@ audience: agent
 
 `projection` 当前默认入口已经开放到 `agentplane projection ...`，统一承接 `runtime-env`、`verification`、`fixture`、`ledger` 四个 surface。`verification run` 包装只读验证套件，`fixture plan/apply/cleanup` 包装 WSL fixture 生命周期，`ledger refresh` 负责 ledgers 与 inventory 投影刷新；它们继续保持 `command=projection` 的正式输出合同。
 
-`onepanel` 当前只保留 provider/debug 低层对象面：`panel`、`firewall`、`cronjob`、`task`。其余公开能力全部迁出到 `ingress`、`service`、`app`、`projection`；内部 object API 只作为 substrate，不充当公开命令面。
+`onepanel` 当前只保留 provider/debug 低层对象面：`panel`、`firewall`、`cronjob`、`task`。其余公开能力全部迁出到 `ingress`、`service`、`app`、`projection`；内部 object API 只作为 substrate，不充当公开命令面。`onepanel` 已从默认 `agentplane --help` 中隐藏，执行时输出调试警告，仅用于排查 provider 底层问题。
 
 ### Task-Entry First
 
