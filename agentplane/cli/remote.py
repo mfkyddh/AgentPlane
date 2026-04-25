@@ -151,6 +151,8 @@ def _render_payload(
         payload["ssh_argv"] = rendered["argv"]
     else:
         payload["argv"] = rendered["argv"]
+    if "error" in rendered:
+        payload["error"] = rendered["error"]
     return payload
 
 

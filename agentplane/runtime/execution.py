@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Any, Literal, Mapping
 
 BackendType = Literal["linux-native", "windows-wsl", "macos-lima", "ssh-linux"]
+ErrorCategory = Literal["backend_unavailable", "network", "auth", "command", "timeout", "unknown"]
+EscalationLevel = Literal["none", "human", "auto"]
 
 
 def shell_join(argv: tuple[str, ...] | list[str]) -> str:
@@ -127,6 +129,53 @@ class RenderedExecution:
 
 
 @dataclass(frozen=True)
+class ExecutionError:
+    category: ErrorCategory
+    message: str
+    retryable: bool
+    escalation: EscalationLevel
+
+    def to_payload(self) -> dict[str, Any]:
+        return {
+            "category": self.category,
+            "message": self.message,
+            "retryable": self.retryable,
+            "escalation": self.escalation,
+        }
+
+
+def _classify_error(returncode: int, stderr: str) -> ExecutionError:
+    stderr_lower = stderr.lower()
+    if "permission denied" in stderr_lower or "authentication" in stderr_lower:
+        return ExecutionError(
+            category="auth",
+            message=f"Authentication or permission failure (exit {returncode}): {stderr.strip()}",
+            retryable=False,
+            escalation="human",
+        )
+    if any(token in stderr_lower for token in ("connection refused", "no route to host", "network is unreachable", "could not resolve hostname")):
+        return ExecutionError(
+            category="network",
+            message=f"Network failure (exit {returncode}): {stderr.strip()}",
+            retryable=True,
+            escalation="auto",
+        )
+    if any(token in stderr_lower for token in ("command not found", "no such file or directory", "not found")):
+        return ExecutionError(
+            category="command",
+            message=f"Command not found or invalid (exit {returncode}): {stderr.strip()}",
+            retryable=False,
+            escalation="none",
+        )
+    return ExecutionError(
+        category="command",
+        message=f"Command failed with exit code {returncode}: {stderr.strip()}",
+        retryable=returncode == 1,  # exit 1 often signals soft/config errors
+        escalation="none",
+    )
+
+
+@dataclass(frozen=True)
 class ExecutionResult:
     backend_type: BackendType
     argv: tuple[str, ...]
@@ -136,9 +185,10 @@ class ExecutionResult:
     stdout: str
     stderr: str
     ok: bool
+    error: ExecutionError | None = None
 
     def to_payload(self) -> dict[str, Any]:
-        return {
+        payload: dict[str, Any] = {
             "backend_type": self.backend_type,
             "argv": list(self.argv),
             "display": self.display_command,
@@ -148,6 +198,9 @@ class ExecutionResult:
             "stderr": self.stderr,
             "ok": self.ok,
         }
+        if self.error is not None:
+            payload["error"] = self.error.to_payload()
+        return payload
 
 
 class BackendRunner:
@@ -165,34 +218,101 @@ class BackendRunner:
     def execute(self, plan: ExecutionPlan, *, bindings: ExecutionBindings | None = None) -> ExecutionResult:
         rendered = self.render(plan, bindings=bindings)
         binary_stdin = rendered.backend_type in {"ssh-linux", "windows-wsl"} and os.name == "nt" and rendered.stdin_text is not None
-        if binary_stdin:
-            completed = subprocess.run(
-                list(rendered.argv),
-                cwd=self._local_cwd(rendered.cwd),
-                env=dict(rendered.env) if rendered.env else None,
-                input=rendered.stdin_text.encode("utf-8"),
-                text=False,
-                capture_output=True,
-                check=False,
-                timeout=plan.timeout if plan.timeout > 0 else None,
+        try:
+            if binary_stdin:
+                completed = subprocess.run(
+                    list(rendered.argv),
+                    cwd=self._local_cwd(rendered.cwd),
+                    env=dict(rendered.env) if rendered.env else None,
+                    input=rendered.stdin_text.encode("utf-8"),
+                    text=False,
+                    capture_output=True,
+                    check=False,
+                    timeout=plan.timeout if plan.timeout > 0 else None,
+                )
+                stdout = completed.stdout.decode("utf-8", errors="replace") if isinstance(completed.stdout, bytes) else completed.stdout
+                stderr = completed.stderr.decode("utf-8", errors="replace") if isinstance(completed.stderr, bytes) else completed.stderr
+            else:
+                completed = subprocess.run(
+                    list(rendered.argv),
+                    cwd=self._local_cwd(rendered.cwd),
+                    env=dict(rendered.env) if rendered.env else None,
+                    input=rendered.stdin_text,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    capture_output=True,
+                    check=False,
+                    timeout=plan.timeout if plan.timeout > 0 else None,
+                )
+                stdout = completed.stdout
+                stderr = completed.stderr
+        except subprocess.TimeoutExpired as exc:
+            return ExecutionResult(
+                backend_type=rendered.backend_type,
+                argv=rendered.argv,
+                display_command=rendered.display_command,
+                cwd=rendered.cwd,
+                returncode=-1,
+                stdout="",
+                stderr=str(exc),
+                ok=False,
+                error=ExecutionError(
+                    category="timeout",
+                    message=f"Command timed out after {plan.timeout}s: {rendered.display_command}",
+                    retryable=True,
+                    escalation="auto",
+                ),
             )
-            stdout = completed.stdout.decode("utf-8", errors="replace") if isinstance(completed.stdout, bytes) else completed.stdout
-            stderr = completed.stderr.decode("utf-8", errors="replace") if isinstance(completed.stderr, bytes) else completed.stderr
-        else:
-            completed = subprocess.run(
-                list(rendered.argv),
-                cwd=self._local_cwd(rendered.cwd),
-                env=dict(rendered.env) if rendered.env else None,
-                input=rendered.stdin_text,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                capture_output=True,
-                check=False,
-                timeout=plan.timeout if plan.timeout > 0 else None,
+        except FileNotFoundError as exc:
+            return ExecutionResult(
+                backend_type=rendered.backend_type,
+                argv=rendered.argv,
+                display_command=rendered.display_command,
+                cwd=rendered.cwd,
+                returncode=-1,
+                stdout="",
+                stderr=str(exc),
+                ok=False,
+                error=ExecutionError(
+                    category="backend_unavailable",
+                    message=f"Backend executable not found: {exc}",
+                    retryable=False,
+                    escalation="human",
+                ),
             )
-            stdout = completed.stdout
-            stderr = completed.stderr
+        except OSError as exc:
+            return ExecutionResult(
+                backend_type=rendered.backend_type,
+                argv=rendered.argv,
+                display_command=rendered.display_command,
+                cwd=rendered.cwd,
+                returncode=-1,
+                stdout="",
+                stderr=str(exc),
+                ok=False,
+                error=ExecutionError(
+                    category="unknown",
+                    message=str(exc),
+                    retryable=False,
+                    escalation="human",
+                ),
+            )
+
+        if completed.returncode != 0:
+            error = _classify_error(completed.returncode, stderr)
+            return ExecutionResult(
+                backend_type=rendered.backend_type,
+                argv=rendered.argv,
+                display_command=rendered.display_command,
+                cwd=rendered.cwd,
+                returncode=completed.returncode,
+                stdout=stdout,
+                stderr=stderr,
+                ok=False,
+                error=error,
+            )
+
         return ExecutionResult(
             backend_type=rendered.backend_type,
             argv=rendered.argv,
@@ -201,7 +321,7 @@ class BackendRunner:
             returncode=completed.returncode,
             stdout=stdout,
             stderr=stderr,
-            ok=completed.returncode == 0,
+            ok=True,
         )
 
     @staticmethod
