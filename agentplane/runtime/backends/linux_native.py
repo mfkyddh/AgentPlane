@@ -7,8 +7,10 @@ from agentplane.runtime.execution import (
     require_local_executable,
     shell_join,
 )
+from agentplane.runtime.backends.registry import register_backend
 
 
+@register_backend("linux-native")
 class LinuxNativeBackend:
     backend_type = "linux-native"
 

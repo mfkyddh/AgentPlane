@@ -11,9 +11,11 @@ from agentplane.runtime.execution import (
     env_prefixed_command,
     require_local_executable,
 )
+from agentplane.runtime.backends.registry import register_backend
 from agentplane.ssh import SshTarget
 
 
+@register_backend("ssh-linux")
 class SshLinuxBackend:
     backend_type = "ssh-linux"
 

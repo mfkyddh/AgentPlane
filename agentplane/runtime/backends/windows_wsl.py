@@ -11,8 +11,10 @@ from agentplane.runtime.execution import (
     shell_join,
 )
 from agentplane.runtime.wsl_bridge import windows_path_to_wsl_posix
+from agentplane.runtime.backends.registry import register_backend
 
 
+@register_backend("windows-wsl")
 class WindowsWslBackend:
     backend_type = "windows-wsl"
 

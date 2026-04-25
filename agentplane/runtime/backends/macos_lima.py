@@ -10,8 +10,10 @@ from agentplane.runtime.execution import (
     require_local_executable,
     shell_join,
 )
+from agentplane.runtime.backends.registry import register_backend
 
 
+@register_backend("macos-lima")
 class MacosLimaBackend:
     backend_type = "macos-lima"
 
