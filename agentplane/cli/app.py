@@ -18,6 +18,7 @@ from agentplane.cli.ingress import add_ingress_parser, handle_ingress_command
 from agentplane.cli.projection import add_projection_parser, handle_projection_command
 from agentplane.cli.repository import add_repository_parser, handle_repository_command
 from agentplane.cli.service import add_service_parser, handle_service_command
+from agentplane.cli.test_runner import add_test_parser, handle_test_command
 
 
 def _emit(payload: dict[str, Any]) -> None:
@@ -51,6 +52,7 @@ def build_parser() -> argparse.ArgumentParser:
     add_projection_parser(subparsers)
     add_repository_parser(subparsers)
     add_onepanel_parser(subparsers)
+    add_test_parser(subparsers)
 
     return parser
 
@@ -80,6 +82,9 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 print(render_onepanel_text(payload), end="")
             return 1
+
+    if args.command == "test":
+        return handle_test_command(args)
 
     if args.command == "infra":
         try:
