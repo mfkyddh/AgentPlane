@@ -29,6 +29,7 @@ audience: both
 | 初始化 Secrets | [Secrets 引导](runbooks/bootstrap-secrets.md) |
 | 管理 WSL 开发环境 | [WSL 治理](runbooks/wsl-host-governance.md) |
 | 管理生产机 | [prod0-main 治理](runbooks/prod0-main-governance.md) |
+| 添加新服务器 | [纳入新服务器](tutorials/add-new-server.md) |
 
 ---
 

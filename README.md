@@ -86,18 +86,29 @@ agentplane repo health-check --repo-root .
 
 ---
 
+## 🗣️ 怎么告诉 AgentPlane 你要做什么
+
+不用记命令，用自然语言描述：
+
+> "把 sub2api 部署到 prod0-main，用最新镜像，先预览变更，确认后再执行，部署完验证健康状态。"
+
+AI 会自动转换为**计划 → 执行 → 验证 → 记录**的完整闭环。  
+更多示例见 [AI 执行流程](docs/getting-started/how-agent-works.md#怎么描述意图)。
+
+---
+
 ## 📁 项目结构
 
 ```
 AgentPlane/
-├── agentplane/          🤖 CLI 与自动化代码
-├── tests/               🧪 自动化测试
-├── docs/                📖 文档（人类 + AI）
-├── infra/compose/       🐳 Docker Compose 资产
-├── inventory/           📋 非敏感状态台账
-├── templates/           📄 非敏感模板
-├── secrets/             🔐 本地敏感信息（不提交 Git）
-└── local/               🏠 本地协作（不提交 Git）
+├── agentplane/          CLI 与自动化代码
+├── tests/               自动化测试
+├── docs/                文档（人类 + AI）
+├── infra/compose/       Docker Compose 资产
+├── inventory/           非敏感状态台账
+├── templates/           非敏感模板
+├── secrets/             本地敏感信息（不提交 Git）
+└── local/               本地协作（不提交 Git）
 ```
 
 > 正式入口只有 `agentplane ...`。
@@ -106,24 +117,16 @@ AgentPlane/
 
 ## 📖 文档导航
 
-**👤 人类入口**
+**👤 人类入口**：
+[5 分钟速览](docs/getting-started/5-minute-overview.md) ·
+[核心概念](docs/getting-started/core-concepts.md) ·
+[部署应用](docs/runbooks/app-project-delivery-workflow.md) ·
+[AI 执行流程](docs/getting-started/how-agent-works.md)
 
-| 你想做什么 | 看这里 |
-|-----------|--------|
-| 第一次了解项目 | [5 分钟速览](docs/getting-started/5-minute-overview.md) |
-| 理解核心概念 | [核心概念](docs/getting-started/core-concepts.md) |
-| 部署一个应用 | [应用交付流程](docs/runbooks/app-project-delivery-workflow.md) |
-| 查看当前状态 | [状态与验证](docs/runbooks/current-state-and-validation.md) |
-| 了解 AI 怎么工作 | [AI 执行流程](docs/getting-started/how-agent-works.md) |
-
-**🤖 AI 入口**
-
-| 你需要什么 | 看这里 |
-|-----------|--------|
-| 工作规范（每次注入） | [AGENTS.md](AGENTS.md) |
-| 控制面架构合同 | [control-plane.md](docs/architecture/control-plane.md) |
-| 执行闭环规范 | [execution-flow.md](docs/runbooks/control-plane-agent-execution-flow.md) |
-| 文档治理规范 | [documentation-governance.md](docs/reference/documentation-governance.md) |
+**🤖 AI 入口**：
+[AGENTS.md](AGENTS.md) ·
+[control-plane.md](docs/architecture/control-plane.md) ·
+[execution-flow.md](docs/runbooks/control-plane-agent-execution-flow.md)
 
 ---
 
