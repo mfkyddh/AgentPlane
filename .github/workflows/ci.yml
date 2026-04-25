@@ -35,7 +35,7 @@ jobs:
       - name: Validate commit messages
         env:
           COMMIT_RANGE: ${{ github.event_name == 'pull_request' && format('{0}..{1}', github.event.pull_request.base.sha, github.sha) || github.sha }}
-        run: uv run python scripts/check_commit_message.py --range-env COMMIT_RANGE
+        run: uv run python -m agentplane.domain.repository.commit_message --range-env COMMIT_RANGE
 
       - name: Run repository health check
         run: uv run python -m agentplane.cli repo health-check --repo-root .

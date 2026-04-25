@@ -1,2 +1,2 @@
 #!/usr/bin/env sh
-exec uv run python scripts/check_commit_message.py "$1"
+exec uv run python -m agentplane.domain.repository.commit_message "$1"

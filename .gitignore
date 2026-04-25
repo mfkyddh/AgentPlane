@@ -19,7 +19,9 @@ secrets/
 !.firecrawl/.gitkeep
 .playwright-cli/
 .worktrees/
+.workbuddy/
 .cache/
+.ruff_cache/
 tmp/
 
 # Python and Node runtime caches.
@@ -29,8 +31,6 @@ __pycache__/
 node_modules/
 
 .venv/
-
-.workbuddy/
 
 # 本地协作（不纳入开源仓库）
 local/

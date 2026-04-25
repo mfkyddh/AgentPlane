@@ -110,7 +110,7 @@ docker exec 1panel-openresty-prod nginx -T | grep ssl_certificate
 ## 风险与人工接力
 
 - `prod0-main` 目前不是常态写操作目标；如需调整入口对象、证书绑定或 OpenResty 入口，先确认升级窗口和变更审批。
-- 现场如果必须查看 1Panel 页面、直调 `api_request.py` 或检查旧 cutover 资料，只能作为只读辅助，结论要回写到 formal `projection` / `ingress` 结果与 live-state 验证上。
+- 现场如果必须查看 1Panel 页面或检查旧 cutover 资料，只能作为只读辅助，结论要回写到 formal `projection` / `ingress` 结果与 live-state 验证上。
 - 历史 `8443` 切换细节已归档到 `docs/archive/runbooks/prod0-main-8443-openresty-cutover.md`，不要把历史窗口步骤继续当 active 主流程。
 
 ## 禁止事项

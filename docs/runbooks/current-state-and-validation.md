@@ -55,7 +55,7 @@
 这条命令可以用于日常漂移判断，但含 `--reveal-secrets` 的输出仍不能贴到共享日志里。
 
 2. `prod0-readonly` 的 1Panel 只读验证链路当前不可用。  
-现场报错是远端缺少 `/opt/agentplane/agentplane/scripts/onepanel/api_request.py`，说明 prod0 的 readonly provider surface 与仓库当前 CLI/脚本布局已经漂移。
+现场报错显示远端缺少正式 AgentPlane 控制面代码，说明 prod0 的 readonly provider surface 与仓库当前 CLI 布局已经漂移。
 
 ### 生产机环境侧
 

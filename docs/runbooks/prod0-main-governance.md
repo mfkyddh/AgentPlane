@@ -31,7 +31,7 @@
 当前缺口按 `inventory/servers/prod0-main/inventory.json` 的 `managed_bridge_networks.required_for` 为准。
 
 3. `projection verification run --target prod0-main --profile prod0-readonly` 当前失败。  
-现场缺少 `/opt/agentplane/agentplane/scripts/onepanel/api_request.py`，导致 readonly 1Panel 验证面失效。
+现场缺少正式 AgentPlane 控制面代码，导致 readonly 1Panel 验证面失效。
 
 ## 先执行哪几步
 

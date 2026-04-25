@@ -72,20 +72,12 @@ skills:
     aliases: []
     entrypoint: bash
     projection_targets: [agents_pointer]
-  - name: onepanel-app-lifecycle
-    frontmatter_name: onepanel-app-lifecycle
-    source_path: .codex/skills/onepanel-app-lifecycle/SKILL.md
-    kind: compat
-    domains: [app]
-    aliases: [onepanel-app-ops]
-    entrypoint: uv run python -m agentplane.cli
-    projection_targets: [agents_pointer]
   - name: onepanel-app-ops
     frontmatter_name: onepanel-app-ops
     source_path: .codex/skills/onepanel-app-ops/SKILL.md
     kind: canonical
     domains: [app]
-    aliases: [onepanel-app-lifecycle]
+    aliases: []
     entrypoint: uv run python -m agentplane.cli
     projection_targets: [agents_pointer]
   - name: onepanel-container-ops
@@ -143,20 +135,6 @@ skills:
     domains: [ingress]
     aliases: []
     entrypoint: uv run python -m agentplane.cli ingress
-    projection_targets: [agents_pointer]
-  - name: openclaw-1panel
-    frontmatter_name: onepanel-ops
-    source_path: .codex/skills/openclaw-1panel/SKILL.md
-    kind: compat
-    domains: [infra, ingress, service, app, projection]
-    aliases:
-      - onepanel-panel-ops
-      - onepanel-website-ops
-      - onepanel-container-ops
-      - onepanel-app-ops
-      - onepanel-cronjob-ops
-      - inventory-ledger-ops
-    entrypoint: uv run python -m agentplane.cli
     projection_targets: [agents_pointer]
   - name: openclaw-docker-setup
     frontmatter_name: openclaw-docker-setup

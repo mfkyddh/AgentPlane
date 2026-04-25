@@ -11,10 +11,10 @@
 ## Reference
 
 - [control-plane-path-policy.md](../reference/control-plane-path-policy.md)
+- [repository-structure.md](../reference/repository-structure.md)
 - [app-repository-standard.md](../reference/app-repository-standard.md)
-- [onepanel-api-compatibility.md](../reference/onepanel-api-compatibility.md)
+- [onepanel-api-contract.md](../reference/onepanel-api-contract.md)
 - [app-delivery-versioning.md](../reference/app-delivery-versioning.md)
-- [compat-retirement-ledger.md](../reference/compat-retirement-ledger.md)
 - [control-plane-naming-registry.md](../reference/control-plane-naming-registry.md)
 
 ## Maintainers

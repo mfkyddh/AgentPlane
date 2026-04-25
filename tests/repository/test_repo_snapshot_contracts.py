@@ -15,10 +15,6 @@ EXPECTED_MANAGED_SERVICES = {
         },
     },
 }
-EXPECTED_COMPAT_ENTRIES = {
-    "agentplane/scripts/remote/run_remote_bash.sh",
-    "agentplane/scripts/onepanel/api_request.py",
-}
 
 
 def load_compose(path: Path) -> dict:
@@ -30,30 +26,6 @@ def image_family(image_ref: str) -> str:
     resolved = match.group(1) if match else image_ref
     resolved = resolved.split("@", 1)[0]
     return resolved.split(":", 1)[0]
-
-
-def ledger_rows() -> list[list[str]]:
-    text = (REPO_ROOT / "docs" / "reference" / "compat-retirement-ledger.md").read_text(encoding="utf-8")
-    rows: list[list[str]] = []
-    in_table = False
-    for raw_line in text.splitlines():
-        line = raw_line.strip()
-        if line == "## 当前台账":
-            in_table = True
-            continue
-        if not in_table:
-            continue
-        if not line.startswith("|"):
-            if rows:
-                break
-            continue
-        if line.startswith("| ---"):
-            continue
-        cells = [cell.strip() for cell in line.strip("|").split("|")]
-        if cells and cells[0] == "compat_entry":
-            continue
-        rows.append(cells)
-    return rows
 
 
 class RepoSnapshotContractsTests(unittest.TestCase):
@@ -137,11 +109,13 @@ class RepoSnapshotContractsTests(unittest.TestCase):
         expected_paths = [
             "agentplane/scripts/internal/remote/example.sh",
             "agentplane/scripts/internal/remote/example-arg.sh",
-            "agentplane/scripts/remote/run_remote_bash.sh",
+            "agentplane/scripts/onepanel/signed_request.py",
         ]
         unexpected_paths = [
             "agentplane/scripts/remote/example.sh",
             "agentplane/scripts/remote/example-arg.sh",
+            "agentplane/scripts/remote/run_remote_bash.sh",
+            "agentplane/scripts/onepanel/api_request.py",
         ]
 
         for relative_path in expected_paths:
@@ -211,20 +185,19 @@ class RepoSnapshotContractsTests(unittest.TestCase):
                 with self.subTest(app_id=app_id, path=relative_path, check="image-family"):
                     self.assertEqual(expected_image_family, image_family(service["image"]))
 
-    def test_compat_retirement_ledger_rows_are_contractual(self) -> None:
-        rows = ledger_rows()
-        compat_entries = set()
+    def test_removed_compatibility_entrypoints_stay_absent(self) -> None:
+        removed_paths = [
+            "docs/reference/compat-retirement-ledger.md",
+            "scripts/check_commit_message.py",
+            "scripts/batch_rename.py",
+            "scripts/batch_rename_docs.py",
+            "scripts/batch_rename_inventory.py",
+            "scripts/batch_rename_tests.py",
+            "scripts/fix_remaining_refs.py",
+            "agentplane/scripts/remote/run_remote_bash.sh",
+            "agentplane/scripts/onepanel/api_request.py",
+        ]
 
-        for row in rows:
-            with self.subTest(row=row):
-                self.assertEqual(6, len(row))
-                self.assertTrue(all(row))
-                compat_entry, replacement, _allowed_callers, last_verified, _remove_when, _removal_test = row
-                compat_entries.add(compat_entry.strip("`"))
-                self.assertTrue((REPO_ROOT / compat_entry.strip("`")).is_file())
-                for segment in replacement.strip("`").split(" / "):
-                    self.assertTrue(segment.strip("`").startswith("uv run python -m agentplane.cli"))
-                self.assertRegex(last_verified, r"^`?\d{4}-\d{2}-\d{2}`?$")
-
-        self.assertEqual(EXPECTED_COMPAT_ENTRIES, compat_entries)
-
+        for relative_path in removed_paths:
+            with self.subTest(path=relative_path):
+                self.assertFalse((REPO_ROOT / relative_path).exists(), f"removed entrypoint still present: {relative_path}")

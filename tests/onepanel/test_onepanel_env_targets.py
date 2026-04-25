@@ -55,9 +55,15 @@ class OnePanelEnvTargetsTests(unittest.TestCase):
         self.assertEqual("prod0-main", prod0_target.ssh_alias)
         self.assertEqual("prod2-main", prod2_target.ssh_alias)
         self.assertEqual(Path("/opt/agentplane/secrets/services/onepanel-api.env"), prod0_target.api_env_file)
-        self.assertEqual(Path("/opt/agentplane/agentplane/scripts/onepanel/api_request.py"), prod0_target.api_request_script)
+        self.assertEqual(
+            Path("/opt/agentplane/agentplane/scripts/onepanel/signed_request.py"),
+            prod0_target.api_request_script,
+        )
         self.assertEqual(Path("/opt/agentplane/secrets/services/onepanel-api.env"), prod2_target.api_env_file)
-        self.assertEqual(Path("/opt/agentplane/agentplane/scripts/onepanel/api_request.py"), prod2_target.api_request_script)
+        self.assertEqual(
+            Path("/opt/agentplane/agentplane/scripts/onepanel/signed_request.py"),
+            prod2_target.api_request_script,
+        )
 
     def test_supported_targets_include_prod2(self) -> None:
         self.assertIn("prod2-main", env_targets.supported_targets())
@@ -67,7 +73,7 @@ class OnePanelEnvTargetsTests(unittest.TestCase):
             name="wsl",
             mode="local",
             api_env_file=Path("D:/Projects/AgentPlane/secrets/hosts/wsl/onepanel/api.env"),
-            api_request_script=Path("D:/Projects/AgentPlane/agentplane/scripts/onepanel/api_request.py"),
+            api_request_script=Path("D:/Projects/AgentPlane/agentplane/scripts/onepanel/signed_request.py"),
             linux_backend=env_targets.LinuxBackend(
                 backend_type="wsl-linux",
                 executable=("wsl.exe", "-e"),
@@ -78,7 +84,7 @@ class OnePanelEnvTargetsTests(unittest.TestCase):
         command = env_targets.build_api_request_command(target, "GET", "/api/v2/core/settings/search")
 
         self.assertEqual("python3", command[0])
-        self.assertEqual("/mnt/d/Projects/AgentPlane/agentplane/scripts/onepanel/api_request.py", command[1])
+        self.assertEqual("/mnt/d/Projects/AgentPlane/agentplane/scripts/onepanel/signed_request.py", command[1])
         self.assertIn("/mnt/d/Projects/AgentPlane/secrets/hosts/wsl/onepanel/api.env", command)
 
     def test_ssh_api_request_command_preserves_remote_posix_paths(self) -> None:
@@ -86,13 +92,13 @@ class OnePanelEnvTargetsTests(unittest.TestCase):
             name="prod0-main",
             mode="ssh",
             api_env_file=Path("/opt/agentplane/secrets/services/onepanel-api.env"),
-            api_request_script=Path("/opt/agentplane/agentplane/scripts/onepanel/api_request.py"),
+            api_request_script=Path("/opt/agentplane/agentplane/scripts/onepanel/signed_request.py"),
         )
 
         command = env_targets.build_api_request_command(target, "GET", "/api/v2/core/settings/search")
 
         self.assertEqual("python3", command[0])
-        self.assertEqual("/opt/agentplane/agentplane/scripts/onepanel/api_request.py", command[1])
+        self.assertEqual("/opt/agentplane/agentplane/scripts/onepanel/signed_request.py", command[1])
         self.assertIn("/opt/agentplane/secrets/services/onepanel-api.env", command)
 
     def test_resolve_remote_api_paths_uses_declared_agentplane_remote_root(self) -> None:
@@ -101,7 +107,7 @@ class OnePanelEnvTargetsTests(unittest.TestCase):
             args=[],
             returncode=0,
             stdout="/opt/agentplane/secrets/services/onepanel-api.env\n"
-            "/opt/agentplane/agentplane/scripts/onepanel/api_request.py\n",
+            "/opt/agentplane/agentplane/scripts/onepanel/signed_request.py\n",
             stderr="",
         )
 
@@ -109,7 +115,7 @@ class OnePanelEnvTargetsTests(unittest.TestCase):
             env_file, script = env_targets.resolve_api_paths(target)
 
         self.assertEqual(Path("/opt/agentplane/secrets/services/onepanel-api.env"), env_file)
-        self.assertEqual(Path("/opt/agentplane/agentplane/scripts/onepanel/api_request.py"), script)
+        self.assertEqual(Path("/opt/agentplane/agentplane/scripts/onepanel/signed_request.py"), script)
         run_command.assert_called_once()
 
     def test_resolve_remote_api_paths_ignores_removed_live_root_work_repo(self) -> None:
@@ -125,7 +131,7 @@ class OnePanelEnvTargetsTests(unittest.TestCase):
             env_file, script = env_targets.resolve_api_paths(target)
 
         self.assertEqual(Path("/opt/agentplane/secrets/services/onepanel-api.env"), env_file)
-        self.assertEqual(Path("/opt/agentplane/agentplane/scripts/onepanel/api_request.py"), script)
+        self.assertEqual(Path("/opt/agentplane/agentplane/scripts/onepanel/signed_request.py"), script)
         run_command.assert_called_once()
 
     def test_phase4_lane12_projection_fixture_apply_requires_execute_for_mutation_guardrail(self) -> None:
@@ -146,4 +152,3 @@ class OnePanelEnvTargetsTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

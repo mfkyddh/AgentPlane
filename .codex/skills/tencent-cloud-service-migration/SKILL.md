@@ -16,7 +16,7 @@ Use this skill when the user wants to recreate services on another Tencent Cloud
    - config migration: copy the selected runtime config directories or files
    - blank control plane: deploy the destination service with empty state when the user wants a fresh management plane
 4. Keep the source host unchanged. Do not stop, rebuild, reload, or rewrite the source host unless the user explicitly asks for cutover work there.
-5. For Dockerized data services in this repository, prefer shipping the tracked compose assets plus selected files from `secrets/services/` to the destination host and running a deterministic remote script from `/tmp/env_ubuntu_deploy`.
+5. For Dockerized data services in this repository, prefer shipping the tracked compose assets plus selected files from `secrets/services/` to the destination host through the formal `agentplane infra remote bash ...` path.
 6. When bind-mounted runtime files are copied under a destination path such as `/opt/env_ubuntu/secrets`, ensure the deployed directories stay traversable and any files read by non-root container processes remain readable enough inside the container.
 7. If the destination host cannot pull a required image but the source host already has it locally, stream it with `docker save | docker load` instead of debugging registries first.
 8. For `nginx-ui-prod` migrations, copy only the intended control-plane directories, currently `/data/apps/nginx-ui-official/nginx` and `/data/apps/nginx-ui-official/nginx-ui`, then retarget domain names, certificate paths, and upstreams for the destination host before reloading Nginx.
@@ -29,12 +29,8 @@ Use this skill when the user wants to recreate services on another Tencent Cloud
 
 ## Repository-Specific Patterns
 
-- Data-service infrastructure-only migration currently uses:
-  - `ops/scripts/remote/deploy_data_services_to_host.sh`
-  - `ops/scripts/remote/remote_deploy_data_services.sh`
-- `nginx-ui-prod` migration currently uses:
-  - `ops/scripts/remote/deploy_nginx_ui_to_host.sh`
-  - `ops/scripts/remote/remote_deploy_nginx_ui.sh`
+- Data-service infrastructure-only migration uses repository-owned implementation assets under `agentplane/scripts/remote/`, invoked through formal CLI flows.
+- `nginx-ui-prod` migration must be expressed as an `agentplane ...` plan before any host changes are applied.
 - `prod0-main` is the current `zzzai.cloud` host.
 
 ## Cloudflare Notes

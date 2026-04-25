@@ -57,13 +57,7 @@ def repo_root() -> Path:
 
 
 def _remote_api_path_candidates(default_env_file: Path, default_script: Path) -> tuple[tuple[Path, Path], ...]:
-    legacy_env = Path("/opt/env_ubuntu/secrets/services/onepanel-api.env")
-    legacy_script = Path("/opt/env_ubuntu/agentplane/scripts/onepanel/api_request.py")
-    return (
-        (default_env_file, default_script),
-        (legacy_env, default_script),
-        (legacy_env, legacy_script),
-    )
+    return ((default_env_file, default_script),)
 
 
 def _remote_posix_path(path: Path) -> str:
@@ -169,7 +163,7 @@ def get_target(name: str, env_file_override: str | None = None) -> TargetConfig:
             name=name,
             mode="ssh",
             api_env_file=Path("/opt/agentplane/secrets/services/onepanel-api.env"),
-            api_request_script=Path("/opt/agentplane/agentplane/scripts/onepanel/api_request.py"),
+            api_request_script=Path("/opt/agentplane/agentplane/scripts/onepanel/signed_request.py"),
             ssh_alias="prod0-main",
             ssh_config=workspace.private_root / "ssh" / "config",
             ssh_user="root",
@@ -180,7 +174,7 @@ def get_target(name: str, env_file_override: str | None = None) -> TargetConfig:
             name=name,
             mode="ssh",
             api_env_file=Path("/opt/agentplane/secrets/services/onepanel-api.env"),
-            api_request_script=Path("/opt/agentplane/agentplane/scripts/onepanel/api_request.py"),
+            api_request_script=Path("/opt/agentplane/agentplane/scripts/onepanel/signed_request.py"),
             ssh_alias="prod2-main",
             ssh_config=workspace.private_root / "ssh" / "config",
             ssh_user="root",
@@ -193,7 +187,7 @@ def get_target(name: str, env_file_override: str | None = None) -> TargetConfig:
             name=name,
             mode="local",
             api_env_file=Path(env_file_override) if env_file_override else default_env,
-            api_request_script=workspace.control_root / "agentplane/scripts/onepanel/api_request.py",
+            api_request_script=workspace.control_root / "agentplane/scripts/onepanel/signed_request.py",
             linux_backend=default_linux_backend(),
         )
     raise ValueError(f"Unsupported target: {name}")

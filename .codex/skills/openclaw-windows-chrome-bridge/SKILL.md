@@ -50,9 +50,9 @@ Do not prefer `user` or `existing-session` for WSL-to-Windows control. On this m
 3. Start Windows Chrome for automation.
    On current Windows Chrome builds here, do not assume the daily-use default profile can be exposed with `--remote-debugging-port`.
    Prefer a dedicated user data dir under `C:\Users\Administrator\.codex\`.
-   If local helper scripts are present under `ops/scripts/browser/`, prefer the launcher helper:
+   If local helper scripts are present under `agentplane/scripts/browser/`, prefer the launcher helper:
    ```powershell
-   powershell -ExecutionPolicy Bypass -File ops/scripts/browser/start-chrome-bridge.ps1
+   powershell -ExecutionPolicy Bypass -File agentplane/scripts/browser/start-chrome-bridge.ps1
    ```
    Equivalent manual example:
    ```powershell
@@ -88,7 +88,7 @@ Do not prefer `user` or `existing-session` for WSL-to-Windows control. On this m
    Use that gateway IP in `browser.profiles.remote.cdpUrl` when the bridge listens on a Windows host port.
    If the local helper exists, prefer:
    ```bash
-   bash ops/scripts/browser/print-wsl-cdp-url.sh
+   bash agentplane/scripts/browser/print-wsl-cdp-url.sh
    ```
 
 7. Restart OpenClaw and validate the remote profile.
@@ -100,7 +100,7 @@ Do not prefer `user` or `existing-session` for WSL-to-Windows control. On this m
    ```
    If the local repair helper exists, prefer it when the bridge, config, or gateway state may be stale:
    ```bash
-   bash ops/scripts/browser/repair-browser-stack.sh
+   bash agentplane/scripts/browser/repair-browser-stack.sh
    ```
 
 8. Prove real browser control, not just connectivity.
@@ -115,7 +115,7 @@ Do not prefer `user` or `existing-session` for WSL-to-Windows control. On this m
 9. Drive Browse through OpenClaw agent messages when the user wants the agent itself to operate Chrome.
    If the local helper exists, use:
    ```bash
-   bash ops/scripts/browser/browse-via-agent.sh https://chatgpt.com/team-sign-up
+   bash agentplane/scripts/browser/browse-via-agent.sh https://chatgpt.com/team-sign-up
    ```
    The helper uses a dedicated session id by default so it does not fight with an existing `main` TUI or agent session lock.
    Equivalent direct command:
@@ -159,17 +159,17 @@ curl -fsS http://<gateway-ip>:9223/json/version
 
 Print the current WSL-visible CDP URL:
 ```bash
-bash ops/scripts/browser/print-wsl-cdp-url.sh
+bash agentplane/scripts/browser/print-wsl-cdp-url.sh
 ```
 
 Repair the bridge, update `cdpUrl`, and restart the gateway:
 ```bash
-bash ops/scripts/browser/repair-browser-stack.sh
+bash agentplane/scripts/browser/repair-browser-stack.sh
 ```
 
 Send an agent message that uses Browse on the remote profile:
 ```bash
-bash ops/scripts/browser/browse-via-agent.sh https://example.com
+bash agentplane/scripts/browser/browse-via-agent.sh https://example.com
 ```
 
 ## Durable Pitfalls

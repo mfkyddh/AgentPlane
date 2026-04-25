@@ -64,13 +64,13 @@ superseded_by: null
 正式建议的命令优先级固定为：
 
 ```text
-agentplane.cli > compat script > runbook > ad-hoc shell
+agentplane.cli > internal implementation asset > runbook > ad-hoc shell
 ```
 
 解释：
 
 - `agentplane.cli` 是正式命令面。
-- `ops/scripts/*` 只能是兼容层或实现层，不能写成默认入口。
+- 内部实现资产只能由 CLI、provider 或测试调用，不能写成默认入口。
 - runbook 用来解释流程、风险和人工步骤，不是第一命令面。
 - ad-hoc shell 只能用于现场诊断，不能写成长期合同建议。
 
@@ -109,7 +109,7 @@ workflow skill 可额外补：
 - 长期文档不要写死 `.worktrees/` 绝对路径；需要保留现场路径时，只允许放在 `history` 或 handoff 的“执行快照”部分。
 - `docs/reference/**/*.md` 与 `docs/maintainers/**/*.md` 在文首提供统一 metadata block，字段固定为 `status`、`owner`、`last_verified`、`superseded_by`；`last_verified` 必须使用 `YYYY-MM-DD`。
 - 后续新增或再次改动的长期文档也必须沿用同一 metadata block，不允许再发明第二种写法。
-- compat 入口的替代关系、删除条件和最后验证时间统一记录到 [`docs/reference/compat-retirement-ledger.md`](../reference/compat-retirement-ledger.md)。
+- 仓库结构、入口边界和新增文件放置规则统一记录到 [`docs/reference/repository-structure.md`](../reference/repository-structure.md)。
 - 跨层名称映射统一回指 [`docs/reference/control-plane-naming-registry.md`](../reference/control-plane-naming-registry.md)。
 
 ### secrets 写法约束
@@ -118,13 +118,13 @@ skill、reference、runbook 在提到 secrets 路径时，必须明确区分：
 
 1. 真源声明：`secrets/hosts/<target>/...`
 2. 运行时投影：`secrets/services/...` 等由真源派生的本机运行文件
-3. 兼容路径：尚未退役的 legacy path；只能标注为 `compat`、`legacy compatible path` 或 `projection-only`
+3. 运行时投影路径：由正式真源生成的本机消费文件，只能标注为 `projection-only`
 
 补充规则：
 
 - 不要把笼统的 `secrets/`、`secrets/services/...`、`secrets/app-resources/...`、`secrets/env/...` 写成“真实文件默认位置”或“正式真源目录”。
-- 若仍需提到旧路径，必须同句标明它们只是 projection 或 compatibility-only，不反向充当真源。
-- 同时出现真源路径与旧路径时，先写 `secrets/hosts/<target>/...`，再写兼容路径。
+- 若仍需提到旧路径，必须放入 archive 或历史说明，不得反向充当真源。
+- 同时出现真源路径与投影路径时，先写 `secrets/hosts/<target>/...`，再写 projection-only 路径。
 
 ### `inventory / ledger` 写法约束
 

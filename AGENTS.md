@@ -17,9 +17,10 @@
 | 5 | **原子提交**：每个逻辑变更单元独立提交，暂存超 15 文件必须评估拆分 | 🔴 |
 | 6 | **Conventional Commits**：`type(scope): description` 格式 | 🔴 |
 | 7 | **先计划后执行**：高风险操作必须有 plan 阶段 | 🔴 |
-| 8 | **执行后必验证**：每次变更都运行最小验证 | 🟡 |
-| 9 | **用 `pwsh` 而非 `cmd`**：Windows 上默认用 PowerShell | 🟡 |
-| 10 | **先查帮助再执行**：不确定时用 `--help` | 🟡 |
+| 8 | **固定顶层结构**：新增顶层目录前先更新 `docs/reference/repository-structure.md` | 🔴 |
+| 9 | **执行后必验证**：每次变更都运行最小验证 | 🟡 |
+| 10 | **用 `pwsh` 而非 `cmd`**：Windows 上默认用 PowerShell | 🟡 |
+| 11 | **先查帮助再执行**：不确定时用 `--help` | 🟡 |
 
 ---
 
@@ -88,6 +89,7 @@ agentplane <domain> <surface> <verb> [flags]
 | 文档 | 内容 |
 |------|------|
 | [docs/reference/git-conventions.md](docs/reference/git-conventions.md) | Git 完整规范（原子性、Commit Message、分支、换行符） |
+| [docs/reference/repository-structure.md](docs/reference/repository-structure.md) | 仓库结构规范 |
 | [docs/reference/code-style.md](docs/reference/code-style.md) | 代码风格规范 |
 | [docs/reference/tech-stack.md](docs/reference/tech-stack.md) | 技术栈规范 |
 | [docs/reference/release-process.md](docs/reference/release-process.md) | 发布与持续健康规范 |
@@ -111,6 +113,8 @@ agentplane <domain> <surface> <verb> [flags]
 | `infra/compose/` | Docker Compose 资产 | ✅ |
 | `inventory/` | 非敏感状态台账 | ✅ |
 | `templates/` | 非敏感模板 | ✅ |
+| `plugins/` | 插件分发资产 | ✅ |
+| `.agents/` | Agent/skill 投影与 marketplace 元数据 | ✅ |
 | `.codex/` | Codex skill 与环境动作 | ✅ |
 | `tests/` | 自动化测试 | ✅ |
 | `secrets/` | 本地真实 Secrets | ❌ |

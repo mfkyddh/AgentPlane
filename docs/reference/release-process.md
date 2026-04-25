@@ -83,4 +83,4 @@ uv run python -m agentplane.cli repo health-check --repo-root .
 - 不为“变小”单独大重构。
 - 每次触碰一个行为点，就把该行为点抽到更窄的模块或 support helper。
 - 拆分提交必须包含行为不变的测试证明。
-- 旧函数退役时同步更新 reference 文档或 compat ledger。
+- 旧函数退役时同步更新 reference 文档和结构守门测试。

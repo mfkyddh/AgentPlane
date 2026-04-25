@@ -26,7 +26,7 @@ This repository is being shaped as a one-checkout, cross-platform open source co
 
 ## Remaining Hard-Cut Work
 
-- Retire remaining compatibility-only provider helpers once the formal CLI fully covers their use cases.
+- Keep provider helpers internal and route public workflows through the formal CLI.
 - Move remaining direct `tests/onepanel` script substrate coverage behind provider-level contracts where practical.
 - Run live gate with `--execute` only in an explicitly prepared WSL/SSH/Docker environment.
 - Keep the release process current after the first public tag and tighten automation as branch workflow stabilizes.

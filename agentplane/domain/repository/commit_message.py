@@ -1,6 +1,6 @@
 """Validate AgentPlane commit messages.
 
-The script accepts either a commit message file path, as used by Git's
+The module accepts either a commit message file path, as used by Git's
 commit-msg hook, or a raw subject via --message.
 """
 

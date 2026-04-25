@@ -171,10 +171,9 @@ class SecretLayoutTests(unittest.TestCase):
                 self.assertIn(compose_name, local_script)
                 self.assertIn(compose_name, remote_script)
 
-    def test_remote_bash_wrapper_delegates_to_cli_shim(self) -> None:
-        wrapper = (REPO_ROOT / "agentplane" / "scripts" / "remote" / "run_remote_bash.sh").read_text(encoding="utf-8")
-        self.assertIn("python3 -m agentplane.cli", wrapper)
-        self.assertNotIn("agentplane/ssh.py", wrapper)
+    def test_remote_bash_wrapper_is_removed(self) -> None:
+        wrapper = REPO_ROOT / "agentplane" / "scripts" / "remote" / "run_remote_bash.sh"
+        self.assertFalse(wrapper.exists(), msg=f"removed compatibility wrapper still exists: {wrapper}")
 
     def test_data_service_deploy_scripts_use_unique_remote_staging_root(self) -> None:
         local_script = (REPO_ROOT / "agentplane" / "scripts" / "remote" / "deploy_data_services_to_host.sh").read_text(
@@ -235,4 +234,3 @@ class SecretLayoutTests(unittest.TestCase):
                     any(marker in content for marker in ("legacy", "transitional", "projection-only", "projection only")),
                     msg=f"flat template must be explicitly marked transitional or projection-only: {path}",
                 )
-

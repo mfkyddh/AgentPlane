@@ -9,7 +9,6 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 CATALOG_FILE = REPO_ROOT / ".codex" / "skills" / "catalog.yaml"
 REQUIRED_DOMAINS = {"infra", "service", "ingress", "app-resource", "app", "projection"}
 REQUIRED_PLUGIN_GROUPS = {"ingress", "containers", "firewall", "cronjobs", "apps", "ledgers", "infra"}
-COMPAT_SKILLS = {"onepanel-app-lifecycle", "openclaw-1panel"}
 
 
 class OnePanelPluginAndSkillsTests(unittest.TestCase):
@@ -130,17 +129,13 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
                 self.assertNotIn("plugin_group", entry)
                 self.assertNotIn("plugin_skill", entry.get("projection_targets", []))
 
-    def test_compat_skills_are_marked_as_routers_in_catalog_and_text(self) -> None:
+    def test_catalog_has_no_compatibility_skills(self) -> None:
         payload = self._load_catalog()
-        entries = {entry["name"]: entry for entry in payload["skills"]}
-        for name in COMPAT_SKILLS:
-            with self.subTest(name=name):
-                self.assertEqual("compat", entries[name]["kind"])
-                self.assertTrue(entries[name]["aliases"])
-                text = (REPO_ROOT / ".codex" / "skills" / name / "SKILL.md").read_text(encoding="utf-8")
-                self.assertIn("CLI-first", text)
-                self.assertNotIn("## Commands", text)
-                self.assertIn("router", text.lower())
+        compat_entries = [entry["name"] for entry in payload["skills"] if entry["kind"] == "compat"]
+
+        self.assertEqual([], compat_entries)
+        self.assertFalse((REPO_ROOT / ".codex" / "skills" / "onepanel-app-lifecycle").exists())
+        self.assertFalse((REPO_ROOT / ".codex" / "skills" / "openclaw-1panel").exists())
 
     def test_active_skills_do_not_route_back_to_openclaw_direct_wrappers(self) -> None:
         cases = (

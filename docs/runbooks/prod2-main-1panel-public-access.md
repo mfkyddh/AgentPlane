@@ -4,7 +4,7 @@
 
 - 本手册定义 `prod2-main` 已上线的 active 公网入口口径。
 - AgentPlane 的正式运维控制面是 `agentplane ...`；runbook 只解释专题流程、风险与人工接力点。
-- `api_request.py` 与页面点击只保留给 provider/debug、troubleshooting 或现场只读核对；旧 `ops/scripts/onepanel/*` lifecycle 入口不再作为正式路径。
+- 1Panel 页面点击和内部 signed request helper 只用于 provider/debug、troubleshooting 或现场只读核对；正式路径固定走 `agentplane ...`。
 - 主机目标摘要由 `inventory/servers/prod2-main/README.md`（公开摘要）与 `inventory/servers/prod2-main/inventory.json`（运行级真源）共同构成，所有公开网站描述均以这两个文件为依据，避免出现漂移的个别“单点口径”。
 
 ## 正式链路
@@ -131,7 +131,7 @@ docker exec 1panel-openresty-prod nginx -s reload
 
 以下内容只用于排障或现场只读核对，不是正式主入口：
 
-- `python3 /opt/agentplane/ops/scripts/onepanel/api_request.py GET /api/v2/websites/list ...`
+- `agentplane onepanel --env prod2-main panel verify --repo-root <repo-root>`
 - 直接打开 1Panel 面板核对入口对象、证书对象或 cronjob 页面
 - 宿主机底层 bridge 检查：
 

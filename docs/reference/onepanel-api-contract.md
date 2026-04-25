@@ -5,14 +5,14 @@ last_verified: 2026-04-02
 superseded_by: null
 ---
 
-# 1Panel API Compatibility
+# 1Panel API 合同
 
-本文是 `AgentPlane` 的 `1Panel` API 兼容性 reference 真源。本文只定义长期稳定的兼容边界、对象覆盖、错误模型与 CLI/plugin 接口约束，不展开具体操作步骤或 host 级 runbook。
+本文是 `AgentPlane` 的 `1Panel` API reference 真源。本文只定义长期稳定的对象覆盖、错误模型与 CLI/plugin 接口约束，不展开具体操作步骤或 host 级 runbook。
 
 ## Baseline
 
 - Upstream source mirror: `/root/github/1Panel`
-- Target compatibility baseline: `v2.1.7`
+- Target API baseline: `v2.1.7`
 - AgentPlane runtime principle: `CLI-first`
 - 正式执行入口: `agentplane onepanel ...`
 
@@ -21,13 +21,13 @@ superseded_by: null
 - `wsl`
   - Primary API regression and fixture environment.
   - Preferred local env source: `secrets/hosts/wsl/onepanel/api.env`
-  - Legacy compatible env path: `secrets/services/onepanel-api.wsl.env`
+  - Projection env path: `secrets/services/onepanel-api.wsl.env`
 - `prod2-main`
-  - Live compatibility validation target for `v2.1.7`.
+  - Live API validation target for `v2.1.7`.
   - Reads and low-risk idempotent writes may be validated here after WSL passes.
 - `prod0-main`
   - Upgrade-prep audit target.
-  - Default posture in this phase is read-only compatibility inspection.
+  - Default posture in this phase is read-only API inspection.
 
 ## Object Coverage
 
@@ -56,16 +56,16 @@ superseded_by: null
 - `suite run` 保持只读；机器报告是审计证据，不自动等价于服务故障单。
 - `ledger refresh --write` 负责把对象投影刷新到 tracked ledgers 与 inventory，不要求人手维护。
 
-## Compatibility Rules
+## API Rules
 
 - Skills and plugins must never construct signed 1Panel HTTP requests themselves.
-- Python modules under `agentplane/scripts/onepanel/` are provider substrate, not public script entrypoints. Only `api_request.py` remains as a low-level provider/debug request helper.
+- Python modules under `agentplane/scripts/onepanel/` are provider substrate, not public script entrypoints. The signed request helper is `signed_request.py` and is invoked only by repository-owned providers.
 - Human operators should default to concise CLI text output; plugins and automations should append `--json` and reuse the CLI result model directly.
 - New object support should first land in WSL, then validate on `prod2-main`, then be considered for `prod0-main`.
 - When a stable 1Panel API is unavailable or unverified, AgentPlane may temporarily read from tracked inventory, but that boundary must be documented explicitly.
 - `plan` and `apply` remain separate states. `apply` must not execute unless `--execute` is present.
 - `projection verification run` remains read-only. Any WSL fixture mutation must go through `agentplane projection fixture ...`.
-- On targets such as `prod2-main`, `suite run` may be used as a live compatibility audit even when some selectors intentionally do not resolve to 1Panel-native objects. A persisted failure report is valid audit evidence, not automatically a service-health failure.
+- On targets such as `prod2-main`, `suite run` may be used as a live API audit even when some selectors intentionally do not resolve to 1Panel-native objects. A persisted failure report is valid audit evidence, not automatically a service-health failure.
 
 ## Error Model
 

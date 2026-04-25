@@ -46,7 +46,7 @@
 
 `projection` 当前默认入口已经开放到 `agentplane projection ...`，统一承接 `runtime-env`、`verification`、`fixture`、`ledger` 四个 surface。`verification run` 包装只读验证套件，`fixture plan/apply/cleanup` 包装 WSL fixture 生命周期，`ledger refresh` 负责 ledgers 与 inventory 投影刷新；它们继续保持 `command=projection` 的正式输出合同。
 
-`onepanel` 当前只保留 provider/debug 低层对象面：`panel`、`firewall`、`cronjob`、`task`。其余公开能力全部迁出到 `ingress`、`service`、`app`、`projection`；`ops/scripts/onepanel/*` 与内部 object API 保留为 substrate，不再充当公开命令面。
+`onepanel` 当前只保留 provider/debug 低层对象面：`panel`、`firewall`、`cronjob`、`task`。其余公开能力全部迁出到 `ingress`、`service`、`app`、`projection`；内部 object API 只作为 substrate，不充当公开命令面。
 
 ### Task-Entry First
 
@@ -101,7 +101,7 @@ agentplane <domain> <surface> <verb> [flags]
 
 - `<surface>` 可以是 `object`，也可以是更高层的任务面或工作流面
 - 新增能力时优先向统一语法收敛，不继续扩大旧命名差异
-- `ops/scripts/*`、raw shell、remote bash wrapper 只能作为兼容层或实现层，不是第一命令面
+- 内部执行资产、raw shell 只能作为实现层或现场诊断手段，不是第一命令面
 
 ### Verbs
 
@@ -353,7 +353,7 @@ agentplane <domain> <surface> <verb> [flags]
 
 常见反模式：
 
-- 把 `ops/scripts/*` 长期维持为第一入口
+- 把内部执行资产长期维持为第一入口
 - 让 skill 直接拼 SSH、Docker、API 调用并跳过 `agentplane.cli`
 - 用 runbook 代替正式控制面
 - 让 `inventory` 长期靠手工维护
@@ -426,6 +426,5 @@ agentplane projection ledger refresh --target <target> --repo-root <repo-root> -
 - [control-plane-authoring.md](../maintainers/control-plane-authoring.md)
 - [control-plane-path-policy.md](../reference/control-plane-path-policy.md)
 - [control-plane-agent-execution-flow.md](../runbooks/control-plane-agent-execution-flow.md)
-- [control-plane-legacy-migration.md](../runbooks/control-plane-legacy-migration.md)
 - [linux-governance.md](linux-governance.md)
 - [agentplane-app-collaboration.md](agentplane-app-collaboration.md)

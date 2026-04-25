@@ -36,6 +36,6 @@ Windows 宿主统一走：
 
 - 日常正式入口仍然是 `agentplane ...`。
 - bootstrap 只负责 takeover truths、target scope README 和 readiness 判定；target 级 host truth、data-service admin secrets 和 domain 操作交给 Agent 在后续 flow 里处理。
-- `secrets/env/prod-jump.env` 属于 projection/compat 文件；只有相关旧 flow 明确需要时才单独补齐，不再作为 bootstrap blocker。
+- `secrets/env/prod-jump.env` 属于 projection-only 文件；只有明确的投影消费方需要时才单独补齐，不再作为 bootstrap blocker。
 - `onepanel-login.<target>.env` 这类人工浏览器登录辅助材料不参与 bootstrap contract。
 - `bootstrap verify-secrets` 只报告缺项、结构化 contract 问题和 readiness，不打印 secret 明文。

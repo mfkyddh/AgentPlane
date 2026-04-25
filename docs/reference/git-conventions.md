@@ -94,7 +94,7 @@ AGENTS.md 是每次对话自动注入的工作手册，**不是规范文档**。
 | `adapters` | `agentplane/adapters/` |
 | `providers` | `agentplane/providers/` |
 | `runtime` | `agentplane/runtime/` |
-| `scripts` | `agentplane/scripts/` |
+| `repository` | `agentplane/domain/repository/` |
 | `infra` | 基础设施相关 |
 | `ingress` | 入口治理相关 |
 | `app` | 应用生命周期相关 |
@@ -151,7 +151,7 @@ refactor(domain): rename host to infra
 仓库提供提交消息检查脚本：
 
 ```bash
-uv run python scripts/check_commit_message.py --message "docs(git): add commit policy enforcement"
+uv run python -m agentplane.domain.repository.commit_message --message "docs(git): add commit policy enforcement"
 ```
 
 如果希望 Git 在本地提交时自动拦截不合规标题，可启用仓库内 hook：

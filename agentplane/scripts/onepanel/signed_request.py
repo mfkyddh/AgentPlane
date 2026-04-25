@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Compatibility entrypoint for signed 1Panel API requests.
-
-Prefer `python -m agentplane.cli onepanel ...` for formal control-plane flows.
-This file remains for remote path compatibility and targeted recovery.
-"""
+"""Internal signed 1Panel API request helper."""
 
 from __future__ import annotations
 

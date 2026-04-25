@@ -144,36 +144,20 @@ uv run python -m agentplane.cli infra live-gate plan --profile wsl --repo-root .
 
 ```
 AgentPlane/
-├── 📚 docs/                  # 文档中心
-│   ├── architecture/         # 架构设计（长期稳定的规范）
-│   ├── runbooks/             # 操作手册（日常运维指南）
-│   └── reference/            # 参考文档（命名规范、测试架构等）
-│
-├── 🤖 agentplane/            # 核心代码（Python CLI 工具）
-│   ├── cli/                  # 命令行入口
-│   ├── adapters/             # 适配器（连接各种后端）
-│   └── scripts/              # 内部脚本
-│
-├── 📋 inventory/             # 资产台账（服务器、服务、网站清单）
-│
-├── 🏗️ infra/compose/         # Docker Compose 配置文件
-│
-├── 📄 templates/             # 配置模板（不含敏感信息）
-│
-├── 🔐 secrets/               # 敏感信息（密码、密钥、证书）
-│   └── 被 .gitignore 保护，不会提交
-│
-└── ✅ tests/                 # 自动化测试
+├── agentplane/              # 唯一生产代码：CLI、domain、runtime、provider、内部执行资产
+├── tests/                   # 自动化测试，按业务域组织
+├── docs/                    # 人读文档：architecture / reference / runbooks / archive
+├── infra/compose/           # Docker Compose 资产，每个服务一个目录
+├── inventory/               # 非敏感状态台账和逻辑真源
+├── templates/               # 非敏感模板和 .example 文件
+├── plugins/                 # AgentPlane/Codex 插件分发资产
+├── .codex/                  # Codex 环境动作与仓库内 skill
+├── .agents/                 # Agent/skill 投影与 marketplace 元数据
+├── secrets/                 # 本地真实 secrets，被 .gitignore 保护
+└── local/ tmp/ .venv/       # 本地态，不纳入仓库
 ```
 
-**一句话理解每个目录**：
-- `docs/` = 说明书和操作手册
-- `agentplane/` = AI 的操作工具箱（Python 程序）
-- `inventory/` = 资产清单（我家有哪些服务器、跑什么服务）
-- `infra/compose/` = 服务搭建图纸（Docker 配置）
-- `templates/` = 可以复用的模板
-- `secrets/` = 保险箱（密码放这里，安全）
-- `tests/` = 质检程序
+正式执行入口只有 `agentplane ...`。仓库不再保留顶层 `scripts/`，一次性迁移脚本不入库；内部执行资产必须放回 `agentplane/` 并由 CLI 或 provider 调用。完整规则见 [repository-structure.md](docs/reference/repository-structure.md)。
 
 ---
 
@@ -314,6 +298,7 @@ agentplane projection ledger refresh --target <target> --write
 - [live-integration-gate.md](docs/runbooks/live-integration-gate.md) — 现场集成验证
 
 ### 📚 参考文档
+- [repository-structure.md](docs/reference/repository-structure.md) — 仓库结构规范
 - [app-repository-standard.md](docs/reference/app-repository-standard.md) — 应用仓库标准
 - [code-style.md](docs/reference/code-style.md) — 代码风格规范
 - [tech-stack.md](docs/reference/tech-stack.md) — 技术栈规范
@@ -321,7 +306,6 @@ agentplane projection ledger refresh --target <target> --write
 - [release-process.md](docs/reference/release-process.md) — 发布与持续健康规范
 - [app-runtime-decomposition.md](docs/reference/app-runtime-decomposition.md) — App runtime 与测试 helper 拆分路线
 - [testing-architecture.md](docs/reference/testing-architecture.md) — 测试架构
-- [compat-retirement-ledger.md](docs/reference/compat-retirement-ledger.md) — 兼容入口退役台账
 - [control-plane-naming-registry.md](docs/reference/control-plane-naming-registry.md) — 命名规范
 - [docs/history/index.md](docs/history/index.md) — 历史说明索引
 - [docs/archive/README.md](docs/archive/README.md) — 已退出主流程的归档索引

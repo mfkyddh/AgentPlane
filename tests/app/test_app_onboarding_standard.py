@@ -10,8 +10,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 class AppOnboardingStandardTests(unittest.TestCase):
     def test_reference_docs_for_app_onboarding_governance_exist(self) -> None:
         expected_paths = [
+            "docs/reference/repository-structure.md",
             "docs/reference/app-repository-standard.md",
-            "docs/reference/compat-retirement-ledger.md",
             "docs/reference/control-plane-naming-registry.md",
         ]
 
@@ -23,12 +23,12 @@ class AppOnboardingStandardTests(unittest.TestCase):
         readme_text = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
         architecture_index_text = (REPO_ROOT / "docs" / "architecture" / "README.md").read_text(encoding="utf-8")
 
+        self.assertIn("[repository-structure.md](docs/reference/repository-structure.md)", readme_text)
         self.assertIn("[app-repository-standard.md](docs/reference/app-repository-standard.md)", readme_text)
-        self.assertIn("[compat-retirement-ledger.md](docs/reference/compat-retirement-ledger.md)", readme_text)
         self.assertIn("[control-plane-naming-registry.md](docs/reference/control-plane-naming-registry.md)", readme_text)
 
+        self.assertIn("[repository-structure.md](../reference/repository-structure.md)", architecture_index_text)
         self.assertIn("[app-repository-standard.md](../reference/app-repository-standard.md)", architecture_index_text)
-        self.assertIn("[compat-retirement-ledger.md](../reference/compat-retirement-ledger.md)", architecture_index_text)
         self.assertIn("[control-plane-naming-registry.md](../reference/control-plane-naming-registry.md)", architecture_index_text)
 
     def test_readme_prefers_bootstrap_first_startup_path(self) -> None:

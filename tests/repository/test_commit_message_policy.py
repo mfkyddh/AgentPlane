@@ -1,3 +1,4 @@
+import os
 import subprocess
 import sys
 import tempfile
@@ -10,7 +11,8 @@ class CommitMessagePolicyTests(unittest.TestCase):
         result = subprocess.run(
             [
                 sys.executable,
-                "scripts/check_commit_message.py",
+                "-m",
+                "agentplane.domain.repository.commit_message",
                 "--message",
                 "docs(standards): add project health guardrails",
             ],
@@ -26,7 +28,8 @@ class CommitMessagePolicyTests(unittest.TestCase):
         result = subprocess.run(
             [
                 sys.executable,
-                "scripts/check_commit_message.py",
+                "-m",
+                "agentplane.domain.repository.commit_message",
                 "--message",
                 "Update stuff",
             ],
@@ -63,11 +66,13 @@ class CommitMessagePolicyTests(unittest.TestCase):
             result = subprocess.run(
                 [
                     sys.executable,
-                    str(Path(__file__).resolve().parents[2] / "scripts" / "check_commit_message.py"),
+                    "-m",
+                    "agentplane.domain.repository.commit_message",
                     "--range",
                     "HEAD",
                 ],
                 cwd=root,
+                env={**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parents[2])},
                 text=True,
                 capture_output=True,
                 check=False,

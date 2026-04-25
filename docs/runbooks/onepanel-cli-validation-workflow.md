@@ -22,7 +22,7 @@
 `prod0-readonly` 不是“结果不理想”，而是链路本身坏了。  
 本轮现场报错是：
 
-- 远端缺少 `/opt/agentplane/agentplane/scripts/onepanel/api_request.py`
+- 远端缺少正式 AgentPlane 控制面代码
 
 所以目前 `prod0-readonly` 不能代表 prod0 的 1Panel 状态，只能代表“远端 readonly helper 需要修”。
 
