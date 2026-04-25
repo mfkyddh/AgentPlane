@@ -9,6 +9,8 @@
 - 当前样板：`sub2api`
 - 正式闭环：`validate-contract -> build-artifact -> ship-image -> render-runtime -> deploy -> verify -> inventory-refresh -> doc-sync`
 
+失败止损和分流处理见 [App Delivery 失败处理 Runbook](./app-delivery-failure-handling.md)。
+
 ## 先把路径关系讲清楚
 
 当前真实环境不是“控制面仓库和应用仓库都在同一个 WSL 目录”这么简单。
