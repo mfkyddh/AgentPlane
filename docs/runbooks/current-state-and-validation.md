@@ -1,11 +1,17 @@
-# AgentPlane 当前现状与验证
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-25
+superseded_by: null
+---
 
-## 这页解决什么问题
+# 📊 AgentPlane 当前状态与验证
 
-这不是第二真源，而是给人看的当前状态总览。  
-机器可消费的正式真源仍然是 `inventory/`、`tmp/operation-ledger/`、`secrets/` 和已登记应用合同；当前 active app catalog 为空。
+结论：本页是给人看的当前状态总览，不是第二真源。机器可消费的正式真源仍然是 `inventory/`、`tmp/operation-ledger/` 和已登记应用合同。
 
-## 2026-04-22 快照
+> ⚠️ 本页包含时间敏感快照，上次验证日期见 frontmatter `last_verified`。超过 30 天未更新请运行 `agentplane repo docs-sanity --repo-root .` 检查。
+
+## 🕰️ 2026-04-25 快照
 
 ### 控制面与源码位置
 

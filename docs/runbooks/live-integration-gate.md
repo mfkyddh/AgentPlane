@@ -1,6 +1,15 @@
-# Live Integration Gate
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-25
+superseded_by: null
+---
 
-## 定位
+# 🧪 Live Integration Gate
+
+结论：live gate 是真实 WSL/SSH/Docker 验证入口，必须显式 `--execute`，不混入默认本地门禁。
+
+## 📌 定位
 
 `live integration gate` 是真实 WSL/SSH/Docker 验证入口，不属于默认本地门禁。
 默认 `pytest` 只验证 CLI、runbook 与边界合同；真实 live gate 必须显式执行。

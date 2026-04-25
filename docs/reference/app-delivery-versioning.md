@@ -7,6 +7,8 @@ superseded_by: null
 
 # 应用交付版本规范
 
+结论：应用镜像 tag 和版本号规则，确保交付物可追溯、可回滚。
+
 本文是 `AgentPlane` 管理的 Docker/Compose 应用统一二开版本规范 reference 真源。本文只定义长期稳定的版本号、镜像 tag 与 CLI 生成规则，不展开具体发布步骤或环境切换 runbook。
 
 ## 规则

@@ -1,6 +1,15 @@
-# 1Panel CLI Validation Workflow
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-25
+superseded_by: null
+---
 
-## 当前正式边界
+# 🔌 1Panel CLI Validation Workflow
+
+结论：1Panel 只保留 `panel|firewall|cronjob|task` 读取面，正式验证走 `projection verification`，不把 1Panel 当验证总入口。
+
+## 📌 当前正式边界
 
 现在要把两类入口分清：
 

@@ -1,6 +1,15 @@
-# Control Plane Agent Execution Flow
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-25
+superseded_by: null
+---
 
-## 目的
+# 🤖 Control Plane Agent Execution Flow
+
+结论：Agent 执行必须遵循 `plan → apply → verify → ledger → inventory → doc-sync` 闭环，所有正式操作从 `agentplane ...` 进入。
+
+## 🎯 目的
 
 本文定义 Agent 在 Agent-first 控制面模板仓库中的正式执行顺序，确保正式命令面、验证、ledger 回写与文档对齐形成稳定闭环。
 

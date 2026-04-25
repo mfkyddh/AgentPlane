@@ -1,6 +1,15 @@
-# prod0-main 1Panel 公网接入口径（正式）
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-25
+superseded_by: null
+---
 
-## 定位
+# 🌐 prod0-main 1Panel 公网入口
+
+结论：prod0-main 公网入口由 `1panel-openresty-prod` 承载，正式操作走 `agentplane ingress ...`，1Panel 页面只做只读辅助。
+
+## 📌 定位
 
 - 本手册定义 `prod0-main` 当前 active 的公网入口、证书真源和只读审计口径。
 - AgentPlane 的正式运维控制面是 `agentplane ...`；本手册解释专题流程、风险与人工接力点，不替代正式实现。

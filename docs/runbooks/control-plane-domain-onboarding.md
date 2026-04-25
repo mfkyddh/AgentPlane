@@ -1,6 +1,15 @@
-# Control Plane Domain Onboarding
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-25
+superseded_by: null
+---
 
-## 目的
+# 🧭 Control Plane Domain Onboarding
+
+结论：新领域接入必须走 `定义对象 → CLI 合同 → skill 路由 → runbook → inventory/ledger → 测试` 这条链路，不写第二控制面脚本。
+
+## 🎯 目的
 
 本文定义新控制面领域接入 Agent-first 模板仓库的正式流程，确保新增领域不会绕开统一 CLI、skill、runbook、inventory 与测试合同。
 

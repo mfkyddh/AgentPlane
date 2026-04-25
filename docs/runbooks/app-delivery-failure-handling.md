@@ -1,6 +1,15 @@
-# App Delivery 失败处理 Runbook
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-25
+superseded_by: null
+---
 
-## 适用范围
+# 🚨 App Delivery 失败处理
+
+结论：`agentplane app delivery ...` 主路径失败时，先停在失败阶段，用只读命令定位原因，再修真源重跑。
+
+## 🎯 适用范围
 
 本文只处理 `agentplane app delivery ...` 主路径中的失败：
 

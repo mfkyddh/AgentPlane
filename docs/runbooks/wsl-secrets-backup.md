@@ -1,6 +1,15 @@
-# WSL Secrets Backup Runbook
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-25
+superseded_by: null
+---
 
-## Purpose
+# 🔐 WSL Secrets Backup
+
+结论：WSL 本机 `secrets/` 加密备份的正式入口是 `agentplane infra automation apply ...`，1Panel 计划任务只负责定时触发。
+
+## 🎯 Purpose
 
 统一管理 WSL 本机 `secrets/` 目录的加密备份。正式执行入口是仓库 CLI；1Panel 计划任务只负责定时触发，不承载业务逻辑。
 

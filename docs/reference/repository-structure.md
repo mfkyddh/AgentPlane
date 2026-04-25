@@ -58,6 +58,7 @@ superseded_by: null
 | 操作手册 | `docs/runbooks/` |
 | 长期规范 | `docs/reference/` |
 | 架构解释 | `docs/architecture/` |
+| 文档地图 | `docs/README.md` |
 | Docker Compose | `infra/compose/<service>/` |
 | 非敏感 env/config 示例 | `templates/` |
 | 真实 secret | `secrets/`，禁止提交 |
@@ -82,3 +83,4 @@ superseded_by: null
 4. 它是否需要同步更新 `README.md`、`AGENTS.md` 或文档索引。
 5. 它是否需要新增或更新结构守门测试。
 6. 它是否可以通过 `agentplane ...` 或模块化 Python 命令验证。
+7. 如果它是 active 文档，是否能通过 [documentation-governance.md](documentation-governance.md) 的链接与可读性要求。

@@ -7,6 +7,8 @@ superseded_by: null
 
 # 代码风格规范
 
+结论：AgentPlane 代码风格基线，目标是让多人、人机协作和长期维护时少猜、少争、少踩坑。
+
 本文定义 AgentPlane 仓库的代码风格基线。目标不是追求漂亮，而是让多人、人机协作和长期维护时少猜、少争、少踩坑。
 
 ## 基本原则
@@ -50,6 +52,7 @@ superseded_by: null
 - `AGENTS.md` 只放高信号摘要，详细规则放 `docs/reference/`。
 - reference 文档说明长期稳定规则；runbook 说明具体操作步骤。
 - 新文档要写清楚适用范围、正式入口、验证方式和退役条件。
+- 面向人类的文档遵循 [documentation-governance.md](documentation-governance.md)：emoji 要有语义，段落要短，active 文档不得孤立。
 
 ## 本地检查
 

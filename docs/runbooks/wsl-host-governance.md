@@ -1,6 +1,15 @@
-# WSL Host Governance Runbook
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-25
+superseded_by: null
+---
 
-## 这台 WSL 现在扮演什么角色
+# 🖥️ WSL Host Governance
+
+结论：WSL 是本地 Linux 验证与 fixture 目标，不是第二份控制面源码，所有操作走 `agentplane ...`。
+
+## 📌 这台 WSL 现在扮演什么角色
 
 当前 `wsl` 不是“唯一控制面源码位置”，而是本地 Linux 验证与 fixture 目标。  
 本仓库现在要分清 3 个角色：

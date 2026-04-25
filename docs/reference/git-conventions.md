@@ -7,6 +7,8 @@ superseded_by: null
 
 # Git 规范
 
+结论：Git 提交规范，Conventional Commits + 原子提交 + LF 换行符统一。
+
 > 本文档定义 AgentPlane 仓库的完整 Git 工作流规范。核心约束见 `AGENTS.md` 必读摘要。
 
 ---

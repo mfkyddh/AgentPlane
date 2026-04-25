@@ -1,4 +1,13 @@
-# Bootstrap Secrets
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-25
+superseded_by: null
+---
+
+# 🔐 Bootstrap Secrets
+
+结论：`agentplane bootstrap ...` 负责 takeover truths、target scope README 和 readiness 判定，人类只填 secrets 和少量 identity。
 
 Linux / WSL 里直接用 `agentplane ...`。
 

@@ -1,6 +1,15 @@
-# WSL ZZZ Skills Sync Runbook
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-25
+superseded_by: null
+---
 
-## Purpose
+# 🔄 WSL ZZZ Skills Sync
+
+结论：WSL 本机 `zzz-skills` 镜像同步的正式入口是 `agentplane infra automation apply ...`，1Panel 计划任务只是调度器。
+
+## 🎯 Purpose
 
 统一管理 WSL 本机 `zzz-skills` 镜像同步。正式执行入口是仓库 CLI；1Panel 计划任务只是调度器，不是业务实现。
 

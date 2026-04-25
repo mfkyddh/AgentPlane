@@ -1,4 +1,13 @@
-# prod2-main relay-trojan
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-25
+superseded_by: null
+---
+
+# 🔌 prod2-main relay-trojan
+
+结论：`relay-trojan` 是附着在 `service` 上的非 HTTP 公网协议端点，正式核验走 `agentplane service verify` 和 `service public-endpoint verify`。
 
 - 本手册定义 `prod2-main` 上 `relay-trojan` 的正式运行口径。
 - `relay.zzzai.fun:24443` 不属于 `ingress` 对象；它是附着在 `service` 上的非 HTTP 公网协议端点。

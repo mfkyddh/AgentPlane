@@ -7,6 +7,8 @@ superseded_by: null
 
 # 技术栈规范
 
+结论：技术栈约束，Python 3.12+ / uv / Docker Compose / Cloudflare。
+
 本文定义 AgentPlane 仓库默认采用、允许采用和需要审批后采用的技术选择。目标是控制复杂度，而不是禁止演进。
 
 ## 当前基线

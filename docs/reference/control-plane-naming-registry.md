@@ -7,6 +7,8 @@ superseded_by: null
 
 # 控制面命名注册表
 
+结论：控制面命名注册表，确保对象域、surface、动词跨文档一致。
+
 本文定义“一件东西在不同层应该叫什么”，避免 `example-api`、`example_api`、`service key`、容器名、compose 目录名半同步漂移。
 
 本表中的“可强制”仅适用于正式 app contract 对象；基础设施服务、第三方官方镜像、历史快照目录不在当前强制范围内。

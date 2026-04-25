@@ -1,6 +1,15 @@
-# 应用项目接入 AgentPlane 工作流
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-25
+superseded_by: null
+---
 
-## 适用范围
+# 📦 应用项目接入 AgentPlane 工作流
+
+结论：应用交付主路径是 `validate-contract → build-artifact → ship-image → render-runtime → deploy → verify → inventory-refresh → doc-sync`，失败止损看 [app-delivery-failure-handling.md](./app-delivery-failure-handling.md)。
+
+## 🎯 适用范围
 
 这份 runbook 只描述当前正式支持的应用交付主路径：
 

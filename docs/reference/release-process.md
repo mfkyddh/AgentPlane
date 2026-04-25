@@ -7,6 +7,8 @@ superseded_by: null
 
 # 发布与持续健康规范
 
+结论：发布流程与持续健康规范，health-check + release-check + live gate 分层验证。
+
 本文定义 AgentPlane 长期健康运行所需的发布、验证和维护节奏。当前项目仍处于早期阶段，因此规则以轻量、可执行为主。
 
 ## 日常变更 Definition of Done

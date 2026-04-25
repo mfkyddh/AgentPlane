@@ -1,6 +1,15 @@
-# prod0-main Governance Runbook
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-25
+superseded_by: null
+---
 
-## 这台机器当前的角色
+# 🖥️ prod0-main Governance
+
+结论：prod0-main 是 0 号生产机，当前以只读预检和现网核对为主，样板应用 `sub2api` 已通过验证。
+
+## 📌 这台机器当前的角色
 
 `prod0-main` 是 0 号生产机。  
 当前正式口径很简单：

@@ -7,6 +7,8 @@ superseded_by: null
 
 # Control Plane Path Policy
 
+结论：逻辑路径优先于物理路径，真源只保存仓库内相对路径，物理路径由 resolver 动态生成。
+
 ## Goal
 
 控制面 tracked 文件只保存**逻辑路径**（与平台无关的仓库内相对路径）；宿主物理路径只存在于 runtime resolution 和 verification 结果里。

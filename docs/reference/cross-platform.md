@@ -7,6 +7,8 @@ superseded_by: null
 
 # 跨平台工作流规范
 
+结论：Windows/WSL/Linux 跨平台开发规范，单份源码、单虚拟环境、正式 CLI 统一入口。
+
 > 本文档定义 AgentPlane 在 Windows + WSL 双环境下的完整工作流规范。核心约束见 `AGENTS.md` 必读摘要。
 
 ---

@@ -7,6 +7,8 @@ superseded_by: null
 
 # Testing Architecture
 
+结论：测试架构，默认离线确定性测试 + live gate 显式标记分层。
+
 AgentPlane's test suite is organized around deterministic default tests and explicit live gates.
 
 ## Default Gate

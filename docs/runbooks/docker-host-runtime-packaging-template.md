@@ -1,6 +1,15 @@
-# Docker 应用宿主机构建模板
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-25
+superseded_by: null
+---
 
-## 1. 目标
+# 🐳 Docker 应用宿主机构建模板
+
+结论：Docker 类应用接入 AgentPlane 时，在宿主机构建 runtime artifacts，用 runtime-only Dockerfile 打包，再走正式交付链路。
+
+## 🎯 目标
 
 这份模板用于新的 Docker 类业务应用接入 `AgentPlane` 时复用统一做法：
 

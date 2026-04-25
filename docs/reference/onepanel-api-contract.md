@@ -7,6 +7,8 @@ superseded_by: null
 
 # 1Panel API 合同
 
+结论：1Panel API 与 provider 的合同边界，公开能力走正式 domain 入口。
+
 本文是 `AgentPlane` 的 `1Panel` API reference 真源。本文只定义长期稳定的对象覆盖、错误模型与 CLI/plugin 接口约束，不展开具体操作步骤或 host 级 runbook。
 
 ## Baseline

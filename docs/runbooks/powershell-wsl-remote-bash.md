@@ -1,6 +1,15 @@
-# PowerShell WSL Remote Bash Runbook
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-25
+superseded_by: null
+---
 
-## Purpose
+# 💻 PowerShell → WSL / Remote Bash
+
+结论：Windows 主控制面从 `pwsh` 出发，正式远端入口统一走 `agentplane infra remote bash ...`，不要手写多层 SSH。
+
+## 🎯 Purpose
 
 定义 Windows 主控制面正式入口：在 Windows 宿主上统一从 `pwsh` 出发，把 Linux-only 动作安全地下发到 WSL backend，避免 `$()`、`$var`、CRLF 与多层引号在宿主侧被提前解释，导致远端命令失真。
 

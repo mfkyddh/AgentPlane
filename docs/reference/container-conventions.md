@@ -7,6 +7,8 @@ superseded_by: null
 
 # 容器与服务规范
 
+结论：Docker Compose 与容器命名、网络、持久化的统一规范。
+
 > 本文档定义 AgentPlane 管理的 Docker 容器和服务的工作规范。核心约束见 `AGENTS.md` 必读摘要。
 
 ---

@@ -7,6 +7,8 @@ superseded_by: null
 
 # App Runtime 拆分路线
 
+结论：App runtime 与测试 helper 的拆分路线，避免单体 helper 持续膨胀。
+
 本文定义 `agentplane/domain/app/runtime.py` 和 `tests/support/app_delivery.py` 的减重路线。目标是降低 AI Agent 修改核心交付链路时的误伤概率。
 
 ## 当前问题
