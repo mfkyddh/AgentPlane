@@ -84,6 +84,8 @@ agentplane repo health-check --repo-root .
 
 **核心设计**：配置即代码 • 敏感信息分离 • AI 友好 CLI • 跨平台
 
+![架构简图](docs/assets/agentplane-architecture.svg)
+
 ---
 
 ## 🗣️ 怎么告诉 AgentPlane 你要做什么

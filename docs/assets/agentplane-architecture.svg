@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="520" viewBox="0 0 800 520" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .box { rx: 8; ry: 8; stroke-width: 2; }
+      .human { fill: #EFF6FF; stroke: #3B82F6; }
+      .ai { fill: #F3E8FF; stroke: #8B5CF6; }
+      .cli { fill: #ECFDF5; stroke: #10B981; }
+      .infra { fill: #FFFBEB; stroke: #F59E0B; }
+      .state { fill: #F3F4F6; stroke: #6B7280; }
+      .arrow { fill: none; stroke: #9CA3AF; stroke-width: 2; marker-end: url(#arrowhead); }
+      .label { font-family: system-ui, -apple-system, sans-serif; font-size: 14px; font-weight: 600; text-anchor: middle; }
+      .sublabel { font-family: system-ui, -apple-system, sans-serif; font-size: 11px; fill: #6B7280; text-anchor: middle; }
+      .title { font-family: system-ui, -apple-system, sans-serif; font-size: 18px; font-weight: 700; fill: #111827; text-anchor: middle; }
+      .layer-label { font-family: system-ui, -apple-system, sans-serif; font-size: 12px; fill: #6B7280; font-weight: 500; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#9CA3AF"/>
+    </marker>
+    <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#3B82F6"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="520" fill="#FAFAFA" rx="12"/>
+
+  <!-- Title -->
+  <text x="400" y="32" class="title">AgentPlane 整体架构</text>
+
+  <!-- Layer labels (left side) -->
+  <text x="20" y="85" class="layer-label">👤 人类层</text>
+  <text x="20" y="165" class="layer-label">🤖 AI 层</text>
+  <text x="20" y="245" class="layer-label">⚡ CLI 层</text>
+  <text x="20" y="325" class="layer-label">🖥️ 基础设施</text>
+  <text x="20" y="445" class="layer-label">📦 状态层</text>
+
+  <!-- Human Layer -->
+  <rect x="160" y="60" width="480" height="50" class="box human"/>
+  <text x="400" y="85" class="label" fill="#1D4ED8">人类用户</text>
+  <text x="400" y="102" class="sublabel">自然语言描述意图 → "部署 sub2api 到生产环境"</text>
+
+  <!-- Arrow down -->
+  <line x1="400" y1="110" x2="400" y2="135" class="arrow"/>
+
+  <!-- AI Layer -->
+  <rect x="160" y="140" width="480" height="50" class="box ai"/>
+  <text x="400" y="165" class="label" fill="#6D28D9">AI Agent</text>
+  <text x="400" y="182" class="sublabel">理解 → 计划 → 确认 → 执行 → 验证 → 记录 → 汇报</text>
+
+  <!-- Arrow down -->
+  <line x1="400" y1="190" x2="400" y2="215" class="arrow"/>
+
+  <!-- CLI Layer -->
+  <rect x="160" y="220" width="480" height="50" class="box cli"/>
+  <text x="400" y="245" class="label" fill="#047857">AgentPlane CLI</text>
+  <text x="400" y="262" class="sublabel">agentplane app delivery ... │ agentplane infra remote ... │ agentplane repo ...</text>
+
+  <!-- Arrow down -->
+  <line x1="400" y1="270" x2="400" y2="295" class="arrow"/>
+
+  <!-- Infra Layer (3 boxes) -->
+  <rect x="160" y="300" width="145" height="50" class="box infra"/>
+  <text x="232" y="322" class="label" fill="#B45309">远程主机</text>
+  <text x="232" y="339" class="sublabel">prod0-main</text>
+
+  <rect x="327" y="300" width="145" height="50" class="box infra"/>
+  <text x="399" y="322" class="label" fill="#B45309">WSL 环境</text>
+  <text x="399" y="339" class="sublabel">本地开发</text>
+
+  <rect x="494" y="300" width="145" height="50" class="box infra"/>
+  <text x="566" y="322" class="label" fill="#B45309">容器平台</text>
+  <text x="566" y="339" class="sublabel">Docker / 1Panel</text>
+
+  <!-- Arrow down from infra -->
+  <line x1="232" y1="350" x2="232" y2="385" class="arrow"/>
+  <line x1="399" y1="350" x2="399" y2="385" class="arrow"/>
+  <line x1="566" y1="350" x2="566" y2="385" class="arrow"/>
+
+  <!-- State Layer -->
+  <rect x="160" y="395" width="145" height="50" class="box state"/>
+  <text x="232" y="417" class="label" fill="#374151">Inventory</text>
+  <text x="232" y="434" class="sublabel">机器台账</text>
+
+  <rect x="327" y="395" width="145" height="50" class="box state"/>
+  <text x="399" y="417" class="label" fill="#374151">Ledger</text>
+  <text x="399" y="434" class="sublabel">操作记录</text>
+
+  <rect x="494" y="395" width="145" height="50" class="box state"/>
+  <text x="566" y="417" class="label" fill="#374151">操作日志</text>
+  <text x="566" y="434" class="sublabel">tmp/operation-logs/</text>
+
+  <!-- Feedback arrow (dashed) from state to AI -->
+  <path d="M 640 420 Q 720 420 720 280 Q 720 165 650 165" fill="none" stroke="#8B5CF6" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrowhead-blue)"/>
+  <text x="740" y="290" class="layer-label" fill="#8B5CF6" text-anchor="start">状态反馈</text>
+
+  <!-- Human checkpoint annotation -->
+  <rect x="660" y="145" width="120" height="28" rx="14" fill="#FEE2E2" stroke="#EF4444" stroke-width="1.5"/>
+  <text x="720" y="163" class="label" fill="#B91C1C" font-size="12">⏸️ 人工确认点</text>
+
+  <!-- Bottom note -->
+  <text x="400" y="490" class="sublabel" font-size="12">核心原则：所有操作必须经过 CLI，所有变更必须留下记录，关键节点必须人工确认</text>
+</svg>

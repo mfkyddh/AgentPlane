@@ -32,6 +32,8 @@ audience: human
 
 AI 会执行以下流程：
 
+![AI 执行闭环](../assets/agent-execution-flow.svg)
+
 ```
 1. 理解意图 → 2. 制定计划 → 3. 向你确认
 4. 执行操作 → 5. 验证结果 → 6. 留下记录 → 7. 向你汇报
@@ -88,7 +90,7 @@ agentplane app delivery verify --target prod0-main --app sub2api --execute
 
 AI 会自动：
 - 把操作记录写入机器证据目录（`tmp/operation-logs/`）
-- 刷新状态台账目录（`inventory/`）
+- 刷新状态记录目录（`inventory/`）
 - 更新相关文档摘要
 
 ### 第 7 步：向你汇报
@@ -130,7 +132,7 @@ AI 说完"已完成"后，必须附带验证证据：
 
 ### 看记录，不看记忆
 
-AI 不会说"我记得上次部署成功了"。它应该指向具体的记录文件或台账位置。
+AI 不会说"我记得上次部署成功了"。它应该指向具体的记录文件或记录位置。
 
 ---
 

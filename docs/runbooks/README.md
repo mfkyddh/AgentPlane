@@ -47,8 +47,8 @@ audience: human
 
 | Runbook | 解决什么问题 |
 |---------|-------------|
-| [接入新控制面领域](./control-plane-domain-onboarding.md) | 把新的基础设施领域纳入 AgentPlane 管理 |
-| [1Panel CLI 验证工作流](./onepanel-cli-validation-workflow.md) | 验证 1Panel 控制面的 CLI 可用性 |
+| [接入新管理领域](./control-plane-domain-onboarding.md) | 把新的基础设施领域纳入 AgentPlane 管理 |
+| [1Panel CLI 验证工作流](./onepanel-cli-validation-workflow.md) | 验证 1Panel 管理端的 CLI 可用性 |
 | [PowerShell-WSL 远程 Bash](./powershell-wsl-remote-bash.md) | Windows 宿主通过 PowerShell 调用 WSL bash 的技巧 |
 
 ## 快速命令参考

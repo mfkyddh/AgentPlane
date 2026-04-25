@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="360" viewBox="0 0 800 360" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .step { rx: 10; ry: 10; }
+      .step-bg { fill: #F8FAFC; stroke: #E2E8F0; stroke-width: 2; }
+      .step-active { fill: #EFF6FF; stroke: #3B82F6; stroke-width: 2; }
+      .step-human { fill: #FFFBEB; stroke: #F59E0B; stroke-width: 2; }
+      .arrow { fill: none; stroke: #CBD5E1; stroke-width: 2; marker-end: url(#arrowhead); }
+      .number { font-family: system-ui, -apple-system, sans-serif; font-size: 18px; font-weight: 700; text-anchor: middle; }
+      .label { font-family: system-ui, -apple-system, sans-serif; font-size: 13px; font-weight: 600; text-anchor: middle; }
+      .sublabel { font-family: system-ui, -apple-system, sans-serif; font-size: 11px; fill: #64748B; text-anchor: middle; }
+      .title { font-family: system-ui, -apple-system, sans-serif; font-size: 18px; font-weight: 700; fill: #0F172A; text-anchor: middle; }
+      .badge { font-family: system-ui, -apple-system, sans-serif; font-size: 10px; font-weight: 700; fill: #FFFFFF; text-anchor: middle; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#CBD5E1"/>
+    </marker>
+    <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#3B82F6"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="360" fill="#FFFFFF" rx="12"/>
+
+  <!-- Title -->
+  <text x="400" y="32" class="title">AI 执行闭环：7 步流程</text>
+
+  <!-- Steps (horizontal layout) -->
+
+  <!-- Step 1 -->
+  <rect x="40" y="65" width="90" height="90" class="step step-bg"/>
+  <circle cx="85" cy="95" r="14" fill="#3B82F6"/>
+  <text x="85" y="100" class="number" fill="#FFFFFF">1</text>
+  <text x="85" y="125" class="label" fill="#1E293B">理解意图</text>
+  <text x="85" y="142" class="sublabel">自然语言</text>
+
+  <!-- Arrow 1→2 -->
+  <line x1="130" y1="110" x2="155" y2="110" class="arrow"/>
+
+  <!-- Step 2 -->
+  <rect x="160" y="65" width="90" height="90" class="step step-bg"/>
+  <circle cx="205" cy="95" r="14" fill="#3B82F6"/>
+  <text x="205" y="100" class="number" fill="#FFFFFF">2</text>
+  <text x="205" y="125" class="label" fill="#1E293B">制定计划</text>
+  <text x="205" y="142" class="sublabel">生成命令</text>
+
+  <!-- Arrow 2→3 -->
+  <line x1="250" y1="110" x2="275" y2="110" class="arrow"/>
+
+  <!-- Step 3 (Human checkpoint) -->
+  <rect x="280" y="65" width="90" height="90" class="step step-human"/>
+  <circle cx="325" cy="95" r="14" fill="#F59E0B"/>
+  <text x="325" y="100" class="number" fill="#FFFFFF">3</text>
+  <text x="325" y="125" class="label" fill="#1E293B">向你确认</text>
+  <text x="325" y="142" class="sublabel">人工审核</text>
+  <!-- Badge -->
+  <rect x="295" y="72" width="60" height="16" rx="8" fill="#EF4444"/>
+  <text x="325" y="84" class="badge">⏸ 暂停</text>
+
+  <!-- Arrow 3→4 -->
+  <line x1="370" y1="110" x2="395" y2="110" class="arrow"/>
+
+  <!-- Step 4 -->
+  <rect x="400" y="65" width="90" height="90" class="step step-active"/>
+  <circle cx="445" cy="95" r="14" fill="#10B981"/>
+  <text x="445" y="100" class="number" fill="#FFFFFF">4</text>
+  <text x="445" y="125" class="label" fill="#1E293B">执行操作</text>
+  <text x="445" y="142" class="sublabel">agentplane ...</text>
+
+  <!-- Arrow 4→5 -->
+  <line x1="490" y1="110" x2="515" y2="110" class="arrow"/>
+
+  <!-- Step 5 -->
+  <rect x="520" y="65" width="90" height="90" class="step step-active"/>
+  <circle cx="565" cy="95" r="14" fill="#10B981"/>
+  <text x="565" y="100" class="number" fill="#FFFFFF">5</text>
+  <text x="565" y="125" class="label" fill="#1E293B">验证结果</text>
+  <text x="565" y="142" class="sublabel">健康检查</text>
+
+  <!-- Arrow 5→6 -->
+  <line x1="610" y1="110" x2="635" y2="110" class="arrow"/>
+
+  <!-- Step 6 -->
+  <rect x="640" y="65" width="90" height="90" class="step step-bg"/>
+  <circle cx="685" cy="95" r="14" fill="#8B5CF6"/>
+  <text x="685" y="100" class="number" fill="#FFFFFF">6</text>
+  <text x="685" y="125" class="label" fill="#1E293B">留下记录</text>
+  <text x="685" y="142" class="sublabel">inventory</text>
+
+  <!-- Arrow 6→7 (curved down then right) -->
+  <path d="M 685 155 L 685 180 L 85 180 L 85 205" fill="none" stroke="#CBD5E1" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <!-- Step 7 -->
+  <rect x="40" y="205" width="90" height="90" class="step step-human"/>
+  <circle cx="85" cy="235" r="14" fill="#F59E0B"/>
+  <text x="85" y="240" class="number" fill="#FFFFFF">7</text>
+  <text x="85" y="265" class="label" fill="#1E293B">向你汇报</text>
+  <text x="85" y="282" class="sublabel">人类可读摘要</text>
+  <!-- Badge -->
+  <rect x="55" y="212" width="60" height="16" rx="8" fill="#EF4444"/>
+  <text x="85" y="224" class="badge">⏸ 暂停</text>
+
+  <!-- Summary box -->
+  <rect x="160" y="205" width="600" height="90" rx="10" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="460" y="232" class="label" fill="#334155" font-size="14">核心保障</text>
+  <text x="460" y="255" class="sublabel" font-size="12">• 所有操作通过 agentplane CLI，禁止裸 SSH / Shell</text>
+  <text x="460" y="275" class="sublabel" font-size="12">• 关键节点自动暂停等人工确认，你随时可以说"停"</text>
+
+  <!-- Bottom note -->
+  <text x="400" y="330" class="sublabel" font-size="12">蓝色 = 自动执行 │ 绿色 = 正式 CLI 操作 │ 黄色 = 人工确认点</text>
+</svg>

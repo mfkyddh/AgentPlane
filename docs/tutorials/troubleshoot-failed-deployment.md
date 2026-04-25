@@ -43,7 +43,7 @@ agentplane app delivery validate-contract --target wsl --app sub2api --repo-root
 
 **如果这里也失败了** → 问题在"约定书"层面：
 - 应用仓库的 `deploy/agentplane/contract.yaml` 可能被改了
-- `inventory/servers/wsl/` 下的配置可能和应用声明不匹配
+- 资产清单目录（`inventory/servers/wsl/`）下的配置可能和应用声明不匹配
 - 见 [App Delivery 失败处理](../runbooks/app-delivery-failure-handling.md) 的"约定书或资源配置失败"
 
 **如果这里通过了** → 问题在部署执行层面，继续下一步。
@@ -124,7 +124,7 @@ agentplane app delivery verify --target wsl --app sub2api --repo-root . --execut
 | `no such image` | 镜像没构建或 tag 不对 | `docker images` |
 | `exit code 1` | 应用启动失败 | `docker logs <container>` |
 | `health probe failed` | 服务起来了但探针不通过 | `curl http://127.0.0.1:18080/health` |
-| `registry mismatch` | inventory 和合同声明不一致 | `agentplane infra inventory wsl --repo-root .` |
+| `registry mismatch` | 资产清单和合同声明不一致 | `agentplane infra inventory wsl --repo-root .` |
 
 ## 收口碑证
 
@@ -145,6 +145,6 @@ agentplane repo health-check --repo-root .
 ## 核心原则
 
 1. **先只读后写** — 用 `--dry-run` 和只读命令定位问题
-2. **修合同不修现场** — 改 `contract.yaml` 或 inventory，让 AgentPlane 重新执行
+2. **修合同不修现场** — 改合同声明或资产清单，让 AgentPlane 重新执行
 3. **回滚要快** — deploy 失败后如果现场已被破坏，立即回滚
 4. **验证必做** — 每次修复后都要重新 verify

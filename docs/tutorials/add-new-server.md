@@ -9,7 +9,7 @@ audience: human
 
 # 🖥️ 把一台新服务器纳入 AgentPlane
 
-结论：跟着本教程，你会把一台全新的 Linux 服务器（示例名为 `prod3-main`）纳入 AgentPlane 管理，完成 SSH 配置、inventory 初始化、基线审计和治理文档创建。
+结论：跟着本教程，你会把一台全新的 Linux 服务器（示例名为 `prod3-main`）纳入 AgentPlane 管理，完成 SSH 配置、资产清单初始化、基线审计和治理文档创建。
 
 ## 前置条件
 
@@ -82,7 +82,7 @@ agentplane bootstrap init-secrets --repo-root .
 
 这会为新服务器生成 secrets 骨架，但不会写入真实敏感值。
 
-## 第四步：创建 Inventory 目录
+## 第四步：创建资产清单目录
 
 ```bash
 mkdir -p inventory/servers/prod3-main/ledgers
@@ -108,7 +108,7 @@ cat > inventory/servers/prod3-main/README.md << 'EOF'
 EOF
 ```
 
-## 第五步：生成初始 Inventory
+## 第五步：生成初始资产清单
 
 ```bash
 agentplane infra inventory prod3-main --repo-root . --write
@@ -123,7 +123,7 @@ agentplane infra inventory prod3-main --repo-root . --write
 [INFO] Writing to inventory/servers/prod3-main/inventory.json
 ```
 
-这会扫描新服务器上的 Docker 容器、服务、网络等信息，并写入 inventory。
+这会扫描新服务器上的 Docker 容器、服务、网络等信息，并写入资产清单。
 
 ## 第六步：运行基线审计
 
@@ -165,7 +165,7 @@ agentplane repo health-check --repo-root .
 | 命名 | 新服务器有了统一标识 `prod3-main` |
 | SSH | 可以通过 AgentPlane 远程访问新服务器 |
 | Secrets | 新服务器的敏感信息有独立存放位置 |
-| Inventory | 新服务器的资产信息已登记 |
+| 资产清单 | 新服务器的资产信息已登记 |
 | 审计 | 基线检查完成，知道当前状态 |
 
 ## 下一步
@@ -180,7 +180,7 @@ agentplane repo health-check --repo-root .
 # 远程执行命令
 agentplane infra remote bash prod3-main --repo-root . -- docker ps
 
-# 重新生成 inventory
+# 重新生成资产清单
 agentplane infra inventory prod3-main --repo-root . --write
 
 # 重新审计
