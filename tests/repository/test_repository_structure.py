@@ -6,7 +6,6 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 ALLOWED_TRACKED_TOP_LEVELS = {
     ".agents",
-    ".codex",
     ".editorconfig",
     ".gitattributes",
     ".githooks",
@@ -24,7 +23,6 @@ ALLOWED_TRACKED_TOP_LEVELS = {
     "docs",
     "infra",
     "inventory",
-    "plugins",
     "pyproject.toml",
     "templates",
     "tests",

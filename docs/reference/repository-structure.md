@@ -19,9 +19,7 @@ superseded_by: null
 | `infra/compose/` | Docker Compose 资产 | 每个服务一个目录；目标环境文件使用 `docker-compose.<target>.yml` |
 | `inventory/` | 非敏感状态台账和逻辑真源 | 只保存逻辑路径与观察摘要，不写宿主物理路径或 secrets |
 | `templates/` | 非敏感模板 | 只放 `.example`、示例配置和模板说明 |
-| `plugins/` | 可分发插件资产 | 插件入口和 skill 文档必须路由回正式 CLI |
-| `.codex/` | Codex 环境动作与仓库内 skill | 环境动作只能调用正式 CLI 或内部仓库资产 |
-| `.agents/` | 本地 agent/skill 投影与 marketplace 元数据 | 只保存可提交的非敏感投影 |
+| `.agents/` | Agent skill 真源与 marketplace 元数据 | 跨 Agent 通用 skill 目录；skill 内容必须路由回正式 CLI |
 | `.github/`、`.githooks/` | CI 与 Git hook | Hook 和 CI 只能调用模块化命令或正式 CLI |
 
 ## 本地态合同

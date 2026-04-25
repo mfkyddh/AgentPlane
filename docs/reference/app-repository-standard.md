@@ -111,13 +111,6 @@ tmp/
 5. `Definition Of Done`
 6. `Docs`
 
-Codex 本地环境固定放在 `.codex/environments/`：
-
-- `environment.toml`：薄入口路由
-- `setup/`：轻量幂等初始化
-- `actions/`：常用手动动作
-- `lib/`：公用探测逻辑
-
 ## 5. Host Entry / Backend-Aware 规则
 
 - 默认采用 host-entry-first, backend-aware。

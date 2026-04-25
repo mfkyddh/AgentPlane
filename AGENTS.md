@@ -107,9 +107,7 @@ agentplane <domain> <surface> <verb> [flags]
 | `infra/compose/` | Docker Compose 资产 | ✅ |
 | `inventory/` | 非敏感状态台账 | ✅ |
 | `templates/` | 非敏感模板 | ✅ |
-| `plugins/` | 插件分发资产 | ✅ |
-| `.agents/` | Agent/skill 投影与 marketplace 元数据 | ✅ |
-| `.codex/` | Codex skill 与环境动作 | ✅ |
+| `.agents/` | Agent skill 真源与 marketplace 元数据 | ✅ |
 | `tests/` | 自动化测试 | ✅ |
 | `secrets/` | 本地真实 Secrets | ❌ |
 | `local/` | 本地协作（不纳入仓库） | ❌ |

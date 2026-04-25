@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import tomllib
 import unittest
 from pathlib import Path
 
@@ -50,103 +49,6 @@ class AppOnboardingStandardTests(unittest.TestCase):
         self.assertIn("不参与 bootstrap contract", text)
         self.assertIn("projection", text)
 
-    def test_codex_environment_contract_exists_and_points_to_repo_scripts(self) -> None:
-        env_root = REPO_ROOT / ".codex" / "environments"
-        env_file = env_root / "environment.toml"
-        self.assertTrue(env_file.is_file(), msg=f"missing {env_file}")
-
-        payload = tomllib.loads(env_file.read_text(encoding="utf-8"))
-        self.assertIn("setup", payload)
-        self.assertIsInstance(payload.get("actions"), list)
-        self.assertGreaterEqual(len(payload["actions"]), 6)
-
-        setup = payload["setup"]
-        self.assertEqual("bash .codex/environments/setup/setup.sh", setup["default"])
-        self.assertEqual(
-            "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/setup/setup.windows.ps1",
-            setup["windows"],
-        )
-        self.assertTrue((env_root / "setup" / "setup.sh").is_file())
-        self.assertTrue((env_root / "setup" / "setup.linux.sh").is_file())
-        self.assertTrue((env_root / "setup" / "setup.windows.ps1").is_file())
-        self.assertTrue((env_root / "lib" / "invoke-agentplane-windows-uv.ps1").is_file())
-
-        expected_actions = {
-            "Bootstrap": "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/actions/bootstrap.ps1",
-            "Test": "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/actions/test.ps1",
-            "Lint": "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/actions/lint.ps1",
-            "Build": "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/actions/build.ps1",
-            "Dev": "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/actions/dev.ps1",
-            "Compose Up": "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/actions/compose-up.ps1",
-            "Compose Logs": "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/actions/compose-logs.ps1",
-            "Smoke": "pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/environments/actions/smoke.ps1",
-        }
-
-        actual_actions = {entry["name"]: entry["command"] for entry in payload["actions"]}
-        self.assertEqual(expected_actions, actual_actions)
-        for relative_path in expected_actions.values():
-            action_path = relative_path.split(" -File ", 1)[1]
-            with self.subTest(action=action_path):
-                self.assertTrue((REPO_ROOT / action_path).is_file(), f"missing action script: {action_path}")
-
-    def test_windows_actions_split_pwsh_entry_from_linux_backend_actions(self) -> None:
-        actions_root = REPO_ROOT / ".codex" / "environments" / "actions"
-        test_script = (actions_root / "test.ps1").read_text(encoding="utf-8")
-        lint_script = (actions_root / "lint.ps1").read_text(encoding="utf-8")
-        compose_up_script = (actions_root / "compose-up.ps1").read_text(encoding="utf-8")
-        compose_up_sh = (actions_root / "compose-up.sh").read_text(encoding="utf-8")
-        compose_logs_script = (actions_root / "compose-logs.ps1").read_text(encoding="utf-8")
-        smoke_script = (actions_root / "smoke.ps1").read_text(encoding="utf-8")
-
-        self.assertIn("invoke-agentplane-windows-uv.ps1", test_script)
-        self.assertIn('"python", "-m", "pytest"', test_script)
-        self.assertIn("invoke-agentplane-windows-uv.ps1", lint_script)
-        self.assertIn('"python", "-m", "compileall", "agentplane", "tests"', lint_script)
-        self.assertIn("wsl.exe", compose_up_script)
-        self.assertIn("Get-AgentPlaneLocalInspect", compose_up_script)
-        self.assertIn("compose-up.sh", compose_up_script)
-        self.assertIn("docker-compose.wsl.yml", compose_up_sh)
-        self.assertIn("wsl.exe", compose_logs_script)
-        self.assertIn("compose-logs.sh", compose_logs_script)
-        self.assertIn("invoke-agentplane-windows-uv.ps1", smoke_script)
-        self.assertIn('"tests/repository/test_docs_no_legacy_terms.py"', smoke_script)
-
-    def test_windows_setup_contract_probes_wsl_and_formal_local_cli(self) -> None:
-        windows_setup = (REPO_ROOT / ".codex" / "environments" / "setup" / "setup.windows.ps1").read_text(
-            encoding="utf-8"
-        )
-        setup_sh = (REPO_ROOT / ".codex" / "environments" / "setup" / "setup.sh").read_text(encoding="utf-8")
-        linux_setup = (REPO_ROOT / ".codex" / "environments" / "setup" / "setup.linux.sh").read_text(
-            encoding="utf-8"
-        )
-
-        self.assertIn("wsl.exe", windows_setup)
-        self.assertIn("infra local inspect", windows_setup)
-        self.assertIn("invoke-agentplane-windows-uv.ps1", windows_setup)
-        self.assertIn("Workspace policy: single checkout", windows_setup)
-        self.assertNotIn("UV_PROJECT_ENVIRONMENT", windows_setup)
-        self.assertIn("-RepoRoot $repoRoot", windows_setup)
-        self.assertIn("--repo-root $repoRoot", windows_setup)
-        self.assertNotIn("D:\\Projects\\AgentPlane", windows_setup)
-        self.assertNotIn("/root/work/AgentPlane", windows_setup)
-        self.assertIn("setup.windows.ps1", setup_sh)
-        self.assertIn("Windows_NT", setup_sh)
-        self.assertIn("infra local inspect", linux_setup)
-
-    def test_windows_uv_wrapper_uses_repo_local_venv_and_rejects_unc_repo_roots(self) -> None:
-        wrapper = (REPO_ROOT / ".codex" / "environments" / "lib" / "invoke-agentplane-windows-uv.ps1").read_text(
-            encoding="utf-8"
-        )
-
-        self.assertNotIn("UV_PROJECT_ENVIRONMENT", wrapper)
-        self.assertNotIn("LOCALAPPDATA", wrapper)
-        self.assertNotIn("Test-IsWslUncPath", wrapper)
-        self.assertNotIn("forbids running the Windows uv entry from a WSL UNC checkout", wrapper)
-        self.assertIn("Set-StrictMode -Version Latest", wrapper)
-        self.assertIn('& $uv.Source "run" @UvArgs', wrapper)
-        self.assertNotIn("WindowsControlRoot", wrapper)
-        self.assertNotIn("D:\\Projects\\AgentPlane", wrapper)
-
     def test_historical_superpowers_workspace_docs_are_removed_from_active_tree(self) -> None:
         self.assertFalse((REPO_ROOT / "docs" / "superpowers").exists())
 
@@ -160,7 +62,6 @@ class AppOnboardingStandardTests(unittest.TestCase):
         self.assertIn("tests/repository/test_repo_snapshot_contracts.py", text)
         self.assertIn("tests/onepanel/test_onepanel_plugin_and_skills.py", text)
         self.assertIn("tests/app/test_app_onboarding_standard.py", text)
-        self.assertIn("guard-host-workspace.sh", text)
         self.assertNotIn("UV_PROJECT_ENVIRONMENT", text)
 
     def test_repo_ignores_only_the_single_default_venv(self) -> None:

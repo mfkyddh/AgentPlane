@@ -78,7 +78,6 @@ AgentPlane/
 ├── infra/compose/       🐳 Docker Compose 资产
 ├── inventory/           📋 非敏感状态台账和逻辑真源
 ├── templates/           📄 非敏感模板和 .example 文件
-├── plugins/             🔌 插件分发资产
 ├── secrets/             🔐 本地真实 secrets（.gitignore 保护）
 └── local/               🏠 本地态，不纳入仓库
 ```

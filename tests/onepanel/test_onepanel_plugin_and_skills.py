@@ -6,9 +6,8 @@ from pathlib import Path
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-CATALOG_FILE = REPO_ROOT / ".codex" / "skills" / "catalog.yaml"
+CATALOG_FILE = REPO_ROOT / ".agents" / "skills" / "catalog.yaml"
 REQUIRED_DOMAINS = {"infra", "service", "ingress", "app-resource", "app", "projection"}
-REQUIRED_PLUGIN_GROUPS = {"ingress", "containers", "firewall", "cronjobs", "apps", "ledgers", "infra"}
 
 
 class OnePanelPluginAndSkillsTests(unittest.TestCase):
@@ -26,7 +25,6 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
         self.assertIsInstance(payload, dict)
         self.assertEqual(1, payload.get("version"))
         self.assertIsInstance(payload.get("skills"), list)
-        self.assertIsInstance(payload.get("plugin_groups"), dict)
         return payload
 
     def test_catalog_covers_repo_skills_and_required_domains(self) -> None:
@@ -35,7 +33,7 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
         names = [entry["name"] for entry in entries]
         self.assertEqual(len(names), len(set(names)), msg="catalog skill names must be unique")
 
-        repo_skill_names = sorted(path.parent.name for path in (REPO_ROOT / ".codex" / "skills").glob("*/SKILL.md"))
+        repo_skill_names = sorted(path.parent.name for path in (REPO_ROOT / ".agents" / "skills").glob("*/SKILL.md"))
         self.assertEqual(sorted(names), repo_skill_names)
 
         covered_domains = {domain for entry in entries for domain in entry["domains"]}
@@ -44,102 +42,24 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
     def test_catalog_tracks_skill_frontmatter_names(self) -> None:
         payload = self._load_catalog()
         entries = {entry["name"]: entry for entry in payload["skills"]}
-        for path in sorted((REPO_ROOT / ".codex" / "skills").glob("*/SKILL.md")):
+        for path in sorted((REPO_ROOT / ".agents" / "skills").glob("*/SKILL.md")):
             name = path.parent.name
             with self.subTest(name=name):
                 frontmatter = self._load_frontmatter(path)
                 self.assertEqual(frontmatter["name"], entries[name]["frontmatter_name"])
                 self.assertEqual(path.relative_to(REPO_ROOT).as_posix(), entries[name]["source_path"])
 
-    def test_agents_pointer_layer_matches_catalog(self) -> None:
-        payload = self._load_catalog()
-        pointer_entries = {
-            entry["name"]: entry
-            for entry in payload["skills"]
-            if "agents_pointer" in entry.get("projection_targets", [])
-        }
-        pointer_root = REPO_ROOT / ".agents" / "skills"
-        actual_pointers = {}
-        for path in sorted(pointer_root.iterdir()):
-            if path.name == "README.md" or path.is_dir():
-                continue
-            actual_pointers[path.name] = path.read_text(encoding="utf-8").strip()
-
-        self.assertEqual(set(pointer_entries), set(actual_pointers))
-        for name, entry in pointer_entries.items():
-            with self.subTest(name=name):
-                self.assertEqual(f"../../.codex/skills/{name}", actual_pointers[name])
-                self.assertEqual(f".codex/skills/{name}/SKILL.md", entry["source_path"])
-
-    def test_plugin_groups_follow_catalog_projection(self) -> None:
-        payload = self._load_catalog()
-        entries = {entry["name"]: entry for entry in payload["skills"]}
-        plugin_groups = payload["plugin_groups"]
-        self.assertEqual(REQUIRED_PLUGIN_GROUPS, set(plugin_groups))
-        plugin_root = REPO_ROOT / "plugins" / "agentplane-control-plane" / "skills"
-        actual_groups = {path.name for path in plugin_root.iterdir() if path.is_dir()}
-        self.assertEqual(set(plugin_groups), actual_groups)
-
-        grouped_skills: set[str] = set()
-        for group_name, group in plugin_groups.items():
-            with self.subTest(group=group_name):
-                self.assertEqual({"SKILL.md"}, {path.name for path in (plugin_root / group_name).iterdir()})
-                skill_file = plugin_root / group_name / "SKILL.md"
-                self.assertTrue(skill_file.is_file(), msg=f"missing {skill_file}")
-                text = skill_file.read_text(encoding="utf-8")
-                self.assertIn("Generated from `.codex/skills/catalog.yaml`.", text)
-                self.assertIn("uv run python -m agentplane.cli", text)
-                self.assertNotIn("uv run python -m ops.cli", text)
-                self.assertNotIn("op-linux-control-plane", text)
-                frontmatter = self._load_frontmatter(skill_file)
-                self.assertEqual(f"agentplane-control-plane-{group_name}", frontmatter["name"])
-                self.assertEqual(
-                    f"Generated plugin skill group for {group_name}; routes to AgentPlane CLI-first commands.",
-                    frontmatter["description"],
-                )
-                self.assertEqual(".codex/skills/catalog.yaml", frontmatter["generated_from"])
-                self.assertEqual(group_name, frontmatter["group"])
-                self.assertEqual(sorted(group["domains"]), sorted(frontmatter["domains"]))
-                self.assertEqual(group["source_skills"], frontmatter["source_skills"])
-                self.assertEqual(group_name, group["name"])
-                self.assertTrue(group["source_skills"])
-                self.assertTrue(group["domains"])
-                expected_domains = sorted(
-                    {
-                        domain
-                        for skill_name in group["source_skills"]
-                        for domain in entries[skill_name]["domains"]
-                    }
-                )
-                self.assertEqual(expected_domains, sorted(group["domains"]))
-                overlap = grouped_skills.intersection(group["source_skills"])
-                self.assertFalse(overlap, msg=f"skills assigned to multiple plugin groups: {sorted(overlap)}")
-                grouped_skills.update(group["source_skills"])
-
-    def test_plugin_group_metadata_stays_thin_in_catalog(self) -> None:
-        payload = self._load_catalog()
-        for group_name, group in payload["plugin_groups"].items():
-            with self.subTest(group=group_name):
-                self.assertEqual({"name", "domains", "source_skills"}, set(group))
-
-    def test_catalog_does_not_duplicate_plugin_membership_metadata(self) -> None:
-        payload = self._load_catalog()
-        for entry in payload["skills"]:
-            with self.subTest(name=entry["name"]):
-                self.assertNotIn("plugin_group", entry)
-                self.assertNotIn("plugin_skill", entry.get("projection_targets", []))
-
     def test_catalog_has_no_compatibility_skills(self) -> None:
         payload = self._load_catalog()
         compat_entries = [entry["name"] for entry in payload["skills"] if entry["kind"] == "compat"]
 
         self.assertEqual([], compat_entries)
-        self.assertFalse((REPO_ROOT / ".codex" / "skills" / "onepanel-app-lifecycle").exists())
-        self.assertFalse((REPO_ROOT / ".codex" / "skills" / "openclaw-1panel").exists())
+        self.assertFalse((REPO_ROOT / ".agents" / "skills" / "onepanel-app-lifecycle").exists())
+        self.assertFalse((REPO_ROOT / ".agents" / "skills" / "openclaw-1panel").exists())
 
     def test_active_skills_do_not_route_back_to_openclaw_direct_wrappers(self) -> None:
         cases = (
-            REPO_ROOT / ".codex" / "skills" / "onepanel-openresty-site-migration" / "SKILL.md",
+            REPO_ROOT / ".agents" / "skills" / "onepanel-openresty-site-migration" / "SKILL.md",
         )
         for path in cases:
             with self.subTest(path=path):
@@ -148,22 +68,8 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
                 self.assertNotIn("raw signed request", text)
                 self.assertNotIn("POST /api/v2/", text)
 
-    def test_pointer_and_plugin_docs_explain_generated_layers(self) -> None:
-        agents_readme = (REPO_ROOT / ".agents" / "skills" / "README.md").read_text(encoding="utf-8")
-        plugin_readme = (REPO_ROOT / "plugins" / "agentplane-control-plane" / "README.md").read_text(encoding="utf-8")
-
-        self.assertIn(".codex/skills/catalog.yaml", agents_readme)
-        self.assertIn("generated", agents_readme.lower())
-        self.assertIn(".codex/skills/catalog.yaml", plugin_readme)
-        self.assertIn("generated", plugin_readme.lower())
-        self.assertNotIn("op-linux-control-plane", plugin_readme)
-        self.assertNotIn("ops/scripts/", plugin_readme)
-
-    def test_ingress_skill_and_plugin_route_to_formal_ingress_cli(self) -> None:
-        repo_skill_text = (REPO_ROOT / ".codex" / "skills" / "onepanel-website-ops" / "SKILL.md").read_text(encoding="utf-8")
-        plugin_skill_text = (
-            REPO_ROOT / "plugins" / "agentplane-control-plane" / "skills" / "ingress" / "SKILL.md"
-        ).read_text(encoding="utf-8")
+    def test_ingress_skill_routes_to_formal_ingress_cli(self) -> None:
+        repo_skill_text = (REPO_ROOT / ".agents" / "skills" / "onepanel-website-ops" / "SKILL.md").read_text(encoding="utf-8")
         catalog_text = CATALOG_FILE.read_text(encoding="utf-8")
 
         self.assertIn("uv run python -m agentplane.cli ingress search --target <target>", repo_skill_text)
@@ -172,16 +78,10 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
             "uv run python -m agentplane.cli ingress publish plan --target <target> --config-file <config-file> --cloudflare-env-file <cloudflare-env-file> --repo-root <repo-root>",
             repo_skill_text,
         )
-        self.assertIn("uv run python -m agentplane.cli ingress ...", plugin_skill_text)
-        self.assertNotIn("uv run python -m agentplane.cli onepanel --env <target> website", plugin_skill_text)
-        self.assertNotIn("op-linux-control-plane", plugin_skill_text)
         self.assertIn("entrypoint: uv run python -m agentplane.cli ingress", catalog_text)
 
-    def test_service_skill_and_plugin_route_to_formal_service_cli(self) -> None:
-        repo_skill_text = (REPO_ROOT / ".codex" / "skills" / "onepanel-container-ops" / "SKILL.md").read_text(encoding="utf-8")
-        plugin_skill_text = (
-            REPO_ROOT / "plugins" / "agentplane-control-plane" / "skills" / "containers" / "SKILL.md"
-        ).read_text(encoding="utf-8")
+    def test_service_skill_routes_to_formal_service_cli(self) -> None:
+        repo_skill_text = (REPO_ROOT / ".agents" / "skills" / "onepanel-container-ops" / "SKILL.md").read_text(encoding="utf-8")
         catalog_text = CATALOG_FILE.read_text(encoding="utf-8")
 
         self.assertIn("uv run python -m agentplane.cli service search --target <target>", repo_skill_text)
@@ -191,18 +91,7 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
             "uv run python -m agentplane.cli service plan --target <target> --name <service> --operation restart",
             repo_skill_text,
         )
-        self.assertIn("uv run python -m agentplane.cli service ...", plugin_skill_text)
-        self.assertNotIn("uv run python -m agentplane.cli onepanel --env <target> container", plugin_skill_text)
-        self.assertNotIn("op-linux-control-plane", plugin_skill_text)
         self.assertIn("entrypoint: uv run python -m agentplane.cli service", catalog_text)
-
-    def test_infra_plugin_routes_to_formal_host_cli(self) -> None:
-        plugin_skill_text = (
-            REPO_ROOT / "plugins" / "agentplane-control-plane" / "skills" / "infra" / "SKILL.md"
-        ).read_text(encoding="utf-8")
-
-        self.assertIn("uv run python -m agentplane.cli infra ...", plugin_skill_text)
-        self.assertNotIn("uv run python -m agentplane.cli ...`", plugin_skill_text)
 
     def test_template_surface_skills_use_repo_root_placeholders(self) -> None:
         cases = {
@@ -245,7 +134,7 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
         }
 
         for skill_name, expected_snippets in cases.items():
-            text = (REPO_ROOT / ".codex" / "skills" / skill_name / "SKILL.md").read_text(encoding="utf-8")
+            text = (REPO_ROOT / ".agents" / "skills" / skill_name / "SKILL.md").read_text(encoding="utf-8")
             with self.subTest(skill=skill_name):
                 self.assertNotIn("/root/work/AgentPlane", text)
                 self.assertNotIn("ops.cli", text)
@@ -253,7 +142,7 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
                     self.assertIn(snippet, text)
 
     def test_infra_skill_drops_author_site_specific_automation_names(self) -> None:
-        text = (REPO_ROOT / ".codex" / "skills" / "host-ops" / "SKILL.md").read_text(encoding="utf-8")
+        text = (REPO_ROOT / ".agents" / "skills" / "host-ops" / "SKILL.md").read_text(encoding="utf-8")
 
         self.assertIn("infra automation search <target> --repo-root <repo-root>", text)
         self.assertIn("infra automation verify <target> --name <automation-name> --repo-root <repo-root>", text)
@@ -261,10 +150,7 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
         self.assertNotIn("wsl-zzz-skills-sync", text)
 
     def test_app_skill_routes_catalog_to_app_and_runtime_to_service(self) -> None:
-        repo_skill_text = (REPO_ROOT / ".codex" / "skills" / "onepanel-app-ops" / "SKILL.md").read_text(encoding="utf-8")
-        plugin_skill_text = (
-            REPO_ROOT / "plugins" / "agentplane-control-plane" / "skills" / "apps" / "SKILL.md"
-        ).read_text(encoding="utf-8")
+        repo_skill_text = (REPO_ROOT / ".agents" / "skills" / "onepanel-app-ops" / "SKILL.md").read_text(encoding="utf-8")
         catalog_text = CATALOG_FILE.read_text(encoding="utf-8")
 
         self.assertIn("uv run python -m agentplane.cli app object search --target <target>", repo_skill_text)
@@ -276,13 +162,10 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
         )
         self.assertNotIn("uv run python -m agentplane.cli onepanel --env <target> app", repo_skill_text)
         self.assertNotIn("uv run python -m agentplane.cli onepanel --env <target> project", repo_skill_text)
-        self.assertIn("uv run python -m agentplane.cli app ...", plugin_skill_text)
-        self.assertNotIn("uv run python -m agentplane.cli onepanel --env <target>", plugin_skill_text)
-        self.assertNotIn("op-linux-control-plane", plugin_skill_text)
         self.assertIn("entrypoint: uv run python -m agentplane.cli", catalog_text)
 
     def test_tenant_skill_routes_to_formal_app_resource_cli(self) -> None:
-        repo_skill_text = (REPO_ROOT / ".codex" / "skills" / "app-resource-ops" / "SKILL.md").read_text(encoding="utf-8")
+        repo_skill_text = (REPO_ROOT / ".agents" / "skills" / "app-resource-ops" / "SKILL.md").read_text(encoding="utf-8")
         catalog_text = CATALOG_FILE.read_text(encoding="utf-8")
 
         self.assertIn("uv run python -m agentplane.cli app resource search --target <target>", repo_skill_text)
@@ -300,10 +183,7 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
         self.assertIn("entrypoint: uv run python -m agentplane.cli app resource", catalog_text)
 
     def test_projection_skill_routes_to_formal_projection_cli(self) -> None:
-        repo_skill_text = (REPO_ROOT / ".codex" / "skills" / "projection-ops" / "SKILL.md").read_text(encoding="utf-8")
-        plugin_skill_text = (
-            REPO_ROOT / "plugins" / "agentplane-control-plane" / "skills" / "ledgers" / "SKILL.md"
-        ).read_text(encoding="utf-8")
+        repo_skill_text = (REPO_ROOT / ".agents" / "skills" / "projection-ops" / "SKILL.md").read_text(encoding="utf-8")
         catalog_text = CATALOG_FILE.read_text(encoding="utf-8")
 
         self.assertIn("uv run python -m agentplane.cli projection runtime-env plan --target <target> --app <app>", repo_skill_text)
@@ -312,8 +192,6 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
         self.assertIn("uv run python -m agentplane.cli projection verification run --target <target> --profile <profile>", repo_skill_text)
         self.assertIn("uv run python -m agentplane.cli projection fixture plan --target <target> --profile wsl-fixture", repo_skill_text)
         self.assertIn("uv run python -m agentplane.cli projection ledger refresh --target <target>", repo_skill_text)
-        self.assertIn("uv run python -m agentplane.cli projection ...", plugin_skill_text)
-        self.assertNotIn("op-linux-control-plane", plugin_skill_text)
         self.assertIn("entrypoint: uv run python -m agentplane.cli projection", catalog_text)
 
 

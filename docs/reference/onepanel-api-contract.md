@@ -81,16 +81,6 @@ Current stable CLI error codes include:
 
 Plugins and automations should branch on `error.code`, not on free-form message text.
 
-## Plugin Direction
-
-- Repo-local plugin root: `plugins/agentplane-control-plane`
-- Marketplace entry: `.agents/plugins/marketplace.json`
-- Plugin skills group by control-plane object, but the plugin stays thin:
-  - parameter collection
-  - CLI dispatch
-  - JSON result display
-- Skills and plugin groups must map back to `agentplane onepanel ...` or adjacent AgentPlane CLI commands instead of becoming a second control-plane implementation.
-
 ## WSL Fixture Expectations
 
 The WSL 1Panel test environment should keep a profile-backed recyclable fixture set for CLI and plugin validation:
