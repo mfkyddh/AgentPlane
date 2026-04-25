@@ -1,4 +1,0 @@
-interface:
-  display_name: "Maven Setup"
-  short_description: "Install Maven and switch to Aliyun mirror."
-  default_prompt: "Install Apache Maven in Ubuntu or WSL, configure the Aliyun mirror in settings.xml, verify Java and Maven, and summarize the work."

@@ -1,0 +1,205 @@
+version: 1
+skills:
+  - name: app-delivery-ops
+    frontmatter_name: app-delivery-ops
+    source_path: .agents/skills/app-delivery-ops/SKILL.md
+    kind: canonical
+    domains: [app]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli app
+  - name: cliproxyapi-docker-setup
+    frontmatter_name: cliproxyapi-docker-setup
+    source_path: .agents/skills/cliproxyapi-docker-setup/SKILL.md
+    kind: canonical
+    domains: [service]
+    aliases: []
+    entrypoint: docker compose
+  - name: host-ops
+    frontmatter_name: host-ops
+    source_path: .agents/skills/host-ops/SKILL.md
+    kind: canonical
+    domains: [infra]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli
+  - name: inventory-ledger-ops
+    frontmatter_name: inventory-ledger-ops
+    source_path: .agents/skills/inventory-ledger-ops/SKILL.md
+    kind: canonical
+    domains: [projection]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli
+  - name: maven-setup
+    frontmatter_name: maven-setup
+    source_path: .agents/skills/maven-setup/SKILL.md
+    kind: canonical
+    domains: [infra]
+    aliases: []
+    entrypoint: bash
+  - name: minio-docker-setup
+    frontmatter_name: minio-docker-setup
+    source_path: .agents/skills/minio-docker-setup/SKILL.md
+    kind: canonical
+    domains: [service]
+    aliases: []
+    entrypoint: docker compose
+  - name: nginxui-letsencrypt-cloudflare-dns01
+    frontmatter_name: nginxui-letsencrypt-cloudflare-dns01
+    source_path: .agents/skills/nginxui-letsencrypt-cloudflare-dns01/SKILL.md
+    kind: canonical
+    domains: [ingress, service]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli
+  - name: nginxwebui-docker-setup
+    frontmatter_name: nginxwebui-docker-setup
+    source_path: .agents/skills/nginxwebui-docker-setup/SKILL.md
+    kind: canonical
+    domains: [service]
+    aliases: []
+    entrypoint: docker compose
+  - name: nodejs-lts-setup
+    frontmatter_name: nodejs-lts-setup
+    source_path: .agents/skills/nodejs-lts-setup/SKILL.md
+    kind: canonical
+    domains: [infra]
+    aliases: []
+    entrypoint: bash
+  - name: onepanel-app-ops
+    frontmatter_name: onepanel-app-ops
+    source_path: .agents/skills/onepanel-app-ops/SKILL.md
+    kind: canonical
+    domains: [app]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli
+  - name: onepanel-container-ops
+    frontmatter_name: onepanel-container-ops
+    source_path: .agents/skills/onepanel-container-ops/SKILL.md
+    kind: canonical
+    domains: [service]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli service
+  - name: onepanel-cronjob-ops
+    frontmatter_name: onepanel-cronjob-ops
+    source_path: .agents/skills/onepanel-cronjob-ops/SKILL.md
+    kind: canonical
+    domains: [service]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli onepanel
+  - name: onepanel-firewall-ops
+    frontmatter_name: onepanel-firewall-ops
+    source_path: .agents/skills/onepanel-firewall-ops/SKILL.md
+    kind: canonical
+    domains: [infra]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli onepanel
+  - name: onepanel-host-setup
+    frontmatter_name: onepanel-host-setup
+    source_path: .agents/skills/onepanel-host-setup/SKILL.md
+    kind: canonical
+    domains: [infra]
+    aliases: []
+    entrypoint: bash
+  - name: onepanel-openresty-site-migration
+    frontmatter_name: onepanel-openresty-site-migration
+    source_path: .agents/skills/onepanel-openresty-site-migration/SKILL.md
+    kind: canonical
+    domains: [ingress]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli ingress
+  - name: onepanel-panel-ops
+    frontmatter_name: onepanel-panel-ops
+    source_path: .agents/skills/onepanel-panel-ops/SKILL.md
+    kind: canonical
+    domains: [infra]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli onepanel
+  - name: onepanel-website-ops
+    frontmatter_name: onepanel-website-ops
+    source_path: .agents/skills/onepanel-website-ops/SKILL.md
+    kind: canonical
+    domains: [ingress]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli ingress
+  - name: openclaw-docker-setup
+    frontmatter_name: openclaw-docker-setup
+    source_path: .agents/skills/openclaw-docker-setup/SKILL.md
+    kind: canonical
+    domains: [service]
+    aliases: []
+    entrypoint: docker compose
+  - name: openclaw-official-wsl-setup
+    frontmatter_name: openclaw-official-wsl-setup
+    source_path: .agents/skills/openclaw-official-wsl-setup/SKILL.md
+    kind: canonical
+    domains: [service]
+    aliases: []
+    entrypoint: bash
+  - name: openclaw-windows-chrome-bridge
+    frontmatter_name: openclaw-windows-chrome-bridge
+    source_path: .agents/skills/openclaw-windows-chrome-bridge/SKILL.md
+    kind: canonical
+    domains: [infra]
+    aliases: []
+    entrypoint: bash
+  - name: postgres-docker-setup
+    frontmatter_name: postgres-docker-setup
+    source_path: .agents/skills/postgres-docker-setup/SKILL.md
+    kind: canonical
+    domains: [service]
+    aliases: []
+    entrypoint: docker compose
+  - name: projection-ops
+    frontmatter_name: projection-ops
+    source_path: .agents/skills/projection-ops/SKILL.md
+    kind: canonical
+    domains: [projection]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli projection
+  - name: redis-docker-setup
+    frontmatter_name: redis-docker-setup
+    source_path: .agents/skills/redis-docker-setup/SKILL.md
+    kind: canonical
+    domains: [service]
+    aliases: []
+    entrypoint: docker compose
+  - name: ssh-root-login-setup
+    frontmatter_name: ssh-root-login-setup
+    source_path: .agents/skills/ssh-root-login-setup/SKILL.md
+    kind: canonical
+    domains: [infra]
+    aliases: []
+    entrypoint: bash
+  - name: app-resource-ops
+    frontmatter_name: app-resource-ops
+    source_path: .agents/skills/app-resource-ops/SKILL.md
+    kind: canonical
+    domains: [app-resource]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli app resource
+  - name: tencent-cloud-service-migration
+    frontmatter_name: tencent-cloud-service-migration
+    source_path: .agents/skills/tencent-cloud-service-migration/SKILL.md
+    kind: canonical
+    domains: [service]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli
+  - name: tencent-host-mihomo-openai-tuning
+    frontmatter_name: tencent-host-mihomo-openai-tuning
+    source_path: .agents/skills/tencent-host-mihomo-openai-tuning/SKILL.md
+    kind: canonical
+    domains: [infra]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli
+  - name: ubuntu-ssh-security-baseline
+    frontmatter_name: ubuntu-ssh-security-baseline
+    source_path: .agents/skills/ubuntu-ssh-security-baseline/SKILL.md
+    kind: canonical
+    domains: [infra]
+    aliases: []
+    entrypoint: bash
+  - name: windows-mihomo-cloudflare-latency-debug
+    frontmatter_name: windows-mihomo-cloudflare-latency-debug
+    source_path: .agents/skills/windows-mihomo-cloudflare-latency-debug/SKILL.md
+    kind: canonical
+    domains: [ingress, infra]
+    aliases: []
+    entrypoint: pwsh

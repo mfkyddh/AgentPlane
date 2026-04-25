@@ -1,4 +1,0 @@
-interface:
-  display_name: "Ubuntu SSH Security Baseline"
-  short_description: "Harden Ubuntu SSH with UFW, key-only login, and fail2ban."
-  default_prompt: "Secure an Ubuntu host with a lightweight SSH baseline: enable a default-deny UFW firewall, allow only the requested SSH port and sources, disable password login, disable root login unless explicitly requested, enable fail2ban for SSH with the required retry threshold, verify the effective settings, and summarize the result."

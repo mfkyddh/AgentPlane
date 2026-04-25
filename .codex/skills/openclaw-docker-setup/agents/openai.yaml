@@ -1,4 +1,0 @@
-interface:
-  display_name: "OpenClaw Docker Setup"
-  short_description: "Install OpenClaw in Docker on WSL with local-dev defaults."
-  default_prompt: "Install or update OpenClaw in Docker for this repository, store files under infra/compose/openclaw, keep persistent data under /data/openclaw, verify gateway startup, and summarize durable setup lessons."

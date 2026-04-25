@@ -1,4 +1,0 @@
-interface:
-  display_name: "OpenClaw Official WSL Setup"
-  short_description: "Official OpenClaw WSL setup and Feishu repair."
-  default_prompt: "Use $openclaw-official-wsl-setup to install or repair OpenClaw on Ubuntu/WSL with the official non-Docker flow, a custom OpenAI-compatible provider, or Feishu channel troubleshooting."

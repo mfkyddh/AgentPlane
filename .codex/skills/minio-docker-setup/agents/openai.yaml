@@ -1,4 +1,0 @@
-interface:
-  display_name: "MinIO Docker Setup"
-  short_description: "Install pinned MinIO in Docker with /data persistence."
-  default_prompt: "Install or redeploy MinIO in Docker for this repository, store files under infra/compose/minio, persist data under /data/minio, attach the service to zqf_network, verify health endpoints and persistence, and summarize the result."
