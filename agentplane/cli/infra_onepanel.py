@@ -25,7 +25,7 @@ from agentplane.runtime.redaction import redact_sensitive_value
 
 
 def add_onepanel_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
-    onepanel_parser = subparsers.add_parser("onepanel", help="1Panel 受管操作")
+    onepanel_parser = subparsers.add_parser("onepanel", help=argparse.SUPPRESS)
     onepanel_parser.add_argument("--env", default="wsl", choices=supported_onepanel_targets(), help="目标环境")
     onepanel_parser.add_argument("--env-file", help="覆盖选定环境的 1Panel API env 文件")
     onepanel_parser.add_argument("--json", action="store_true", help="输出结构化 JSON")
@@ -402,6 +402,11 @@ def onepanel_skeleton(env: str) -> dict[str, Any]:
 
 
 def handle_onepanel_command(args: argparse.Namespace) -> dict[str, Any]:
+    import sys
+
+    sys.stderr.write(
+        "[warn] onepanel 是 provider 调试入口，正式操作请使用 ingress / service / app / infra 域。\n"
+    )
     handler = getattr(args, "onepanel_handler", None)
     if callable(handler):
         return _record_operation(args, handler(args))
