@@ -1,10 +1,7 @@
 name: CI
 
 on:
-  pull_request:
-  push:
-    branches:
-      - main
+  workflow_dispatch:  # 手动触发 only — 快速迭代期间关闭自动 CI
 
 jobs:
   default-gate:
