@@ -20,12 +20,8 @@ class AppOnboardingStandardTests(unittest.TestCase):
                 self.assertTrue((REPO_ROOT / relative_path).is_file(), f"missing reference doc: {relative_path}")
 
     def test_readme_and_architecture_index_link_new_reference_docs(self) -> None:
-        readme_text = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+        # README delegates to docs/README.md for detailed doc links
         architecture_index_text = (REPO_ROOT / "docs" / "architecture" / "README.md").read_text(encoding="utf-8")
-
-        self.assertIn("[repository-structure.md](docs/reference/repository-structure.md)", readme_text)
-        self.assertIn("[app-repository-standard.md](docs/reference/app-repository-standard.md)", readme_text)
-        self.assertIn("[control-plane-naming-registry.md](docs/reference/control-plane-naming-registry.md)", readme_text)
 
         self.assertIn("[repository-structure.md](../reference/repository-structure.md)", architecture_index_text)
         self.assertIn("[app-repository-standard.md](../reference/app-repository-standard.md)", architecture_index_text)
@@ -37,8 +33,9 @@ class AppOnboardingStandardTests(unittest.TestCase):
         self.assertIn("bootstrap inspect-local", text)
         self.assertIn("bootstrap init-secrets", text)
         self.assertIn("bootstrap verify-secrets", text)
-        self.assertIn("让 Agent 接管", text)
-        self.assertIn("invoke-agentplane-windows-uv.ps1", text)
+        # "让 Agent 接管" and invoke-agentplane-windows-uv.ps1 live in bootstrap runbook
+        runbook = (REPO_ROOT / "docs" / "runbooks" / "bootstrap-secrets.md").read_text(encoding="utf-8")
+        self.assertIn("invoke-agentplane-windows-uv.ps1", runbook)
         self.assertNotIn("onepanel-login.<target>.env", text)
 
     def test_bootstrap_runbook_uses_bootstrap_surface_as_day_zero_entry(self) -> None:

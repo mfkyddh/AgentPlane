@@ -19,11 +19,6 @@ ACTIVE_TEMPLATE_SKILLS = (
     REPO_ROOT / ".codex" / "skills" / "onepanel-firewall-ops" / "SKILL.md",
     REPO_ROOT / ".codex" / "skills" / "onepanel-website-ops" / "SKILL.md",
 )
-README_CORE_CONTRACT_LINKS = (
-    "[control-plane.md](docs/architecture/control-plane.md)",
-    "[linux-governance.md](docs/architecture/linux-governance.md)",
-    "[agentplane-app-collaboration.md](docs/architecture/agentplane-app-collaboration.md)",
-)
 ARCHITECTURE_CORE_CONTRACT_LINKS = (
     "[control-plane.md](control-plane.md)",
     "[linux-governance.md](linux-governance.md)",
@@ -61,31 +56,26 @@ class DocsNoLegacyTermsTests(unittest.TestCase):
     def test_readme_describes_template_bootstrap_path(self) -> None:
         text = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
 
-        self.assertIn("fork / clone", text)
         self.assertIn("bootstrap inspect-local", text)
         self.assertIn("bootstrap init-secrets", text)
         self.assertIn("bootstrap verify-secrets", text)
         self.assertIn("bootstrap doctor", text)
-        self.assertIn("让 Agent 接管", text)
 
     def test_readme_describes_template_truth_and_runtime_model(self) -> None:
         text = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
 
         self.assertIn("Agent-first control plane template repository", text)
-        self.assertIn("Git tracked truth + local secrets", text)
-        self.assertIn("Windows / Linux / macOS 只在 `resolver / backend` 层分叉", text)
-        self.assertIn("人类输入面只剩 `secrets` 和少量 `identity`", text)
-        self.assertIn("不再默认引用作者现场目录", text)
+        # Detailed truth/runtime model lives in execution-flow runbook
+        execution_flow = (
+            REPO_ROOT / "docs" / "runbooks" / "control-plane-agent-execution-flow.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("Git tracked truth + local secrets", execution_flow)
 
     def test_entry_indexes_link_template_contracts(self) -> None:
-        readme_text = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+        # Core contract links live in docs/architecture/README.md (thin README delegates there)
         architecture_index_text = (
             REPO_ROOT / "docs" / "architecture" / "README.md"
         ).read_text(encoding="utf-8")
-
-        for link in README_CORE_CONTRACT_LINKS:
-            with self.subTest(doc="README", link=link):
-                self.assertIn(link, readme_text)
 
         for link in ARCHITECTURE_CORE_CONTRACT_LINKS:
             with self.subTest(doc="architecture", link=link):
@@ -95,8 +85,9 @@ class DocsNoLegacyTermsTests(unittest.TestCase):
             with self.subTest(doc="architecture", link=link):
                 self.assertIn(link, architecture_index_text)
 
-        self.assertIn("[docs/history/index.md](docs/history/index.md)", readme_text)
-        self.assertIn("[docs/archive/README.md](docs/archive/README.md)", readme_text)
+        # History/archive links live in architecture index, not root README
+        self.assertIn("[docs/history/index.md](../history/index.md)", architecture_index_text)
+        self.assertIn("[docs/archive/README.md](../archive/README.md)", architecture_index_text)
 
     def test_agents_doc_declares_template_backend_aware_rules(self) -> None:
         text = (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")

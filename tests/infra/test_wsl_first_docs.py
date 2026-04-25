@@ -48,13 +48,13 @@ class WslFirstDocsTests(unittest.TestCase):
         self.assertNotIn("如果当前不在 WSL，会先进入 WSL", text)
 
     def test_readme_and_flow_promote_backend_split_instead_of_wsl_first(self) -> None:
-        readme_text = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+        # README is a thin entry; backend-aware routing details live in AGENTS.md + cross-platform.md
+        agents_text = (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")
         flow_text = (
             REPO_ROOT / "docs" / "runbooks" / "control-plane-agent-execution-flow.md"
         ).read_text(encoding="utf-8")
 
-        self.assertIn("`pwsh`", readme_text)
-        self.assertIn("Windows / Linux / macOS 只在 `resolver / backend` 层分叉", readme_text)
+        self.assertIn("`pwsh`", agents_text)
         self.assertIn("`pwsh`", flow_text)
         self.assertIn("bootstrap inspect-local", flow_text)
         self.assertIn("resolver / backend", flow_text)

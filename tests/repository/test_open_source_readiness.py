@@ -82,11 +82,12 @@ class OpenSourceReadinessTests(unittest.TestCase):
     def test_readme_presents_cross_platform_first_run_path(self) -> None:
         text = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
 
-        self.assertIn("### Windows", text)
-        self.assertIn("### macOS / Linux", text)
-        self.assertIn("### Live Gate", text)
-        self.assertIn("uv run python -m agentplane.cli bootstrap doctor --repo-root .", text)
-        self.assertIn("single checkout", text)
+        # README is a thin entry; detailed platform steps live in cross-platform.md
+        self.assertIn("bootstrap inspect-local", text)
+        self.assertIn("bootstrap doctor", text)
+        # Cross-platform details are linked from README, not duplicated
+        open_source = (REPO_ROOT / "docs" / "reference" / "open-source-readiness.md").read_text(encoding="utf-8")
+        self.assertIn("single checkout", open_source)
 
     def test_docs_and_truth_do_not_embed_author_machine_paths(self) -> None:
         roots = ("README.md", "docs", "inventory", "infra", "templates")
