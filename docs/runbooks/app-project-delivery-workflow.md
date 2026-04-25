@@ -100,6 +100,16 @@ audience: both
 agentplane app delivery validate-contract --target <target> --app <app> --repo-root <repo-root>
 ```
 
+**预期输出**：
+
+```text
+[PASS] schema_version: 2
+[PASS] artifact.build_command exists
+[PASS] packaging.package_command exists
+[PASS] runtime.ports declared
+[PASS] infra.tenant_resources valid
+```
+
 任何构建、部署、回滚、验证之前，都先过这里。
 
 ### 2. 构建交付物
@@ -135,10 +145,50 @@ agentplane app delivery render-runtime --target <target> --app <app> --repo-root
 
 ### 5. 部署与验证
 
+先预览部署计划：
+
 ```bash
 agentplane app delivery deploy --target <target> --app <app> --repo-root <repo-root> --image-ref <image:tag> --dry-run
+```
+
+**预期输出**：
+
+```text
+[PLAN] Target: prod0-main
+[PLAN] App: sub2api
+[PLAN] Image: ghcr.io/wei-shaw/sub2api:latest
+[PLAN] Containers: sub2api-prod, postgres18-prod, redis7-prod
+[PLAN] Ports: 0.0.0.0:18080->8080/tcp
+[INFO] Dry run complete. Use --execute to apply.
+```
+
+确认计划后执行部署：
+
+```bash
 agentplane app delivery deploy --target <target> --app <app> --repo-root <repo-root> --image-ref <image:tag> --execute
+```
+
+**预期输出**：
+
+```text
+[INFO] Deploying sub2api to prod0-main
+[INFO] Compose up: sub2api-prod
+[INFO] Container started: sub2api-prod
+[INFO] Deploy complete
+```
+
+然后验证：
+
+```bash
 agentplane app delivery verify --target <target> --app <app> --repo-root <repo-root> --execute
+```
+
+**预期输出**：
+
+```text
+[PASS] Container running: sub2api-prod
+[PASS] Health probe: http://127.0.0.1:18080/health -> {"status":"ok"}
+[PASS] All checks passed
 ```
 
 `deploy --dry-run` 是部署计划入口，不是合同校验入口。

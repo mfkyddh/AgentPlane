@@ -22,15 +22,49 @@ Windows 宿主统一走：
 
 1. 检查当前宿主、backend 和工作区绑定：
    `agentplane bootstrap inspect-local --repo-root <repo-root>`
+
+   **预期输出**：
+   ```text
+   [INFO] Control root: <repo-root>
+   [INFO] Backend: WSL2
+   [INFO] Workspace binding: OK
+   ```
+
 2. 生成 bootstrap truth 空壳：
    `agentplane bootstrap init-secrets --repo-root <repo-root>`
+
+   **预期输出**：
+   ```text
+   [INFO] Created secrets/local/control-plane/README.md
+   [INFO] Created secrets/targets/wsl/README.md
+   [INFO] Created secrets/ssh/config
+   [INFO] Created secrets/ssh/keys/
+   ```
+
 3. 由人类只填写 Agent takeover 所需 truths：
    - `secrets/ssh/config`
    - `secrets/ssh/keys/*.pem`
+
 4. 校验 truths 是否已就绪：
    `agentplane bootstrap verify-secrets --repo-root <repo-root>`
+
+   **预期输出**：
+   ```text
+   [PASS] SSH config exists
+   [PASS] SSH keys found: 2
+   [PASS] Target secrets scaffold: wsl, prod0-main, prod2-main
+   ```
+
 5. 汇总当前仓库是否已具备 Agent 接管条件：
    `agentplane bootstrap doctor --repo-root <repo-root>`
+
+   **预期输出**：
+   ```text
+   [PASS] Repository structure
+   [PASS] Secrets readiness
+   [PASS] Backend connectivity
+   [INFO] AgentPlane is ready for operations
+   ```
 
 ## Generated Scaffold
 
