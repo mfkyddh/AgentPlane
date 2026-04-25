@@ -1,7 +1,7 @@
 ---
 status: active
 owner: AgentPlane maintainers
-last_verified: 2026-04-24
+last_verified: 2026-04-25
 superseded_by: null
 audience: agent
 ---
@@ -53,6 +53,28 @@ audience: agent
 |---|------|------|------|
 | 1 | 直接使用本地 POSIX Shell 执行本地命令 | 🟡 | 原生支持，无需额外适配 |
 | 2 | 远程 Linux 操作应走：`pwsh → agentplane.cli → WSL/SSH backend` | 🔴 | 保持统一入口，不要手写多层命令 |
+
+---
+
+## CLI 可用性保证
+
+`agentplane` 命令在 Windows 上必须可从任意终端直接调用。安装后的可用性层级：
+
+| 优先级 | 方式 | 条件 |
+|--------|------|------|
+| 1 | `agentplane ...` | `uv tool install -e .` 已执行，全局 PATH 可达 |
+| 2 | `uv run agentplane ...` | 仓库内，`uv` 可用 |
+| 3 | `python -m agentplane ...` | `.venv` 已激活或 `python` 指向项目 `.venv` |
+
+### 故障排除
+
+如果 `agentplane` 命令不可用：
+
+1. **首选**：运行 `uv tool install -e .` 将 CLI 注册为全局命令
+2. **回退**：在仓库目录下使用 `uv run agentplane ...` 或 `python -m agentplane ...`
+3. **检查**：`Get-Command agentplane` 验证全局注册是否生效（Windows）
+
+> ⚠️ 仅激活 `.venv` 不会将 `agentplane.exe` 加入全局 PATH。需要全局可用时，必须通过 `uv tool install` 注册。
 
 ---
 

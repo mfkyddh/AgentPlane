@@ -48,6 +48,8 @@ git clone <你的仓库地址> && cd AgentPlane
 uv tool install -e .
 ```
 
+> 💡 **`uv tool install` 会把 `agentplane` 注册为全局命令。** 如果 `agentplane` 仍不可用，可以改用 `uv run agentplane ...` 或 `python -m agentplane ...`，两者无需全局注册即可运行。
+
 ### 2️⃣ 体检
 
 ```bash
