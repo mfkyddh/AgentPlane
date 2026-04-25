@@ -6,10 +6,10 @@ import unittest
 from pathlib import Path
 
 import yaml
-from tests.support.app_delivery import (
+from tests.support.app_delivery_cli import run_app_delivery_cli
+from tests.support.app_delivery_contracts import write_contract
+from tests.support.app_delivery_targets import (
     baseline_tenant_resources,
-    run_app_delivery_cli,
-    write_contract,
     write_inventory,
     write_tenant_secret_files,
 )
@@ -61,4 +61,3 @@ class AppArtifactContractTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

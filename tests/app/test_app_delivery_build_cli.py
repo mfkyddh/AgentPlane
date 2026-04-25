@@ -6,21 +6,22 @@ import unittest
 from datetime import UTC, datetime
 from pathlib import Path
 
-from tests.support.app_delivery import (
-    baseline_app_resource_registry_payload,
-    baseline_tenant_resources,
+from tests.support.app_delivery_cli import run_app_delivery_cli, run_cli
+from tests.support.app_delivery_contracts import (
     init_git_repo,
     init_git_repo_with_tag,
-    run_app_delivery_cli,
-    run_cli,
     write_app_catalog_entry,
-    write_app_resource_registry,
     write_contract,
+    write_sampleapi_contract,
+    write_target_contract,
+)
+from tests.support.app_delivery_targets import (
+    baseline_app_resource_registry_payload,
+    baseline_tenant_resources,
+    write_app_resource_registry,
     write_inventory,
     write_prod2_inventory,
-    write_sampleapi_contract,
     write_sampleapi_tenant_files,
-    write_target_contract,
     write_tenant_secret_files,
 )
 from tests.support.app_resources import resource_relative

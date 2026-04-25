@@ -5,16 +5,18 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from tests.support.app_delivery import (
+from tests.support.app_delivery_cli import run_app_delivery_cli
+from tests.support.app_delivery_contracts import (
     ERROR_ID_TENANT_REGISTRY_MISMATCH,
     ERROR_ID_TENANT_RESOURCES_REQUIRED,
     ERROR_ID_TENANT_SECRET_FILE_MISSING,
     ERROR_ID_TENANT_SECRET_FILE_SCOPE,
+    write_contract,
+)
+from tests.support.app_delivery_targets import (
     baseline_app_resource_registry_payload,
     baseline_tenant_resources,
-    run_app_delivery_cli,
     write_app_resource_registry,
-    write_contract,
     write_inventory,
     write_tenant_secret_files,
 )

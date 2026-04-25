@@ -9,26 +9,27 @@ from unittest.mock import patch
 
 import yaml
 from agentplane.runtime.host_profile import HostProfile
-from tests.support.app_delivery import (
+from tests.support.app_delivery_cli import run_app_delivery_cli, run_cli
+from tests.support.app_delivery_contracts import (
+    sync_app_catalog_for_contract,
+    write_contract,
+    write_prod2_contract,
+    write_sampleapi_contract,
+)
+from tests.support.app_delivery_targets import (
     baseline_app_resource_registry_payload,
     baseline_tenant_resources,
-    run_app_delivery_cli,
-    run_cli,
-    sync_app_catalog_for_contract,
     write_app_resource_registry,
     write_compose_template,
-    write_contract,
     write_fake_bridge_network_ssh,
     write_fake_command,
     write_internal_worker_compose_template,
     write_inventory,
     write_prod2_compose_template,
-    write_prod2_contract,
     write_prod2_inventory,
     write_prod2_tenant_registry,
     write_prod2_tenant_secret_files,
     write_sampleapi_compose_templates,
-    write_sampleapi_contract,
     write_sampleapi_tenant_files,
     write_tenant_secret_files,
 )

@@ -6,20 +6,22 @@ import unittest
 from pathlib import Path
 
 import yaml
-from tests.support.app_delivery import (
-    baseline_tenant_resources,
-    run_app_delivery_cli,
+from tests.support.app_delivery_cli import run_app_delivery_cli
+from tests.support.app_delivery_contracts import (
     sync_app_catalog_for_contract,
-    write_app_resource_registry,
     write_contract,
+    write_prod2_contract,
+    write_sampleapi_contract,
+)
+from tests.support.app_delivery_targets import (
+    baseline_tenant_resources,
+    write_app_resource_registry,
     write_internal_worker_compose_template,
     write_inventory,
-    write_prod2_contract,
     write_prod2_inventory,
     write_prod2_tenant_registry,
     write_prod2_tenant_secret_files,
     write_sampleapi_compose_templates,
-    write_sampleapi_contract,
     write_sampleapi_tenant_files,
     write_tenant_secret_files,
 )

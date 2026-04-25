@@ -8,23 +8,25 @@ from pathlib import Path
 
 import yaml
 from agentplane.domain.app.resource_paths import app_resource_secret_dir
-from tests.support.app_delivery import (
+from tests.support.app_delivery_cli import run_app_delivery_cli
+from tests.support.app_delivery_contracts import (
     ERROR_ID_TENANT_REGISTRY_MISMATCH,
+    sync_app_catalog_for_contract,
+    write_app_catalog_entry,
+    write_contract,
+    write_sampleapi_contract,
+    write_target_contract,
+)
+from tests.support.app_delivery_targets import (
     assert_live_db_partition_markers,
     baseline_app_resource_registry_payload,
     baseline_tenant_resources,
-    run_app_delivery_cli,
-    sync_app_catalog_for_contract,
-    write_app_catalog_entry,
     write_app_resource_registry,
     write_compose_template,
-    write_contract,
     write_fake_bridge_network_ssh,
     write_fake_command,
     write_inventory,
-    write_sampleapi_contract,
     write_sampleapi_tenant_files,
-    write_target_contract,
     write_tenant_secret_files,
 )
 from tests.support.app_resources import resource_relative
