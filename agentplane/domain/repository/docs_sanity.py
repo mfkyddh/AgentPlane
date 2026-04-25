@@ -8,12 +8,31 @@ from pathlib import Path
 DOC_ROOTS = ("AGENTS.md", "README.md", "CONTRIBUTING.md", "docs")
 SKIP_DOC_PARTS = {"archive", "history"}
 ROOT_ENTRY_DOCS = {"AGENTS.md", "README.md"}
-FRONTMATTER_REQUIRED_DIRS = {"reference", "maintainers", "runbooks"}
+FRONTMATTER_REQUIRED_DIRS = {"reference", "maintainers", "runbooks", "getting-started", "architecture"}
 FRONTMATTER_RE = re.compile(r"^---\s*\n(.+?)\n---", re.DOTALL)
 LAST_VERIFIED_RE = re.compile(r"^last_verified:\s*(\d{4}-\d{2}-\d{2})", re.MULTILINE)
 CONCLUSION_RE = re.compile(r"结论[：:]", re.UNICODE)
-README_MAX_LINES = 200
+AUDIENCE_RE = re.compile(r"^audience:\s*(human|agent|both)\s*$", re.MULTILINE)
+README_MAX_LINES = 150  # 人类脸面文档必须极简
 LAST_VERIFIED_MAX_AGE_DAYS = 30
+
+# 人类面向文档中应避免的 AI 术语（中文+英文）
+HUMAN_DOC_TERM_BLACKLIST = {
+    "真源", "投影链", "投影",
+    "Task-Entry", "task-entry",
+    "Resolver", "resolver",
+    "Ledger", "ledger",
+    "Inventory", "inventory",
+    "Contract", "contract",
+    "Catalog", "catalog",
+}
+
+# 人类文档长度封顶（路径前缀 -> 最大行数）
+HUMAN_DOC_LENGTH_LIMITS = [
+    ("README.md", 150),
+    ("docs/getting-started", 180),
+    ("docs/tutorials", 250),
+]
 
 RETIRED_ENTRYPOINTS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("retired-host-entrypoint", re.compile(r"\bagentplane(?:\.cli)?\s+host\b")),
@@ -80,7 +99,7 @@ def _relative_parts_under_docs(path: Path, root: Path) -> set[str] | None:
 
 
 def _check_frontmatter(relative: str, text: str, doc_parts: set[str] | None) -> list[DocsSanityIssue]:
-    """Check that docs under reference/maintainers/runbooks have frontmatter."""
+    """Check that docs under required dirs have frontmatter."""
     issues: list[DocsSanityIssue] = []
     if doc_parts is None:
         return issues
@@ -93,39 +112,39 @@ def _check_frontmatter(relative: str, text: str, doc_parts: set[str] | None) -> 
                 path=relative,
                 kind="missing-frontmatter",
                 line=1,
-                detail="docs under reference/maintainers/runbooks must have YAML frontmatter with status/owner/last_verified/superseded_by",
+                detail="docs must have YAML frontmatter with status/owner/last_verified/superseded_by/audience",
             )
         )
-    else:
-        fm_text = match.group(1)
-        for field in ("status", "owner", "last_verified", "superseded_by"):
-            if field not in fm_text:
+        return issues
+    fm_text = match.group(1)
+    for field in ("status", "owner", "last_verified", "superseded_by", "audience"):
+        if field not in fm_text:
+            issues.append(
+                DocsSanityIssue(
+                    path=relative,
+                    kind="incomplete-frontmatter",
+                    line=2,
+                    detail=f"frontmatter missing required field: {field}",
+                )
+            )
+    # Check last_verified freshness
+    lv_match = LAST_VERIFIED_RE.search(fm_text)
+    if lv_match:
+        try:
+            lv_date = date.fromisoformat(lv_match.group(1))
+            age = (date.today() - lv_date).days
+            if age > LAST_VERIFIED_MAX_AGE_DAYS:
                 issues.append(
                     DocsSanityIssue(
                         path=relative,
-                        kind="incomplete-frontmatter",
-                        line=2,
-                        detail=f"frontmatter missing required field: {field}",
+                        kind="stale-last-verified",
+                        line=None,
+                        detail=f"last_verified is {age} days old (max {LAST_VERIFIED_MAX_AGE_DAYS}); please review and update",
+                        severity="warning",
                     )
                 )
-        # Check last_verified freshness
-        lv_match = LAST_VERIFIED_RE.search(fm_text)
-        if lv_match:
-            try:
-                lv_date = date.fromisoformat(lv_match.group(1))
-                age = (date.today() - lv_date).days
-                if age > LAST_VERIFIED_MAX_AGE_DAYS:
-                    issues.append(
-                        DocsSanityIssue(
-                            path=relative,
-                            kind="stale-last-verified",
-                            line=None,
-                            detail=f"last_verified is {age} days old (max {LAST_VERIFIED_MAX_AGE_DAYS}); please review and update",
-                            severity="warning",
-                        )
-                    )
-            except ValueError:
-                pass
+        except ValueError:
+            pass
     return issues
 
 
@@ -146,6 +165,76 @@ def _check_readme_length(repo_root: Path) -> list[DocsSanityIssue]:
             )
         ]
     return []
+
+
+def _check_audience_terminology(relative: str, text: str) -> list[DocsSanityIssue]:
+    """Check that strictly human-facing docs avoid AI-only terminology.
+    Docs marked 'both' are exempt because they need to reference formal commands and concepts."""
+    issues: list[DocsSanityIssue] = []
+    audience_match = AUDIENCE_RE.search(text)
+    if not audience_match:
+        return issues
+    audience = audience_match.group(1)
+    if audience != "human":
+        return issues
+    for term in HUMAN_DOC_TERM_BLACKLIST:
+        for match in re.finditer(re.escape(term), text):
+            issues.append(
+                DocsSanityIssue(
+                    path=relative,
+                    kind="ai-term-in-human-doc",
+                    line=_line_for_offset(text, match.start()),
+                    detail=f"术语 '{term}' 出现在人类面向文档中，请改用日常用语或将细节下钻到 reference/architecture 文档",
+                    severity="warning",
+                )
+            )
+    return issues
+
+
+def _check_agents_redirect(relative: str, text: str) -> list[DocsSanityIssue]:
+    """Check that AGENTS.md has a human redirect notice."""
+    if relative != "AGENTS.md":
+        return []
+    if "how-agent-works" in text or "人类读者" in text or "人类请" in text:
+        return []
+    return [
+        DocsSanityIssue(
+            path=relative,
+            kind="missing-agents-human-redirect",
+            line=1,
+            detail="AGENTS.md must include a human redirect notice pointing to docs/getting-started/how-agent-works.md",
+            severity="error",
+        )
+    ]
+
+
+def _check_human_doc_length(relative: str, text: str) -> list[DocsSanityIssue]:
+    """Check that human-facing docs do not exceed length limits."""
+    issues: list[DocsSanityIssue] = []
+    audience_match = AUDIENCE_RE.search(text)
+    if not audience_match:
+        # Also apply to README.md and docs without explicit audience if path matches
+        pass
+    else:
+        audience = audience_match.group(1)
+        if audience not in ("human", "both"):
+            return issues
+
+    line_count = len(text.splitlines())
+    for prefix, max_lines in HUMAN_DOC_LENGTH_LIMITS:
+        if relative == prefix or relative.startswith(prefix + "/"):
+            if line_count > max_lines:
+                issues.append(
+                    DocsSanityIssue(
+                        path=relative,
+                        kind="human-doc-too-long",
+                        line=None,
+                        detail=f"human-facing doc has {line_count} lines (max {max_lines} for {prefix}); move detail to deeper docs",
+                        severity="warning",
+                    )
+                )
+            break
+    return issues
 
 
 def _check_conclusion_line(relative: str, text: str, doc_parts: set[str] | None) -> list[DocsSanityIssue]:
@@ -230,6 +319,15 @@ def run_docs_sanity(repo_root: Path) -> list[DocsSanityIssue]:
 
         # Conclusion line check
         issues.extend(_check_conclusion_line(relative, text, doc_parts))
+
+        # Audience terminology check
+        issues.extend(_check_audience_terminology(relative, text))
+
+        # AGENTS.md human redirect check
+        issues.extend(_check_agents_redirect(relative, text))
+
+        # Human doc length check
+        issues.extend(_check_human_doc_length(relative, text))
 
     # Isolated active docs
     for relative, sources in sorted(inbound_links.items()):

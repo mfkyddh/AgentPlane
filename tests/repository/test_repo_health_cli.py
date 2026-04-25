@@ -116,7 +116,7 @@ class RepoHealthCliTests(unittest.TestCase):
             (root / "docs" / "README.md").write_text("[Spec](reference/spec.md)\n", encoding="utf-8")
             (root / "docs" / "reference").mkdir()
             (root / "docs" / "reference" / "spec.md").write_text(
-                "---\nstatus: active\nowner: test\nlast_verified: 2026-04-25\nsuperseded_by: null\n---\n\n# Spec\n\nNo conclusion here.\n",
+                "---\nstatus: active\nowner: test\nlast_verified: 2026-04-25\nsuperseded_by: null\naudience: agent\n---\n\n# Spec\n\nNo conclusion here.\n",
                 encoding="utf-8",
             )
 
