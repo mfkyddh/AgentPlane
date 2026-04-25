@@ -9,6 +9,7 @@ from agentplane.domain.service.handlers import (
     get_service,
     materialize_service,
     plan_service_operation,
+    refresh_service_ledger,
     search_services,
     verify_service,
 )
@@ -44,6 +45,11 @@ def add_service_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentP
         parser.add_argument("--repo-root", default=".", help="仓库根目录")
         if action == "apply":
             parser.add_argument("--execute", action="store_true", help="执行写操作")
+
+    refresh = service_subparsers.add_parser("refresh-ledger", help="刷新服务对象台账")
+    refresh.add_argument("--target", required=True, choices=SUPPORTED_SERVICE_TARGETS, help="目标环境")
+    refresh.add_argument("--repo-root", default=".", help="仓库根目录")
+    refresh.add_argument("--write", action="store_true", help="写回台账文件")
 
     materialize = service_subparsers.add_parser("materialize", help="渲染附着在 service 上的交付产物")
     materialize.add_argument("--target", required=True, choices=SUPPORTED_SERVICE_TARGETS, help="目标环境")
@@ -91,6 +97,8 @@ def handle_service_command(args: argparse.Namespace) -> dict[str, Any]:
         return _wrap("plan", args.target, plan_service_operation(repo_root, args.target, args.name, args.operation))
     if args.service_action == "apply":
         return _wrap("apply", args.target, apply_service_operation(repo_root, args.target, args.name, args.operation, execute=bool(args.execute)))
+    if args.service_action == "refresh-ledger":
+        return _wrap("refresh-ledger", args.target, refresh_service_ledger(repo_root, args.target, write=bool(args.write)))
     if args.service_action == "materialize":
         return _wrap(
             "materialize",
