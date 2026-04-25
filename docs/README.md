@@ -14,12 +14,16 @@ audience: both
 
 ## 👤 人类入口：按你想做什么
 
+> 📌 所有 runbook 的完整列表和按场景分类见 [Runbook 导航](runbooks/README.md)。
+
 | 你想做什么 | 从这里开始 |
 | --- | --- |
 | 第一次了解项目 | [5 分钟速览](getting-started/5-minute-overview.md) ⭐ |
 | 理解核心概念 | [核心概念](getting-started/core-concepts.md) |
 | 了解 AI 怎么工作 | [AI 执行流程](getting-started/how-agent-works.md) |
-| 部署一个应用 | [应用交付流程](runbooks/app-project-delivery-workflow.md) |
+| 部署第一个应用 | [教程：部署 sub2api](tutorials/deploy-first-app.md) ⭐ |
+| 排查部署失败 | [教程：排查失败](tutorials/troubleshoot-failed-deployment.md) ⭐ |
+| 了解完整交付流程 | [应用交付流程](runbooks/app-project-delivery-workflow.md) |
 | 部署失败了怎么办 | [失败处理](runbooks/app-delivery-failure-handling.md) |
 | 查看当前状态 | [状态与验证](runbooks/current-state-and-validation.md) |
 | 初始化 Secrets | [Secrets 引导](runbooks/bootstrap-secrets.md) |
