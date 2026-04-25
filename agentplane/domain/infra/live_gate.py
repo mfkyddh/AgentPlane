@@ -6,6 +6,7 @@ from typing import Any, Iterable, Literal, Mapping
 
 from agentplane.runtime.backends import build_backend_runner
 from agentplane.runtime.execution import CommandRunner, ExecutionBindings, ExecutionPlan
+from agentplane.runtime.host_profile import detect_host_profile
 from agentplane.runtime.platform import HostPlatform, detect_host_platform
 from agentplane.runtime.redaction import redact_execution_payload
 
@@ -189,8 +190,9 @@ def assert_live_gate_checkout(
 
 
 def _run_step_with_backend(step: LiveGateStep) -> dict[str, Any]:
+    host_profile = detect_host_profile()
     plan = ExecutionPlan(
-        backend_type="windows-wsl",
+        backend_type=host_profile.linux_backend,
         cwd_ref="repo_root",
         argv=step.argv,
         env_refs=(),

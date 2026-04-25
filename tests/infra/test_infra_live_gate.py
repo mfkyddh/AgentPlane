@@ -9,6 +9,7 @@ from agentplane.domain.infra.live_gate import (
     run_live_gate,
     summarize_capabilities,
 )
+from agentplane.runtime.host_profile import HostProfile
 from agentplane.runtime.platform import HostPlatform
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -142,4 +143,83 @@ def test_live_gate_results_redact_nested_command_stdout() -> None:
     assert payload["ok"] is True
     assert "<redacted>" in payload["results"][0]["stdout"]
     assert "secret" not in payload["results"][0]["stdout"]
+
+
+def test_run_step_with_backend_resolves_backend_from_host_profile(monkeypatch) -> None:
+    from agentplane.domain.infra.live_gate import _run_step_with_backend, LiveGateStep
+
+    captured: dict[str, object] = {}
+
+    class FakeResult:
+        backend_type: str = ""
+        argv: tuple[str, ...] = ()
+
+        def to_payload(self) -> dict[str, object]:
+            return {
+                "backend_type": self.backend_type,
+                "argv": list(self.argv),
+                "returncode": 0,
+                "stdout": "ok",
+                "stderr": "",
+                "ok": True,
+            }
+
+    class FakeRunner:
+        def execute(self, plan, *, bindings=None):  # noqa: ANN001
+            captured["backend_type"] = plan.backend_type
+            result = FakeResult()
+            result.backend_type = plan.backend_type
+            result.argv = plan.argv
+            return result
+
+    monkeypatch.setattr(
+        "agentplane.domain.infra.live_gate.build_backend_runner",
+        FakeRunner,
+    )
+
+    step = LiveGateStep(
+        key="test.toolchain",
+        argv=("docker", "ps"),
+        capabilities=("docker",),
+        cwd=Path("/"),
+        execution="linux-backend",
+    )
+
+    # Windows host → windows-wsl
+    monkeypatch.setattr(
+        "agentplane.domain.infra.live_gate.detect_host_profile",
+        lambda: HostProfile(
+            os_name="windows",
+            linux_backend="windows-wsl",
+            supports_docker=True,
+            has_wsl=True,
+        ),
+    )
+    _run_step_with_backend(step)
+    assert captured["backend_type"] == "windows-wsl"
+
+    # WSL inside → linux-native
+    monkeypatch.setattr(
+        "agentplane.domain.infra.live_gate.detect_host_profile",
+        lambda: HostProfile(
+            os_name="linux",
+            linux_backend="linux-native",
+            supports_docker=True,
+            is_wsl=True,
+        ),
+    )
+    _run_step_with_backend(step)
+    assert captured["backend_type"] == "linux-native"
+
+    # macOS → macos-lima
+    monkeypatch.setattr(
+        "agentplane.domain.infra.live_gate.detect_host_profile",
+        lambda: HostProfile(
+            os_name="macos",
+            linux_backend="macos-lima",
+            supports_docker=True,
+        ),
+    )
+    _run_step_with_backend(step)
+    assert captured["backend_type"] == "macos-lima"
 
