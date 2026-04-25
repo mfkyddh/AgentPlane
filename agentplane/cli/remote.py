@@ -10,6 +10,7 @@ from agentplane.cli.operations import append_operation_ledger, next_operation_id
 from agentplane.runtime.backends import build_backend_runner
 from agentplane.runtime.execution import ExecutionBindings, ExecutionPlan, shell_join
 from agentplane.runtime.host_profile import detect_host_profile
+from agentplane.runtime.intent_guard import Intent, guard
 from agentplane.runtime.target_resolver import TargetResolver
 from agentplane.ssh import resolve_ssh_target
 
@@ -121,6 +122,7 @@ def _render_payload(
     rendered: dict[str, Any],
     script_file: Path | None,
     dry_run: bool,
+    intent: Intent = "mutation",
 ) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "command": "remote",
@@ -134,6 +136,7 @@ def _render_payload(
         "backend": rendered,
         "display_command": rendered["display_command"],
         "dry_run": dry_run,
+        "intent": intent,
     }
     metadata = rendered.get("metadata", {})
     if script_file is not None:
@@ -192,6 +195,7 @@ def execute_remote_bash(
     script_file: str | Path | None = None,
     stdin_text: str | None = None,
     dry_run: bool = False,
+    intent: Intent = "mutation",
 ) -> dict[str, Any]:
     repo_root = Path(repo_root).resolve()
     remote_args = _strip_remainder_separator(list(remote_args or []))
@@ -209,6 +213,12 @@ def execute_remote_bash(
     if not dry_run and transport in {"stdin", "script-file"} and not bindings.resolve_input(plan.input_refs):
         raise ValueError("stdin is empty; pass --script-file <linux-path> or pipe a script body")
 
+    # Intent guard: validate declared intent against inferred command semantics
+    if transport == "inline-command":
+        guard(intent, argv=plan.argv)
+    else:
+        guard(intent, argv=plan.argv, stdin_text=bindings.input_values.get("remote.stdin"))
+
     runner = build_backend_runner()
     rendered = runner.render(plan, bindings=bindings)
     payload = _render_payload(
@@ -219,6 +229,7 @@ def execute_remote_bash(
         rendered=rendered.to_payload(),
         script_file=resolved_script,
         dry_run=dry_run,
+        intent=intent,
     )
 
     op_id = next_operation_id("remote-bash")

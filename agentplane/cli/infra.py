@@ -186,6 +186,12 @@ def add_infra_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     bash_parser.add_argument("--repo-root", default=".", help="仓库根目录")
     bash_parser.add_argument("--script-file", help="Linux 脚本文件路径")
     bash_parser.add_argument("--dry-run", action="store_true", help="只输出结构化执行计划")
+    bash_parser.add_argument(
+        "--intent",
+        choices=("diagnostic", "read-only", "mutation"),
+        default="mutation",
+        help="声明命令意图 (diagnostic=诊断, read-only=只读, mutation=可修改). 默认 mutation",
+    )
     bash_parser.add_argument("remote_args", nargs="*", help="透传给远端 bash -s -- 的参数")
 
     secrets_parser = infra_subparsers.add_parser("secrets", help="基础设施级 secrets 正式入口")
@@ -372,6 +378,7 @@ def handle_infra_command(args: argparse.Namespace) -> dict[str, Any]:
             remote_args=list(args.remote_args),
             script_file=args.script_file,
             dry_run=bool(args.dry_run),
+            intent=args.intent,
         )
         return _wrap(
             action="remote.bash",
