@@ -1,7 +1,7 @@
 ---
 status: active
 owner: AgentPlane maintainers
-last_verified: 2026-04-08
+last_verified: 2026-04-25
 superseded_by: null
 ---
 
@@ -26,6 +26,7 @@ superseded_by: null
 | --- | --- | --- |
 | 控制面长期架构合同 | [../architecture/control-plane.md](../architecture/control-plane.md) | 先对齐正式入口、对象面、任务面、输出合同、`inventory / ledger` 原则 |
 | maintainer authoring 规则 | 本文 | 决定 skill、reference、runbook、测试、模板各自该写什么 |
+| 文档可读性与可达性 | [../reference/documentation-governance.md](../reference/documentation-governance.md) | 控制 emoji、短文本、索引、孤立文档和 docs-sanity 门禁 |
 | 专题执行步骤 | `docs/runbooks/*` | 只写正式流程、风险边界、人工接力点，不写第二实现 |
 | 代码、模板、测试 | 仓库实际文件 | 保持与正式合同、示例、索引一致 |
 
@@ -158,6 +159,8 @@ skill 或 reference 在涉及写操作时，必须明确区分：
 ### runbook
 
 runbook 负责专题流程、风险边界、人工接力点与最小验证；需要 authoring 规则时，链接回本文；需要长期控制面合同时，链接回 [../architecture/control-plane.md](../architecture/control-plane.md)。
+
+人类可读表达、emoji 语义、文档地图和孤立文档规则统一看 [../reference/documentation-governance.md](../reference/documentation-governance.md)。新增 active 文档必须加入 [../README.md](../README.md) 或被对应领域索引链接。
 
 ### 历史材料优先级
 

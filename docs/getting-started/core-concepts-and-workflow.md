@@ -1,10 +1,12 @@
-# AgentPlane 核心概念与工作流程
+# 🧠 AgentPlane 核心概念与工作流程
+
+结论：AgentPlane 的核心是三个想法——Task-Entry（AI 不直接 Shell，走标准入口）、真源模型（Git 管配置，本地管 secrets，现场只做验证基准）、执行闭环（Plan → Apply → Verify → Ledger → Inventory → Doc-Sync）。读完本文你就能理解所有 runbook 和架构文档。
 
 > 本文档面向第一次接触 AgentPlane 的开发者，帮助你建立对项目整体架构和工作流程的直观理解。阅读完本文后，你可以继续深入具体的 [runbook](../runbooks/) 和 [architecture](../architecture/) 文档。
 
 ---
 
-## 总览：AgentPlane 是什么？
+## 🌐 总览：AgentPlane 是什么？
 
 AgentPlane 是一个**面向 AI Agent 的基础设施控制平面**。它的核心使命是：
 
@@ -14,9 +16,9 @@ AgentPlane 是一个**面向 AI Agent 的基础设施控制平面**。它的核�
 
 ---
 
-## 四大核心概念
+## 🧩 四大核心概念
 
-### 1. 真源与三层状态模型
+### 📋 1. 真源与三层状态模型
 
 在分布式系统管理中，"真源"是指被所有组件共同承认的**权威状态定义**。AgentPlane 的真源只有一类：
 
@@ -40,7 +42,7 @@ AgentPlane 的核心工作是**持续对比以下三层状态**，发现配置�
 
 ---
 
-### 2. Task-Entry（标准化任务入口）
+### 🎯 2. Task-Entry（标准化任务入口）
 
 Task-Entry 是 AgentPlane 中最重要的设计模式之一。它回答的问题是：**"AI 应该怎么操作基础设施？"**
 
@@ -90,7 +92,7 @@ AgentPlane 把基础设施抽象为 4 个对象域 + 横切机制，每个域有
 
 ---
 
-### 3. Resolver / Backend（跨平台解析层）
+### 🔀 3. Resolver / Backend（跨平台解析层）
 
 AgentPlane 支持 Windows、Linux、macOS 三种宿主环境。Resolver / Backend 层负责**把统一的逻辑路径解析为当前平台可执行的具体操作**。
 
@@ -113,7 +115,7 @@ AgentPlane 支持 Windows、Linux、macOS 三种宿主环境。Resolver / Backen
 
 ---
 
-### 4. 投影链（Projection Chain）
+### 📊 4. 投影链（Projection Chain）
 
 投影链描述的是**现场操作结果如何沉淀为可追溯的结构化记录**。
 
@@ -141,7 +143,7 @@ Inventory（结构化台账，JSON 格式）
 
 ---
 
-## 执行闭环（Execution Loop）
+## 🔄 执行闭环（Execution Loop）
 
 AgentPlane 对任何影响正式状态的操作，都强制遵循 **6 步闭环**：
 
@@ -236,7 +238,7 @@ agentplane app delivery doc-sync --target prod0-main --app sub2api --write
 
 ---
 
-## 应用交付全流程（App Delivery Workflow）
+## 📦 应用交付全流程（App Delivery Workflow）
 
 应用交付是 AgentPlane 最复杂的场景，它把执行闭环应用到了"应用部署上线"的完整生命周期中。
 
@@ -364,7 +366,7 @@ agentplane app delivery verify --target prod0-main --app sub2api --execute
 
 ---
 
-## 对象模型速查
+## 📋 对象模型速查
 
 | 对象域 | 回答的问题 | 典型对象 | 关键动词 |
 |--------|-----------|---------|---------|
@@ -376,7 +378,7 @@ agentplane app delivery verify --target prod0-main --app sub2api --execute
 
 ---
 
-## 关键术语速查
+## 🔑 关键术语速查
 
 | 术语 | 含义 | 类比理解 |
 |------|------|---------|
@@ -394,7 +396,7 @@ agentplane app delivery verify --target prod0-main --app sub2api --execute
 
 ---
 
-## 下一步
+## 🧭 下一步
 
 理解了核心概念后，你可以按需深入：
 

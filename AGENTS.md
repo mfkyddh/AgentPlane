@@ -21,6 +21,7 @@
 | 9 | **执行后必验证**：每次变更都运行最小验证 | 🟡 |
 | 10 | **用 `pwsh` 而非 `cmd`**：Windows 上默认用 PowerShell | 🟡 |
 | 11 | **先查帮助再执行**：不确定时用 `--help` | 🟡 |
+| 12 | **文档必须可达**：新增 active 文档必须加入索引或被上游文档链接 | 🔴 |
 
 ---
 
@@ -86,21 +87,14 @@ agentplane <domain> <surface> <verb> [flags]
 
 ## 文档索引
 
-| 文档 | 内容 |
+完整地图见 [docs/README.md](docs/README.md)。AI 执行时最常需要：
+
+| 文档 | 用途 |
 |------|------|
-| [docs/reference/git-conventions.md](docs/reference/git-conventions.md) | Git 完整规范（原子性、Commit Message、分支、换行符） |
-| [docs/reference/repository-structure.md](docs/reference/repository-structure.md) | 仓库结构规范 |
-| [docs/reference/code-style.md](docs/reference/code-style.md) | 代码风格规范 |
-| [docs/reference/tech-stack.md](docs/reference/tech-stack.md) | 技术栈规范 |
-| [docs/reference/release-process.md](docs/reference/release-process.md) | 发布与持续健康规范 |
-| [docs/reference/app-runtime-decomposition.md](docs/reference/app-runtime-decomposition.md) | App runtime 与测试 helper 拆分路线 |
-| [docs/reference/cross-platform.md](docs/reference/cross-platform.md) | 跨平台完整规范（Windows/WSL/Linux、虚拟环境） |
-| [docs/reference/container-conventions.md](docs/reference/container-conventions.md) | 容器完整规范（Compose、命名、网络） |
-| [docs/reference/app-repository-standard.md](docs/reference/app-repository-standard.md) | 应用仓库标准 |
-| [docs/reference/testing-architecture.md](docs/reference/testing-architecture.md) | 测试架构 |
-| [docs/reference/control-plane-naming-registry.md](docs/reference/control-plane-naming-registry.md) | 命名规范 |
-| [docs/architecture/control-plane.md](docs/architecture/control-plane.md) | 控制面核心架构 |
-| [docs/runbooks/current-state-and-validation.md](docs/runbooks/current-state-and-validation.md) | 当前状态总览 |
+| [docs/architecture/control-plane.md](docs/architecture/control-plane.md) | 控制面核心合同 |
+| [docs/reference/documentation-governance.md](docs/reference/documentation-governance.md) | 文档治理（emoji、链接、门禁） |
+| [docs/reference/cross-platform.md](docs/reference/cross-platform.md) | 跨平台规范 |
+| [docs/reference/git-conventions.md](docs/reference/git-conventions.md) | Git 规范 |
 
 ---
 

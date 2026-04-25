@@ -4,139 +4,67 @@
 
 > **让 AI Agent 安全、规范地接管你的基础设施。**
 
-AgentPlane 是一个 Agent-first control plane template repository。简单说：它给 AI 提供了一套**标准化的"遥控器"**，让 AI 能够帮你管理服务器、部署应用、配置服务，而且所有操作都有记录、可审计、可回滚。
-
-核心模型是 Git tracked truth + local secrets：普通配置放在 Git 中，真实 secrets 留在本地；Windows / Linux / macOS 只在 `resolver / backend` 层分叉，同一个项目只保留 single checkout。Windows 入口 shell 使用 `pwsh`，需要封装 `uv` 时使用 `invoke-agentplane-windows-uv.ps1`。人类输入面只剩 `secrets` 和少量 `identity`，不再默认引用作者现场目录。
-
-完成 bootstrap 体检后，就可以让 Agent 接管后续 `infra`、`service`、`ingress`、`app` 与 `projection` 动作。
+AgentPlane 是一个 Agent-first control plane template repository。它给 AI 提供了一套**标准化的"遥控器"**，让 AI 能帮你管理服务器、部署应用、配置服务，所有操作有记录、可审计、可回滚。
 
 ---
 
 <p align="center">
-  <a href="#快速开始">🚀 快速开始</a> •
-  <a href="#能做什么">✨ 能做什么</a> •
-  <a href="#项目结构">📁 项目结构</a> •
-  <a href="#核心概念">🧠 核心概念</a> •
-  <a href="#文档导航">📖 文档</a>
+  <a href="#-快速开始">🚀 快速开始</a> •
+  <a href="#-能做什么">✨ 能做什么</a> •
+  <a href="#-项目结构">📁 项目结构</a> •
+  <a href="#-文档导航">📖 文档</a>
 </p>
 
 ---
 
 ## ✨ 能做什么
 
-| 能力 | 说明 | 示例 |
-|------|------|------|
-| 🖥️ **主机管理** | 盘点服务器资产、执行审计、远程操作 | 一键查看所有受管服务器状态 |
-| 🐳 **服务管控** | 管理 Docker 服务生命周期 | 验证 PostgreSQL、Redis 是否正常运行 |
-| 🌐 **网站发布** | 自动化公网入口配置 | 一键发布网站到 Cloudflare + 1Panel |
-| 📦 **应用交付** | 规范化的应用部署流程 | 构建 → 部署 → 验证 → 回滚 |
-| ✅ **状态验证** | 持续验证实际状态与预期是否一致 | 自动检测配置漂移 |
-| 📝 **台账投影** | 自动生成审计记录和状态报告 | 每次操作留下可追溯的证据 |
+| 能力 | 说明 |
+|------|------|
+| 🖥️ **主机管理** | 盘点服务器资产、执行审计、远程操作 |
+| 🐳 **服务管控** | 管理 Docker 服务生命周期 |
+| 🌐 **网站发布** | 自动化公网入口配置（Cloudflare + 1Panel） |
+| 📦 **应用交付** | 构建 → 部署 → 验证 → 回滚 |
+| ✅ **状态验证** | 持续检测配置漂移 |
+| 📝 **台账投影** | 每次操作留下可追溯的审计证据 |
 
-**核心设计原则**：
-- ✅ **配置即代码** — 所有基础设施配置放在 Git 中管理
-- 🔐 **敏感信息分离** — 密码、密钥单独存放，不提交到 Git
-- 🤖 **AI 友好** — 统一的 CLI 入口，让 AI 能规范操作而非随意执行 Shell
-- 🖥️ **跨平台** — Windows、macOS、Linux 共用同一份源码
+**核心设计**：✅ 配置即代码 • 🔐 敏感信息分离 • 🤖 AI 友好 CLI • 🖥️ 跨平台
 
 ---
 
 ## 🚀 快速开始
 
-### 环境要求
+### 1️⃣ 环境要求
 
-- Python 3.12+
-- [uv](https://docs.astral.sh/uv/)（Python 包管理器）
-- Git
+- Python 3.12+、[uv](https://docs.astral.sh/uv/)、Git
 
-### 第一步：fork / clone 仓库
+### 2️⃣ 安装 & 体检
 
 ```bash
-git clone <你的仓库地址>
-cd AgentPlane
-```
+git clone <你的仓库地址> && cd AgentPlane
 
-### 第二步：运行体检（Doctor）
-
-Doctor 会检查你的环境是否就绪，并报告：
-- ✅ 宿主环境状态
-- ✅ 工作区绑定
-- ✅ Backend（WSL/SSH/Docker）可用性
-- ✅ Secrets 配置状态
-
-### Windows
-```powershell
-uv run python -m agentplane.cli bootstrap inspect-local --repo-root .
-uv run python -m agentplane.cli bootstrap doctor --repo-root .
-```
-
-### macOS / Linux
-```bash
-uv run python -m agentplane.cli bootstrap inspect-local --repo-root .
-uv run python -m agentplane.cli bootstrap doctor --repo-root .
-```
-
-> 💡 **预期输出**：你应该看到类似 `host: ok`、`backend: wsl available` 的状态报告。如果有 ❌，按照提示修复即可。
-
-### 第三步：全局安装 CLI（推荐）
-
-安装到系统 PATH 后，你就可以直接用 `agentplane` 命令，无需每次都加 `uv run` 前缀：
-
-```bash
+# 全局安装 CLI（推荐，之后可直接用 agentplane 命令）
 uv tool install -e .
+
+# 环境体检
+agentplane bootstrap inspect-local --repo-root .
+agentplane bootstrap doctor --repo-root .
+
+# 初始化 Secrets
+agentplane bootstrap init-secrets --repo-root .
+agentplane bootstrap verify-secrets --repo-root .
 ```
 
-> 📝 安装完成后，本文档中所有命令都可以省略 `uv run` 前缀。如果之后代码更新了，运行 `uv tool upgrade agentplane` 即可同步。
+> 💡 体检通过后，Agent 就可以接管后续操作了。
 
-### 第四步：初始化 Secrets
+### 3️⃣ 下一步
 
 ```bash
-# 创建 secrets 目录结构
-uv run python -m agentplane.cli bootstrap init-secrets --repo-root .
-
-# 验证 secrets 配置
-uv run python -m agentplane.cli bootstrap verify-secrets --repo-root .
+agentplane --help              # 查看全部命令
+agentplane repo health-check --repo-root .   # 仓库健康检查
 ```
 
-> 🔐 **说明**：`secrets/` 目录已被 `.gitignore` 排除，你的密码和密钥不会意外提交到 Git。
-
-### 第五步：查看全部命令
-
-```bash
-uv run python -m agentplane.cli --help
-```
-
-### 第六步：运行测试（可选）
-
-```bash
-uv run python -m pytest
-```
-
-> 默认只跑离线测试，不会触碰真实的 WSL/SSH/Docker。
-
-### 仓库健康检查
-
-```bash
-uv run python -m agentplane.cli repo health-check --repo-root .
-```
-
-该命令会运行仓库级健康门禁，包括 lint、默认测试、CLI help 和 Git 可见文件 secret scan。
-
-发布前运行更严格的检查：
-
-```bash
-uv run python -m agentplane.cli repo release-check --repo-root .
-```
-
-`release-check` 会在健康门禁之外检查工作区是否干净。
-
-### Live Gate
-
-真实 WSL、SSH、Docker 或远端 provider 验证必须显式进入 live gate，先 `plan`，需要执行时再加 `--execute`：
-
-```bash
-uv run python -m agentplane.cli infra live-gate plan --profile wsl --repo-root .
-```
+📖 理解核心概念 → [core-concepts-and-workflow.md](docs/getting-started/core-concepts-and-workflow.md)
 
 ---
 
@@ -144,185 +72,55 @@ uv run python -m agentplane.cli infra live-gate plan --profile wsl --repo-root .
 
 ```
 AgentPlane/
-├── agentplane/              # 唯一生产代码：CLI、domain、runtime、provider、内部执行资产
-├── tests/                   # 自动化测试，按业务域组织
-├── docs/                    # 人读文档：architecture / reference / runbooks / archive
-├── infra/compose/           # Docker Compose 资产，每个服务一个目录
-├── inventory/               # 非敏感状态台账和逻辑真源
-├── templates/               # 非敏感模板和 .example 文件
-├── plugins/                 # AgentPlane/Codex 插件分发资产
-├── .codex/                  # Codex 环境动作与仓库内 skill
-├── .agents/                 # Agent/skill 投影与 marketplace 元数据
-├── secrets/                 # 本地真实 secrets，被 .gitignore 保护
-└── local/ tmp/ .venv/       # 本地态，不纳入仓库
+├── agentplane/          🤖 唯一生产代码：CLI、domain、runtime、provider
+├── tests/               🧪 自动化测试，按业务域组织
+├── docs/                📖 人读文档：architecture / reference / runbooks
+├── infra/compose/       🐳 Docker Compose 资产
+├── inventory/           📋 非敏感状态台账和逻辑真源
+├── templates/           📄 非敏感模板和 .example 文件
+├── plugins/             🔌 插件分发资产
+├── secrets/             🔐 本地真实 secrets（.gitignore 保护）
+└── local/               🏠 本地态，不纳入仓库
 ```
 
-正式执行入口只有 `agentplane ...`。仓库不再保留顶层 `scripts/`，一次性迁移脚本不入库；内部执行资产必须放回 `agentplane/` 并由 CLI 或 provider 调用。完整规则见 [repository-structure.md](docs/reference/repository-structure.md)。
+> 正式执行入口只有 `agentplane ...`。完整规则见 [repository-structure.md](docs/reference/repository-structure.md)。
 
 ---
 
-## 🧠 核心概念
+## 🧠 核心概念（速览）
 
-> 📖 **详细解释见**：[核心概念与工作流程](docs/getting-started/core-concepts-and-workflow.md) —— 包含完整的流程图、术语速查表和每个概念的深入解读。
+AgentPlane 的核心是三个想法：
 
-### 🤖 Task-Entry（标准化任务入口）
+- **🎯 Task-Entry**：AI 不直接执行 Shell，而是通过 `agentplane <领域> <动作>` 标准化入口操作
+- **📋 真源模型**：Git 管配置，本地管 secrets，现场状态只做验证基准
+- **🔄 执行闭环**：Plan → Apply → Verify → Ledger → Inventory → Doc-Sync
 
-AgentPlane 不直接让 AI 执行原始 Shell 命令，而是通过**高层语义化的标准化入口**操作基础设施。
-
-**传统方式的问题**：
-- AI 直接执行 `ssh user@server "docker restart xxx"` —— 没有前置检查、没有错误处理、没有审计记录
-
-**AgentPlane 的方式**：
-
-```bash
-agentplane <领域> <动作> [参数]
-```
-
-每个入口都封装了：前置检查 → 后端路由 → 错误处理 → 审计记录。
-
-| 对象域 | 管理内容 | 典型命令 |
-|--------|---------|---------|
-| `repo` | 仓库自身健康、规范门禁 | `repo health-check`、`repo secret-scan` |
-| `infra` | 主机资产、SSH、网络治理 | `infra inventory`、`infra audit` |
-| `service` | 运行中的服务（容器、数据库等） | `service verify`、`service apply` |
-| `ingress` | 公网入口、域名、证书 | `ingress publish plan`、`ingress verify` |
-| `app` | 应用交付（构建、部署、回滚） | `app delivery deploy`、`app delivery verify` |
-| `projection` | 派生数据、验证、台账 | `projection verification run`、`projection ledger refresh` |
-
-### 📋 真源与三层状态模型
-
-AgentPlane 的真源只有一类——**配置真源**（Desired State），即 Git 管理的配置定义：
-
-- 普通配置：`docs/`、`infra/compose/`、`templates/`、`inventory/` —— Git 版本控制
-- 敏感配置：`secrets/` —— 本地管理，不提交 Git
-
-AgentPlane 的核心工作是**持续对比以下三层状态**，发现配置漂移时及时报告：
-
-| 状态层级 | 来源 | 回答的问题 |
-|---------|------|-----------|
-| **期望状态（Desired）** | 真源：Git 中的配置 | "系统应该是什么样？" |
-| **实际状态（Actual）** | 现场实时查询 | "系统实际是什么样？" |
-| **观测状态（Observed）** | Inventory / Ledger | "上次验证时记录的状态是什么？" |
-
-### 🔄 执行闭环（Execution Loop）
-
-任何影响正式状态的操作，都必须经过完整的 **6 步闭环**：
-
-```
-Plan（计划）→ Apply（执行）→ Verify（验证）→ Ledger（记录）→ Inventory Refresh（刷新台账）→ Doc-Sync（同步文档）
-```
-
-| 步骤 | 作用 | 关键标志 |
-|------|------|---------|
-| **Plan** | 预览变更，不真正执行 | `--dry-run` |
-| **Apply** | 在计划确认后执行变更 | `--execute` |
-| **Verify** | 检查系统是否达到预期状态 | `verify` |
-| **Ledger** | 写入机器证据 | 自动写入 `tmp/operation-ledger/` |
-| **Inventory Refresh** | 更新结构化台账 | `--write` |
-| **Doc-Sync** | 回写人类可读摘要 | `--write` |
-
-> ⚠️ **禁止**：跳过计划直接执行、执行后不验证、只改文档不改真源。
-
-### 🔐 Secrets 分离
-
-| 类型 | 存放位置 | 是否提交 Git | 示例 |
-|------|----------|-------------|------|
-| 非敏感配置 | `infra/compose/`、`templates/` | ✅ 是 | Docker Compose 文件 |
-| 敏感信息 | `secrets/` | ❌ 否 | API Key、数据库密码 |
-
----
-
-## 🛠️ 常用命令速查
-
-### 主机管理
-```bash
-# 查看服务器资产清单
-agentplane infra inventory <target>
-
-# 主机审计
-agentplane infra audit <target>
-
-# 远程执行命令
-agentplane infra remote bash <target> -- whoami
-```
-
-### 服务管理
-```bash
-# 查看所有服务
-agentplane service search --target <target>
-
-# 验证服务状态
-agentplane service verify --target <target> --name <service>
-```
-
-### 网站发布
-```bash
-# 发布计划（先预览，不执行）
-agentplane ingress publish plan \
-  --target <target> \
-  --config-file <config-file> \
-  --cloudflare-env-file <env-file>
-
-# 实际发布（加 --execute）
-agentplane ingress publish plan --execute ...
-```
-
-### 验证与台账
-```bash
-# 运行验证套件
-agentplane projection verification run --target <target> --profile <profile>
-
-# 刷新台账（带 --write 才会写入）
-agentplane projection ledger refresh --target <target> --write
-```
+📖 **详细解读** → [core-concepts-and-workflow.md](docs/getting-started/core-concepts-and-workflow.md)
 
 ---
 
 ## 📖 文档导航
 
-### 🎓 入门必读（从这里开始）
-- [core-concepts-and-workflow.md](docs/getting-started/core-concepts-and-workflow.md) — **核心概念与工作流程** ⭐ **第一次看请先读这个**
-  - 包含：真源模型、Task-Entry、执行闭环、应用交付全流程、术语速查表、Mermaid 流程图
-- [README.md](README.md) — 仓库入口、快速开始
-- [current-state-and-validation.md](docs/runbooks/current-state-and-validation.md) — 当前状态与验证报告
-
-### 🏗️ 架构设计
-- [control-plane.md](docs/architecture/control-plane.md) — 控制面核心架构
-- [linux-governance.md](docs/architecture/linux-governance.md) — Linux 治理规范
-- [agentplane-app-collaboration.md](docs/architecture/agentplane-app-collaboration.md) — AgentPlane 与应用仓库协作规范
-
-### 📋 操作手册
-- [bootstrap-secrets.md](docs/runbooks/bootstrap-secrets.md) — Secrets 初始化指南
-- [wsl-host-governance.md](docs/runbooks/wsl-host-governance.md) — WSL 环境管理
-- [app-project-delivery-workflow.md](docs/runbooks/app-project-delivery-workflow.md) — 应用交付流程
-- [live-integration-gate.md](docs/runbooks/live-integration-gate.md) — 现场集成验证
-
-### 📚 参考文档
-- [repository-structure.md](docs/reference/repository-structure.md) — 仓库结构规范
-- [app-repository-standard.md](docs/reference/app-repository-standard.md) — 应用仓库标准
-- [code-style.md](docs/reference/code-style.md) — 代码风格规范
-- [tech-stack.md](docs/reference/tech-stack.md) — 技术栈规范
-- [git-conventions.md](docs/reference/git-conventions.md) — Git 提交规范
-- [release-process.md](docs/reference/release-process.md) — 发布与持续健康规范
-- [app-runtime-decomposition.md](docs/reference/app-runtime-decomposition.md) — App runtime 与测试 helper 拆分路线
-- [testing-architecture.md](docs/reference/testing-architecture.md) — 测试架构
-- [control-plane-naming-registry.md](docs/reference/control-plane-naming-registry.md) — 命名规范
-- [docs/history/index.md](docs/history/index.md) — 历史说明索引
-- [docs/archive/README.md](docs/archive/README.md) — 已退出主流程的归档索引
+| 你想做什么 | 去哪里 |
+|-----------|--------|
+| 第一次了解项目 | [core-concepts-and-workflow.md](docs/getting-started/core-concepts-and-workflow.md) ⭐ |
+| 查看当前状态 | [current-state-and-validation.md](docs/runbooks/current-state-and-validation.md) |
+| 架构设计 | [control-plane.md](docs/architecture/control-plane.md) |
+| 操作手册 | [docs/runbooks/](docs/runbooks/) |
+| 规范参考 | [docs/reference/](docs/reference/) |
+| 完整文档地图 | [docs/README.md](docs/README.md) |
 
 ---
 
 ## 🤝 参与项目
 
-AgentPlane 采用 **MIT 许可证** 开源，欢迎社区贡献。
-
 | 文档 | 说明 |
 |------|------|
 | [LICENSE](LICENSE) | MIT 开源许可证 |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | 贡献指南 — 如何参与开发、提交 PR |
-| [SECURITY.md](SECURITY.md) | 安全策略 — 如何报告漏洞、安全最佳实践 |
-| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | 行为准则 — 社区交流规范 |
-| [SUPPORT.md](SUPPORT.md) | 支持指南 — 如何获取帮助、提交问题 |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | 如何参与开发 |
+| [SECURITY.md](SECURITY.md) | 安全策略 |
+| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | 行为准则 |
+| [SUPPORT.md](SUPPORT.md) | 获取帮助 |
 
 ---
 
