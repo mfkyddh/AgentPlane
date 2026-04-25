@@ -6,7 +6,6 @@ from __future__ import annotations
 import time
 from typing import Any
 
-
 COMPOSE_PROJECT_DIR = "/data/1panel/docker/compose"
 
 

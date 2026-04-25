@@ -9,7 +9,6 @@ from types import SimpleNamespace
 
 from tests.support.app_resources import resource_relative, resource_root
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 

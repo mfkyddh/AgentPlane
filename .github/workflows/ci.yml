@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -30,9 +32,10 @@ jobs:
       - name: Install uv
         run: python -m pip install uv
 
-      - name: Run default pytest gate
-        run: uv run python -m pytest
+      - name: Validate commit messages
+        env:
+          COMMIT_RANGE: ${{ github.event_name == 'pull_request' && format('{0}..{1}', github.event.pull_request.base.sha, github.sha) || github.sha }}
+        run: uv run python scripts/check_commit_message.py --range-env COMMIT_RANGE
 
-      - name: Verify CLI help
-        run: uv run python -m agentplane.cli --help
-
+      - name: Run repository health check
+        run: uv run python -m agentplane.cli repo health-check --repo-root .

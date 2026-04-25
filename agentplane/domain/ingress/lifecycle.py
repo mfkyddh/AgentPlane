@@ -4,12 +4,10 @@ import json
 from pathlib import Path
 from typing import Any, Iterable
 
-from agentplane.runtime.workspace import resolve_workspace_from_repo
 from agentplane.domain.ingress.models import IngressDefinition, IngressFollowThrough
-from agentplane.domain.ingress.registry import (
-    SUPPORTED_INGRESS_TARGETS,
-    resolve_ingress_verification_profile,
-)
+from agentplane.domain.ingress.registry import resolve_ingress_verification_profile
+from agentplane.domain.targets import SUPPORTED_INGRESS_TARGETS
+from agentplane.runtime.workspace import resolve_workspace_from_repo
 
 PAYLOAD_KEYS = (
     "alias",

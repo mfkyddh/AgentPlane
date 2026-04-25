@@ -1,30 +1,13 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
 import json
 import os
 import shlex
-import tomllib
 from pathlib import Path
 from subprocess import CompletedProcess
 from typing import Any
 
 import yaml
-
-from agentplane.domain.networks import ensure_managed_bridge_networks
-from agentplane.runtime.operations import append_operation_ledger, next_operation_id
-from agentplane.domain.app.resource_state import (
-    APP_RESOURCE_SUMMARY_FIELDS,
-    build_app_resource_summary,
-    load_registry,
-    registry_secret_file,
-)
-from agentplane.domain.app.resource_paths import (
-    app_resource_secret_dir,
-    resolve_secret_file_path,
-    secrets_root as shared_secrets_root,
-)
-from agentplane.domain.targets import PRODUCTION_TARGETS, is_production_target, remote_compose_filename, target_alias
 from agentplane.domain.app.artifacts import (
     artifact_output_path,
     contract_image_name,
@@ -32,13 +15,29 @@ from agentplane.domain.app.artifacts import (
     require_artifact_first_contract,
     resolve_delivery_contract_spec,
 )
+from agentplane.domain.app.resource_paths import (
+    app_resource_secret_dir,
+    resolve_secret_file_path,
+)
+from agentplane.domain.app.resource_paths import (
+    secrets_root as shared_secrets_root,
+)
+from agentplane.domain.app.resource_state import (
+    APP_RESOURCE_SUMMARY_FIELDS,
+    build_app_resource_summary,
+    load_registry,
+    registry_secret_file,
+)
+from agentplane.domain.app.versioning import recommended_versions
+from agentplane.domain.networks import ensure_managed_bridge_networks
+from agentplane.domain.targets import PRODUCTION_TARGETS, is_production_target, remote_compose_filename, target_alias
 from agentplane.providers.gateway import default_provider_gateway
 from agentplane.runtime.backends import build_backend_runner
 from agentplane.runtime.execution import CommandRunner, ExecutionBindings, ExecutionPlan
 from agentplane.runtime.host_profile import detect_host_profile
+from agentplane.runtime.operations import append_operation_ledger, next_operation_id
 from agentplane.runtime.redaction import redact_execution_payload
 from agentplane.ssh import SshTarget, resolve_ssh_target
-
 
 PRODUCTION_APP_TARGETS = PRODUCTION_TARGETS
 ONEPANEL_LEDGER_BEGIN = "<!-- BEGIN AGENTPLANE_ONEPANEL_LEDGER -->"
@@ -229,106 +228,21 @@ def _has_public_ingress(contract: dict[str, Any]) -> bool:
     return _ingress_mode(contract) != "internal"
 
 
-def _detect_upstream_version(app_root: Path) -> str:
-    candidates = (
-        app_root / "backend" / "cmd" / "server" / "VERSION",
-        app_root / "VERSION",
-    )
-    for candidate in candidates:
-        if candidate.is_file():
-            version = candidate.read_text(encoding="utf-8").strip()
-            if version:
-                return version
-
-    package_json = app_root / "package.json"
-    if package_json.is_file():
-        payload = json.loads(package_json.read_text(encoding="utf-8"))
-        version = payload.get("version")
-        if isinstance(version, str) and version.strip():
-            return version.strip()
-
-    pyproject = app_root / "pyproject.toml"
-    if pyproject.is_file():
-        payload = tomllib.loads(pyproject.read_text(encoding="utf-8"))
-        project = payload.get("project")
-        if isinstance(project, dict):
-            version = project.get("version")
-            if isinstance(version, str) and version.strip():
-                return version.strip()
-
-    result = _run(["git", "describe", "--tags", "--abbrev=0"], cwd=app_root)
-    version = result.stdout.strip()
-    if result.returncode == 0 and version:
-        return version
-
-    raise ValueError(f"无法从 {app_root} 推导 upstream version")
-
-
-def _detect_git_short_sha(app_root: Path) -> str:
-    result = _run(["git", "rev-parse", "--short", "HEAD"], cwd=app_root)
-    sha = result.stdout.strip()
-    if result.returncode != 0 or not sha:
-        raise ValueError(f"无法从 {app_root} 读取 git short sha")
-    return sha
-
-
-def _next_fork_sequence(repo_root: Path, *, app_id: str, upstream_version: str, build_date: str) -> int:
-    ledger_root = repo_root / "tmp" / "operation-ledger"
-    max_sequence = 0
-    if not ledger_root.is_dir():
-        return 1
-    for ledger_file in sorted(ledger_root.glob("*.jsonl")):
-        for raw_line in ledger_file.read_text(encoding="utf-8").splitlines():
-            if not raw_line.strip():
-                continue
-            try:
-                entry = json.loads(raw_line)
-            except json.JSONDecodeError:
-                continue
-            if not isinstance(entry, dict):
-                continue
-            if entry.get("command") != "app" or entry.get("action") != "build-artifact":
-                continue
-            if entry.get("dry_run") is True or entry.get("result") == "planned":
-                continue
-            if entry.get("app_id") != app_id:
-                continue
-            if entry.get("upstream_version") != upstream_version or entry.get("fork_version_date") != build_date:
-                continue
-            sequence = entry.get("fork_sequence")
-            if isinstance(sequence, int):
-                max_sequence = max(max_sequence, sequence)
-    return max_sequence + 1
-
-
 def _recommended_versions(contract: dict[str, Any], *, repo_root: Path) -> dict[str, Any]:
-    app_root = Path(contract["_meta"]["app_root"])
-    app_id = str(contract["app_id"])
-    upstream_version = _detect_upstream_version(app_root)
-    git_sha = _detect_git_short_sha(app_root)
-    build_date = datetime.now(UTC).strftime("%Y%m%d")
-    fork_sequence = _next_fork_sequence(
-        repo_root,
-        app_id=app_id,
-        upstream_version=upstream_version,
-        build_date=build_date,
+    def run_in_app_root(command: list[str], app_root: Path) -> CompletedProcess[str]:
+        return _run(command, cwd=app_root)
+
+    return recommended_versions(
+        contract,
+        repo_root=repo_root,
+        run_in_app_root=run_in_app_root,
     )
-    fork_version = f"zzz.{build_date}.v{fork_sequence}.g{git_sha}"
-    return {
-        "upstream_version": upstream_version,
-        "build_date": build_date,
-        "fork_sequence": fork_sequence,
-        "git_sha": git_sha,
-        "fork_version": fork_version,
-        "delivery_version": f"{upstream_version}+{fork_version}",
-        "image_tag": f"{upstream_version}-{fork_version}",
-    }
 
 
 def _maybe_recommended_versions(contract: dict[str, Any], *, repo_root: Path) -> dict[str, Any] | None:
     try:
         return _recommended_versions(contract, repo_root=repo_root)
-    except (FileNotFoundError, ValueError, json.JSONDecodeError, tomllib.TOMLDecodeError):
+    except (FileNotFoundError, ValueError, json.JSONDecodeError):
         return None
 
 

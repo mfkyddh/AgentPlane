@@ -7,6 +7,7 @@ import unittest
 from pathlib import Path
 
 from agentplane.domain.app.resource_paths import app_resource_secret_dir, app_resource_secret_relative
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -78,7 +79,7 @@ def _target_fixture_profile(target: str) -> dict[str, str]:
         "redis_container": "redis7-prod",
         "ssh_alias": target,
         "data_suffix": data_suffix,
-        "public_url": f"https://{{app_id}}.example.invalid:8443",
+        "public_url": "https://{app_id}.example.invalid:8443",
     }
 
 

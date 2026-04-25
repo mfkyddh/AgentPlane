@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from agentplane.cli.audit import audit_filesystem
+from agentplane.cli.cleanup import SUPPORTED_CLEANUP_TARGETS, apply_cleanup_plan, build_cleanup_plan
 from agentplane.cli.infra_automation import (
     SUPPORTED_AUTOMATION_OPERATIONS,
     SUPPORTED_AUTOMATION_TARGETS,
@@ -14,16 +15,24 @@ from agentplane.cli.infra_automation import (
     search_infra_automations,
     verify_infra_automation,
 )
-from agentplane.cli.cleanup import SUPPORTED_CLEANUP_TARGETS, apply_cleanup_plan, build_cleanup_plan
 from agentplane.cli.inventory import generate_inventory_snapshot
 from agentplane.cli.local_infra import add_local_infra_parser, handle_local_infra_command
-from agentplane.cli.networks import SUPPORTED_NETWORK_TARGETS, audit_managed_bridge_networks, ensure_managed_bridge_networks
+from agentplane.cli.networks import (
+    SUPPORTED_NETWORK_TARGETS,
+    audit_managed_bridge_networks,
+    ensure_managed_bridge_networks,
+)
 from agentplane.cli.remote import execute_remote_bash
-from agentplane.cli.secrets import SUPPORTED_SECRET_TARGETS, init_data_services, materialize_legacy_host_layout
-from agentplane.domain.infra.live_gate import DEFAULT_APP, DEFAULT_WSL_PROJECTION_PROFILE, LIVE_GATE_PROFILES, plan_live_gate, run_live_gate
+from agentplane.cli.secrets import init_data_services, materialize_legacy_host_layout
+from agentplane.domain.infra.live_gate import (
+    DEFAULT_APP,
+    DEFAULT_WSL_PROJECTION_PROFILE,
+    LIVE_GATE_PROFILES,
+    plan_live_gate,
+    run_live_gate,
+)
 from agentplane.domain.targets import SUPPORTED_INFRA_TARGETS
 from agentplane.runtime.wsl_bridge import normalize_repo_root_for_current_host
-
 
 FORMAL_INFRA_TARGETS = ("wsl", "prod0-main", "prod2-main")
 

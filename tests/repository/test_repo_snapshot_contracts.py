@@ -1,11 +1,9 @@
 import re
-from pathlib import Path
 import unittest
+from pathlib import Path
 
 import yaml
-
 from agentplane.domain.app.resource_paths import git_common_root
-
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EXPECTED_MANAGED_SERVICES = {

@@ -9,7 +9,6 @@ from agentplane.runtime.execution import CommandRunner, ExecutionBindings, Execu
 from agentplane.runtime.platform import HostPlatform, detect_host_platform
 from agentplane.runtime.redaction import redact_execution_payload
 
-
 LIVE_GATE_PROFILES: tuple[str, ...] = ("wsl", "prod0-main", "prod2-main")
 DEFAULT_APP = "sub2api"
 DEFAULT_WSL_PROJECTION_PROFILE = "wsl-fixture"

@@ -6,7 +6,6 @@ import unittest
 from pathlib import Path
 
 import yaml
-
 from tests.support.app_delivery import (
     baseline_tenant_resources,
     run_app_delivery_cli,

@@ -6,10 +6,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
 
+from agentplane.providers.onepanel_objects import load_cronjob, onepanel_target_executor, search_cronjobs
 from agentplane.scripts.automation.backup_secrets_r2 import DEFAULT_ENV_FILE, load_config, run_backup
 from agentplane.scripts.automation.sync_zzz_skills import run_sync
-from agentplane.providers.onepanel_objects import load_cronjob, onepanel_target_executor, search_cronjobs
-
 
 SUPPORTED_AUTOMATION_TARGETS = ("wsl", "prod0-main", "prod2-main")
 SUPPORTED_AUTOMATION_OPERATIONS = ("reconcile", "run", "trigger")

@@ -7,7 +7,6 @@ from typing import Any
 from agentplane.domain.targets import FORMAL_TARGETS
 from agentplane.runtime.wsl_bridge import normalize_repo_root_for_current_host
 
-
 SUPPORTED_APP_TARGETS = FORMAL_TARGETS
 FORMAL_DELIVERY_ACTIONS = (
     "validate-contract",

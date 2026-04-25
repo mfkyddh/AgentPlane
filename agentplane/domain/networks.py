@@ -10,7 +10,6 @@ from typing import Any
 from agentplane.runtime.execution import CommandRunner
 from agentplane.ssh import resolve_ssh_target
 
-
 SUPPORTED_NETWORK_TARGETS = ("prod0-main", "prod2-main")
 
 

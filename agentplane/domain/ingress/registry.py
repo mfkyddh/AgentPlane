@@ -4,8 +4,6 @@ import json
 from pathlib import Path
 
 from agentplane.domain.ingress.models import IngressDefinition
-from agentplane.domain.targets import SUPPORTED_INGRESS_TARGETS
-
 
 INGRESS_VERIFICATION_PROFILE_BY_TARGET = {
     "wsl": "wsl-fixture",

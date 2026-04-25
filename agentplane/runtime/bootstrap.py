@@ -5,7 +5,6 @@ from typing import Any
 
 from agentplane.runtime.wsl_bridge import inspect_local_host
 
-
 _PLACEHOLDER_MARKERS = (
     "REPLACE_WITH_",
     "replace-with-",

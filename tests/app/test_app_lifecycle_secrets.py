@@ -11,7 +11,6 @@ from agentplane.domain.app.secrets_lifecycle import (
     plan_secret_retirement,
 )
 
-
 TARGET = "prod0-main"
 APP = "phase5"
 

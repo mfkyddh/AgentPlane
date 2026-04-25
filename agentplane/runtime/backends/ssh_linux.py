@@ -1,10 +1,16 @@
 from __future__ import annotations
 
-import shlex
 import os
+import shlex
 from pathlib import Path
 
-from agentplane.runtime.execution import ExecutionBindings, ExecutionPlan, RenderedExecution, env_prefixed_command, require_local_executable
+from agentplane.runtime.execution import (
+    ExecutionBindings,
+    ExecutionPlan,
+    RenderedExecution,
+    env_prefixed_command,
+    require_local_executable,
+)
 from agentplane.ssh import SshTarget
 
 

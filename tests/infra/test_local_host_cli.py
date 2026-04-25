@@ -7,7 +7,6 @@ from pathlib import Path
 from agentplane.runtime.platform import HostPlatform
 from agentplane.runtime.wsl_bridge import inspect_local_host
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 

@@ -4,7 +4,7 @@ import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Mapping, Literal
+from typing import Any, Literal, Mapping
 
 from agentplane.domain.service.registry import (
     DYNAMIC_CONTROL_PLANES,

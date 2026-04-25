@@ -69,7 +69,7 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             root = Path(tmp)
             write_inventory(root)
             write_tenant_secret_files(root)
-            contract_file = write_contract(root, tenant_resources=baseline_tenant_resources())
+            write_contract(root, tenant_resources=baseline_tenant_resources())
             write_compose_template(root)
 
             result = run_cli(
@@ -108,7 +108,7 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             root = Path(tmp)
             write_inventory(root)
             write_tenant_secret_files(root)
-            contract_file = write_contract(root, tenant_resources=baseline_tenant_resources())
+            write_contract(root, tenant_resources=baseline_tenant_resources())
             write_compose_template(root)
 
             result = run_app_delivery_cli(
@@ -128,7 +128,7 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             write_tenant_secret_files(root)
             write_app_resource_registry(root, baseline_app_resource_registry_payload())
             write_compose_template(root)
-            contract_file = write_contract(root, tenant_resources=baseline_tenant_resources())
+            write_contract(root, tenant_resources=baseline_tenant_resources())
             tenant_root = app_resource_secret_dir(root, "prod0-main", "sub2api")
             (tenant_root / "redis.env").write_text(
                 "REDIS_HOST=redis7-prod\nREDIS_PORT=6379\nREDIS_DB=1\nREDIS_KEY_PREFIX=sub2api:\nREDIS_PASSWORD=redis-secret\nREDIS_ENABLE_TLS=false\n",
@@ -184,7 +184,7 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             write_prod2_inventory(root)
             write_prod2_tenant_secret_files(root)
             write_prod2_tenant_registry(root)
-            contract_file = write_prod2_contract(root)
+            write_prod2_contract(root)
             write_prod2_compose_template(root)
 
             result = run_app_delivery_cli(
@@ -211,7 +211,7 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             write_inventory(root, include_managed_bridge_networks=True)
             write_tenant_secret_files(root)
             write_app_resource_registry(root, baseline_app_resource_registry_payload())
-            contract_file = write_contract(root, tenant_resources=baseline_tenant_resources())
+            write_contract(root, tenant_resources=baseline_tenant_resources())
             (root / "secrets" / "ssh").mkdir(parents=True, exist_ok=True)
             (root / "secrets" / "ssh" / "config").write_text("Host prod0-main\n", encoding="utf-8")
             bin_dir = root / "bin"
@@ -263,7 +263,7 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             write_inventory(root, include_managed_bridge_networks=True)
             write_tenant_secret_files(root)
             write_app_resource_registry(root, baseline_app_resource_registry_payload())
-            contract_file = write_contract(root, tenant_resources=baseline_tenant_resources())
+            write_contract(root, tenant_resources=baseline_tenant_resources())
             (root / "secrets" / "ssh").mkdir(parents=True, exist_ok=True)
             (root / "secrets" / "ssh" / "config").write_text("Host prod0-main\n", encoding="utf-8")
             bin_dir = root / "bin"
@@ -329,7 +329,7 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             )
             write_inventory(worktree_root)
             write_tenant_secret_files(main_root)
-            contract_file = write_contract(worktree_root, tenant_resources=baseline_tenant_resources())
+            write_contract(worktree_root, tenant_resources=baseline_tenant_resources())
 
             result = run_app_delivery_cli(
                 "deploy",
@@ -357,7 +357,7 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             payload["ssh"]["user"] = "ubuntu"
             inventory_file.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
             write_tenant_secret_files(root)
-            contract_file = write_contract(root, tenant_resources=baseline_tenant_resources())
+            write_contract(root, tenant_resources=baseline_tenant_resources())
             write_compose_template(root)
 
             result = run_app_delivery_cli(
@@ -377,7 +377,7 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             root = Path(tmp)
             write_inventory(root)
             write_sampleapi_tenant_files(root)
-            contract_file = write_sampleapi_contract(root)
+            write_sampleapi_contract(root)
             write_sampleapi_compose_templates(root)
 
             result = run_app_delivery_cli(
@@ -398,7 +398,7 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             root = Path(tmp)
             write_inventory(root)
             write_sampleapi_tenant_files(root)
-            contract_file = write_sampleapi_contract(root)
+            write_sampleapi_contract(root)
             write_sampleapi_compose_templates(root)
 
             result = run_app_delivery_cli(
@@ -419,7 +419,7 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             root = Path(tmp)
             write_inventory(root)
             write_sampleapi_tenant_files(root)
-            contract_file = write_sampleapi_contract(
+            write_sampleapi_contract(
                 root,
                 rollback_entry={
                     "kind": "1panel-compose",
@@ -451,7 +451,7 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             root = Path(tmp)
             write_inventory(root)
             write_sampleapi_tenant_files(root)
-            contract_file = write_sampleapi_contract(
+            write_sampleapi_contract(
                 root,
                 rollback_entry={
                     "kind": "1panel-compose",
@@ -484,7 +484,7 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             write_inventory(root, include_managed_bridge_networks=True)
             write_sampleapi_tenant_files(root)
             write_sampleapi_compose_templates(root)
-            contract_file = write_sampleapi_contract(
+            write_sampleapi_contract(
                 root,
                 rollback_entry={
                     "kind": "1panel-compose",
@@ -543,7 +543,7 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             write_inventory(root)
             write_sampleapi_tenant_files(root)
             write_sampleapi_compose_templates(root)
-            contract_file = write_sampleapi_contract(
+            write_sampleapi_contract(
                 root,
                 rollback_entry={
                     "kind": "1panel-compose",
@@ -596,7 +596,7 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             write_inventory(root)
             write_tenant_secret_files(root)
             write_app_resource_registry(root, baseline_app_resource_registry_payload())
-            contract_file = write_contract(root, tenant_resources=baseline_tenant_resources())
+            write_contract(root, tenant_resources=baseline_tenant_resources())
             (root / "secrets" / "ssh").mkdir(parents=True, exist_ok=True)
             (root / "secrets" / "ssh" / "config").write_text("Host prod0-main\n", encoding="utf-8")
             bin_dir = root / "bin"
@@ -631,7 +631,7 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             root = Path(tmp)
             write_inventory(root)
             write_sampleapi_tenant_files(root)
-            contract_file = write_sampleapi_contract(
+            write_sampleapi_contract(
                 root,
                 rollback_entry={
                     "kind": "none",
@@ -660,7 +660,7 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             root = Path(tmp)
             write_inventory(root)
             write_sampleapi_tenant_files(root)
-            contract_file = write_sampleapi_contract(
+            write_sampleapi_contract(
                 root,
                 rollback_entry={
                     "kind": "none",

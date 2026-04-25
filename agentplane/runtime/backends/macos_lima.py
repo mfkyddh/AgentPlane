@@ -2,7 +2,14 @@ from __future__ import annotations
 
 import shlex
 
-from agentplane.runtime.execution import ExecutionBindings, ExecutionPlan, RenderedExecution, env_prefixed_command, require_local_executable, shell_join
+from agentplane.runtime.execution import (
+    ExecutionBindings,
+    ExecutionPlan,
+    RenderedExecution,
+    env_prefixed_command,
+    require_local_executable,
+    shell_join,
+)
 
 
 class MacosLimaBackend:

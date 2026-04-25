@@ -5,11 +5,11 @@ from pathlib import Path
 from typing import Any
 
 from agentplane.domain.app.projection.runtime_env import (
-    SUPPORTED_RUNTIME_ENV_TARGETS,
     apply_runtime_env_projection,
     plan_runtime_env_projection,
     verify_runtime_env_projection,
 )
+from agentplane.domain.targets import SUPPORTED_RUNTIME_ENV_TARGETS
 from agentplane.providers.onepanel_fixtures import (
     apply_fixture,
     cleanup_fixture,

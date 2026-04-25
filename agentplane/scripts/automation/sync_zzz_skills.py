@@ -5,7 +5,6 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-
 IGNORED_NAMES = {".DS_Store", "Thumbs.db", "__pycache__"}
 DEFAULT_ALLOWED_ROOT_FILES = ("README.md", ".gitignore")
 

@@ -6,7 +6,6 @@ from typing import Any
 
 import yaml
 
-
 CATALOG_RELATIVE_PATH = Path(".codex/skills/catalog.yaml")
 AGENTS_SKILLS_ROOT = Path(".agents/skills")
 PLUGIN_SKILLS_ROOT = Path("plugins/agentplane-control-plane/skills")

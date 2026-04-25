@@ -7,7 +7,6 @@ from typing import Any
 from agentplane.domain.service.models import ServiceDefinition
 from agentplane.domain.targets import SUPPORTED_SERVICE_TARGETS
 
-
 FIXED_SERVICE_DEFINITIONS: dict[str, ServiceDefinition] = {
     "postgres": ServiceDefinition(
         name="postgres",

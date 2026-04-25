@@ -1,6 +1,10 @@
 import unittest
 
-from agentplane.scripts.onepanel.object_api import build_app_install_params, plan_app_install, plan_installed_app_operation
+from agentplane.scripts.onepanel.object_api import (
+    build_app_install_params,
+    plan_app_install,
+    plan_installed_app_operation,
+)
 
 
 class OnePanelAppPlanTests(unittest.TestCase):

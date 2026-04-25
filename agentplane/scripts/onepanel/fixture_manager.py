@@ -6,15 +6,15 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Any
 
+from .compose_project import create_compose, operate_compose, search_compose, update_compose
 from .object_api import (
     find_cronjob_id,
     plan_cronjob_operation,
     plan_website_create,
     search_cronjobs,
-    search_installed_apps,
     search_ingresses,
+    search_installed_apps,
 )
-from .compose_project import create_compose, operate_compose, search_compose, update_compose
 
 
 @dataclass(frozen=True)

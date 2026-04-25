@@ -73,13 +73,13 @@ if skills_dir.exists():
     infra_skill = skills_dir / "infra"
     if host_skill.exists() and not infra_skill.exists():
         host_skill.rename(infra_skill)
-        print(f"  Renamed: plugins/.../skills/hosts -> skills/infra")
+        print("  Renamed: plugins/.../skills/hosts -> skills/infra")
     
     website_skill = skills_dir / "websites"
     ingress_skill = skills_dir / "ingress"
     if website_skill.exists() and not ingress_skill.exists():
         website_skill.rename(ingress_skill)
-        print(f"  Renamed: plugins/.../skills/websites -> skills/ingress")
+        print("  Renamed: plugins/.../skills/websites -> skills/ingress")
 
 # Rename ledger md files
 for target in ("wsl", "prod0-main", "prod2-main"):

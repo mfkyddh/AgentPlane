@@ -6,7 +6,6 @@ import sys
 from pathlib import Path
 from typing import Any
 
-
 WSL_TEMP_PATTERNS = (
     ".playwright-cli",
     "tmp",

@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from agentplane.domain.app.resource_paths import app_resource_secret_relative, secrets_root
 from agentplane.domain.app.resource_state import (
     APP_RESOURCE_SUMMARY_FIELDS,
     FORMAL_PROD0_REDIS_REGISTRY,
@@ -15,11 +16,8 @@ from agentplane.domain.app.resource_state import (
     registry_secret_file,
     validate_secret_files,
 )
-from agentplane.domain.app.resource_paths import app_resource_secret_relative, secrets_root
 from agentplane.runtime.redaction import redact_env_text
 
-
-from agentplane.domain.targets import SUPPORTED_RUNTIME_ENV_TARGETS
 FORMAL_PROD0_APP_REQUIREMENTS: dict[str, tuple[str, ...]] = {
     "sub2api": ("postgres", "redis", "minio"),
 }

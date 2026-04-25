@@ -11,7 +11,6 @@ from agentplane.runtime.execution import ExecutionBindings, ExecutionPlan
 from agentplane.runtime.host_profile import HostProfile, detect_host_profile
 from agentplane.runtime.target_resolver import TargetResolver
 
-
 LEGACY_PORTS = {2053, 2054}
 REQUIRED_NETWORK = "zqf_network"
 SUPPORTED_AUDIT_ENVS = ("wsl", "prod0-main", "prod2-main")

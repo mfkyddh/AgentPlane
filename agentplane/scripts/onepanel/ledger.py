@@ -3,15 +3,14 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 from agentplane.runtime.observation import extract_ledger_fields
 
 from .redaction import scrub_persisted_payload
-
 
 LEDGER_NAMES = ("websites", "containers", "firewall", "cronjobs", "apps", "app_resources", "automations")
 LEDGER_SCOPE_NAMES = {

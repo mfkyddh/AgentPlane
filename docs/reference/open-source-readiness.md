@@ -17,12 +17,16 @@ This repository is being shaped as a one-checkout, cross-platform open source co
 - Default tests are offline and deterministic.
 - Live WSL, Docker, SSH, and provider validation is explicit.
 - Real secrets stay out of Git.
-- Contributor, security, support, license, and test architecture documents are present at the repository root or under `docs/reference/`.
+- Contributor, security, support, license, code style, tech stack, release process, and test architecture documents are present at the repository root or under `docs/reference/`.
 - Tests are grouped by domain directory with shared helpers isolated under `tests/support/`.
+- Repository health checks are available through `agentplane repo health-check`.
+- Git-visible files are scanned for obvious secret material in CI.
+- Active docs are checked through `agentplane repo docs-sanity`.
+- Release readiness is checked through `agentplane repo release-check`.
 
 ## Remaining Hard-Cut Work
 
 - Retire remaining compatibility-only provider helpers once the formal CLI fully covers their use cases.
 - Move remaining direct `tests/onepanel` script substrate coverage behind provider-level contracts where practical.
 - Run live gate with `--execute` only in an explicitly prepared WSL/SSH/Docker environment.
-- Publish a release process after the first public tag.
+- Keep the release process current after the first public tag and tighten automation as branch workflow stabilizes.

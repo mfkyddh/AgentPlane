@@ -2,14 +2,9 @@ import json
 import os
 import subprocess
 import sys
-import tempfile
-import unittest
 from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
-
-import yaml
-
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:

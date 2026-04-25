@@ -9,7 +9,7 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
             root = Path(tmp)
             write_inventory(root)
             write_tenant_secret_files(root)
-            contract_file = write_contract(root, tenant_resources=baseline_tenant_resources())
+            write_contract(root, tenant_resources=baseline_tenant_resources())
             write_compose_template(root)
 
             result = run_app_delivery_cli(
@@ -38,7 +38,7 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
             write_prod2_inventory(root)
             write_prod2_tenant_secret_files(root)
             write_prod2_tenant_registry(root)
-            contract_file = write_prod2_contract(root)
+            write_prod2_contract(root)
             write_prod2_compose_template(root)
 
             result = run_app_delivery_cli(
@@ -80,7 +80,7 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
                 target="wsl",
             )
             write_sampleapi_tenant_files(root, target="wsl")
-            contract_file = write_sampleapi_contract(root, target="wsl")
+            write_sampleapi_contract(root, target="wsl")
             write_sampleapi_compose_templates(root)
 
             result = run_app_delivery_cli(
@@ -129,7 +129,7 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
                 target="prod2-main",
             )
             write_sampleapi_tenant_files(root, target="prod2-main", include_minio=True)
-            contract_file = write_sampleapi_contract(root, target="prod2-main", include_minio=True)
+            write_sampleapi_contract(root, target="prod2-main", include_minio=True)
             write_sampleapi_compose_templates(root, include_prod2=True)
 
             result = run_app_delivery_cli(
@@ -224,7 +224,7 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
                 target="wsl",
             )
             write_sampleapi_tenant_files(root, target="wsl")
-            contract_file = write_sampleapi_contract(root, target="wsl")
+            write_sampleapi_contract(root, target="wsl")
 
             result = run_app_delivery_cli(
                 "verify",
@@ -246,7 +246,7 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
             write_inventory(root, include_managed_bridge_networks=True)
             write_tenant_secret_files(root)
             write_app_resource_registry(root, baseline_app_resource_registry_payload())
-            contract_file = write_contract(root, tenant_resources=baseline_tenant_resources())
+            write_contract(root, tenant_resources=baseline_tenant_resources())
             (root / "secrets" / "ssh").mkdir(parents=True, exist_ok=True)
             (root / "secrets" / "ssh" / "config").write_text("Host prod0-main\n", encoding="utf-8")
             bin_dir = root / "bin"
@@ -312,7 +312,7 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
             service_env = root / "secrets" / "services" / "sampleapi.wsl.env"
             service_env.parent.mkdir(parents=True, exist_ok=True)
             service_env.write_text("APP_DATABASE_URL=postgresql://sampleapi_wsl:secret@postgres18-dev:5432/sampleapi_wsl\n", encoding="utf-8")
-            contract_file = write_sampleapi_contract(root, target="wsl")
+            write_sampleapi_contract(root, target="wsl")
             bin_dir = root / "bin"
             bin_dir.mkdir(parents=True, exist_ok=True)
             log_file = root / "wsl-deploy.log"
@@ -444,7 +444,7 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
             service_env = outer_root / "secrets" / "services" / "sampleapi.wsl.env"
             service_env.parent.mkdir(parents=True, exist_ok=True)
             service_env.write_text("APP_DATABASE_URL=postgresql://sampleapi_wsl:secret@postgres18-dev:5432/sampleapi_wsl\n", encoding="utf-8")
-            contract_file = write_sampleapi_contract(worktree_root, target="wsl")
+            write_sampleapi_contract(worktree_root, target="wsl")
             bin_dir = worktree_root / "bin"
             bin_dir.mkdir(parents=True, exist_ok=True)
             log_file = worktree_root / "wsl-deploy.log"
@@ -494,7 +494,7 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
                 target="wsl",
             )
             write_sampleapi_tenant_files(root, target="wsl")
-            contract_file = write_sampleapi_contract(root, target="wsl")
+            write_sampleapi_contract(root, target="wsl")
             bin_dir = root / "bin"
             bin_dir.mkdir(parents=True, exist_ok=True)
             log_file = root / "wsl-verify.log"

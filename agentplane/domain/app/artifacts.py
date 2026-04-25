@@ -5,7 +5,6 @@ from typing import Any
 
 from agentplane.domain.app.models import DeliveryArtifactSpec, DeliveryContractSpec, DeliveryPackagingSpec
 
-
 LATEST_SUPPORTED_CONTRACT_SCHEMA_VERSION = 2
 SUPPORTED_CONTRACT_SCHEMA_VERSIONS = (1, LATEST_SUPPORTED_CONTRACT_SCHEMA_VERSION)
 SUPPORTED_PACKAGING_BACKENDS = frozenset({"native-posix", "wsl-linux", "ssh-linux"})

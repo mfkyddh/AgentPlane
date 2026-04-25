@@ -88,6 +88,6 @@ if agents.exists():
     c = c.replace("agentplane website", "agentplane ingress")
     c = c.replace("agentplane projection", "agentplane projection")  # keep
     agents.write_text(c, encoding="utf-8")
-    print(f"  Updated: AGENTS.md (specific patterns)")
+    print("  Updated: AGENTS.md (specific patterns)")
 
 print("\n=== Done ===")

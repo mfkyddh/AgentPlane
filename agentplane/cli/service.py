@@ -4,9 +4,20 @@ import argparse
 from pathlib import Path
 from typing import Any
 
-from agentplane.domain.service.handlers import apply_service_operation, get_service, materialize_service, plan_service_operation, search_services, verify_service
+from agentplane.domain.service.handlers import (
+    apply_service_operation,
+    get_service,
+    materialize_service,
+    plan_service_operation,
+    search_services,
+    verify_service,
+)
 from agentplane.domain.service.materialize import SUPPORTED_SERVICE_ARTIFACTS
-from agentplane.domain.service.public_endpoint import apply_service_public_endpoint, plan_service_public_endpoint, verify_service_public_endpoint
+from agentplane.domain.service.public_endpoint import (
+    apply_service_public_endpoint,
+    plan_service_public_endpoint,
+    verify_service_public_endpoint,
+)
 from agentplane.domain.service.registry import SUPPORTED_SERVICE_TARGETS
 from agentplane.runtime.wsl_bridge import normalize_repo_root_for_current_host
 

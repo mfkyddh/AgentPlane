@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from pathlib import Path
 import secrets as secrets_lib
+from pathlib import Path
 from typing import Any, Callable
-
 
 TARGET_ALIASES = {
     "wsl": "wsl",

@@ -21,7 +21,6 @@ from agentplane.scripts.onepanel.object_api import (
     search_firewall_rules,
 )
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 

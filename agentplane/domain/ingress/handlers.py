@@ -3,10 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from agentplane.domain.ingress.models import IngressDefinition
-from agentplane.domain.ingress.registry import available_ingresses, resolve_ingress
 from agentplane.domain.ingress.lifecycle import build_ingress_follow_through, summarize_ingress
+from agentplane.domain.ingress.registry import available_ingresses, resolve_ingress
 from agentplane.providers.gateway import default_provider_gateway
+
 
 def _executor_for_target(target: str) -> object:
     return default_provider_gateway().onepanel_target_executor(target)

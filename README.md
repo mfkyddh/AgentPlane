@@ -45,7 +45,7 @@ AgentPlane 是一个 Agent-first control plane template repository。简单说�
 
 ### 环境要求
 
-- Python 3.11+
+- Python 3.12+
 - [uv](https://docs.astral.sh/uv/)（Python 包管理器）
 - Git
 
@@ -113,6 +113,22 @@ uv run python -m pytest
 ```
 
 > 默认只跑离线测试，不会触碰真实的 WSL/SSH/Docker。
+
+### 仓库健康检查
+
+```bash
+uv run python -m agentplane.cli repo health-check --repo-root .
+```
+
+该命令会运行仓库级健康门禁，包括 lint、默认测试、CLI help 和 Git 可见文件 secret scan。
+
+发布前运行更严格的检查：
+
+```bash
+uv run python -m agentplane.cli repo release-check --repo-root .
+```
+
+`release-check` 会在健康门禁之外检查工作区是否干净。
 
 ### Live Gate
 
@@ -182,6 +198,7 @@ agentplane <领域> <动作> [参数]
 
 | 对象域 | 管理内容 | 典型命令 |
 |--------|---------|---------|
+| `repo` | 仓库自身健康、规范门禁 | `repo health-check`、`repo secret-scan` |
 | `infra` | 主机资产、SSH、网络治理 | `infra inventory`、`infra audit` |
 | `service` | 运行中的服务（容器、数据库等） | `service verify`、`service apply` |
 | `ingress` | 公网入口、域名、证书 | `ingress publish plan`、`ingress verify` |
@@ -298,6 +315,11 @@ agentplane projection ledger refresh --target <target> --write
 
 ### 📚 参考文档
 - [app-repository-standard.md](docs/reference/app-repository-standard.md) — 应用仓库标准
+- [code-style.md](docs/reference/code-style.md) — 代码风格规范
+- [tech-stack.md](docs/reference/tech-stack.md) — 技术栈规范
+- [git-conventions.md](docs/reference/git-conventions.md) — Git 提交规范
+- [release-process.md](docs/reference/release-process.md) — 发布与持续健康规范
+- [app-runtime-decomposition.md](docs/reference/app-runtime-decomposition.md) — App runtime 与测试 helper 拆分路线
 - [testing-architecture.md](docs/reference/testing-architecture.md) — 测试架构
 - [compat-retirement-ledger.md](docs/reference/compat-retirement-ledger.md) — 兼容入口退役台账
 - [control-plane-naming-registry.md](docs/reference/control-plane-naming-registry.md) — 命名规范

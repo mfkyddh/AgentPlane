@@ -78,7 +78,7 @@ class TestAppDeliveryDocSyncCliTests(unittest.TestCase):
             app_root.mkdir(parents=True, exist_ok=True)
             write_inventory(root)
             write_tenant_secret_files(root, include_minio=True)
-            contract_file = write_contract(app_root, tenant_resources=baseline_tenant_resources(include_minio=True))
+            write_contract(app_root, tenant_resources=baseline_tenant_resources(include_minio=True))
             inventory_file = root / "inventory" / "servers" / "prod0-main" / "inventory.json"
             server_readme = root / "inventory" / "servers" / "prod0-main" / "README.md"
             server_readme.write_text(
@@ -176,7 +176,7 @@ class TestAppDeliveryDocSyncCliTests(unittest.TestCase):
             app_root = root / "sampleapi"
             app_root.mkdir(parents=True, exist_ok=True)
             write_inventory(root)
-            contract_file = write_sampleapi_contract(app_root, target="wsl")
+            write_sampleapi_contract(app_root, target="wsl")
             write_sampleapi_tenant_files(root, target="wsl")
             inventory_file = root / "inventory" / "servers" / "wsl" / "inventory.json"
             payload = json.loads(inventory_file.read_text(encoding="utf-8"))
@@ -230,7 +230,7 @@ class TestAppDeliveryDocSyncCliTests(unittest.TestCase):
             app_root.mkdir(parents=True, exist_ok=True)
             write_inventory(root)
             write_sampleapi_tenant_files(root)
-            contract_file = write_sampleapi_contract(
+            write_sampleapi_contract(
                 app_root,
                 rollback_entry={
                     "kind": "1panel-compose",
@@ -470,7 +470,7 @@ class TestAppDeliveryDocSyncCliTests(unittest.TestCase):
             app_root.mkdir(parents=True, exist_ok=True)
             write_inventory(root)
             write_tenant_secret_files(root, include_minio=True)
-            contract_file = write_contract(app_root, tenant_resources=baseline_tenant_resources(include_minio=True))
+            write_contract(app_root, tenant_resources=baseline_tenant_resources(include_minio=True))
             inventory_file = root / "inventory" / "servers" / "prod0-main" / "inventory.json"
             payload = json.loads(inventory_file.read_text(encoding="utf-8"))
             payload["services"]["sub2api"] = {

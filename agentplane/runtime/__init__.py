@@ -1,4 +1,11 @@
-from .execution import BackendType, ExecutionBindings, ExecutionPlan, ExecutionResult, PlannedExecutionStep, RenderedExecution
+from .execution import (
+    BackendType,
+    ExecutionBindings,
+    ExecutionPlan,
+    ExecutionResult,
+    PlannedExecutionStep,
+    RenderedExecution,
+)
 from .host_profile import HostProfile, detect_host_profile, host_profile_from_platform
 from .platform import HostPlatform, LinuxBackend, default_linux_backend, detect_host_platform, select_linux_backend
 from .resolution import PATH_POLICY_PAYLOAD, ResolvedReference, WorkspaceBindings, WorkspaceResolver

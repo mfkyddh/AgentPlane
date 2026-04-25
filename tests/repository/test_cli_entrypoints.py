@@ -6,7 +6,6 @@ import tempfile
 import unittest
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -56,7 +55,7 @@ class CliEntrypointsTests(unittest.TestCase):
         _assert_help_commands(
             self,
             result.stdout,
-            expected={"infra", "onepanel", "ingress", "service", "app", "projection"},
+            expected={"infra", "onepanel", "ingress", "service", "app", "projection", "repo"},
             absent={"network", "tenant", "automation", "cleanup", "inventory", "audit", "remote", "secrets"},
         )
 
@@ -202,6 +201,10 @@ class CliEntrypointsTests(unittest.TestCase):
             absent={"ingress", "container", "app", "project", "ledger", "suite", "fixture", "ingress"},
         )
 
+        repo_help = run_cli("repo", "--help")
+        self.assertEqual(repo_help.returncode, 0, msg=repo_help.stderr)
+        _assert_help_commands(self, repo_help.stdout, expected={"health-check", "docs-sanity", "secret-scan", "release-check"})
+
     def test_app_help_hides_legacy_flat_entrypoints(self) -> None:
         app_help = run_cli("app", "--help")
 
@@ -234,6 +237,8 @@ class CliEntrypointsTests(unittest.TestCase):
             ("infra", "live-gate", "plan", "--profile", "wsl", "--repo-root", str(REPO_ROOT)),
             ("infra", "cleanup", "plan", "wsl", "--repo-root", str(REPO_ROOT)),
             ("infra", "automation", "search", "wsl", "--repo-root", str(REPO_ROOT)),
+            ("repo", "secret-scan", "--repo-root", str(REPO_ROOT)),
+            ("repo", "docs-sanity", "--repo-root", str(REPO_ROOT)),
             ("onepanel", "--env", "wsl", "--json"),
         ]
         for args in cases:
@@ -326,4 +331,3 @@ class CliEntrypointsTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

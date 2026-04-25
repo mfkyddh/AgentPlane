@@ -3,15 +3,20 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from pathlib import Path
 from typing import Any
 
 from agentplane.cli.apps import add_app_parser, handle_app_command
 from agentplane.cli.bootstrap import add_bootstrap_parser, handle_bootstrap_command
 from agentplane.cli.infra import add_infra_parser, handle_infra_command
-from agentplane.cli.infra_onepanel import add_onepanel_parser, handle_onepanel_command, onepanel_error_payload, render_onepanel_text
+from agentplane.cli.infra_onepanel import (
+    add_onepanel_parser,
+    handle_onepanel_command,
+    onepanel_error_payload,
+    render_onepanel_text,
+)
 from agentplane.cli.ingress import add_ingress_parser, handle_ingress_command
 from agentplane.cli.projection import add_projection_parser, handle_projection_command
+from agentplane.cli.repository import add_repository_parser, handle_repository_command
 from agentplane.cli.service import add_service_parser, handle_service_command
 
 
@@ -44,6 +49,7 @@ def build_parser() -> argparse.ArgumentParser:
     add_ingress_parser(subparsers)
     add_app_parser(subparsers)
     add_projection_parser(subparsers)
+    add_repository_parser(subparsers)
     add_onepanel_parser(subparsers)
 
     return parser
@@ -143,6 +149,15 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "projection":
         try:
             payload = handle_projection_command(args)
+            _emit(payload)
+            return 0 if payload.get("ok", True) else 1
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+
+    if args.command == "repo":
+        try:
+            payload = handle_repository_command(args)
             _emit(payload)
             return 0 if payload.get("ok", True) else 1
         except ValueError as exc:

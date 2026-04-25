@@ -7,8 +7,8 @@ import shlex
 from dataclasses import dataclass
 from pathlib import Path
 
-from agentplane.runtime.wsl_bridge import windows_path_to_wsl_posix
 from agentplane.runtime.secret_resolver import SecretResolver
+from agentplane.runtime.wsl_bridge import windows_path_to_wsl_posix
 
 
 def _local_backend_arg(value: str) -> str:

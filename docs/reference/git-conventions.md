@@ -146,6 +146,22 @@ refactor(domain): rename host to infra
    （描述无信息量）
 ```
 
+### 本地校验
+
+仓库提供提交消息检查脚本：
+
+```bash
+uv run python scripts/check_commit_message.py --message "docs(git): add commit policy enforcement"
+```
+
+如果希望 Git 在本地提交时自动拦截不合规标题，可启用仓库内 hook：
+
+```bash
+git config core.hooksPath .githooks
+```
+
+CI 会检查 PR 范围内的新增提交标题；直接 push 到 `main` 时只检查 HEAD，避免早期历史提交标题阻塞主线。等历史完全收敛后，可把 push 检查收紧为完整 push range。
+
 ---
 
 ## 分支策略

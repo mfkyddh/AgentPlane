@@ -1,5 +1,4 @@
 import pytest
-
 from tests.support.markers import apply_marker_rules
 
 

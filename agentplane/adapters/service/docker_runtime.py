@@ -5,7 +5,7 @@ import shlex
 from pathlib import Path
 from typing import Any
 
-from agentplane.adapters.service.common import copy_file_spec, run_shell_command, shell_command_spec, remote_repo_root
+from agentplane.adapters.service.common import copy_file_spec, remote_repo_root, run_shell_command, shell_command_spec
 from agentplane.domain.service.models import ServiceDefinition
 from agentplane.runtime.redaction import redact_execution_payload
 

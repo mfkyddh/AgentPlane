@@ -20,7 +20,6 @@ from agentplane.runtime.workspace import resolve_workspace_from_repo
 from agentplane.scripts.onepanel.client import load_config as load_onepanel_config
 from agentplane.scripts.onepanel.client import send_signed_request
 
-
 WORKSPACE = resolve_workspace_from_repo(Path(__file__).resolve().parents[3])
 REPO_ROOT = WORKSPACE.control_root
 DEFAULT_ENV_FILE = Path("secrets/services/secrets-backup.r2.wsl.env")

@@ -13,7 +13,6 @@ from agentplane.runtime.execution import ExecutionBindings, ExecutionPlan
 from agentplane.runtime.host_profile import HostProfile, detect_host_profile
 from agentplane.runtime.target_resolver import TargetResolver
 
-
 SUPPORTED_INVENTORY_TARGETS = ("wsl", "prod0-main", "prod2-main")
 _WSL_SNAPSHOT_SCRIPT = """
 import json

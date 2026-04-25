@@ -19,7 +19,6 @@ from agentplane.runtime.workspace import (
     resolve_workspace,
 )
 
-
 DEFAULT_WSL_DISTRO = "Ubuntu"
 PRIVATE_DIR_NAMES = ("secrets",)
 
@@ -143,7 +142,7 @@ def resolve_local_workspace(
     host_platform: HostPlatform | None = None,
 ) -> WorkspaceContext:
     repo_path = _coerce_path(repo_root) or Path(".").resolve()
-    facts = host_platform or detect_host_platform()
+    host_platform or detect_host_platform()
 
     if windows_root is not None:
         control_root = _coerce_path(windows_root) or repo_path

@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 import pytest
-
 from agentplane.domain.app.lifecycle_wsl import (
-    ALLOWED_ONBOARDING_OPERATIONS,
     ALLOWED_OFFBOARDING_OPERATIONS,
+    ALLOWED_ONBOARDING_OPERATIONS,
     WslLifecyclePlan,
     WslLifecyclePolicy,
     lane2_policy_helper,

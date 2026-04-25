@@ -6,13 +6,10 @@ from pathlib import Path
 from unittest.mock import patch
 
 import yaml
-
 from agentplane.adapters.service import docker_runtime
 from agentplane.domain.service.models import ServiceDefinition
 from tests.support.service_cli import (
-    _FakeCloudflareClient,
     run_cli,
-    run_cli_inline,
     write_fake_service_ssh,
     write_inventory,
 )

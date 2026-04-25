@@ -16,6 +16,7 @@ from agentplane.adapters.cloudflare import CloudflareClient, load_shell_env_file
 from agentplane.scripts.onepanel.client import load_config, send_signed_request
 from agentplane.scripts.onepanel.env_targets import TargetConfig, build_api_request_command, get_target
 
+
 def parse_bool(value: str | None, default: bool = False) -> bool:
     if value is None:
         return default

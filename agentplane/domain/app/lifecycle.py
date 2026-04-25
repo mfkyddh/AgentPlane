@@ -9,16 +9,20 @@ from agentplane.domain.app import runtime as app_runtime
 from agentplane.domain.app.artifacts import resolve_delivery_contract_spec
 from agentplane.domain.app.catalog import resolve_app_contract, resolve_app_entry
 from agentplane.domain.app.models import AppCatalogEntry, DeliveryContractSpec
+from agentplane.domain.app.projection.runtime_env import (
+    apply_runtime_env_projection,
+    plan_runtime_env_projection,
+    service_env_file,
+)
+from agentplane.domain.app.projection_lifecycle import default_offboarding_plan, default_onboarding_plan
 from agentplane.domain.app.resource_paths import (
     app_resource_secret_dir,
     app_resource_secret_relative,
     resolve_secret_file_path,
 )
-from agentplane.domain.app.projection_lifecycle import default_offboarding_plan, default_onboarding_plan
 from agentplane.domain.app.secrets_lifecycle import (
     apply_secret_allocation,
     apply_secret_retirement,
-    plan_secret_allocation,
     plan_secret_retirement,
 )
 from agentplane.domain.app.truth_lifecycle import (
@@ -31,18 +35,6 @@ from agentplane.domain.app.truth_lifecycle import (
     plan_app_resource_registry_onboard,
     scan_offboarding_orphans,
 )
-from agentplane.domain.app.projection.runtime_env import (
-    apply_runtime_env_projection,
-    plan_runtime_env_projection,
-    service_env_file,
-)
-from agentplane.domain.service.lifecycle import (
-    ServiceLifecycleMutation,
-    apply_service_offboard,
-    apply_service_onboard,
-    plan_service_registry_offboard,
-    plan_service_registry_onboard,
-)
 from agentplane.domain.ingress.lifecycle import (
     apply_ingress_truth_offboard,
     apply_ingress_truth_onboard,
@@ -50,6 +42,12 @@ from agentplane.domain.ingress.lifecycle import (
     plan_ingress_truth_onboard,
 )
 from agentplane.domain.ingress.models import IngressDefinition
+from agentplane.domain.service.lifecycle import (
+    apply_service_offboard,
+    apply_service_onboard,
+    plan_service_registry_offboard,
+    plan_service_registry_onboard,
+)
 from agentplane.runtime.execution import ExecutionBindings, ExecutionPlan, PlannedExecutionStep, shell_join
 from agentplane.ssh import SshTarget
 

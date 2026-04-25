@@ -7,11 +7,8 @@ from typing import Any
 
 from agentplane.domain.app.resource_paths import (
     app_resource_secret_dir,
-    app_resource_secret_relative,
     resolve_secret_file_path,
-    secrets_root,
 )
-
 
 APP_RESOURCE_ERROR_PREFIX = "app.resource"
 ERROR_ID_REGISTRY_SECRET_FILE_SCOPE = f"{APP_RESOURCE_ERROR_PREFIX}.secret_file_scope"

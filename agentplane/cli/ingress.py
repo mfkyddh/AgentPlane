@@ -13,7 +13,7 @@ from agentplane.domain.ingress.handlers import (
     search_ingresses,
     verify_ingress,
 )
-from agentplane.domain.ingress.registry import SUPPORTED_INGRESS_TARGETS
+from agentplane.domain.targets import SUPPORTED_INGRESS_TARGETS
 from agentplane.providers.onepanel_ingress import (
     ensure_public_ingress,
     plan_public_ingress,

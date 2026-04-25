@@ -1,10 +1,10 @@
-import unittest
-from pathlib import Path
 import json
 import tempfile
+import unittest
+from pathlib import Path
 from unittest.mock import patch
 
-from agentplane.ssh import SshTarget, resolve_ssh_target, resolve_ssh_config_path
+from agentplane.ssh import SshTarget, resolve_ssh_config_path, resolve_ssh_target
 
 
 class SshTargetTests(unittest.TestCase):

@@ -5,9 +5,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-
 from agentplane.domain.service.models import ServiceDefinition
-
 
 ARTIFACT_CLASH_LOCAL_PROFILE = "clash-local-profile"
 SUPPORTED_SERVICE_ARTIFACTS = (ARTIFACT_CLASH_LOCAL_PROFILE,)

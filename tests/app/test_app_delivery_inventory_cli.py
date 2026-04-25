@@ -9,7 +9,7 @@ class TestAppDeliveryInventoryCliTests(unittest.TestCase):
             root = Path(tmp)
             write_inventory(root)
             write_tenant_secret_files(root, include_minio=True)
-            contract_file = write_contract(root, tenant_resources=baseline_tenant_resources(include_minio=True))
+            write_contract(root, tenant_resources=baseline_tenant_resources(include_minio=True))
             inventory_file = root / "inventory" / "servers" / "prod0-main" / "inventory.json"
 
             result = run_app_delivery_cli(
@@ -62,7 +62,7 @@ class TestAppDeliveryInventoryCliTests(unittest.TestCase):
                 },
                 target="wsl",
             )
-            contract_file = write_sampleapi_contract(root, target="wsl")
+            write_sampleapi_contract(root, target="wsl")
             write_sampleapi_compose_templates(root)
 
             result = run_app_delivery_cli(
@@ -117,7 +117,7 @@ class TestAppDeliveryInventoryCliTests(unittest.TestCase):
                 },
                 target="wsl",
             )
-            contract_file = write_sampleapi_contract(worktree_root, target="wsl")
+            write_sampleapi_contract(worktree_root, target="wsl")
             write_sampleapi_compose_templates(worktree_root)
 
             result = run_app_delivery_cli(
@@ -141,7 +141,7 @@ class TestAppDeliveryInventoryCliTests(unittest.TestCase):
             write_inventory(root)
             write_sampleapi_tenant_files(root)
             write_sampleapi_compose_templates(root)
-            contract_file = write_sampleapi_contract(
+            write_sampleapi_contract(
                 root,
                 rollback_entry={
                     "kind": "1panel-compose",
@@ -196,7 +196,7 @@ class TestAppDeliveryInventoryCliTests(unittest.TestCase):
                 target="prod2-main",
             )
             write_sampleapi_tenant_files(root, target="prod2-main", include_minio=True)
-            contract_file = write_sampleapi_contract(root, target="prod2-main", include_minio=True)
+            write_sampleapi_contract(root, target="prod2-main", include_minio=True)
             write_sampleapi_compose_templates(root, include_prod2=True)
             inventory_file = root / "inventory" / "servers" / "prod2-main" / "inventory.json"
 
@@ -313,7 +313,7 @@ class TestAppDeliveryInventoryCliTests(unittest.TestCase):
             write_prod2_inventory(root)
             write_prod2_tenant_secret_files(root, include_minio=True)
             write_prod2_tenant_registry(root, include_minio=True)
-            contract_file = write_prod2_contract(root, include_minio=True)
+            write_prod2_contract(root, include_minio=True)
             inventory_file = root / "inventory" / "servers" / "prod2-main" / "inventory.json"
 
             result = run_app_delivery_cli(

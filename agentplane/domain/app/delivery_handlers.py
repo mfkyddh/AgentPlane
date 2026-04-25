@@ -1,12 +1,11 @@
 from __future__ import annotations
 
+import shlex
 from copy import deepcopy
 from pathlib import Path
-import shlex
 from typing import Any
 
 import yaml
-
 from agentplane.domain.app import runtime as app_runtime
 from agentplane.domain.app.catalog import resolve_app_contract_source
 from agentplane.domain.app.lifecycle import (
@@ -21,7 +20,6 @@ from agentplane.runtime.backends import build_backend_runner
 from agentplane.runtime.execution import PlannedExecutionStep, shell_join
 from agentplane.runtime.host_profile import detect_host_profile
 from agentplane.runtime.redaction import redact_execution_payload
-
 
 _OBSERVATION_WINDOW_NOTE = "旧 runtime 作为 rollback state 保留；只有 post-cutover verification 通过且 observation window 结束后才允许清理。"
 def _resolve_contract_file(

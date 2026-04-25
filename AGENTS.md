@@ -32,6 +32,8 @@ agentplane <domain> <surface> <verb> [flags]
 | 你想做什么 | 正确入口 |
 |-----------|----------|
 | 命令列表 | `agentplane --help` |
+| 仓库健康检查 | `agentplane repo health-check` |
+| 发布前检查 | `agentplane repo release-check` |
 | 基础设施 | `agentplane infra ...` |
 | Secrets | `agentplane infra secrets ...` |
 | 现场验证 | `agentplane infra live-gate ...` |
@@ -86,6 +88,10 @@ agentplane <domain> <surface> <verb> [flags]
 | 文档 | 内容 |
 |------|------|
 | [docs/reference/git-conventions.md](docs/reference/git-conventions.md) | Git 完整规范（原子性、Commit Message、分支、换行符） |
+| [docs/reference/code-style.md](docs/reference/code-style.md) | 代码风格规范 |
+| [docs/reference/tech-stack.md](docs/reference/tech-stack.md) | 技术栈规范 |
+| [docs/reference/release-process.md](docs/reference/release-process.md) | 发布与持续健康规范 |
+| [docs/reference/app-runtime-decomposition.md](docs/reference/app-runtime-decomposition.md) | App runtime 与测试 helper 拆分路线 |
 | [docs/reference/cross-platform.md](docs/reference/cross-platform.md) | 跨平台完整规范（Windows/WSL/Linux、虚拟环境） |
 | [docs/reference/container-conventions.md](docs/reference/container-conventions.md) | 容器完整规范（Compose、命名、网络） |
 | [docs/reference/app-repository-standard.md](docs/reference/app-repository-standard.md) | 应用仓库标准 |

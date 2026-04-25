@@ -9,7 +9,6 @@ from typing import Any, Iterable, Sequence
 from agentplane.domain.app.catalog import load_app_catalog, write_app_catalog
 from agentplane.domain.app.models import AppCatalogEntry
 
-
 APP_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 ALLOWED_APP_RESOURCE_KINDS: tuple[str, ...] = ("postgres", "redis", "minio")
 

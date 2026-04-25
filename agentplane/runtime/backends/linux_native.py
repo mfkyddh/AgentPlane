@@ -1,6 +1,12 @@
 from __future__ import annotations
 
-from agentplane.runtime.execution import ExecutionBindings, ExecutionPlan, RenderedExecution, require_local_executable, shell_join
+from agentplane.runtime.execution import (
+    ExecutionBindings,
+    ExecutionPlan,
+    RenderedExecution,
+    require_local_executable,
+    shell_join,
+)
 
 
 class LinuxNativeBackend:

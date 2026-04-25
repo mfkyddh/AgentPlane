@@ -3,21 +3,21 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from agentplane.domain.app.resource_state import (
-    APP_RESOURCE_SUMMARY_FIELDS,
-    registry_secret_file,
-    resolve_secret_file_path,
-    validate_secret_files,
-)
 from agentplane.domain.app.resource_models import AppResourceDefinition
 from agentplane.domain.app.resource_registry import (
     app_resource_inventory_projection,
     available_app_resources,
     resolve_app_resource,
 )
+from agentplane.domain.app.resource_state import (
+    APP_RESOURCE_SUMMARY_FIELDS,
+    registry_secret_file,
+    resolve_secret_file_path,
+    validate_secret_files,
+)
+from agentplane.providers.gateway import default_provider_gateway
 from agentplane.runtime.observation import build_verification_payload
 from agentplane.runtime.path_policy import assert_canonical_ref
-from agentplane.providers.gateway import default_provider_gateway
 
 
 def _summary(definition: AppResourceDefinition) -> dict[str, Any]:

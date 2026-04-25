@@ -33,6 +33,7 @@ agentplane = "agentplane.cli.app:main"
 [dependency-groups]
 dev = [
   "pytest>=8.4.2",
+  "ruff>=0.8.0",
 ]
 
 [tool.pytest.ini_options]
@@ -45,6 +46,15 @@ markers = [
   "docker_required: requires a live Docker daemon",
   "ssh_required: requires live SSH transport",
 ]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+src = ["agentplane", "tests", "scripts"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+ignore = ["F403", "F405"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["agentplane"]

@@ -9,7 +9,6 @@ from agentplane.runtime.wsl_bridge import (
     wsl_posix_to_unc,
 )
 
-
 _TARGET_CONTRACT_PATHS = {
     "wsl": Path("deploy/agentplane/contract.wsl.yaml"),
     "prod0-main": Path("deploy/agentplane/contract.yaml"),

@@ -48,7 +48,7 @@ class TestAppDeliveryValidateCliTests(unittest.TestCase):
             root = Path(tmp)
             write_inventory(root)
             write_tenant_secret_files(root)
-            contract_file = write_contract(root, tenant_resources=baseline_tenant_resources())
+            write_contract(root, tenant_resources=baseline_tenant_resources())
 
             result = run_cli(
                 "app",
@@ -73,7 +73,7 @@ class TestAppDeliveryValidateCliTests(unittest.TestCase):
             root = Path(tmp)
             write_inventory(root)
             write_sampleapi_tenant_files(root)
-            contract_file = write_sampleapi_contract(
+            write_sampleapi_contract(
                 root,
                 rollback_entry={
                     "kind": "1panel-compose",
@@ -92,7 +92,7 @@ class TestAppDeliveryValidateCliTests(unittest.TestCase):
             root = Path(tmp)
             write_inventory(root)
             write_sampleapi_tenant_files(root)
-            contract_file = write_sampleapi_contract(
+            write_sampleapi_contract(
                 root,
                 rollback_entry={
                     "kind": "1panel-compose",
@@ -112,7 +112,7 @@ class TestAppDeliveryValidateCliTests(unittest.TestCase):
             root = Path(tmp)
             write_inventory(root)
             write_tenant_secret_files(root)
-            contract_file = write_contract(root, schema_version=None, tenant_resources=baseline_tenant_resources())
+            write_contract(root, schema_version=None, tenant_resources=baseline_tenant_resources())
 
             result = run_app_delivery_cli("validate-contract", repo_root=root, app="sub2api")
 
@@ -136,7 +136,7 @@ class TestAppDeliveryValidateCliTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory(root)
-            contract_file = write_contract(root, runtime_kind="binary")
+            write_contract(root, runtime_kind="binary")
 
             result = run_app_delivery_cli("validate-contract", repo_root=root, app="sub2api")
 
@@ -147,7 +147,7 @@ class TestAppDeliveryValidateCliTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory(root)
-            contract_file = write_contract(root, dependency="mysql-prod")
+            write_contract(root, dependency="mysql-prod")
 
             result = run_app_delivery_cli("validate-contract", repo_root=root, app="sub2api")
 
@@ -158,7 +158,7 @@ class TestAppDeliveryValidateCliTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory(root)
-            contract_file = write_contract(root, include_container_name=False)
+            write_contract(root, include_container_name=False)
 
             result = run_app_delivery_cli("validate-contract", repo_root=root, app="sub2api")
 
@@ -345,7 +345,7 @@ class TestAppDeliveryValidateCliTests(unittest.TestCase):
             redis = resource_root(main_root, "prod0-main", "sub2api") / "redis.env"
             redis.parent.mkdir(parents=True, exist_ok=True)
             redis.write_text("REDIS_DB=1\nREDIS_KEY_PREFIX=sub2api:\n", encoding="utf-8")
-            contract_file = write_contract(
+            write_contract(
                 worktree_root,
                 tenant_resources={
                     "postgres": {
@@ -429,7 +429,7 @@ class TestAppDeliveryValidateCliTests(unittest.TestCase):
                 encoding="utf-8",
             )
             write_app_resource_registry(root, {"otherapp": {"owner_app": "otherapp"}})
-            contract_file = write_contract(
+            write_contract(
                 root,
                 dependencies=["edgeproxy-prod"],
                 tenant_resources={},

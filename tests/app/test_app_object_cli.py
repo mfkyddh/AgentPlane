@@ -1,12 +1,11 @@
-import json
 import importlib
+import json
 import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
-from pathlib import Path
-
-from tests.support.app_object import REPO_ROOT, run_cli, write_inventory_with_app
+from tests.support.app_object import run_cli, write_inventory_with_app
 
 
 class AppObjectCliTests(unittest.TestCase):

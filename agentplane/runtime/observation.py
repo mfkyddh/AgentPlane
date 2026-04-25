@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 
-
 OBSERVATION_ONLY_KEYS = frozenset(
     {
         "resolved_path",

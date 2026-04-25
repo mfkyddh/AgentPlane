@@ -1,9 +1,8 @@
+import tomllib
 from pathlib import Path
 from subprocess import CompletedProcess
-import tomllib
 
 import pytest
-
 from agentplane.domain.infra.live_gate import (
     assert_live_gate_checkout,
     plan_live_gate,
@@ -11,7 +10,6 @@ from agentplane.domain.infra.live_gate import (
     summarize_capabilities,
 )
 from agentplane.runtime.platform import HostPlatform
-
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 

@@ -8,7 +8,6 @@ from typing import Any
 
 import yaml
 
-
 DEFAULT_NETWORK = "zqf_network"
 LEGACY_NETWORK = "1panel-network"
 HOST_NETWORK_APP_KEYS = {"openresty"}

@@ -3,14 +3,24 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from agentplane.scripts.onepanel.fixture_manager import (
-    apply_fixture,
-    cleanup_fixture,
-    plan_fixture,
-    resolve_fixture_spec,
-    resolve_suite_targets,
-)
+from agentplane.scripts.onepanel import fixture_manager
 from agentplane.scripts.onepanel.verification import run_verification_suite
+
+
+def resolve_fixture_spec(*args: Any, **kwargs: Any) -> Any:
+    return fixture_manager.resolve_fixture_spec(*args, **kwargs)
+
+
+def plan_fixture(*args: Any, **kwargs: Any) -> Any:
+    return fixture_manager.plan_fixture(*args, **kwargs)
+
+
+def apply_fixture(*args: Any, **kwargs: Any) -> Any:
+    return fixture_manager.apply_fixture(*args, **kwargs)
+
+
+def cleanup_fixture(*args: Any, **kwargs: Any) -> Any:
+    return fixture_manager.cleanup_fixture(*args, **kwargs)
 
 
 def run_onepanel_verification_suite(

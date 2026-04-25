@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import pytest
-
 from agentplane.domain.app.lifecycle_prod0_main import (
     ALLOWED_OFFBOARDING_OPERATIONS,
     ALLOWED_ONBOARDING_OPERATIONS,

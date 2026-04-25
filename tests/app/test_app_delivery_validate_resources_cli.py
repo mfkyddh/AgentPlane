@@ -9,7 +9,7 @@ class TestAppDeliveryValidateResourcesCliTests(unittest.TestCase):
             root = Path(tmp)
             write_inventory(root)
             write_app_resource_registry(root, baseline_app_resource_registry_payload())
-            contract_file = write_contract(root)
+            write_contract(root)
 
             result = run_app_delivery_cli("validate-contract", repo_root=root, app="sub2api")
 
@@ -23,7 +23,7 @@ class TestAppDeliveryValidateResourcesCliTests(unittest.TestCase):
             # Intentionally do NOT write inventory/servers/<target>/app-resources.json.
             # Even without a tenant registry, contracts that depend on shared infra
             # (PG/Redis/MinIO) must still declare infra.tenant_resources.
-            contract_file = write_contract(root)
+            write_contract(root)
 
             result = run_app_delivery_cli("validate-contract", repo_root=root, app="sub2api")
 
@@ -43,7 +43,7 @@ class TestAppDeliveryValidateResourcesCliTests(unittest.TestCase):
             bad_redis = resource_root(root, "prod0-main", "sampleapi") / "redis.env"
             bad_redis.parent.mkdir(parents=True, exist_ok=True)
             bad_redis.write_text("REDIS_USER=sub2api_prod0\nREDIS_DB=1\nREDIS_KEY_PREFIX=sub2api:\n", encoding="utf-8")
-            contract_file = write_contract(
+            write_contract(
                 root,
                 tenant_resources={
                     "postgres": {
@@ -93,7 +93,7 @@ class TestAppDeliveryValidateResourcesCliTests(unittest.TestCase):
             # The secret_file path is in-scope but the file is intentionally missing.
             # This must fail on the contract side (app validate-contract), not only on
             # app resource verify / host audit.
-            contract_file = write_contract(
+            write_contract(
                 root,
                 tenant_resources={
                     "postgres": {
@@ -146,7 +146,7 @@ class TestAppDeliveryValidateResourcesCliTests(unittest.TestCase):
             escaped_pg = resource_root(root, "prod0-main", "sampleapi") / "postgres.env"
             escaped_pg.parent.mkdir(parents=True, exist_ok=True)
             escaped_pg.write_text("PGDATABASE=sub2api_prod0\nPGUSER=sub2api_prod0\n", encoding="utf-8")
-            contract_file = write_contract(
+            write_contract(
                 root,
                 tenant_resources={
                     "postgres": {
@@ -204,7 +204,7 @@ class TestAppDeliveryValidateResourcesCliTests(unittest.TestCase):
             redis = resource_root(root, "prod0-main", "sub2api") / "redis.env"
             redis.parent.mkdir(parents=True, exist_ok=True)
             redis.write_text("REDIS_USER=sub2api_prod0\nREDIS_DB=1\nREDIS_KEY_PREFIX=sub2api:\n", encoding="utf-8")
-            contract_file = write_contract(
+            write_contract(
                 root,
                 dependencies=["postgres18-prod", "redis7-prod", "minio-prod"],
                 tenant_resources={
@@ -245,7 +245,7 @@ class TestAppDeliveryValidateResourcesCliTests(unittest.TestCase):
             bad_minio = root / "secrets" / "app-resources" / "prod0-main" / "sampleapi" / "minio.env"
             bad_minio.parent.mkdir(parents=True, exist_ok=True)
             bad_minio.write_text("S3_BUCKET=prod0-sub2api\nS3_ACCESS_KEY=sub2api_prod0\nS3_SECRET_KEY=sub2api-s3-secret\n", encoding="utf-8")
-            contract_file = write_contract(
+            write_contract(
                 root,
                 tenant_resources={
                     "postgres": {
@@ -291,7 +291,7 @@ class TestAppDeliveryValidateResourcesCliTests(unittest.TestCase):
             minio = resource_root(root, "prod0-main", "sub2api") / "minio.env"
             minio.parent.mkdir(parents=True, exist_ok=True)
             minio.write_text("S3_BUCKET=prod0-sub2api\nS3_ACCESS_KEY=sub2api_prod0\nS3_SECRET_KEY=sub2api-s3-secret\n", encoding="utf-8")
-            contract_file = write_contract(
+            write_contract(
                 root,
                 tenant_resources={
                     "postgres": {
@@ -334,7 +334,7 @@ class TestAppDeliveryValidateResourcesCliTests(unittest.TestCase):
             redis = resource_root(root, "prod0-main", "sub2api") / "redis.env"
             redis.parent.mkdir(parents=True, exist_ok=True)
             redis.write_text("REDIS_USER=sub2api_prod0\nREDIS_DB=1\nREDIS_KEY_PREFIX=sub2api:\n", encoding="utf-8")
-            contract_file = write_contract(
+            write_contract(
                 root,
                 tenant_resources={
                     "postgres": {

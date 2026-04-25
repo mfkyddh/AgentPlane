@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Any
 
 from agentplane.scripts.onepanel.public_ingress import (
-    command_ensure_public_ingress,
     ensure_public_ingress,
     plan_public_ingress,
     verify_public_ingress,

@@ -3,17 +3,18 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from functools import lru_cache
 import json
-from pathlib import Path
 import shlex
 import subprocess
-import sys
+from dataclasses import dataclass
+from functools import lru_cache
+from pathlib import Path
 
 from agentplane.runtime.platform import LinuxBackend, default_linux_backend
 from agentplane.runtime.workspace import resolve_workspace_from_repo
 from agentplane.runtime.wsl_bridge import windows_path_to_wsl_posix
+from agentplane.ssh import SshTarget
+
 
 def resolve_repo_root(anchor: Path) -> Path:
     repo_candidate = anchor.parents[3]
@@ -21,10 +22,6 @@ def resolve_repo_root(anchor: Path) -> Path:
 
 
 REPO_ROOT = resolve_repo_root(Path(__file__).resolve())
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
-
-from agentplane.ssh import SshTarget
 
 
 def run_command(command: list[str]) -> subprocess.CompletedProcess[str]:

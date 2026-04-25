@@ -145,8 +145,7 @@ class OpenSourceReadinessTests(unittest.TestCase):
         self.assertIn("ubuntu-latest", text)
         self.assertIn("macos-latest", text)
         self.assertIn("windows-latest", text)
-        self.assertIn("uv run python -m pytest", text)
-        self.assertIn("uv run python -m agentplane.cli --help", text)
+        self.assertIn("uv run python -m agentplane.cli repo health-check --repo-root .", text)
         self.assertNotIn("live-gate run --execute", text)
 
     def test_ci_never_executes_live_gate(self) -> None:

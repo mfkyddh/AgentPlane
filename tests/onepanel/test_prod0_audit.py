@@ -1,16 +1,15 @@
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
-import re
-
-from tests.support.app_resources import resource_relative, resource_root
 
 from agentplane.cli.audit import audit_filesystem
 from agentplane.domain.app.runtime import _render_server_readme
+from tests.support.app_resources import resource_relative
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 

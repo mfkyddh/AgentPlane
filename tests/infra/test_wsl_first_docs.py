@@ -1,7 +1,6 @@
 import unittest
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CORE_TEMPLATE_ENTRY_DOCS = (
     REPO_ROOT / "README.md",
