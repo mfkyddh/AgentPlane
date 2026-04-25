@@ -1,70 +1,86 @@
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-25
+superseded_by: null
+audience: both
+---
+
 # 🛫 AgentPlane
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-> **让 AI Agent 安全、规范地接管你的基础设施。**
-
-AgentPlane 是一个 Agent-first control plane template repository。它给 AI 提供了一套**标准化的"遥控器"**，让 AI 能帮你管理服务器、部署应用、配置服务，所有操作有记录、可审计、可回滚。
-
----
-
-<p align="center">
-  <a href="#-快速开始">🚀 快速开始</a> •
-  <a href="#-能做什么">✨ 能做什么</a> •
-  <a href="#-项目结构">📁 项目结构</a> •
-  <a href="#-文档导航">📖 文档</a>
-</p>
+> **你的基础设施"自动驾驶仪"**——你告诉它目标，它自动检查、执行、验证、留痕。
+>
+> AgentPlane 是一个 Agent-first control plane template repository。
 
 ---
 
-## ✨ 能做什么
+## ❌ 没有 AgentPlane 时
 
-| 能力 | 说明 |
-|------|------|
-| 🖥️ **主机管理** | 盘点服务器资产、执行审计、远程操作 |
-| 🐳 **服务管控** | 管理 Docker 服务生命周期 |
-| 🌐 **网站发布** | 自动化公网入口配置（Cloudflare + 1Panel） |
-| 📦 **应用交付** | 构建 → 部署 → 验证 → 回滚 |
-| ✅ **状态验证** | 持续检测配置漂移 |
-| 📝 **台账投影** | 每次操作留下可追溯的审计证据 |
+AI 直接执行 `ssh prod "docker restart myapp"`：
 
-**核心设计**：✅ 配置即代码 • 🔐 敏感信息分离 • 🤖 AI 友好 CLI • 🖥️ 跨平台
+- SSH 连不上？失败后才知
+- 容器起不来？错误淹没在输出中
+- 服务真的好了吗？没有验证
+- 谁执行的？什么时候？查不到
+
+## ✅ 有了 AgentPlane
+
+```bash
+$ agentplane service apply --target prod --name myapp --execute
+[检查] 主机在线 ✓
+[执行] 重启容器 myapp ✓
+[验证] HTTP 探针 200 OK ✓
+[记录] 操作已保存，可随时回查
+```
+
+同样的操作，不同的体验：**有计划、有验证、有记录、可回滚**。
 
 ---
 
-## 🚀 快速开始
+## 🚀 5 分钟上手
 
-### 1️⃣ 环境要求
-
-- Python 3.12+、[uv](https://docs.astral.sh/uv/)、Git
-
-### 2️⃣ 安装 & 体检
+### 1️⃣ 安装
 
 ```bash
 git clone <你的仓库地址> && cd AgentPlane
-
-# 全局安装 CLI（推荐，之后可直接用 agentplane 命令）
 uv tool install -e .
+```
 
-# 环境体检
+### 2️⃣ 体检
+
+```bash
 agentplane bootstrap inspect-local --repo-root .
 agentplane bootstrap doctor --repo-root .
-
-# 初始化 Secrets
 agentplane bootstrap init-secrets --repo-root .
 agentplane bootstrap verify-secrets --repo-root .
 ```
 
-> 💡 体检通过后，Agent 就可以接管后续操作了。
-
-### 3️⃣ 下一步
+### 3️⃣ 查看状态
 
 ```bash
-agentplane --help              # 查看全部命令
-agentplane repo health-check --repo-root .   # 仓库健康检查
+agentplane repo health-check --repo-root .
 ```
 
-📖 理解核心概念 → [core-concepts-and-workflow.md](docs/getting-started/core-concepts-and-workflow.md)
+> 💡 体检通过后，Agent 就可以接管后续操作了。
+
+📖 **第一次用？** → [5 分钟了解 AgentPlane](docs/getting-started/5-minute-overview.md)
+
+---
+
+## 📦 能做什么
+
+| 场景 | 说明 |
+|------|------|
+| 🚀 **一键部署** | 构建 → 上传 → 部署 → 验证 → 回滚，全程标准化 |
+| 🖥️ **主机管理** | 盘点服务器资产、执行审计、远程操作 |
+| 🐳 **服务管控** | 管理 Docker 服务生命周期，自动健康检查 |
+| 🌐 **网站发布** | 自动化公网入口配置（Cloudflare + 1Panel） |
+| ✅ **状态验证** | 持续检测配置漂移，发现问题及时报告 |
+| 📝 **操作留痕** | 每次操作留下可追溯的审计证据 |
+
+**核心设计**：配置即代码 • 敏感信息分离 • AI 友好 CLI • 跨平台
 
 ---
 
@@ -72,42 +88,40 @@ agentplane repo health-check --repo-root .   # 仓库健康检查
 
 ```
 AgentPlane/
-├── agentplane/          🤖 唯一生产代码：CLI、domain、runtime、provider
-├── tests/               🧪 自动化测试，按业务域组织
-├── docs/                📖 人读文档：architecture / reference / runbooks
+├── agentplane/          🤖 CLI 与自动化代码
+├── tests/               🧪 自动化测试
+├── docs/                📖 文档（人类 + AI）
 ├── infra/compose/       🐳 Docker Compose 资产
-├── inventory/           📋 非敏感状态台账和逻辑真源
-├── templates/           📄 非敏感模板和 .example 文件
-├── secrets/             🔐 本地真实 secrets（.gitignore 保护）
-└── local/               🏠 本地态，不纳入仓库
+├── inventory/           📋 非敏感状态台账
+├── templates/           📄 非敏感模板
+├── secrets/             🔐 本地敏感信息（不提交 Git）
+└── local/               🏠 本地协作（不提交 Git）
 ```
 
-> 正式执行入口只有 `agentplane ...`。完整规则见 [repository-structure.md](docs/reference/repository-structure.md)。
-
----
-
-## 🧠 核心概念（速览）
-
-AgentPlane 的核心是三个想法：
-
-- **🎯 Task-Entry**：AI 不直接执行 Shell，而是通过 `agentplane <领域> <动作>` 标准化入口操作
-- **📋 真源模型**：Git 管配置，本地管 secrets，现场状态只做验证基准
-- **🔄 执行闭环**：Plan → Apply → Verify → Ledger → Inventory → Doc-Sync
-
-📖 **详细解读** → [core-concepts-and-workflow.md](docs/getting-started/core-concepts-and-workflow.md)
+> 正式入口只有 `agentplane ...`。
 
 ---
 
 ## 📖 文档导航
 
-| 你想做什么 | 去哪里 |
+**👤 人类入口**
+
+| 你想做什么 | 看这里 |
 |-----------|--------|
-| 第一次了解项目 | [core-concepts-and-workflow.md](docs/getting-started/core-concepts-and-workflow.md) ⭐ |
-| 查看当前状态 | [current-state-and-validation.md](docs/runbooks/current-state-and-validation.md) |
-| 架构设计 | [control-plane.md](docs/architecture/control-plane.md) |
-| 操作手册 | [docs/runbooks/](docs/runbooks/) |
-| 规范参考 | [docs/reference/](docs/reference/) |
-| 完整文档地图 | [docs/README.md](docs/README.md) |
+| 第一次了解项目 | [5 分钟速览](docs/getting-started/5-minute-overview.md) |
+| 理解核心概念 | [核心概念](docs/getting-started/core-concepts.md) |
+| 部署一个应用 | [应用交付流程](docs/runbooks/app-project-delivery-workflow.md) |
+| 查看当前状态 | [状态与验证](docs/runbooks/current-state-and-validation.md) |
+| 了解 AI 怎么工作 | [AI 执行流程](docs/getting-started/how-agent-works.md) |
+
+**🤖 AI 入口**
+
+| 你需要什么 | 看这里 |
+|-----------|--------|
+| 工作规范（每次注入） | [AGENTS.md](AGENTS.md) |
+| 控制面架构合同 | [control-plane.md](docs/architecture/control-plane.md) |
+| 执行闭环规范 | [execution-flow.md](docs/runbooks/control-plane-agent-execution-flow.md) |
+| 文档治理规范 | [documentation-governance.md](docs/reference/documentation-governance.md) |
 
 ---
 

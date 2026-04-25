@@ -1,28 +1,59 @@
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-25
+superseded_by: null
+audience: both
+---
+
 # AgentPlane 文档地图
 
-结论：这里是人类和 AI 的文档导航页。第一次阅读先走 🧭 入门路径；执行任务时按 🛠️ runbook；维护规范时看 📚 reference。
+结论：这里是人类和 AI 的文档导航页。第一次阅读先走 👤 人类入口；执行任务时按 🛠️ runbook；维护规范时看 📚 reference。
 
-## 🧭 推荐阅读
+---
+
+## 👤 人类入口：按你想做什么
 
 | 你想做什么 | 从这里开始 |
 | --- | --- |
-| 了解项目 | [../README.md](../README.md) |
-| 理解核心概念 | [getting-started/core-concepts-and-workflow.md](getting-started/core-concepts-and-workflow.md) |
-| 查看当前状态 | [runbooks/current-state-and-validation.md](runbooks/current-state-and-validation.md) |
-| 执行正式任务 | [runbooks/control-plane-agent-execution-flow.md](runbooks/control-plane-agent-execution-flow.md) |
-| 维护文档规范 | [reference/documentation-governance.md](reference/documentation-governance.md) |
-| 编写控制面资产 | [maintainers/control-plane-authoring.md](maintainers/control-plane-authoring.md) |
+| 第一次了解项目 | [5 分钟速览](getting-started/5-minute-overview.md) ⭐ |
+| 理解核心概念 | [核心概念](getting-started/core-concepts.md) |
+| 了解 AI 怎么工作 | [AI 执行流程](getting-started/how-agent-works.md) |
+| 部署一个应用 | [应用交付流程](runbooks/app-project-delivery-workflow.md) |
+| 部署失败了怎么办 | [失败处理](runbooks/app-delivery-failure-handling.md) |
+| 查看当前状态 | [状态与验证](runbooks/current-state-and-validation.md) |
+| 初始化 Secrets | [Secrets 引导](runbooks/bootstrap-secrets.md) |
+| 管理 WSL 开发环境 | [WSL 治理](runbooks/wsl-host-governance.md) |
+| 管理生产机 | [prod0-main 治理](runbooks/prod0-main-governance.md) |
 
-## 🧠 架构合同
+---
+
+## 🤖 AI 入口：按执行域
+
+| 域 | 架构合同 | 执行规范 | 命名注册 |
+| --- | --- | --- | --- |
+| `infra` | [control-plane.md](architecture/control-plane.md) | [execution-flow.md](runbooks/control-plane-agent-execution-flow.md) | [naming-registry.md](reference/control-plane-naming-registry.md) |
+| `service` | [control-plane.md](architecture/control-plane.md) | [execution-flow.md](runbooks/control-plane-agent-execution-flow.md) | [naming-registry.md](reference/control-plane-naming-registry.md) |
+| `ingress` | [control-plane.md](architecture/control-plane.md) | [execution-flow.md](runbooks/control-plane-agent-execution-flow.md) | [naming-registry.md](reference/control-plane-naming-registry.md) |
+| `app` | [control-plane.md](architecture/control-plane.md) | [app-delivery-workflow.md](runbooks/app-project-delivery-workflow.md) | [naming-registry.md](reference/control-plane-naming-registry.md) |
+| `projection` | [control-plane.md](architecture/control-plane.md) | [execution-flow.md](runbooks/control-plane-agent-execution-flow.md) | [naming-registry.md](reference/control-plane-naming-registry.md) |
+
+AI 工作规范：[AGENTS.md](../AGENTS.md)
+
+---
+
+## 📚 完整索引（按类别）
+
+### 🧠 架构合同
 
 | 文档 | 说明 |
 | --- | --- |
 | [architecture/README.md](architecture/README.md) | 架构目录索引 |
-| [architecture/control-plane.md](architecture/control-plane.md) | 控制面、task-entry、truth / projection 核心合同 |
+| [architecture/control-plane.md](architecture/control-plane.md) | 控制面、task-entry、配置中心核心合同 |
 | [architecture/linux-governance.md](architecture/linux-governance.md) | Linux / WSL backend 长期治理 |
 | [architecture/agentplane-app-collaboration.md](architecture/agentplane-app-collaboration.md) | 控制面仓库与应用仓库边界 |
 
-## 📚 Reference
+### 📚 Reference
 
 | 文档 | 说明 |
 | --- | --- |
@@ -43,7 +74,7 @@
 | [reference/control-plane-naming-registry.md](reference/control-plane-naming-registry.md) | 控制面命名注册表 |
 | [reference/open-source-readiness.md](reference/open-source-readiness.md) | 开源准备度基线 |
 
-## 🛠️ Runbooks
+### 🛠️ Runbooks
 
 | 文档 | 说明 |
 | --- | --- |
@@ -65,18 +96,20 @@
 | [runbooks/prod2-main-relay-trojan.md](runbooks/prod2-main-relay-trojan.md) | prod2-main relay-trojan |
 | [runbooks/current-state-and-validation.md](runbooks/current-state-and-validation.md) | 当前状态和验证快照 |
 
-## 🧑‍🔧 Maintainers
+### 🧑‍🔧 Maintainers
 
 | 文档 | 说明 |
 | --- | --- |
 | [maintainers/control-plane-authoring.md](maintainers/control-plane-authoring.md) | control plane authoring 规则 |
 
-## 🕰️ History And Archive
+### 🕰️ History And Archive
 
 | 文档 | 说明 |
 | --- | --- |
 | [history/index.md](history/index.md) | 历史材料索引 |
 | [archive/README.md](archive/README.md) | 退役材料索引 |
+
+---
 
 ## ✅ 文档门禁
 
@@ -86,4 +119,4 @@
 uv run python -m agentplane.cli repo docs-sanity --repo-root .
 ```
 
-`docs-sanity` 会检查 active 文档断链、旧入口引用和孤立文档。
+`docs-sanity` 会检查 active 文档断链、旧入口引用、孤立文档、frontmatter 完整性、人类文档术语和长度。
