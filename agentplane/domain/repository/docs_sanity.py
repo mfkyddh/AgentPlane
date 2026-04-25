@@ -6,7 +6,7 @@ from datetime import date
 from pathlib import Path
 
 DOC_ROOTS = ("AGENTS.md", "README.md", "CONTRIBUTING.md", "docs")
-SKIP_DOC_PARTS = {"archive", "history"}
+SKIP_DOC_PARTS: set[str] = set()
 ROOT_ENTRY_DOCS = {"AGENTS.md", "README.md"}
 FRONTMATTER_REQUIRED_DIRS = {"reference", "maintainers", "runbooks", "getting-started", "architecture"}
 FRONTMATTER_RE = re.compile(r"^---\s*\n(.+?)\n---", re.DOTALL)
@@ -19,12 +19,16 @@ LAST_VERIFIED_MAX_AGE_DAYS = 30
 # 人类面向文档中应避免的 AI 术语（中文+英文）
 HUMAN_DOC_TERM_BLACKLIST = {
     "真源", "投影链", "投影",
+    "台账投影", "台账",
     "Task-Entry", "task-entry",
     "Resolver", "resolver",
     "Ledger", "ledger",
     "Inventory", "inventory",
     "Contract", "contract",
     "Catalog", "catalog",
+    "控制面",
+    "Projection Chain", "projection chain",
+    "Envelope", "envelope",
 }
 
 # 人类文档长度封顶（路径前缀 -> 最大行数）
@@ -98,9 +102,15 @@ def _relative_parts_under_docs(path: Path, root: Path) -> set[str] | None:
     return parts
 
 
+def _is_archive_or_history(relative: str) -> bool:
+    return "docs/archive/" in relative or "docs/history/" in relative
+
+
 def _check_frontmatter(relative: str, text: str, doc_parts: set[str] | None) -> list[DocsSanityIssue]:
     """Check that docs under required dirs have frontmatter."""
     issues: list[DocsSanityIssue] = []
+    if _is_archive_or_history(relative):
+        return issues
     if doc_parts is None:
         return issues
     if not (doc_parts & FRONTMATTER_REQUIRED_DIRS):
@@ -167,9 +177,19 @@ def _check_readme_length(repo_root: Path) -> list[DocsSanityIssue]:
     return []
 
 
+def _strip_code_blocks(text: str) -> str:
+    """Remove fenced code blocks and inline code spans from markdown text."""
+    # Remove fenced code blocks (```...```)
+    text = re.sub(r"```[\s\S]*?```", lambda m: "\n" * m.group(0).count("\n"), text)
+    # Remove inline code (`...`)
+    text = re.sub(r"`[^`]+`", " ", text)
+    return text
+
+
 def _check_audience_terminology(relative: str, text: str) -> list[DocsSanityIssue]:
     """Check that strictly human-facing docs avoid AI-only terminology.
-    Docs marked 'both' are exempt because they need to reference formal commands and concepts."""
+    Docs marked 'both' are exempt because they need to reference formal commands and concepts.
+    Code blocks are skipped because they contain formal CLI examples."""
     issues: list[DocsSanityIssue] = []
     audience_match = AUDIENCE_RE.search(text)
     if not audience_match:
@@ -177,8 +197,9 @@ def _check_audience_terminology(relative: str, text: str) -> list[DocsSanityIssu
     audience = audience_match.group(1)
     if audience != "human":
         return issues
+    prose = _strip_code_blocks(text)
     for term in HUMAN_DOC_TERM_BLACKLIST:
-        for match in re.finditer(re.escape(term), text):
+        for match in re.finditer(re.escape(term), prose):
             issues.append(
                 DocsSanityIssue(
                     path=relative,
@@ -237,9 +258,55 @@ def _check_human_doc_length(relative: str, text: str) -> list[DocsSanityIssue]:
     return issues
 
 
+IMAGE_RE = re.compile(r"!\[[^\]]*\]\(([^)]+)\)")
+
+
+def _check_image_references(relative: str, text: str, repo_root: Path) -> list[DocsSanityIssue]:
+    """Check that local image references point to existing files."""
+    issues: list[DocsSanityIssue] = []
+    doc_path = repo_root / relative
+    for match in IMAGE_RE.finditer(text):
+        target = match.group(1)
+        if not target or _is_external_link(target):
+            continue
+        target_path = (doc_path.parent / target).resolve()
+        if not target_path.exists():
+            issues.append(
+                DocsSanityIssue(
+                    path=relative,
+                    kind="broken-image-reference",
+                    line=_line_for_offset(text, match.start()),
+                    detail=f"referenced image not found: {target}",
+                )
+            )
+    return issues
+
+
+def _check_archive_status(relative: str, text: str) -> list[DocsSanityIssue]:
+    """Archive and history docs must not be marked as active."""
+    issues: list[DocsSanityIssue] = []
+    if "docs/archive/" not in relative and "docs/history/" not in relative:
+        return issues
+    fm_match = FRONTMATTER_RE.match(text)
+    if not fm_match:
+        return issues
+    if "status: active" in fm_match.group(1):
+        issues.append(
+            DocsSanityIssue(
+                path=relative,
+                kind="archive-doc-active",
+                line=2,
+                detail="archive/history docs must not have status: active; use status: archived or status: historical",
+            )
+        )
+    return issues
+
+
 def _check_conclusion_line(relative: str, text: str, doc_parts: set[str] | None) -> list[DocsSanityIssue]:
     """Check that docs under reference/maintainers/runbooks have a conclusion line."""
     issues: list[DocsSanityIssue] = []
+    if _is_archive_or_history(relative):
+        return issues
     if doc_parts is None:
         return issues
     if not (doc_parts & FRONTMATTER_REQUIRED_DIRS):
@@ -288,31 +355,32 @@ def run_docs_sanity(repo_root: Path) -> list[DocsSanityIssue]:
                     )
                 )
 
-        # Broken local links
-        for match in MARKDOWN_LINK_RE.finditer(text):
-            target = _local_link_path(match.group(1))
-            if not target or _is_external_link(target):
-                continue
-            target_path = (path.parent / target).resolve()
-            try:
-                target_relative = target_path.relative_to(root).as_posix()
-            except ValueError:
-                continue
-            if not target_path.exists():
-                issues.append(
-                    DocsSanityIssue(
-                        path=relative,
-                        kind="broken-local-link",
-                        line=_line_for_offset(text, match.start()),
-                        detail=f"missing local markdown target: {target}",
+        # Broken local links (skip archive/history docs)
+        if not _is_archive_or_history(relative):
+            for match in MARKDOWN_LINK_RE.finditer(text):
+                target = _local_link_path(match.group(1))
+                if not target or _is_external_link(target):
+                    continue
+                target_path = (path.parent / target).resolve()
+                try:
+                    target_relative = target_path.relative_to(root).as_posix()
+                except ValueError:
+                    continue
+                if not target_path.exists():
+                    issues.append(
+                        DocsSanityIssue(
+                            path=relative,
+                            kind="broken-local-link",
+                            line=_line_for_offset(text, match.start()),
+                            detail=f"missing local markdown target: {target}",
+                        )
                     )
-                )
-                continue
-            if target_path.is_dir():
-                readme_path = target_path / "README.md"
-                target_relative = readme_path.relative_to(root).as_posix() if readme_path.exists() else target_relative
-            if target_relative in inbound_links and target_relative != relative:
-                inbound_links[target_relative].add(relative)
+                    continue
+                if target_path.is_dir():
+                    readme_path = target_path / "README.md"
+                    target_relative = readme_path.relative_to(root).as_posix() if readme_path.exists() else target_relative
+                if target_relative in inbound_links and target_relative != relative:
+                    inbound_links[target_relative].add(relative)
 
         # Frontmatter checks
         issues.extend(_check_frontmatter(relative, text, doc_parts))
@@ -329,9 +397,17 @@ def run_docs_sanity(repo_root: Path) -> list[DocsSanityIssue]:
         # Human doc length check
         issues.extend(_check_human_doc_length(relative, text))
 
+        # Image reference check
+        issues.extend(_check_image_references(relative, text, root))
+
+        # Archive/history status check
+        issues.extend(_check_archive_status(relative, text))
+
     # Isolated active docs
     for relative, sources in sorted(inbound_links.items()):
         if relative in ROOT_ENTRY_DOCS:
+            continue
+        if "docs/archive/" in relative or "docs/history/" in relative:
             continue
         if not sources:
             issues.append(

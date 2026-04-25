@@ -128,6 +128,39 @@ class RepoHealthCliTests(unittest.TestCase):
         kinds = [i["kind"] for i in payload["issues"]]
         self.assertIn("missing-conclusion", kinds)
 
+    def test_docs_sanity_reports_broken_image_references(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "README.md").write_text("# Entry\n![missing](docs/assets/missing.png)\n", encoding="utf-8")
+            (root / "docs").mkdir()
+
+            result = run_cli("repo", "docs-sanity", "--repo-root", str(root))
+
+        self.assertEqual(1, result.returncode)
+        payload = json.loads(result.stdout)
+        self.assertFalse(payload["ok"])
+        kinds = [i["kind"] for i in payload["issues"]]
+        self.assertIn("broken-image-reference", kinds)
+
+    def test_docs_sanity_reports_archive_doc_active(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "README.md").write_text("# Entry\n", encoding="utf-8")
+            (root / "docs").mkdir()
+            (root / "docs" / "archive").mkdir()
+            (root / "docs" / "archive" / "old.md").write_text(
+                "---\nstatus: active\nowner: test\nlast_verified: 2026-04-25\nsuperseded_by: null\naudience: agent\n---\n\n# Old\n结论： archived.\n",
+                encoding="utf-8",
+            )
+
+            result = run_cli("repo", "docs-sanity", "--repo-root", str(root))
+
+        self.assertEqual(1, result.returncode)
+        payload = json.loads(result.stdout)
+        self.assertFalse(payload["ok"])
+        kinds = [i["kind"] for i in payload["issues"]]
+        self.assertIn("archive-doc-active", kinds)
+
     def test_secret_scan_reports_git_visible_secret_material(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
