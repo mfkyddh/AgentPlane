@@ -12,7 +12,7 @@ superseded_by: null
 Linux / WSL 里直接用 `agentplane ...`。
 
 Windows 宿主统一走：
-`pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli ...`
+`uv run python -m agentplane.cli ...`
 
 不要在 Windows 控制面根目录直接执行 `uv run ...`，否则会踩 Linux `.venv` 与 Windows 本地环境混用问题。
 

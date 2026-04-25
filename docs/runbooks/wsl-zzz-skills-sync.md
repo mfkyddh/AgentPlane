@@ -17,8 +17,8 @@ superseded_by: null
 
 | 项目 | 值 |
 | --- | --- |
-| 源目录 | `<codex-skills-root>` |
-| 当前会话现实 | `CODEX_HOME=<codex-home>` |
+| 源目录 | `<agents-skills-root>` |
+| 当前会话现实 | `AGENTS_HOME=<agents-home>` |
 | 选择规则 | 仅同步名称匹配 `zzz-*` 的一级技能目录 |
 | 目标仓库 | `<skills-repo-root>` |
 | 调度器 | WSL 本机 `1Panel` 计划任务 `wsl-zzz-skills-sync` |
@@ -134,7 +134,7 @@ cd <skills-repo-root> && git fetch origin main && git status -sb
 处理：
 
 ```bash
-ls -la <codex-skills-root>
+ls -la <agents-skills-root>
 ```
 
 确认 Windows 侧目录挂载正常，且 `zzz-*` 技能仍位于该目录下。

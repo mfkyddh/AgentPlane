@@ -86,10 +86,10 @@ def _resolve_task_path(repo_root: Path, raw: str) -> Path:
 
 
 def _render_repo_template(repo_root: Path, value: str) -> str:
-    codex_home = Path(os.environ.get("CODEX_HOME", str(repo_root / ".codex")))
+    agents_home = Path(os.environ.get("AGENTS_HOME", str(repo_root / ".agents")))
     bindings = {
         "<repo-root>": repo_root,
-        "<codex-skills-root>": codex_home / "skills",
+        "<agents-skills-root>": agents_home / "skills",
         "<skills-repo-root>": Path(os.environ.get("AGENTPLANE_SKILLS_REPO_ROOT", str(repo_root.parent / "zzz-skills"))),
     }
     rendered = value

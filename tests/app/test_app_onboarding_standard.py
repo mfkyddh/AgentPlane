@@ -32,9 +32,6 @@ class AppOnboardingStandardTests(unittest.TestCase):
         self.assertIn("bootstrap inspect-local", text)
         self.assertIn("bootstrap init-secrets", text)
         self.assertIn("bootstrap verify-secrets", text)
-        # "让 Agent 接管" and invoke-agentplane-windows-uv.ps1 live in bootstrap runbook
-        runbook = (REPO_ROOT / "docs" / "runbooks" / "bootstrap-secrets.md").read_text(encoding="utf-8")
-        self.assertIn("invoke-agentplane-windows-uv.ps1", runbook)
         self.assertNotIn("onepanel-login.<target>.env", text)
 
     def test_bootstrap_runbook_uses_bootstrap_surface_as_day_zero_entry(self) -> None:
@@ -44,7 +41,6 @@ class AppOnboardingStandardTests(unittest.TestCase):
         self.assertIn("bootstrap init-secrets", text)
         self.assertIn("bootstrap verify-secrets", text)
         self.assertIn("bootstrap doctor", text)
-        self.assertIn("invoke-agentplane-windows-uv.ps1", text)
         self.assertIn("onepanel-login.<target>.env", text)
         self.assertIn("不参与 bootstrap contract", text)
         self.assertIn("projection", text)

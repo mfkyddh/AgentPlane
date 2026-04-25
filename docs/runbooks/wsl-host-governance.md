@@ -34,8 +34,8 @@ superseded_by: null
 优先先确认控制面和 backend 绑定：
 
 ```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli bootstrap inspect-local --repo-root <repo-root>
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli infra local inspect --repo-root <repo-root>
+uv run python -m agentplane.cli bootstrap inspect-local --repo-root <repo-root>
+uv run python -m agentplane.cli infra local inspect --repo-root <repo-root>
 ```
 
 ### 如果你已经在 WSL backend

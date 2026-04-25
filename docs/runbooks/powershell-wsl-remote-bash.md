@@ -42,7 +42,7 @@ agentplane infra remote bash <target> [--repo-root <linux-path>] [--script-file 
 Windows 主控制面正式入口：
 
 ```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli infra remote bash prod0-main --dry-run --script-file <repo-root>/agentplane/scripts/internal/remote/example.sh
+uv run python -m agentplane.cli infra remote bash prod0-main --dry-run --script-file <repo-root>/agentplane/scripts/internal/remote/example.sh
 ```
 
 如果当前已经在 WSL/Linux shell，直接执行正式 CLI：
@@ -83,7 +83,7 @@ docker ps --format 'table {{.Names}}\t{{.Status}}' | sed -n '1,10p'
 再执行：
 
 ```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli infra remote bash prod0-main --script-file <repo-root>/agentplane/scripts/internal/remote/example.sh
+uv run python -m agentplane.cli infra remote bash prod0-main --script-file <repo-root>/agentplane/scripts/internal/remote/example.sh
 ```
 
 ### 2. 纯 Linux shell 内部直接 pipe
@@ -103,7 +103,7 @@ printf '%s\n' \
 Windows 宿主：
 
 ```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli infra remote bash prod0-main --script-file <repo-root>/agentplane/scripts/internal/remote/example-arg.sh -- postgres18-prod
+uv run python -m agentplane.cli infra remote bash prod0-main --script-file <repo-root>/agentplane/scripts/internal/remote/example-arg.sh -- postgres18-prod
 ```
 
 远端脚本：
@@ -146,13 +146,13 @@ echo hi
 验证 `pwsh` 入口与 SSH helper：
 
 ```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m pytest tests/host/test_ssh_targets.py tests/repository/test_cli_entrypoints.py tests/host/test_remote_cli.py -q
+uv run python -m pytest tests/host/test_ssh_targets.py tests/repository/test_cli_entrypoints.py tests/host/test_remote_cli.py -q
 ```
 
 最小 dry-run 验证：
 
 ```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\.codex\environments\lib\invoke-agentplane-windows-uv.ps1 python -m agentplane.cli infra remote bash prod0-main --dry-run --script-file <repo-root>/agentplane/scripts/internal/remote/example.sh
+uv run python -m agentplane.cli infra remote bash prod0-main --dry-run --script-file <repo-root>/agentplane/scripts/internal/remote/example.sh
 ```
 
 最小远端连通性验证：

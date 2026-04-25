@@ -8,16 +8,16 @@
       "spec": "0 */2 * * *",
       "cwd": "<repo-root>",
       "command": "uv run python -m agentplane.cli infra automation apply wsl --name wsl-zzz-skills-sync --operation run --execute",
-      "source_root": "<codex-skills-root>",
+      "source_root": "<agents-skills-root>",
       "target_repo": "<skills-repo-root>",
       "target_branch": "main",
       "docs": [
         "docs/runbooks/wsl-zzz-skills-sync.md"
       ],
       "task_truth": {
-        "purpose": "以 WSL automation 任务为参考实现，把 Windows 侧 <codex-skills-root> 中所有 zzz-* 技能同步到 <skills-repo-root> 的 main 分支，保持技能仓库与 Windows 侧一致。",
+        "purpose": "以 WSL automation 任务为参考实现，把 Windows 侧 <agents-skills-root> 中所有 zzz-* 技能同步到 <skills-repo-root> 的 main 分支，保持技能仓库与 Windows 侧一致。",
         "entrypoint": "uv run python -m agentplane.cli infra automation apply wsl --name wsl-zzz-skills-sync --operation run --execute",
-        "source_root": "<codex-skills-root>",
+        "source_root": "<agents-skills-root>",
         "target_repo": "<skills-repo-root>",
         "target_branch": "main"
       },
