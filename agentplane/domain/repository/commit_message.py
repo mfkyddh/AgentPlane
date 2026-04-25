@@ -55,10 +55,23 @@ def _subjects_from_range(commit_range: str) -> list[str]:
     if not range_spec:
         return []
 
-    if ".." in range_spec:
-        base, head = range_spec.split("..", 1)
-        if base and set(base) == {"0"}:
-            range_spec = head
+    # A bare SHA (no "..") means a single commit — only validate that one.
+    if ".." not in range_spec:
+        result = subprocess.run(
+            ["git", "log", "-1", "--format=%s", range_spec],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            print(result.stderr.strip() or f"failed to inspect commit: {commit_range}", file=sys.stderr)
+            raise SystemExit(2)
+        subject = result.stdout.strip()
+        return [subject] if subject else []
+
+    base, head = range_spec.split("..", 1)
+    if base and set(base) == {"0"}:
+        range_spec = head
 
     result = subprocess.run(
         ["git", "log", "--no-merges", "--format=%s", range_spec],

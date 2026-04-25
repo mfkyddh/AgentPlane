@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date
 from pathlib import Path
 
 DOC_ROOTS = ("AGENTS.md", "README.md", "CONTRIBUTING.md", "docs")
