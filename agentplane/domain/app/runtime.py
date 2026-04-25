@@ -15,6 +15,7 @@ from agentplane.domain.app.artifacts import (
     require_artifact_first_contract,
     resolve_delivery_contract_spec,
 )
+from agentplane.domain.app.contracts import contract_app_root, contract_validation_target
 from agentplane.domain.app.resource_paths import (
     app_resource_secret_dir,
     resolve_secret_file_path,
@@ -246,13 +247,6 @@ def _maybe_recommended_versions(contract: dict[str, Any], *, repo_root: Path) ->
         return None
 
 
-def _contract_app_root(contract_path: Path) -> Path:
-    resolved = contract_path.resolve()
-    if resolved.parent.name in {"op", "agentplane"} and resolved.parent.parent.name == "deploy":
-        return resolved.parents[2]
-    return resolved.parent
-
-
 def _load_inventory(repo_root: Path, target: str) -> tuple[Path, dict[str, Any]]:
     inventory_file = repo_root / "inventory" / "servers" / target / "inventory.json"
     if not inventory_file.exists():
@@ -261,10 +255,6 @@ def _load_inventory(repo_root: Path, target: str) -> tuple[Path, dict[str, Any]]
     if not isinstance(payload, dict):
         raise ValueError(f"inventory 顶层必须是对象: {inventory_file}")
     return inventory_file, payload
-
-
-def _contract_validation_target(target: str) -> str:
-    return target
 
 
 def _secrets_root(repo_root: Path) -> Path:
@@ -623,7 +613,7 @@ def validate_contract(contract_path: Path, *, repo_root: Path, target: str) -> d
     if not isinstance(depends, list) or any(not isinstance(item, str) or not item.strip() for item in depends):
         raise ValueError("infra.depends_on_containers 必须是非空字符串列表")
 
-    validation_target = _contract_validation_target(target)
+    validation_target = contract_validation_target(target)
     _, inventory = _load_inventory(repo_root, validation_target)
     known_containers = _inventory_container_names(inventory)
     unknown_dependencies = [item for item in depends if item not in known_containers]
@@ -685,7 +675,7 @@ def validate_contract(contract_path: Path, *, repo_root: Path, target: str) -> d
 
     payload["_meta"] = {
         "contract_file": str(contract_path.resolve()),
-        "app_root": str(_contract_app_root(contract_path)),
+        "app_root": str(contract_app_root(contract_path)),
         "target": target,
         "validation_target": validation_target,
         "contract_mode": contract_mode,

@@ -154,6 +154,12 @@ class OpenSourceReadinessTests(unittest.TestCase):
             with self.subTest(path=workflow.name):
                 self.assertIsNone(re.search(r"infra\s+live-gate\s+run[\s\S]{0,200}--execute", text))
 
+    def test_release_process_uses_formal_release_check(self) -> None:
+        text = (REPO_ROOT / "docs" / "reference" / "release-process.md").read_text(encoding="utf-8")
+
+        self.assertIn("agentplane.cli repo release-check --repo-root .", text)
+        self.assertIn("agentplane.cli repo health-check --repo-root .", text)
+
 
 if __name__ == "__main__":
     unittest.main()
