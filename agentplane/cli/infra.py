@@ -22,6 +22,7 @@ from agentplane.cli.networks import (
     audit_managed_bridge_networks,
     ensure_managed_bridge_networks,
 )
+from agentplane.cli.preflight import execute_remote_preflight
 from agentplane.cli.remote import execute_remote_bash
 from agentplane.cli.secrets import init_data_services, materialize_legacy_host_layout
 from agentplane.domain.infra.live_gate import (
@@ -177,6 +178,14 @@ def add_infra_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
 
     remote_parser = infra_subparsers.add_parser("remote", help="基础设施远端执行入口")
     remote_subparsers = remote_parser.add_subparsers(dest="infra_remote_action", required=True)
+    preflight_parser = remote_subparsers.add_parser("preflight", help="预检目标连通性与配置")
+    preflight_parser.add_argument(
+        "target",
+        choices=SUPPORTED_INFRA_TARGETS,
+        help=_target_help(scope="三正式目标通用 (SSH alias)", targets=FORMAL_INFRA_TARGETS),
+    )
+    preflight_parser.add_argument("--repo-root", default=".", help="仓库根目录")
+
     bash_parser = remote_subparsers.add_parser("bash", help="通过 ssh -T 执行远端 bash")
     bash_parser.add_argument(
         "target",
@@ -370,6 +379,14 @@ def handle_infra_command(args: argparse.Namespace) -> dict[str, Any]:
             "target": args.target,
             "payload": ensure_managed_bridge_networks(repo_root, args.target),
         }
+
+    if args.infra_action == "remote" and args.infra_remote_action == "preflight":
+        report = execute_remote_preflight(repo_root, args.target)
+        return _wrap(
+            action="remote.preflight",
+            target=args.target,
+            payload=report.to_payload(),
+        )
 
     if args.infra_action == "remote" and args.infra_remote_action == "bash":
         result = execute_remote_bash(
