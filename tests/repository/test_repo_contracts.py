@@ -1,9 +1,12 @@
+from __future__ import annotations
+from pathlib import Path
 import re
 import unittest
-from pathlib import Path
-
 import yaml
+import pytest
 from agentplane.domain.app.resource_paths import git_common_root
+
+pytestmark = pytest.mark.e2e
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EXPECTED_MANAGED_SERVICES = {
@@ -16,17 +19,14 @@ EXPECTED_MANAGED_SERVICES = {
     },
 }
 
-
 def load_compose(path: Path) -> dict:
     return yaml.safe_load(path.read_text(encoding="utf-8"))
-
 
 def image_family(image_ref: str) -> str:
     match = re.fullmatch(r"\$\{[^:}]+:-([^}]+)\}", image_ref)
     resolved = match.group(1) if match else image_ref
     resolved = resolved.split("@", 1)[0]
     return resolved.split(":", 1)[0]
-
 
 class RepoSnapshotContractsTests(unittest.TestCase):
     def test_sub2api_legacy_app_resource_secret_files_are_absent(self) -> None:
