@@ -70,6 +70,7 @@ AI 工作规范：[AGENTS.md](../AGENTS.md)
 | [reference/git-conventions.md](reference/git-conventions.md) | Git 与 commit message 规范 |
 | [reference/release-process.md](reference/release-process.md) | 发布和健康检查流程 |
 | [reference/testing-architecture.md](reference/testing-architecture.md) | 默认测试与 live gate 分层 |
+| [reference/testing-conventions.md](reference/testing-conventions.md) | 测试 marker、并行和文件组织规则 |
 | [reference/container-conventions.md](reference/container-conventions.md) | Docker Compose 与容器约束 |
 | [reference/app-repository-standard.md](reference/app-repository-standard.md) | 应用仓库接入标准 |
 | [reference/app-delivery-versioning.md](reference/app-delivery-versioning.md) | 应用版本与镜像 tag 规范 |
