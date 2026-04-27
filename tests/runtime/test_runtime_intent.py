@@ -1,13 +1,12 @@
 from __future__ import annotations
-
 import pytest
-
 from agentplane.runtime.intent_guard import (
     IntentGuardViolation,
     analyze_intent,
     guard,
 )
 
+pytestmark = pytest.mark.integration
 
 class TestAnalyzeIntent:
     def test_empty_argv_is_read_only(self) -> None:
@@ -55,7 +54,6 @@ class TestAnalyzeIntent:
 
     def test_docker_network_ls_is_read_only(self) -> None:
         assert analyze_intent(("docker", "network", "ls")) == "read-only"
-
 
 class TestGuard:
     def test_mutation_always_passes(self) -> None:

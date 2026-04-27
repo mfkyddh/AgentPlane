@@ -1,19 +1,24 @@
+from __future__ import annotations
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
+from unittest.mock import patch
 import json
 import os
 import subprocess
 import sys
 import tempfile
 import unittest
-from pathlib import Path
-from types import SimpleNamespace
-from unittest.mock import patch
-
+import pytest
 from agentplane.cli.inventory import generate_inventory_snapshot
 from agentplane.domain import networks as network_domain
 from agentplane.runtime.host_profile import HostProfile
+from agentplane.runtime.platform import HostPlatform
+from agentplane.runtime.wsl_bridge import inspect_local_host
+
+pytestmark = pytest.mark.e2e
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-
 
 def run_cli(
     *args: str,
@@ -35,12 +40,10 @@ def run_cli(
         check=False,
     )
 
-
 def write_fake_command(bin_dir: Path, name: str, body: str) -> None:
     script = bin_dir / name
     script.write_text(body, encoding="utf-8")
     script.chmod(0o755)
-
 
 def write_fake_bridge_network_ssh(bin_dir: Path) -> None:
     write_fake_command(
@@ -85,7 +88,6 @@ fi
 exit 0
 """,
     )
-
 
 class HostCliTests(unittest.TestCase):
     def test_infra_help_lists_network(self) -> None:
@@ -454,3 +456,385 @@ class HostCliTests(unittest.TestCase):
             self.assertEqual("network.ensure", payload["action"])
             self.assertEqual("prod2-main", payload["target"])
             self.assertTrue(payload["payload"]["ok"])
+
+# ======================================================================
+# From: test_local_host_cli.py
+# ======================================================================
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+def run_cli_json(*args: str) -> dict:
+    result = subprocess.run(
+        [sys.executable, "-m", "agentplane.cli", *args],
+        cwd=REPO_ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise AssertionError(result.stderr)
+    return json.loads(result.stdout)
+
+class LocalHostCliTests(unittest.TestCase):
+    def test_windows_host_binds_wsl_to_same_checkout(self) -> None:
+        payload = inspect_local_host(
+            "C:/repos/agentplane",
+            host_platform=HostPlatform(os_name="windows", has_wsl=True, is_wsl=False),
+        )
+
+        self.assertIsNone(payload["legacy_control_root"])
+        self.assertEqual("/mnt/c/repos/agentplane", payload["linux_backend_root"])
+        self.assertEqual("windows-wsl", payload["host_profile"]["linux_backend"])
+        self.assertEqual("/mnt/c/repos/agentplane/.agentplane/staging", payload["workspace"]["artifact_staging_root"])
+        self.assertTrue(payload["workspace"]["source_root"].endswith("C:\\repos\\agentplane"))
+        self.assertTrue(payload["workspace"]["local_command_root"].endswith("C:\\repos\\agentplane"))
+
+    def test_windows_host_keeps_unc_repo_roots_on_linux_backend_side(self) -> None:
+        payload = inspect_local_host(
+            r"\\wsl.localhost\Ubuntu\srv\control-plane\agentplane",
+            host_platform=HostPlatform(os_name="windows", has_wsl=True, is_wsl=False),
+        )
+
+        self.assertTrue(payload["control_root"].startswith("\\\\wsl.localhost\\Ubuntu\\srv\\control-plane\\agentplane"))
+        self.assertEqual("/srv/control-plane/agentplane", payload["legacy_control_root"])
+        self.assertEqual("/srv/control-plane/agentplane", payload["linux_backend_root"])
+        self.assertEqual("/srv/control-plane/agentplane", payload["workspace"]["source_root"])
+        self.assertEqual("/srv/control-plane/agentplane", payload["workspace"]["local_command_root"])
+        self.assertEqual(
+            "/srv/control-plane/agentplane/.agentplane/staging",
+            payload["workspace"]["artifact_staging_root"],
+        )
+
+    def test_infra_local_inspect_reports_windows_control_root(self) -> None:
+        payload = run_cli_json("infra", "local", "inspect", "--repo-root", "C:/repos/agentplane")
+
+        self.assertEqual("infra", payload["command"])
+        self.assertEqual("local.inspect", payload["action"])
+        self.assertEqual("local", payload["target"])
+        self.assertTrue(payload["payload"]["control_root"].endswith("C:\\repos\\agentplane"))
+        self.assertEqual("wsl-linux", payload["payload"]["linux_backend"]["backend_type"])
+        self.assertEqual("windows", payload["payload"]["host_profile"]["os_name"])
+        self.assertEqual("windows-wsl", payload["payload"]["host_profile"]["linux_backend"])
+        self.assertEqual("/mnt/c/repos/agentplane/.agentplane/staging", payload["payload"]["workspace"]["artifact_staging_root"])
+        self.assertTrue(payload["payload"]["workspace"]["source_root"].endswith("C:\\repos\\agentplane"))
+        self.assertTrue(payload["payload"]["workspace"]["local_command_root"].endswith("C:\\repos\\agentplane"))
+        self.assertEqual("canonical-ref-only", payload["payload"]["path_policy"]["truth"])
+
+    def test_infra_local_migration_entry_is_removed(self) -> None:
+        result = subprocess.run(
+            [sys.executable, "-m", "agentplane.cli", "infra", "local", "migrate", "plan"],
+            cwd=REPO_ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("invalid choice", result.stderr)
+
+# ======================================================================
+# From: test_remote_cli.py
+# ======================================================================
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+def common_repo_root(repo_root: Path) -> Path:
+    git_entry = repo_root / ".git"
+    if git_entry.is_dir():
+        return repo_root
+    if git_entry.is_file():
+        content = git_entry.read_text(encoding="utf-8").strip()
+        if content.startswith("gitdir:"):
+            git_dir = Path(content.split(":", 1)[1].strip())
+            if not git_dir.is_absolute():
+                git_dir = (repo_root / git_dir).resolve()
+            if len(git_dir.parts) >= 3 and git_dir.parent.name == "worktrees" and git_dir.parent.parent.name == ".git":
+                return git_dir.parents[2]
+    return repo_root
+
+MAIN_REPO_ROOT = common_repo_root(REPO_ROOT)
+
+def expected_ssh_stdin_argv(config_path: Path, remote_command: str) -> list[str]:
+    if os.name == "nt":
+        drive = config_path.drive.rstrip(":").lower()
+        tail = config_path.as_posix().split(":", 1)[1].lstrip("/") if config_path.drive else config_path.as_posix().lstrip("/")
+        rendered_config = f"/mnt/{drive}/{tail}" if drive else config_path.as_posix()
+        return ["wsl.exe", "-e", "ssh", "-T", "-F", rendered_config, "root@prod0-main", remote_command]
+    return ["ssh", "-T", "-F", str(config_path), "root@prod0-main", remote_command]
+
+def run_cli(
+    *args: str,
+    cwd: Path | None = None,
+    env_overrides: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
+    env = None
+    if env_overrides:
+        env = os.environ.copy()
+        env.update(env_overrides)
+        if "FAKE_CMD_LOG" in env_overrides:
+            env.setdefault("AGENTPLANE_DISABLE_WSL_SSH", "1")
+    return subprocess.run(
+        [sys.executable, "-m", "agentplane.cli", *args],
+        cwd=cwd or REPO_ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+class RemoteCliTests(unittest.TestCase):
+    def test_execute_remote_bash_uses_explicit_stdin_text(self) -> None:
+        from agentplane.cli.remote import execute_remote_bash
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            inventory_file = root / "inventory" / "servers" / "prod0-main" / "inventory.json"
+            inventory_file.parent.mkdir(parents=True, exist_ok=True)
+            inventory_file.write_text(
+                json.dumps({"ssh": {"aliases": ["prod0-main"], "user": "root"}}, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+
+            completed = subprocess.CompletedProcess(
+                args=["ssh", "-T", "root@prod0-main", "bash -s -- echo"],
+                returncode=0,
+                stdout="ok\n",
+                stderr="",
+            )
+            stdin_mock = Mock()
+            stdin_mock.read.side_effect = AssertionError("sys.stdin.read should not be used when stdin_text is explicit")
+
+            with (
+                patch("agentplane.runtime.execution.subprocess.run", return_value=completed) as run_mock,
+                patch("agentplane.cli.remote.sys.stdin", stdin_mock),
+            ):
+                payload = execute_remote_bash(
+                    repo_root=root,
+                    target="prod0-main",
+                    remote_args=["echo"],
+                    stdin_text="echo ok\r\n",
+                )
+
+            self.assertTrue(payload["ok"])
+            self.assertEqual("stdin", payload["transport"])
+            run_mock.assert_called_once()
+            self.assertEqual(
+                expected_ssh_stdin_argv(root / "secrets" / "ssh" / "config", "bash -s -- echo"),
+                run_mock.call_args.args[0],
+            )
+            call_kwargs = run_mock.call_args.kwargs
+            self.assertEqual(None, call_kwargs["cwd"])
+            self.assertEqual(None, call_kwargs["env"])
+            self.assertEqual(True, call_kwargs["capture_output"])
+            self.assertEqual(False, call_kwargs["check"])
+            self.assertEqual(300, call_kwargs["timeout"])
+            if os.name == "nt":
+                self.assertEqual(b"echo ok\n", call_kwargs["input"])
+                self.assertEqual(False, call_kwargs["text"])
+            else:
+                self.assertEqual("echo ok\n", call_kwargs["input"])
+                self.assertEqual(True, call_kwargs["text"])
+                self.assertEqual("utf-8", call_kwargs["encoding"])
+                self.assertEqual("replace", call_kwargs["errors"])
+
+    def test_remote_bash_dry_run_writes_operation_ledger(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            inventory_file = root / "inventory" / "servers" / "prod0-main" / "inventory.json"
+            inventory_file.parent.mkdir(parents=True, exist_ok=True)
+            inventory_file.write_text(
+                json.dumps({"ssh": {"aliases": ["prod0-main"], "user": "root"}}, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+            script_file = root / "example.sh"
+            script_file.write_text("#!/usr/bin/env bash\nset -euo pipefail\necho ok\n", encoding="utf-8")
+
+            result = run_cli(
+                "infra",
+                "remote",
+                "bash",
+                "prod0-main",
+                "--repo-root",
+                str(root),
+                "--dry-run",
+                "--script-file",
+                str(script_file),
+            )
+
+            self.assertEqual(result.returncode, 0, msg=result.stderr)
+            payload = json.loads(result.stdout)
+            self.assertEqual("infra", payload.get("command"))
+            self.assertEqual("remote.bash", payload.get("action"))
+            operation = payload.get("payload", {}).get("operation", {})
+            ledger_file = Path(operation["ledger_file"])
+            self.assertTrue(ledger_file.is_file())
+            entry = json.loads(ledger_file.read_text(encoding="utf-8").strip().splitlines()[-1])
+            self.assertEqual("remote", entry["command"])
+            self.assertEqual("bash", entry["action"])
+            self.assertEqual("prod0-main", entry["target"])
+            self.assertEqual(operation["op_id"], entry["op_id"])
+            self.assertEqual("planned", entry["result"])
+            self.assertEqual("script-file", entry["transport"])
+
+    def test_execute_remote_bash_non_dry_run_records_operation_with_preallocated_op_id(self) -> None:
+        from agentplane.cli.remote import execute_remote_bash
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            inventory_file = root / "inventory" / "servers" / "prod0-main" / "inventory.json"
+            inventory_file.parent.mkdir(parents=True, exist_ok=True)
+            inventory_file.write_text(
+                json.dumps({"ssh": {"aliases": ["prod0-main"], "user": "root"}}, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+
+            resolved_root = root.resolve()
+            ledger_file = resolved_root / "tmp" / "operation-ledger" / "2026-04-01.jsonl"
+            completed = subprocess.CompletedProcess(
+                args=["ssh", "-T", "root@prod0-main", "bash -s -- echo"],
+                returncode=0,
+                stdout="ok\n",
+                stderr="",
+            )
+            state = {"op_id_generated": False}
+
+            def fake_next_operation_id(prefix: str) -> str:
+                self.assertEqual("remote-bash", prefix)
+                state["op_id_generated"] = True
+                return "remote-bash-fixed"
+
+            def fake_run(*args: object, **kwargs: object) -> subprocess.CompletedProcess[str]:
+                self.assertTrue(state["op_id_generated"], "op_id should be allocated before remote execution")
+                return completed
+
+            with (
+                patch("agentplane.cli.remote.next_operation_id", side_effect=fake_next_operation_id) as op_id_mock,
+                patch(
+                    "agentplane.cli.remote.append_operation_ledger",
+                    return_value={"ledger_file": str(ledger_file)},
+                ) as ledger_mock,
+                patch("agentplane.runtime.execution.subprocess.run", side_effect=fake_run) as run_mock,
+            ):
+                payload = execute_remote_bash(
+                    repo_root=root,
+                    target="prod0-main",
+                    remote_args=["echo"],
+                    stdin_text="echo ok\n",
+                )
+
+            self.assertTrue(payload["ok"])
+            self.assertEqual(
+                {
+                    "op_id": "remote-bash-fixed",
+                    "result": "succeeded",
+                    "ledger_file": str(ledger_file),
+                },
+                payload["operation"],
+            )
+            op_id_mock.assert_called_once_with("remote-bash")
+            run_mock.assert_called_once()
+            self.assertEqual(
+                expected_ssh_stdin_argv(resolved_root / "secrets" / "ssh" / "config", "bash -s -- echo"),
+                run_mock.call_args.args[0],
+            )
+            ledger_mock.assert_called_once_with(
+                resolved_root,
+                command="remote",
+                action="bash",
+                target="prod0-main",
+                op_id="remote-bash-fixed",
+                dry_run=False,
+                result="succeeded",
+                details={
+                    "transport": "stdin",
+                    "connection_target": "root@prod0-main",
+                    "remote_command": "bash -s -- echo",
+                    "script_file": None,
+                    "backend_type": "ssh-linux",
+                },
+            )
+
+    def test_remote_bash_dry_run_emits_structured_plan(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            script_file = Path(tmp) / "example.sh"
+            script_file.write_text("#!/usr/bin/env bash\nset -euo pipefail\necho ok\n", encoding="utf-8")
+
+            result = run_cli(
+                "infra",
+                "remote",
+                "bash",
+                "prod0-main",
+                "--dry-run",
+                "--script-file",
+                str(script_file),
+                "--",
+                "postgres18-prod",
+                "value with spaces",
+            )
+
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        payload = json.loads(result.stdout)
+        inner = payload.get("payload", {})
+        self.assertEqual("infra", payload.get("command"))
+        self.assertEqual("remote.bash", payload.get("action"))
+        self.assertTrue(inner.get("ok"))
+        self.assertEqual("prod0-main", payload.get("target"))
+        self.assertEqual("script-file", inner.get("transport"))
+        self.assertEqual("ssh-linux", inner.get("backend_type"))
+        self.assertEqual(str(script_file), inner.get("script_file"))
+        self.assertEqual(
+            str(MAIN_REPO_ROOT / "secrets" / "ssh" / "config"),
+            inner.get("ssh_config"),
+        )
+        self.assertEqual("root@prod0-main", inner.get("connection_target"))
+        self.assertEqual(
+            "bash -s -- postgres18-prod 'value with spaces'",
+            inner.get("remote_command"),
+        )
+        self.assertEqual(
+            expected_ssh_stdin_argv(
+                MAIN_REPO_ROOT / "secrets" / "ssh" / "config",
+                "bash -s -- postgres18-prod 'value with spaces'",
+            ),
+            inner.get("ssh_argv"),
+        )
+        self.assertEqual("ssh-linux", inner.get("execution_plan", {}).get("backend_type"))
+        self.assertEqual("ssh-linux", inner.get("backend", {}).get("backend_type"))
+        self.assertIn("ledger_file", inner.get("operation", {}))
+
+    def test_infra_remote_bash_rejects_non_formal_target(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            script_file = Path(tmp) / "example.sh"
+            script_file.write_text("#!/usr/bin/env bash\nset -euo pipefail\necho ok\n", encoding="utf-8")
+
+            result = run_cli(
+                "infra",
+                "remote",
+                "bash",
+                "retired-target",
+                "--dry-run",
+                "--script-file",
+                str(script_file),
+                "--",
+                "docker",
+                "ps",
+            )
+
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("invalid choice: 'retired-target'", result.stderr)
+
+    def test_remote_bash_requires_existing_script_file(self) -> None:
+        missing = REPO_ROOT / "agentplane" / "scripts" / "remote" / "missing-example.sh"
+
+        result = run_cli(
+            "infra",
+            "remote",
+            "bash",
+            "prod0-main",
+            "--dry-run",
+            "--script-file",
+            str(missing),
+        )
+
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("Script file not found", result.stderr)
