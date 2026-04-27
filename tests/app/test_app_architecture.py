@@ -1,10 +1,11 @@
 from __future__ import annotations
-
-import ast
 from pathlib import Path
+import ast
+import pytest
+
+pytestmark = pytest.mark.e2e
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-
 
 def _imports(path: Path) -> list[str]:
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
@@ -15,7 +16,6 @@ def _imports(path: Path) -> list[str]:
         elif isinstance(node, ast.ImportFrom) and node.module:
             names.append(node.module)
     return names
-
 
 def test_app_cli_is_parser_and_dispatch_only() -> None:
     cli_apps = REPO_ROOT / "agentplane" / "cli" / "apps.py"
@@ -36,7 +36,6 @@ def test_app_cli_is_parser_and_dispatch_only() -> None:
     ):
         assert f"def {name}(" not in text
 
-
 def test_app_domain_does_not_import_cli_or_onepanel_scripts() -> None:
     for path in (REPO_ROOT / "agentplane" / "domain" / "app").glob("*.py"):
         imports = _imports(path)
@@ -45,7 +44,6 @@ def test_app_domain_does_not_import_cli_or_onepanel_scripts() -> None:
             name == "agentplane.scripts.onepanel" or name.startswith("agentplane.scripts.onepanel.")
             for name in imports
         ), path
-
 
 def test_public_cli_and_domain_surfaces_do_not_import_onepanel_scripts() -> None:
     checked_roots = (
@@ -59,7 +57,6 @@ def test_public_cli_and_domain_surfaces_do_not_import_onepanel_scripts() -> None
                 name == "agentplane.scripts.onepanel" or name.startswith("agentplane.scripts.onepanel.")
                 for name in imports
             ), path
-
 
 def test_onepanel_script_imports_are_provider_internal() -> None:
     provider_files = {
@@ -80,7 +77,5 @@ def test_onepanel_script_imports_are_provider_internal() -> None:
             continue
         assert not imports_scripts, path
 
-
 def test_legacy_app_runtime_provider_adapter_is_removed() -> None:
     assert not (REPO_ROOT / "agentplane" / "providers" / "app_runtime.py").exists()
-
