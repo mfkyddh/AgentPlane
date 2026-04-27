@@ -1,12 +1,19 @@
+from __future__ import annotations
+from datetime import datetime, timezone
+from pathlib import Path
 import json
+import os
 import subprocess
 import sys
 import tempfile
 import unittest
-from pathlib import Path
+import pytest
+from agentplane.cli.secrets import materialize_legacy_host_layout
+from agentplane.runtime.bootstrap import bootstrap_directory_specs, bootstrap_required_truth_specs
+
+pytestmark = pytest.mark.e2e
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-
 
 def run_cli(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
@@ -17,7 +24,6 @@ def run_cli(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[
         check=False,
     )
 
-
 def parse_env_text(content: str) -> dict[str, str]:
     values: dict[str, str] = {}
     for raw_line in content.splitlines():
@@ -27,7 +33,6 @@ def parse_env_text(content: str) -> dict[str, str]:
         key, value = line.split("=", 1)
         values[key] = value
     return values
-
 
 class SecretsCliTests(unittest.TestCase):
     def test_init_data_services_generates_target_scoped_random_secrets(self) -> None:
@@ -131,7 +136,6 @@ class SecretsCliTests(unittest.TestCase):
                 projected.read_text(encoding="utf-8"),
             )
 
-
 class SecretLayoutTests(unittest.TestCase):
     def test_compose_and_deploy_scripts_use_target_scoped_secret_paths(self) -> None:
         files_and_expected = {
@@ -148,7 +152,7 @@ class SecretLayoutTests(unittest.TestCase):
             REPO_ROOT / "agentplane" / "scripts" / "remote" / "remote_deploy_data_services.sh": 'postgres_env="${control_root}/secrets/services/postgres/admin.${target_alias}.env"',
         }
         for path, expected in files_and_expected.items():
-            with self.subTest(path=path):
+            with self.subTest(path=str(path)):
                 self.assertIn(expected, path.read_text(encoding="utf-8"))
 
     def test_deploy_data_services_script_supports_prod2_target(self) -> None:
@@ -234,3 +238,261 @@ class SecretLayoutTests(unittest.TestCase):
                     any(marker in content for marker in ("legacy", "transitional", "projection-only", "projection only")),
                     msg=f"flat template must be explicitly marked transitional or projection-only: {path}",
                 )
+
+# ======================================================================
+# From: test_secrets_backup_r2.py
+# ======================================================================
+
+class FakeR2Client:
+    def __init__(self, existing: dict[str, bytes] | None = None, *, fail_put: bool = False) -> None:
+        self.objects = dict(existing or {})
+        self.fail_put = fail_put
+        self.put_calls: list[str] = []
+        self.delete_calls: list[str] = []
+
+    def put_object(self, *, bucket: str, key: str, file_path: Path) -> dict[str, str]:
+        self.put_calls.append(key)
+        if self.fail_put:
+            raise RuntimeError("put failed")
+        self.objects[key] = file_path.read_bytes()
+        return {"etag": "fake-etag", "bucket": bucket, "key": key}
+
+    def list_objects(self, *, bucket: str, prefix: str) -> list[dict[str, object]]:
+        return [
+            {"key": key, "size": len(value)}
+            for key, value in sorted(self.objects.items())
+            if key.startswith(prefix)
+        ]
+
+    def delete_object(self, *, bucket: str, key: str) -> None:
+        self.delete_calls.append(key)
+        self.objects.pop(key, None)
+
+def fake_encrypt_file(input_path: Path, output_path: Path, password: str) -> None:
+    output_path.write_bytes(input_path.read_bytes() + f":{password}".encode("utf-8"))
+
+class SecretsBackupR2Tests(unittest.TestCase):
+    def _make_config(self, root: Path):
+        from agentplane.scripts.automation.backup_secrets_r2 import BackupConfig
+
+        return BackupConfig(
+            source_dir=root / "secrets" / "hosts" / "wsl",
+            state_file=root / "state" / "state.json",
+            tmp_dir=root / "tmp",
+            bucket="AgentPlane_Backups",
+            endpoint="https://example.r2.cloudflarestorage.com",
+            prefix="backups/agentplane/secrets-main",
+            access_key_id="access",
+            secret_access_key="secret",
+            password="qf19940930",
+            keep_count=5,
+        )
+
+    def test_backup_skips_upload_when_scan_fingerprint_matches_state(self) -> None:
+        from agentplane.scripts.automation.backup_secrets_r2 import run_backup
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            secrets_dir = root / "secrets" / "hosts" / "wsl"
+            secrets_dir.mkdir(parents=True)
+            (secrets_dir / "alpha.txt").write_text("alpha\n", encoding="utf-8")
+
+            config = self._make_config(root)
+            client = FakeR2Client()
+
+            first = run_backup(
+                config,
+                client=client,
+                now=datetime(2026, 3, 27, 1, 0, tzinfo=timezone.utc),
+                encrypt_file=fake_encrypt_file,
+            )
+            second = run_backup(
+                config,
+                client=client,
+                now=datetime(2026, 3, 27, 2, 0, tzinfo=timezone.utc),
+                encrypt_file=fake_encrypt_file,
+            )
+
+            self.assertEqual("ok_uploaded", first["status"])
+            self.assertEqual("ok_no_changes", second["status"])
+            self.assertEqual(1, len(client.put_calls))
+            self.assertEqual(first["content_fingerprint"], second["content_fingerprint"])
+            self.assertEqual(first["object_key"], second["last_uploaded_key"])
+
+    def test_backup_updates_scan_state_without_upload_when_only_mtime_changes(self) -> None:
+        from agentplane.scripts.automation.backup_secrets_r2 import run_backup
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            secrets_dir = root / "secrets" / "hosts" / "wsl"
+            secrets_dir.mkdir(parents=True)
+            target = secrets_dir / "alpha.txt"
+            target.write_text("alpha\n", encoding="utf-8")
+
+            config = self._make_config(root)
+            client = FakeR2Client()
+
+            first = run_backup(
+                config,
+                client=client,
+                now=datetime(2026, 3, 27, 1, 0, tzinfo=timezone.utc),
+                encrypt_file=fake_encrypt_file,
+            )
+            stat = target.stat()
+            os.utime(target, ns=(stat.st_atime_ns, stat.st_mtime_ns + 1_000_000_000))
+
+            second = run_backup(
+                config,
+                client=client,
+                now=datetime(2026, 3, 27, 2, 0, tzinfo=timezone.utc),
+                encrypt_file=fake_encrypt_file,
+            )
+
+            state = json.loads(config.state_file.read_text(encoding="utf-8"))
+            self.assertEqual("ok_no_changes", second["status"])
+            self.assertEqual(1, len(client.put_calls))
+            self.assertNotEqual(first["scan_fingerprint"], second["scan_fingerprint"])
+            self.assertEqual(first["content_fingerprint"], second["content_fingerprint"])
+            self.assertEqual(second["scan_fingerprint"], state["scan_fingerprint"])
+            self.assertEqual(second["content_fingerprint"], state["content_fingerprint"])
+
+    def test_backup_uploads_new_archive_and_prunes_old_remote_objects(self) -> None:
+        from agentplane.scripts.automation.backup_secrets_r2 import run_backup
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            secrets_dir = root / "secrets" / "hosts" / "wsl"
+            secrets_dir.mkdir(parents=True)
+            (secrets_dir / "alpha.txt").write_text("alpha\n", encoding="utf-8")
+
+            existing = {
+                "backups/agentplane/secrets-main/agentplane-secrets-20260320T000000Z-old000000001.tar.gz.enc": b"1",
+                "backups/agentplane/secrets-main/agentplane-secrets-20260321T000000Z-old000000002.tar.gz.enc": b"2",
+                "backups/agentplane/secrets-main/agentplane-secrets-20260322T000000Z-old000000003.tar.gz.enc": b"3",
+                "backups/agentplane/secrets-main/agentplane-secrets-20260323T000000Z-old000000004.tar.gz.enc": b"4",
+                "backups/agentplane/secrets-main/agentplane-secrets-20260324T000000Z-old000000005.tar.gz.enc": b"5",
+            }
+            config = self._make_config(root)
+            client = FakeR2Client(existing=existing)
+
+            payload = run_backup(
+                config,
+                client=client,
+                now=datetime(2026, 3, 27, 3, 0, tzinfo=timezone.utc),
+                encrypt_file=fake_encrypt_file,
+            )
+
+            self.assertEqual("ok_uploaded", payload["status"])
+            self.assertEqual(1, len(client.put_calls))
+            self.assertEqual(1, payload["deleted_old_backups"])
+            self.assertEqual(
+                [
+                    "backups/agentplane/secrets-main/agentplane-secrets-20260320T000000Z-old000000001.tar.gz.enc"
+                ],
+                client.delete_calls,
+            )
+            self.assertEqual(5, len(client.objects))
+
+    def test_backup_returns_failed_runtime_and_cleans_tmp_files_when_upload_fails(self) -> None:
+        from agentplane.scripts.automation.backup_secrets_r2 import run_backup
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            secrets_dir = root / "secrets" / "hosts" / "wsl"
+            secrets_dir.mkdir(parents=True)
+            (secrets_dir / "alpha.txt").write_text("alpha\n", encoding="utf-8")
+
+            config = self._make_config(root)
+            client = FakeR2Client(fail_put=True)
+
+            payload = run_backup(
+                config,
+                client=client,
+                now=datetime(2026, 3, 27, 4, 0, tzinfo=timezone.utc),
+                encrypt_file=fake_encrypt_file,
+            )
+
+            self.assertEqual("failed_runtime", payload["status"])
+            self.assertEqual([], list(config.tmp_dir.glob("*")))
+            self.assertFalse(config.state_file.exists())
+
+# ======================================================================
+# From: test_secrets_host_layout.py
+# ======================================================================
+
+class SecretsHostLayoutTests(unittest.TestCase):
+    def test_bootstrap_required_truth_specs_keep_takeover_truth_separate_from_projections(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+
+            specs = bootstrap_required_truth_specs(root)
+            refs = {item["secret_ref"]: item["destination"] for item in specs}
+
+            self.assertEqual(
+                str(root / "secrets" / "ssh" / "config").replace("\\", "/"),
+                str(refs["local/control-plane/ssh-config"]).replace("\\", "/"),
+            )
+            self.assertNotIn("local/control-plane/prod-jump", refs)
+
+    def test_bootstrap_directory_specs_follow_inventory_targets_instead_of_hardcoded_targets(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "inventory" / "servers" / "wsl").mkdir(parents=True, exist_ok=True)
+            (root / "inventory" / "servers" / "prod9-main").mkdir(parents=True, exist_ok=True)
+            (root / "inventory" / "servers" / "wsl" / "inventory.json").write_text("{}", encoding="utf-8")
+            (root / "inventory" / "servers" / "prod9-main" / "inventory.json").write_text("{}", encoding="utf-8")
+
+            specs = bootstrap_directory_specs(root)
+            targets = {item["scope"] for item in specs if item["scope"].startswith("targets/")}
+
+            self.assertEqual({"targets/wsl", "targets/prod9-main"}, targets)
+
+    def test_materialize_legacy_host_layout_projects_host_truth_into_legacy_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            host_root = root / "secrets" / "hosts" / "prod0-main"
+            (host_root / "onepanel").mkdir(parents=True, exist_ok=True)
+            (host_root / "infra" / "postgres").mkdir(parents=True, exist_ok=True)
+            (host_root / "apps" / "sampleapi" / "tenants").mkdir(parents=True, exist_ok=True)
+            (host_root / "apps" / "sampleapi").mkdir(parents=True, exist_ok=True)
+
+            (host_root / "onepanel" / "api.env").write_text("ONEPANEL_API_KEY=demo\n", encoding="utf-8")
+            (host_root / "infra" / "postgres" / "admin.env").write_text("POSTGRES_USER=postgres\n", encoding="utf-8")
+            (host_root / "apps" / "sampleapi" / "runtime.env").write_text("DATABASE_URL=postgres://demo\n", encoding="utf-8")
+            (host_root / "apps" / "sampleapi" / "tenants" / "postgres.env").write_text("PGDATABASE=sampleapi_prod0\n", encoding="utf-8")
+
+            payload = materialize_legacy_host_layout(root, "prod0-main", write=True)
+
+            self.assertEqual("prod0-main", payload["target"])
+            self.assertTrue((root / "secrets" / "services" / "onepanel-api.env").is_file())
+            self.assertTrue((root / "secrets" / "services" / "postgres" / "admin.prod0.env").is_file())
+            self.assertTrue((root / "secrets" / "services" / "sampleapi.prod0.env").is_file())
+            self.assertTrue((root / "secrets" / "tenants" / "prod0-main" / "sampleapi" / "postgres.env").is_file())
+            self.assertEqual(
+                "ONEPANEL_API_KEY=demo\n",
+                (root / "secrets" / "services" / "onepanel-api.env").read_text(encoding="utf-8"),
+            )
+
+    def test_materialize_legacy_host_layout_projects_backup_env_with_host_first_source(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            host_root = root / "secrets" / "hosts" / "wsl"
+            automation_root = host_root / "automations"
+            automation_root.mkdir(parents=True, exist_ok=True)
+
+            (automation_root / "secrets-backup.r2.env").write_text(
+                "SECRETS_BACKUP_SOURCE_DIR=<repo-root>/secrets/hosts/wsl\n"
+                "SECRETS_BACKUP_STATE_FILE=/data/agentplane/secrets-backup/state.json\n",
+                encoding="utf-8",
+            )
+
+            payload = materialize_legacy_host_layout(root, "wsl", write=True)
+            self.assertEqual("wsl", payload["target"])
+
+            projected = root / "secrets" / "services" / "secrets-backup.r2.wsl.env"
+            self.assertTrue(projected.is_file())
+            projected_text = projected.read_text(encoding="utf-8")
+            self.assertIn(
+                f"SECRETS_BACKUP_SOURCE_DIR={root}/secrets/hosts/wsl".replace("\\", "/"),
+                projected_text.replace("\\", "/"),
+            )

@@ -1,3 +1,6 @@
+from __future__ import annotations
+from pathlib import Path
+from unittest import mock
 import json
 import os
 import re
@@ -5,14 +8,19 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from pathlib import Path
-
+import pytest
 from agentplane.cli.audit import audit_filesystem
+from agentplane.cli.prod0_postgres_app_resource_audit import (
+    _live_runtime_binding,
+    _pg_binding_from_dsn,
+    _prod0_app_resource_live_audit_snapshot,
+)
 from agentplane.domain.app.runtime import _render_server_readme
 from tests.support.app_resources import resource_relative
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+pytestmark = pytest.mark.e2e
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 def run_cli(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
     env = os.environ.copy()
@@ -28,22 +36,18 @@ def run_cli(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[
         check=False,
     )
 
-
 def write_inventory(root: Path, env: str, payload: dict) -> None:
     inventory_file = root / "inventory" / "servers" / env / "inventory.json"
     inventory_file.parent.mkdir(parents=True, exist_ok=True)
     inventory_file.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
-
 def write_prod0_inventory(root: Path, payload: dict) -> None:
     write_inventory(root, "prod0-main", payload)
-
 
 def write_app_resource_registry(root: Path, payload: dict) -> None:
     registry_file = root / "inventory" / "servers" / "prod0-main" / "app-resources.json"
     registry_file.parent.mkdir(parents=True, exist_ok=True)
     registry_file.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-
 
 def baseline_app_resource_registry() -> dict:
     return {
@@ -108,7 +112,6 @@ def baseline_app_resource_registry() -> dict:
         },
     }
 
-
 def baseline_payload(*, include_app_resource_summary: bool = False) -> dict:
     payload = {
         "managed_bridge_networks": [
@@ -170,7 +173,6 @@ def baseline_payload(*, include_app_resource_summary: bool = False) -> dict:
         }
     return payload
 
-
 def assert_live_db_partition_markers(test_case: unittest.TestCase, text: str) -> None:
     test_case.assertRegex(text, re.compile(r"(DB.?级|数据库级).*(逻辑分区|分区)|逻辑分区.*(DB.?级|数据库级)"))
     test_case.assertRegex(
@@ -180,7 +182,6 @@ def assert_live_db_partition_markers(test_case: unittest.TestCase, text: str) ->
     test_case.assertRegex(text, re.compile(r"(不|非).*(强|安全).*隔离"))
     test_case.assertNotIn("remediation-target", text)
     test_case.assertNotIn("pending-realization", text)
-
 
 def assert_prod0_mixed_app_resource_credential_semantics(test_case: unittest.TestCase, text: str) -> None:
     test_case.assertIn(
@@ -196,7 +197,6 @@ def assert_prod0_mixed_app_resource_credential_semantics(test_case: unittest.Tes
         "`app_resource_summary` 反映当前 prod0 台账语义：共享 runtime 凭据，供台账与对账使用。",
         text,
     )
-
 
 class Prod0AuditTests(unittest.TestCase):
     def test_detects_invalid_managed_bridge_network_declaration(self) -> None:
@@ -663,7 +663,45 @@ class Prod0AuditTests(unittest.TestCase):
         issues = [item for item in result["violations"] if item["id"] in tenant_issue_ids]
         self.assertEqual([], issues, msg=json.dumps(issues, ensure_ascii=False))
 
+# ======================================================================
+# From: test_prod0_postgres_app_resource_audit.py
+# ======================================================================
 
-if __name__ == "__main__":
-    unittest.main()
+class Prod0PostgresAppResourceAuditInternalTests(unittest.TestCase):
+    def test_pg_binding_from_dsn_decodes_username_and_database(self) -> None:
+        database, user = _pg_binding_from_dsn("postgresql://sub2api_prod0%40tenant:pw@db/sub2api_prod0")
 
+        self.assertEqual("sub2api_prod0", database)
+        self.assertEqual("sub2api_prod0@tenant", user)
+
+    def test_live_runtime_binding_prefers_discrete_keys_over_dsn(self) -> None:
+        database, user = _live_runtime_binding(
+            {
+                "env": {
+                    "PGDATABASE": "sub2api_prod0",
+                    "PGUSER": "sub2api_prod0",
+                    "DATABASE_URL": "postgresql://wrong:pw@db/wrong",
+                }
+            }
+        )
+
+        self.assertEqual("sub2api_prod0", database)
+        self.assertEqual("sub2api_prod0", user)
+
+    @mock.patch("agentplane.cli.prod0_postgres_app_resource_audit.execute_remote_bash")
+    def test_prod0_app_resource_live_audit_snapshot_uses_remote_substrate_script_file(
+        self, execute_remote_bash_mock: mock.Mock
+    ) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            script_file = root / "agentplane" / "scripts" / "remote" / "prod0-postgres-app-resource-live-audit.sh"
+            script_file.parent.mkdir(parents=True, exist_ok=True)
+            script_file.write_text("#!/bin/sh\n", encoding="utf-8")
+            execute_remote_bash_mock.return_value = {
+                "result": {"returncode": 0, "stdout": json.dumps({"apps": {}, "catalog": {}}), "stderr": ""},
+            }
+
+            payload = _prod0_app_resource_live_audit_snapshot(root)
+
+            self.assertEqual({"apps": {}, "catalog": {}}, payload)
+            execute_remote_bash_mock.assert_called_once_with(repo_root=root, target="prod0-main", script_file=script_file)
