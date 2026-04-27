@@ -1,4 +1,4 @@
-"""agentplane test — run tests with sensible defaults.
+"""agentplane test - run tests with sensible defaults.
 
 Provides shortcut commands that map to the right pytest invocation
 depending on the test tier.
@@ -10,6 +10,20 @@ import argparse
 import subprocess
 import sys
 from pathlib import Path
+
+DEFAULT_EXCLUDES = (
+    "live_gate",
+    "integration_wsl",
+    "integration_remote",
+    "external_app",
+    "docker_required",
+    "ssh_required",
+)
+
+
+def _marker_expr(include: str) -> str:
+    excludes = " and ".join(f"not {marker}" for marker in DEFAULT_EXCLUDES)
+    return f"({include}) and {excludes}"
 
 
 def add_test_parser(subparsers: argparse._SubParsersAction) -> None:
@@ -56,7 +70,7 @@ def handle_test_command(args: argparse.Namespace) -> int:
     cmd = [sys.executable, "-m", "pytest", "-q", f"--tb={args.tb}"]
 
     if tier == "unit":
-        cmd.extend(["-m", "unit"])
+        cmd.extend(["-m", _marker_expr("unit")])
         n = workers or 0  # 0 means auto in xdist
         if n > 0:
             cmd.extend(["-n", str(n)])
@@ -64,7 +78,7 @@ def handle_test_command(args: argparse.Namespace) -> int:
             cmd.extend(["-n", "auto"])
 
     elif tier == "integration":
-        cmd.extend(["-m", "integration"])
+        cmd.extend(["-m", _marker_expr("integration")])
         n = workers or 0
         if n > 0:
             cmd.extend(["-n", str(n)])
@@ -72,7 +86,7 @@ def handle_test_command(args: argparse.Namespace) -> int:
             cmd.extend(["-n", "auto", "--dist", "loadfile"])
 
     elif tier == "fast":
-        cmd.extend(["-m", "unit or integration"])
+        cmd.extend(["-m", _marker_expr("unit or integration")])
         n = workers or 0
         if n > 0:
             cmd.extend(["-n", str(n)])
@@ -80,28 +94,50 @@ def handle_test_command(args: argparse.Namespace) -> int:
             cmd.extend(["-n", "auto", "--dist", "loadfile"])
 
     elif tier == "e2e":
-        cmd.extend(["-m", "e2e"])
+        cmd.extend(["-m", _marker_expr("e2e")])
         n = workers or 4
         cmd.extend(["-n", str(n)])
 
     elif tier == "smoke":
-        cmd.extend(["-m", "smoke"])
+        cmd.extend(["-m", _marker_expr("smoke")])
         n = workers or 4
         cmd.extend(["-n", str(n)])
 
     elif tier == "full":
         # Run unit+integration first (fast, highly parallel), then e2e (slower, limited parallel)
         # This is a compound command; we run two pytest invocations.
-        fast_cmd = [sys.executable, "-m", "pytest", "-q", f"--tb={args.tb}", "-m", "unit or integration", "-n", "auto", "--dist", "loadfile"]
-        e2e_cmd = [sys.executable, "-m", "pytest", "-q", f"--tb={args.tb}", "-m", "e2e", "-n", str(workers or 4)]
+        fast_cmd = [
+            sys.executable,
+            "-m",
+            "pytest",
+            "-q",
+            f"--tb={args.tb}",
+            "-m",
+            _marker_expr("unit or integration"),
+            "-n",
+            "auto",
+            "--dist",
+            "loadfile",
+        ]
+        e2e_cmd = [
+            sys.executable,
+            "-m",
+            "pytest",
+            "-q",
+            f"--tb={args.tb}",
+            "-m",
+            _marker_expr("e2e"),
+            "-n",
+            str(workers or 4),
+        ]
 
-        print("▶ Running unit + integration tests …", file=sys.stderr)
+        print("Running unit + integration tests...", file=sys.stderr)
         fast_result = subprocess.run(fast_cmd, cwd=str(repo_root))
         if fast_result.returncode != 0:
-            print("✗ Unit/integration tests failed — skipping e2e.", file=sys.stderr)
+            print("Unit/integration tests failed; skipping e2e.", file=sys.stderr)
             return fast_result.returncode
 
-        print("▶ Running e2e tests …", file=sys.stderr)
+        print("Running e2e tests...", file=sys.stderr)
         e2e_result = subprocess.run(e2e_cmd, cwd=str(repo_root))
         return e2e_result.returncode
 
