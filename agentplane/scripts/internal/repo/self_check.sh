@@ -7,10 +7,7 @@ cd "$repo_root"
 # Phase 4 / Lane 6 contract:
 # projection verification / fixture / ledger remain scenario-specific workflows.
 # do not move them into the daily thin gate.
-uv run python -m pytest \
-  tests/repository/test_docs_no_legacy_terms.py \
-  tests/host/test_wsl_first_docs.py \
-  tests/repository/test_repo_snapshot_contracts.py \
-  tests/onepanel/test_onepanel_plugin_and_skills.py \
-  tests/app/test_app_onboarding_standard.py \
-  -q
+#
+# Daily thin gate: unit + integration tests only.
+# E2E and live gate tests are excluded by default.
+uv run python -m pytest -m "unit or integration" -q

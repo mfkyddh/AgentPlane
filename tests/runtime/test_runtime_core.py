@@ -1,31 +1,24 @@
 from __future__ import annotations
-from pathlib import Path
-from unittest.mock import MagicMock, patch
-from unittest.mock import patch
+
 import json
 import os
-import shutil
 import subprocess
 import tempfile
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
 import pytest
 from agentplane.domain.app.catalog import resolve_app_contract_reference
-from agentplane.runtime.backends import BackendRunner, build_backend_runner
-from agentplane.runtime.backends import WindowsWslBackend, build_backend_runner
-from agentplane.runtime.backends import build_backend_runner
-from agentplane.runtime.backends.registry import BackendRegistry, register_backend
+from agentplane.runtime.backends import BackendRunner, WindowsWslBackend, build_backend_runner
+from agentplane.runtime.backends.registry import BackendRegistry
 from agentplane.runtime.execution import (
     ExecutionBindings,
     ExecutionError,
     ExecutionPlan,
     ExecutionResult,
+    StreamChunk,
     _classify_error,
 )
-from agentplane.runtime.execution import (
-    ExecutionBindings,
-    ExecutionPlan,
-    StreamChunk,
-)
-from agentplane.runtime.execution import ExecutionBindings, ExecutionPlan
 from agentplane.runtime.host_profile import HostProfile
 from agentplane.runtime.target_resolver import TargetResolver
 from agentplane.ssh import SshTarget

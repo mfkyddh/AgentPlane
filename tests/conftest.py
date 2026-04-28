@@ -3,9 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-
 from tests.support.markers import apply_marker_rules
-
 
 # ---------------------------------------------------------------------------
 # Hooks

@@ -1,13 +1,15 @@
 from __future__ import annotations
-from pathlib import Path
-from types import SimpleNamespace
-from unittest.mock import patch
+
 import json
 import os
 import subprocess
 import sys
 import tempfile
 import unittest
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
+
 import pytest
 from tests.support.app_resources import resource_relative, resource_root
 

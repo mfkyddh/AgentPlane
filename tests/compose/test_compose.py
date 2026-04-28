@@ -1,13 +1,15 @@
 from __future__ import annotations
-from io import StringIO
-from pathlib import Path
-from unittest.mock import patch
+
 import json
 import sys
 import tempfile
 import unittest
-import yaml
+from io import StringIO
+from pathlib import Path
+from unittest.mock import patch
+
 import pytest
+import yaml
 from agentplane.domain.service.materialize import render_clash_local_profile
 from agentplane.scripts.internal import ensure_cloudflare_dns_record  # type: ignore  # noqa: E402
 
@@ -244,11 +246,7 @@ class RelayTrojanComposeLayoutTests(unittest.TestCase):
 # From: test_sub2api_compose_layout.py
 # ======================================================================
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
 OFFICIAL_IMAGE = "${SUB2API_IMAGE_REF:-ghcr.io/wei-shaw/sub2api:latest}"
-
-def load_compose(path: Path) -> dict:
-    return yaml.safe_load(path.read_text(encoding="utf-8"))
 
 class Sub2ApiComposeLayoutTests(unittest.TestCase):
     def test_wsl_template_matches_contract(self) -> None:

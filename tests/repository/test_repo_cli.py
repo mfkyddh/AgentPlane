@@ -1,11 +1,13 @@
 from __future__ import annotations
-from pathlib import Path
+
 import json
 import re
 import subprocess
 import sys
 import tempfile
 import unittest
+from pathlib import Path
+
 import pytest
 
 pytestmark = pytest.mark.e2e
@@ -331,17 +333,6 @@ class CliEntrypointsTests(unittest.TestCase):
 # From: test_repo_health_cli.py
 # ======================================================================
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-
-def run_cli(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, "-m", "agentplane.cli", *args],
-        cwd=cwd or REPO_ROOT,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-
 class RepoHealthCliTests(unittest.TestCase):
     def test_repo_health_check_can_run_lightweight_checks(self) -> None:
         result = run_cli(
@@ -534,17 +525,6 @@ class RepoHealthCliTests(unittest.TestCase):
 # ======================================================================
 # From: test_bootstrap_cli.py
 # ======================================================================
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
-
-def run_cli(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, "-m", "agentplane.cli", *args],
-        cwd=cwd or REPO_ROOT,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
 
 def seed_bootstrap_templates(root: Path) -> None:
     (root / "templates" / "env").mkdir(parents=True, exist_ok=True)

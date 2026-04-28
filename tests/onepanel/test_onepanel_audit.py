@@ -1,6 +1,5 @@
 from __future__ import annotations
-from pathlib import Path
-from unittest import mock
+
 import json
 import os
 import re
@@ -8,6 +7,9 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from pathlib import Path
+from unittest import mock
+
 import pytest
 from agentplane.cli.audit import audit_filesystem
 from agentplane.cli.prod0_postgres_app_resource_audit import (

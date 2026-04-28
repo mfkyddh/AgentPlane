@@ -43,7 +43,6 @@ markers = [
   "unit: Pure functions, no I/O, no global mutable state, <10ms",
   "integration: Module composition, mocked externals, tmpdir allowed, <100ms",
   "e2e: Full CLI subprocess launch, >1s acceptable",
-  "smoke: Fastest e2e per module for quick regression",
   "live_gate: requires the real WSL/SSH/Docker live integration gate",
   "integration_wsl: requires a real WSL/Linux backend from the current host",
   "integration_remote: requires a real remote host, SSH target, or provider endpoint",

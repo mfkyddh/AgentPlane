@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import pytest
 from agentplane.runtime.intent_guard import (
     IntentGuardViolation,

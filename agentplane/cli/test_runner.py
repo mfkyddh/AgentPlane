@@ -32,8 +32,8 @@ def add_test_parser(subparsers: argparse._SubParsersAction) -> None:
         "tier",
         nargs="?",
         default="fast",
-        choices=["fast", "full", "e2e", "smoke", "unit", "integration"],
-        help="Test tier: fast (unit+integration), full (all), e2e, smoke, unit, integration (default: fast)",
+        choices=["fast", "full", "e2e", "unit", "integration"],
+        help="Test tier: fast (unit+integration), full (all), e2e, unit, integration (default: fast)",
     )
     parser.add_argument(
         "-n",
@@ -95,11 +95,6 @@ def handle_test_command(args: argparse.Namespace) -> int:
 
     elif tier == "e2e":
         cmd.extend(["-m", _marker_expr("e2e")])
-        n = workers or 4
-        cmd.extend(["-n", str(n)])
-
-    elif tier == "smoke":
-        cmd.extend(["-m", _marker_expr("smoke")])
         n = workers or 4
         cmd.extend(["-n", str(n)])
 

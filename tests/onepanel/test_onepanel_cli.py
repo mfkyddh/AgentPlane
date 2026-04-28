@@ -1,12 +1,14 @@
 from __future__ import annotations
-from pathlib import Path
-from unittest.mock import patch
+
 import json
 import subprocess
 import sys
 import unittest
-import yaml
+from pathlib import Path
+from unittest.mock import patch
+
 import pytest
+import yaml
 from agentplane.cli.infra_onepanel import (
     _handle_cronjob_action,
     _handle_firewall_action,
@@ -16,16 +18,14 @@ from agentplane.cli.infra_onepanel import (
 )
 from agentplane.scripts.onepanel.object_api import (
     FakeLikeExecutorProtocol,
+    build_app_install_params,
     get_panel_summary,
     load_firewall_base,
+    plan_app_install,
     plan_firewall_operation,
+    plan_installed_app_operation,
     search_cronjobs,
     search_firewall_rules,
-)
-from agentplane.scripts.onepanel.object_api import (
-    build_app_install_params,
-    plan_app_install,
-    plan_installed_app_operation,
 )
 
 pytestmark = pytest.mark.e2e

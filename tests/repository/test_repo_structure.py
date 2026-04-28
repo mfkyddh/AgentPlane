@@ -1,6 +1,5 @@
 from __future__ import annotations
-from pathlib import Path
-from unittest.mock import patch
+
 import json
 import os
 import re
@@ -9,6 +8,9 @@ import sys
 import tempfile
 import tomllib
 import unittest
+from pathlib import Path
+from unittest.mock import patch
+
 import pytest
 from agentplane.cli.cleanup import apply_cleanup_plan, build_cleanup_plan
 from agentplane.domain.app.catalog import load_app_catalog, write_app_catalog
@@ -17,8 +19,6 @@ from agentplane.runtime.path_policy import assert_canonical_ref, is_host_specifi
 from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
 
 ALLOWED_TRACKED_TOP_LEVELS = {
     ".agents",

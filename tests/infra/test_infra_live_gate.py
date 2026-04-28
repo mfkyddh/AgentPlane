@@ -12,6 +12,8 @@ from agentplane.domain.infra.live_gate import (
 from agentplane.runtime.host_profile import HostProfile
 from agentplane.runtime.platform import HostPlatform
 
+pytestmark = pytest.mark.integration
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -146,7 +148,7 @@ def test_live_gate_results_redact_nested_command_stdout() -> None:
 
 
 def test_run_step_with_backend_resolves_backend_from_host_profile(monkeypatch) -> None:
-    from agentplane.domain.infra.live_gate import _run_step_with_backend, LiveGateStep
+    from agentplane.domain.infra.live_gate import LiveGateStep, _run_step_with_backend
 
     captured: dict[str, object] = {}
 

@@ -7,7 +7,6 @@ They should run in <10ms total and are safe for `-n auto` parallel.
 from __future__ import annotations
 
 import pytest
-
 from agentplane.domain.app.artifacts import detect_contract_mode
 from agentplane.domain.app.delivery_handlers import _delayed_cleanup_state, _rollback_state_payload
 from agentplane.domain.app.resource_state import (
@@ -17,7 +16,6 @@ from agentplane.domain.app.resource_state import (
     validate_duplicate_redis_combination,
 )
 from agentplane.domain.app.truth_lifecycle import validate_app_id
-
 
 # ---------------------------------------------------------------------------
 # validate_app_id

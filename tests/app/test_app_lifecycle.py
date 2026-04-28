@@ -1,16 +1,24 @@
 from __future__ import annotations
-from pathlib import Path
+
 import json
 import subprocess
 import sys
 import tempfile
 import unittest
+from pathlib import Path
+
 import pytest
 from agentplane.domain.app.lifecycle_prod0_main import (
     ALLOWED_OFFBOARDING_OPERATIONS as PROD0_ALLOWED_OFFBOARDING_OPERATIONS,
+)
+from agentplane.domain.app.lifecycle_prod0_main import (
     ALLOWED_ONBOARDING_OPERATIONS as PROD0_ALLOWED_ONBOARDING_OPERATIONS,
+)
+from agentplane.domain.app.lifecycle_prod0_main import (
     Prod0MainLifecyclePlan,
     Prod0MainLifecyclePolicy,
+)
+from agentplane.domain.app.lifecycle_prod0_main import (
     lane2_policy_helper as prod0_lane2_policy_helper,
 )
 from agentplane.domain.app.lifecycle_prod2_main import (
@@ -21,9 +29,15 @@ from agentplane.domain.app.lifecycle_prod2_main import (
 )
 from agentplane.domain.app.lifecycle_wsl import (
     ALLOWED_OFFBOARDING_OPERATIONS as WSL_ALLOWED_OFFBOARDING_OPERATIONS,
+)
+from agentplane.domain.app.lifecycle_wsl import (
     ALLOWED_ONBOARDING_OPERATIONS as WSL_ALLOWED_ONBOARDING_OPERATIONS,
+)
+from agentplane.domain.app.lifecycle_wsl import (
     WslLifecyclePlan,
     WslLifecyclePolicy,
+)
+from agentplane.domain.app.lifecycle_wsl import (
     lane2_policy_helper as wsl_lane2_policy_helper,
 )
 from agentplane.domain.app.projection_lifecycle import (

@@ -1,11 +1,12 @@
 from __future__ import annotations
-from pathlib import Path
-from types import SimpleNamespace
-from unittest.mock import MagicMock, patch
-from unittest.mock import patch
+
 import json
 import tempfile
 import unittest
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
+
 import pytest
 from agentplane.cli import infra_automation
 from agentplane.cli.audit import audit_filesystem

@@ -1,13 +1,15 @@
 from __future__ import annotations
-from pathlib import Path
-from types import SimpleNamespace
-from unittest.mock import patch
+
 import json
 import os
 import subprocess
 import sys
 import tempfile
 import unittest
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
+
 import pytest
 from agentplane.domain.ingress.lifecycle import (
     apply_ingress_truth_offboard,
@@ -302,34 +304,6 @@ class WebsiteCliTests(unittest.TestCase):
 # ======================================================================
 # From: test_ingress_publish_cli.py
 # ======================================================================
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
-
-def run_cli(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
-    env = None
-    if cwd is None:
-        repo_root: Path | None = None
-        for idx, token in enumerate(args):
-            if token == "--repo-root" and idx + 1 < len(args):
-                repo_root = Path(args[idx + 1])
-                break
-            if token.startswith("--repo-root="):
-                repo_root = Path(token.split("=", 1)[1])
-                break
-        if repo_root is not None:
-            cwd = repo_root
-            env = os.environ.copy()
-            repo_path = str(REPO_ROOT)
-            existing = env.get("PYTHONPATH", "")
-            env["PYTHONPATH"] = repo_path if not existing else f"{repo_path}:{existing}"
-    return subprocess.run(
-        [sys.executable, "-m", "agentplane.cli", *args],
-        cwd=cwd or REPO_ROOT,
-        env=env,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
 
 def write_publish_files(root: Path) -> tuple[Path, Path]:
     config_file = root / "publish.env"

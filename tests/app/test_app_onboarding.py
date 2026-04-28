@@ -1,11 +1,13 @@
 from __future__ import annotations
-from pathlib import Path
+
 import json
 import os
 import subprocess
 import sys
 import tempfile
 import unittest
+from pathlib import Path
+
 import pytest
 from agentplane.domain.app.resource_paths import app_resource_secret_dir, app_resource_secret_relative
 
@@ -61,10 +63,7 @@ class AppOnboardingStandardTests(unittest.TestCase):
         text = script_path.read_text(encoding="utf-8")
 
         self.assertIn("uv run python -m pytest", text)
-        self.assertIn("tests/repository/test_docs_no_legacy_terms.py", text)
-        self.assertIn("tests/repository/test_repo_snapshot_contracts.py", text)
-        self.assertIn("tests/onepanel/test_onepanel_plugin_and_skills.py", text)
-        self.assertIn("tests/app/test_app_onboarding_standard.py", text)
+        self.assertIn("-m \"unit or integration\"", text)
         self.assertNotIn("UV_PROJECT_ENVIRONMENT", text)
 
     def test_repo_ignores_only_the_single_default_venv(self) -> None:

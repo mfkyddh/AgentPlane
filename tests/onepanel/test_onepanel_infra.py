@@ -1,17 +1,21 @@
 from __future__ import annotations
-from pathlib import Path
-from tempfile import TemporaryDirectory
-from unittest import mock
-from unittest.mock import patch
+
 import argparse
 import json
 import subprocess
 import sys
 import tempfile
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest import mock
+from unittest.mock import patch
+
 import pytest
-from agentplane.scripts.onepanel import env_targets  # type: ignore  # noqa: E402
-from agentplane.scripts.onepanel import public_ingress  # type: ignore  # noqa: E402
+from agentplane.scripts.onepanel import (
+    env_targets,  # type: ignore  # noqa: E402
+    public_ingress,  # type: ignore  # noqa: E402
+)
 from agentplane.scripts.onepanel.compose_policy import (  # type: ignore  # noqa: E402
     enforce_zqf_network,
     normalize_compose_for_app,

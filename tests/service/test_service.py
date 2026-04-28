@@ -1,12 +1,14 @@
 from __future__ import annotations
-from pathlib import Path
-from unittest.mock import patch
+
 import json
 import os
 import tempfile
 import unittest
-import yaml
+from pathlib import Path
+from unittest.mock import patch
+
 import pytest
+import yaml
 from agentplane.adapters.service import docker_runtime
 from agentplane.domain.service import lifecycle as service_lifecycle
 from agentplane.domain.service.models import ServiceDefinition
@@ -17,12 +19,6 @@ from tests.support.service_cli import (
     write_fake_service_ssh,
     write_inventory,
 )
-from tests.support.service_cli import (
-    run_cli,
-    write_fake_service_ssh,
-    write_inventory,
-)
-from tests.support.service_cli import run_cli, write_fake_service_ssh, write_inventory
 
 pytestmark = pytest.mark.e2e
 

@@ -1,14 +1,15 @@
 from __future__ import annotations
-from pathlib import Path
-from types import SimpleNamespace
-from unittest.mock import Mock, patch
-from unittest.mock import patch
+
 import json
 import os
 import subprocess
 import sys
 import tempfile
 import unittest
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
+
 import pytest
 from agentplane.cli.inventory import generate_inventory_snapshot
 from agentplane.domain import networks as network_domain
@@ -561,26 +562,6 @@ def expected_ssh_stdin_argv(config_path: Path, remote_command: str) -> list[str]
         rendered_config = f"/mnt/{drive}/{tail}" if drive else config_path.as_posix()
         return ["wsl.exe", "-e", "ssh", "-T", "-F", rendered_config, "root@prod0-main", remote_command]
     return ["ssh", "-T", "-F", str(config_path), "root@prod0-main", remote_command]
-
-def run_cli(
-    *args: str,
-    cwd: Path | None = None,
-    env_overrides: dict[str, str] | None = None,
-) -> subprocess.CompletedProcess[str]:
-    env = None
-    if env_overrides:
-        env = os.environ.copy()
-        env.update(env_overrides)
-        if "FAKE_CMD_LOG" in env_overrides:
-            env.setdefault("AGENTPLANE_DISABLE_WSL_SSH", "1")
-    return subprocess.run(
-        [sys.executable, "-m", "agentplane.cli", *args],
-        cwd=cwd or REPO_ROOT,
-        env=env,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
 
 class RemoteCliTests(unittest.TestCase):
     def test_execute_remote_bash_uses_explicit_stdin_text(self) -> None:

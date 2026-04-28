@@ -8,7 +8,7 @@ audience: both
 
 # 测试治理规范
 
-结论：测试按 unit / integration / e2e / smoke 分层，默认并行运行必须保持离线、确定性，并且新增测试要先选择合适 marker 与文件归属。
+结论：测试按 unit / integration / e2e 分层，默认并行运行必须保持离线、确定性，并且新增测试要先选择合适 marker 与文件归属。
 
 > 📐 本文档定义测试金字塔、并行策略、文件组织规则和 marker 体系。
 > AI 执行测试相关变更时必须遵守。
@@ -22,7 +22,6 @@ audience: both
 | **单元** | `@pytest.mark.unit` | 纯函数、domain 对象、无 I/O、无全局可变状态 | < 10ms | `-n auto`，worker 间零共享 |
 | **集成** | `@pytest.mark.integration` | 模块组合、mock 外部依赖、允许 tmpdir、不走完整 CLI | < 100ms | `-n auto --dist loadfile` |
 | **契约/E2E** | `@pytest.mark.e2e` | 完整 CLI 端到端、真实子进程 | 可 > 1s | `-n 4`，限制并发进程数 |
-| **冒烟** | `@pytest.mark.smoke` | 每个模块最快的 1-2 个 E2E | — | 同 e2e |
 
 **并行设计原则**：分层时就规定该层必须满足何种并行契约，而非"测完再评估能否并行"。
 
@@ -42,7 +41,6 @@ audience: both
 @pytest.mark.unit          # 纯函数/无 I/O / 无全局状态
 @pytest.mark.integration   # 模块组合 / mock 外部 / 允许 tmpdir
 @pytest.mark.e2e           # 完整 CLI 进程 / 可接受 >1s
-@pytest.mark.smoke         # 每个模块最快的 e2e，用于快速回归
 ```
 
 ### 现有 marker（保留）
@@ -59,7 +57,7 @@ audience: both
 ### 默认排除
 
 `pyproject.toml` 的 `addopts` 默认排除 `live_gate` / `integration_wsl` / `integration_remote` / `external_app` / `docker_required` / `ssh_required`。
-层级 marker（unit/integration/e2e/smoke）**不在排除列表中**。
+层级 marker（unit/integration/e2e）**不在排除列表中**。
 
 ---
 
@@ -132,7 +130,6 @@ agentplane test          # 等价于 agentplane test fast
 agentplane test fast     # unit + integration, -n auto
 agentplane test full     # 全量, unit/integration 并行 + e2e -n 4
 agentplane test e2e      # 只跑 e2e, -n 4
-agentplane test smoke    # 只跑 smoke, -n 4
 ```
 
 ---

@@ -1,17 +1,16 @@
 from __future__ import annotations
+
 from pathlib import Path
+
 import pytest
-from agentplane.runtime.host_profile import HostProfile
-from agentplane.runtime.host_profile import host_profile_from_platform
+from agentplane.runtime.host_profile import HostProfile, host_profile_from_platform
 from agentplane.runtime.platform import HostPlatform, select_linux_backend
 from agentplane.runtime.resolution import WorkspaceResolver
 from agentplane.runtime.secret_resolver import SecretResolver
 from agentplane.runtime.target_resolver import TargetResolver
-from agentplane.runtime.workspace import resolve_workspace
 from agentplane.runtime.workspace import resolve_workspace, resolve_workspace_from_repo
 from agentplane.runtime.workspace_path import WorkspacePath
 from agentplane.runtime.wsl_bridge import normalize_repo_root_for_current_host, windows_path_to_wsl_posix
-from agentplane.runtime.wsl_bridge import windows_path_to_wsl_posix
 
 pytestmark = pytest.mark.integration
 
