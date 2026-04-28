@@ -570,7 +570,7 @@ def _plan_production_rollback(app_cli: Any, contract: dict[str, Any], *, repo_ro
         return {
             "rollback_entry": rollback_entry,
             "commands": [],
-            "warning": app_cli._render_rollback_entry(rollback_entry),
+            "warning": app_cli.render_rollback_entry(rollback_entry),
             "status": "not-applicable",
         }
     execution_steps = _render_execution_steps(steps)

@@ -30,6 +30,7 @@ audience: agent
 | `agentplane/domain/app/deployment.py` | deploy、rollback、remote step 构建 |
 | `agentplane/domain/app/verification.py` | 部署后验证 payload 和健康探测 |
 | `agentplane/domain/app/inventory_sync.py` | inventory-refresh 和 doc-sync 数据汇总 |
+| `agentplane/domain/app/doc_sync.py` | server README、应用交接摘要和 ledger section 保留逻辑 |
 | `tests/support/app_delivery_cli.py` | 测试 CLI 调用 |
 | `tests/support/app_delivery_contracts.py` | 合同 fixture 与 catalog fixture |
 | `tests/support/app_delivery_targets.py` | target-specific inventory、compose、secret fixture |
