@@ -56,12 +56,14 @@ AI 工作规范：[AGENTS.md](../AGENTS.md)
 | [architecture/control-plane.md](architecture/control-plane.md) | 控制面、task-entry、配置中心核心合同 |
 | [architecture/linux-governance.md](architecture/linux-governance.md) | Linux / WSL backend 长期治理 |
 | [architecture/agentplane-app-collaboration.md](architecture/agentplane-app-collaboration.md) | 控制面仓库与应用仓库边界 |
+| [architecture/decisions/README.md](architecture/decisions/README.md) | 长期架构决策记录 |
 
 ### 📚 Reference
 
 | 文档 | 说明 |
 | --- | --- |
 | [reference/documentation-governance.md](reference/documentation-governance.md) | 文档分层、emoji、链接和门禁规范 |
+| [reference/project-positioning.md](reference/project-positioning.md) | 项目定位、非目标和工具边界 |
 | [reference/repository-structure.md](reference/repository-structure.md) | 顶层目录和新文件放置规则 |
 | [reference/code-style.md](reference/code-style.md) | 代码和文档风格基线 |
 | [reference/tech-stack.md](reference/tech-stack.md) | 技术栈约束 |

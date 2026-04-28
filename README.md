@@ -13,6 +13,8 @@ audience: both
 > **你的基础设施"自动驾驶仪"**——你告诉它目标，它自动检查、执行、验证、留痕。
 >
 > AgentPlane 是一个 Agent-first control plane template repository。
+>
+> 当前成熟度：Alpha。仓库治理、离线测试、文档治理和 secrets 边界已经可用；发布自动化、provider 合同和 app delivery schema 仍在收敛。
 
 ---
 
@@ -90,6 +92,21 @@ agentplane repo health-check --repo-root .
 
 ---
 
+## 🎯 项目边界
+
+AgentPlane 不是 Terraform、Kubernetes controller 或 SSH 脚本集合。它更像一个给 AI Agent 使用的轻量控制面：把正式操作收口到 `agentplane ...`，再把计划、执行、验证、证据、台账和文档回写串成闭环。
+
+| 适合 | 不适合 |
+|------|--------|
+| 少量服务器和应用的 AI-assisted 运维 | 大型多租户平台控制器 |
+| 需要公开仓库与生产 secrets 分离 | 把生产 secrets 放进 Git 管理 |
+| 需要稳定任务入口和审计证据 | 只想保留一次性 SSH/Docker 命令 |
+| 应用仓库只交付代码和合同 | 应用仓库自带第二套生产控制面 |
+
+详细边界见 [项目定位](docs/reference/project-positioning.md)，演进计划见 [Roadmap](ROADMAP.md)。
+
+---
+
 ## 🗣️ 怎么告诉 AgentPlane 你要做什么
 
 不用记命令，用自然语言描述：
@@ -98,24 +115,6 @@ agentplane repo health-check --repo-root .
 
 AI 会自动转换为**计划 → 执行 → 验证 → 记录**的完整闭环。  
 更多示例见 [AI 执行流程](docs/getting-started/how-agent-works.md#怎么描述意图)。
-
----
-
-## 📁 项目结构
-
-```
-AgentPlane/
-├── agentplane/          CLI 与自动化代码
-├── tests/               自动化测试
-├── docs/                文档（人类 + AI）
-├── infra/compose/       Docker Compose 资产
-├── inventory/           非敏感状态记录
-├── templates/           非敏感模板
-├── secrets/             本地敏感信息（不提交 Git）
-└── local/               本地协作（不提交 Git）
-```
-
-> 正式入口只有 `agentplane ...`。
 
 ---
 
@@ -143,6 +142,8 @@ AgentPlane/
 | [SECURITY.md](SECURITY.md) | 安全策略 |
 | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | 行为准则 |
 | [SUPPORT.md](SUPPORT.md) | 获取帮助 |
+| [ROADMAP.md](ROADMAP.md) | 项目成熟度与路线图 |
+| [CHANGELOG.md](CHANGELOG.md) | 版本变更摘要 |
 
 <p align="center">
   Made with 🤖 for Agents

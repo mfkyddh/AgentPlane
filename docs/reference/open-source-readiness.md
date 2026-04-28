@@ -13,6 +13,8 @@ audience: agent
 
 This repository is being shaped as a one-checkout, cross-platform open source control plane template.
 
+Public positioning lives in [project-positioning.md](project-positioning.md). Release maturity and staged goals live in [../../ROADMAP.md](../../ROADMAP.md).
+
 ## Baseline Requirements
 
 - A single checkout works on macOS, Linux, and Windows.
@@ -23,6 +25,7 @@ This repository is being shaped as a one-checkout, cross-platform open source co
 - Real secrets stay out of Git.
 - Maintainer-local inventories, runbooks, rendered compose files, and private skills stay ignored and out of public Git.
 - Contributor, security, support, license, code style, tech stack, release process, and test architecture documents are present at the repository root or under `docs/reference/`.
+- Roadmap, changelog, issue templates, and architecture decision records exist for public collaboration.
 - Tests are grouped by domain directory with shared helpers isolated under `tests/support/`.
 - Repository health checks are available through `agentplane repo health-check`.
 - Git-visible files are scanned for obvious secret material in CI.
@@ -35,4 +38,4 @@ This repository is being shaped as a one-checkout, cross-platform open source co
 - Keep provider helpers internal and route public workflows through the formal CLI.
 - Move remaining direct `tests/onepanel` script substrate coverage behind provider-level contracts where practical.
 - Run live gate with `--execute` only in an explicitly prepared WSL/SSH/Docker environment.
-- Keep the release process current after the first public tag and tighten automation as branch workflow stabilizes.
+- Keep release automation current after the first public tag.

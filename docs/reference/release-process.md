@@ -63,7 +63,15 @@ plan -> apply -> verify -> ledger -> inventory refresh -> doc-sync
 4. 创建版本 tag，例如 `v0.1.0`。
 5. 发布后运行一次最小 smoke check：安装 CLI、`agentplane --help`、默认 pytest。
 
-正式发布稳定后，再补自动 changelog、构建制品和签名流程。
+正式发布稳定后，再补自动 changelog、制品签名、SBOM 和 provenance。
+
+## 版本协作材料
+
+| 文件 | 作用 |
+| --- | --- |
+| [../../ROADMAP.md](../../ROADMAP.md) | 说明 alpha 边界、近期里程碑和非目标。 |
+| [../../CHANGELOG.md](../../CHANGELOG.md) | 记录面向人的版本变更摘要。 |
+| [../architecture/decisions/README.md](../architecture/decisions/README.md) | 记录会影响长期维护的架构决策。 |
 
 ## 健康周检
 
