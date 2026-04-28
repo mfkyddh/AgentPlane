@@ -34,3 +34,25 @@ node_modules/
 
 # 本地协作（不纳入开源仓库）
 local/
+
+# Local/private control-plane truth retained in this checkout only.
+# Keep real host inventories, generated ledgers, and live state out of public Git.
+inventory/servers/
+inventory/state-snapshot.md
+
+# Maintainer-specific operation runbooks and historical incident notes.
+docs/runbooks/prod0-*.md
+docs/runbooks/prod2-*.md
+docs/runbooks/wsl-secrets-backup.md
+docs/runbooks/wsl-zzz-skills-sync.md
+docs/archive/runbooks/prod0-*.md
+docs/archive/runbooks/prod2-*.md
+
+# Target-rendered compose files and private service variants.
+infra/compose/**/docker-compose.prod*.yml
+infra/compose/vmail/
+infra/compose/relay-trojan/
+
+# Maintainer-specific service env examples.
+templates/services/*.prod*.env.example
+templates/services/relay-trojan.*.env.example
