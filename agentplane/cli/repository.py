@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -34,10 +35,16 @@ def add_repository_parser(subparsers: argparse._SubParsersAction[argparse.Argume
 
 
 def _run_check(name: str, argv: list[str], *, repo_root: Path) -> dict[str, Any]:
+    env = os.environ.copy()
+    env.setdefault("PYTHONUTF8", "1")
+    env.setdefault("PYTHONIOENCODING", "utf-8")
     result = subprocess.run(
         argv,
         cwd=repo_root,
+        env=env,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         capture_output=True,
         check=False,
     )
@@ -78,6 +85,8 @@ def _git_clean_check(repo_root: Path) -> dict[str, Any]:
         ["git", "status", "--short"],
         cwd=repo_root,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         capture_output=True,
         check=False,
     )
