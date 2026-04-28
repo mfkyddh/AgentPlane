@@ -109,7 +109,7 @@ AgentPlane/
 ├── tests/               自动化测试
 ├── docs/                文档（人类 + AI）
 ├── infra/compose/       Docker Compose 资产
-├── inventory/           非敏感状态台账
+├── inventory/           非敏感状态记录
 ├── templates/           非敏感模板
 ├── secrets/             本地敏感信息（不提交 Git）
 └── local/               本地协作（不提交 Git）
@@ -143,8 +143,6 @@ AgentPlane/
 | [SECURITY.md](SECURITY.md) | 安全策略 |
 | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | 行为准则 |
 | [SUPPORT.md](SUPPORT.md) | 获取帮助 |
-
----
 
 <p align="center">
   Made with 🤖 for Agents
