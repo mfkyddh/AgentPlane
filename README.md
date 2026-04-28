@@ -138,6 +138,13 @@ AI 会自动转换为**计划 → 执行 → 验证 → 记录**的完整闭环�
 | [ROADMAP.md](ROADMAP.md) | 项目成熟度与路线图 |
 | [CHANGELOG.md](CHANGELOG.md) | 版本变更摘要 |
 
+---
+
+## 长期愿景
+
+AgentPlane 的长期目标，是从 AI-assisted 运维控制面，演进为新项目从创建、开发、发布、部署到运维的统一控制面。
+更多规划见 [Roadmap](ROADMAP.md) 和 [项目定位](docs/reference/project-positioning.md)。
+
 <p align="center">
   Made with 🤖 for Agents
 </p>
