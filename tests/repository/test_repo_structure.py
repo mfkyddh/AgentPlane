@@ -375,10 +375,10 @@ ACTIVE_TEMPLATE_DOCS = (
     REPO_ROOT / "docs" / "runbooks" / "control-plane-agent-execution-flow.md",
 )
 ACTIVE_TEMPLATE_SKILLS = (
-    REPO_ROOT / ".agents" / "skills" / "onepanel-app-ops" / "SKILL.md",
-    REPO_ROOT / ".agents" / "skills" / "onepanel-container-ops" / "SKILL.md",
-    REPO_ROOT / ".agents" / "skills" / "onepanel-firewall-ops" / "SKILL.md",
-    REPO_ROOT / ".agents" / "skills" / "onepanel-website-ops" / "SKILL.md",
+    REPO_ROOT / ".agents" / "skills" / "agentplane-app-ops" / "SKILL.md",
+    REPO_ROOT / ".agents" / "skills" / "agentplane-service-ops" / "SKILL.md",
+    REPO_ROOT / ".agents" / "skills" / "agentplane-infra-ops" / "SKILL.md",
+    REPO_ROOT / ".agents" / "skills" / "agentplane-ingress-ops" / "SKILL.md",
 )
 ARCHITECTURE_CORE_CONTRACT_LINKS = (
     "[control-plane.md](control-plane.md)",
