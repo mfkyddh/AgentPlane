@@ -13,6 +13,15 @@ ERROR_ID_APP_RESOURCE_RESOURCES_REQUIRED = "app.resource.resources_required"
 ERROR_ID_APP_RESOURCE_SECRET_FILE_SCOPE = "app.resource.secret_file_scope"
 ERROR_ID_APP_RESOURCE_SECRET_FILE_MISSING = "app.resource.secret_file_missing"
 ERROR_ID_APP_RESOURCE_REGISTRY_MISMATCH = "app.resource.registry_mismatch"
+ERROR_ID_CONTRACT_MISSING_FIELDS = "app.delivery.contract.missing_fields"
+ERROR_ID_CONTRACT_UNSUPPORTED_RUNTIME = "app.delivery.contract.unsupported_runtime"
+ERROR_ID_CONTRACT_INVALID_IMAGE_TAG_RULE = "app.delivery.contract.invalid_image_tag_rule"
+ERROR_ID_CONTRACT_INVALID_PACKAGING_BACKEND = "app.delivery.contract.invalid_packaging_backend"
+ERROR_ID_CONTRACT_INVALID_INGRESS = "app.delivery.contract.invalid_ingress"
+ERROR_ID_CONTRACT_INVALID_DEPENDENCY = "app.delivery.contract.invalid_dependency"
+ERROR_ID_CONTRACT_INVALID_ROLLBACK = "app.delivery.contract.invalid_rollback"
+ERROR_ID_CONTRACT_INVALID_DATA_MOUNT = "app.delivery.contract.invalid_data_mount"
+APP_DELIVERY_CONTRACT_SCHEMA_V2 = "docs/reference/schemas/app-delivery-contract-v2.schema.json"
 COMMON_REQUIRED_CONTRACT_FIELDS = (
     "app_id",
     "runtime.container_name",
@@ -39,6 +48,10 @@ V2_REQUIRED_CONTRACT_FIELDS = (
     "packaging.package_command",
 )
 SUPPORTED_IMAGE_TAG_RULE = "<upstream>-zzz.<yyyymmdd>.v<n>.g<gitsha>"
+
+
+def _contract_error(error_id: str, message: str) -> ValueError:
+    return ValueError(f"{error_id}: {message}")
 
 
 def contract_app_root(contract_path: Path) -> Path:
@@ -94,9 +107,10 @@ def has_public_ingress(contract: dict[str, Any]) -> bool:
 
 def _validate_image_tag_rule(rule: Any) -> None:
     if not isinstance(rule, str) or rule != SUPPORTED_IMAGE_TAG_RULE:
-        raise ValueError(
+        raise _contract_error(
+            ERROR_ID_CONTRACT_INVALID_IMAGE_TAG_RULE,
             "image_tag_rule 必须使用当前二开版本规范: "
-            f"{SUPPORTED_IMAGE_TAG_RULE}"
+            f"{SUPPORTED_IMAGE_TAG_RULE}",
         )
 
 
@@ -130,33 +144,45 @@ def _is_allowed_app_resource_secret_path(repo_root: Path, target: str, app_id: s
 
 def _validate_previous_control_plane(rollback_entry: Any) -> None:
     if not isinstance(rollback_entry, dict):
-        raise ValueError("rollback.previous_control_plane 必须是对象")
+        raise _contract_error(ERROR_ID_CONTRACT_INVALID_ROLLBACK, "rollback.previous_control_plane 必须是对象")
     kind = rollback_entry.get("kind")
     if kind == "none":
         return
     if kind == "systemd":
         service_name = rollback_entry.get("service_name")
         if not isinstance(service_name, str) or not service_name:
-            raise ValueError(f"rollback.previous_control_plane.kind=systemd 缺少 service_name: {rollback_entry}")
+            raise _contract_error(
+                ERROR_ID_CONTRACT_INVALID_ROLLBACK,
+                f"rollback.previous_control_plane.kind=systemd 缺少 service_name: {rollback_entry}",
+            )
         return
     if kind == "1panel-app":
         install_id = rollback_entry.get("install_id")
         app_key = rollback_entry.get("app_key")
         if install_id is None and (not isinstance(app_key, str) or not app_key):
-            raise ValueError(f"rollback.previous_control_plane.kind=1panel-app 缺少 install_id/app_key: {rollback_entry}")
+            raise _contract_error(
+                ERROR_ID_CONTRACT_INVALID_ROLLBACK,
+                f"rollback.previous_control_plane.kind=1panel-app 缺少 install_id/app_key: {rollback_entry}",
+            )
         return
     if kind == "1panel-compose":
         project_name = rollback_entry.get("project_name")
         if not isinstance(project_name, str) or not project_name:
-            raise ValueError(f"rollback.previous_control_plane.kind=1panel-compose 缺少 project_name: {rollback_entry}")
+            raise _contract_error(
+                ERROR_ID_CONTRACT_INVALID_ROLLBACK,
+                f"rollback.previous_control_plane.kind=1panel-compose 缺少 project_name: {rollback_entry}",
+            )
         for field in ("container_name", "project_path", "compose_file"):
             value = rollback_entry.get(field)
             if value is None:
                 continue
             if not isinstance(value, str) or not value:
-                raise ValueError(f"rollback.previous_control_plane.kind=1panel-compose {field} 必须是非空字符串: {rollback_entry}")
+                raise _contract_error(
+                    ERROR_ID_CONTRACT_INVALID_ROLLBACK,
+                    f"rollback.previous_control_plane.kind=1panel-compose {field} 必须是非空字符串: {rollback_entry}",
+                )
         return
-    raise ValueError(f"不支持的 rollback.previous_control_plane.kind: {kind}")
+    raise _contract_error(ERROR_ID_CONTRACT_INVALID_ROLLBACK, f"不支持的 rollback.previous_control_plane.kind: {kind}")
 
 
 def _tenant_dependency_kinds(depends: list[str], inventory: dict[str, Any]) -> set[str]:
@@ -334,7 +360,10 @@ def validate_contract(contract_path: Path, *, repo_root: Path, target: str) -> d
 
     runtime_kind = nested_get(payload, "runtime.kind")
     if runtime_kind != "compose":
-        raise ValueError("当前 app 合同 v1 仅支持 Docker/Compose 路径，runtime.kind 必须为 compose")
+        raise _contract_error(
+            ERROR_ID_CONTRACT_UNSUPPORTED_RUNTIME,
+            "当前 app 合同 v2 仅支持 Docker/Compose 路径，runtime.kind 必须为 compose",
+        )
 
     errors: list[str] = []
     required_fields = COMMON_REQUIRED_CONTRACT_FIELDS + (
@@ -346,33 +375,42 @@ def validate_contract(contract_path: Path, *, repo_root: Path, target: str) -> d
             errors.append(dotted_key)
 
     if errors:
-        raise ValueError("合同缺少必填字段: " + ", ".join(errors))
+        raise _contract_error(ERROR_ID_CONTRACT_MISSING_FIELDS, "合同缺少必填字段: " + ", ".join(errors))
 
     _validate_image_tag_rule(contract_image_tag_rule(payload))
     if contract_mode == "v2":
         packaging_backend = contract_spec.packaging.backend if contract_spec.packaging is not None else None
         if packaging_backend not in {"native-posix", "wsl-linux", "ssh-linux"}:
-            raise ValueError("packaging.backend 只支持 native-posix / wsl-linux / ssh-linux")
+            raise _contract_error(
+                ERROR_ID_CONTRACT_INVALID_PACKAGING_BACKEND,
+                "packaging.backend 只支持 native-posix / wsl-linux / ssh-linux",
+            )
     raw_ingress_mode = ingress_mode(payload)
     if raw_ingress_mode not in {"public", "internal"}:
-        raise ValueError("ingress.mode 只支持 public 或 internal")
+        raise _contract_error(ERROR_ID_CONTRACT_INVALID_INGRESS, "ingress.mode 只支持 public 或 internal")
     if has_public_ingress(payload) and not public_sites(payload):
-        raise ValueError("合同缺少必填字段: ingress.public_sites")
+        raise _contract_error(ERROR_ID_CONTRACT_MISSING_FIELDS, "合同缺少必填字段: ingress.public_sites")
 
     depends = nested_get(payload, "infra.depends_on_containers")
     if not isinstance(depends, list) or any(not isinstance(item, str) or not item.strip() for item in depends):
-        raise ValueError("infra.depends_on_containers 必须是非空字符串列表")
+        raise _contract_error(
+            ERROR_ID_CONTRACT_INVALID_DEPENDENCY,
+            "infra.depends_on_containers 必须是非空字符串列表",
+        )
 
     validation_target = contract_validation_target(target)
     _, inventory = _load_inventory(repo_root, validation_target)
     known_containers = _inventory_container_names(inventory)
     unknown_dependencies = [item for item in depends if item not in known_containers]
     if unknown_dependencies:
-        raise ValueError("depends_on_containers 引用了未登记容器: " + ", ".join(unknown_dependencies))
+        raise _contract_error(
+            ERROR_ID_CONTRACT_INVALID_DEPENDENCY,
+            "depends_on_containers 引用了未登记容器: " + ", ".join(unknown_dependencies),
+        )
 
     app_id = payload.get("app_id")
     if not isinstance(app_id, str) or not app_id:
-        raise ValueError("合同缺少必填字段: app_id")
+        raise _contract_error(ERROR_ID_CONTRACT_MISSING_FIELDS, "合同缺少必填字段: app_id")
 
     tenant_resources = nested_get(payload, "infra.tenant_resources")
     required_kinds = _tenant_dependency_kinds(depends, inventory)
@@ -412,15 +450,18 @@ def validate_contract(contract_path: Path, *, repo_root: Path, target: str) -> d
 
     container_name = nested_get(payload, "runtime.container_name")
     if validation_target == "prod0-main" and isinstance(container_name, str) and not container_name.endswith("-prod"):
-        raise ValueError("runtime.container_name 必须使用稳定生产容器名并以 -prod 结尾")
+        raise _contract_error(
+            ERROR_ID_CONTRACT_UNSUPPORTED_RUNTIME,
+            "runtime.container_name 必须使用稳定生产容器名并以 -prod 结尾",
+        )
 
     data_mounts = nested_get(payload, "data.mounts")
     if not isinstance(data_mounts, list) or any(not isinstance(item, dict) for item in data_mounts):
-        raise ValueError("data.mounts 必须是对象列表")
+        raise _contract_error(ERROR_ID_CONTRACT_INVALID_DATA_MOUNT, "data.mounts 必须是对象列表")
     for item in data_mounts:
         host_path = item.get("host_path")
         if not isinstance(host_path, str) or not host_path.startswith("/data/"):
-            raise ValueError("data.mounts.host_path 必须收口到 /data/")
+            raise _contract_error(ERROR_ID_CONTRACT_INVALID_DATA_MOUNT, "data.mounts.host_path 必须收口到 /data/")
     _validate_previous_control_plane(nested_get(payload, "rollback.previous_control_plane"))
 
     payload["_meta"] = {
@@ -430,6 +471,7 @@ def validate_contract(contract_path: Path, *, repo_root: Path, target: str) -> d
         "validation_target": validation_target,
         "contract_mode": contract_mode,
         "schema_version": contract_spec.schema_version,
+        "schema_document": APP_DELIVERY_CONTRACT_SCHEMA_V2 if contract_mode == "v2" else None,
         "artifact_first": contract_mode == "v2",
     }
     return payload

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import ast
+import json
 from pathlib import Path
 
 import pytest
+from agentplane.domain.app.contracts import APP_DELIVERY_CONTRACT_SCHEMA_V2
 
 pytestmark = pytest.mark.e2e
 
@@ -81,3 +83,13 @@ def test_onepanel_script_imports_are_provider_internal() -> None:
 
 def test_legacy_app_runtime_provider_adapter_is_removed() -> None:
     assert not (REPO_ROOT / "agentplane" / "providers" / "app_runtime.py").exists()
+
+
+def test_app_delivery_contract_v2_schema_is_public_and_machine_readable() -> None:
+    schema_path = REPO_ROOT / APP_DELIVERY_CONTRACT_SCHEMA_V2
+    payload = json.loads(schema_path.read_text(encoding="utf-8"))
+
+    assert payload["title"] == "AgentPlane App Delivery Contract v2"
+    assert payload["properties"]["schema_version"]["const"] == 2
+    assert payload["properties"]["packaging"]["properties"]["image_tag_rule"]["const"]
+    assert "runtime" in payload["required"]

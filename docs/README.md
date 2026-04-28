@@ -81,6 +81,7 @@ AI 工作规范：[AGENTS.md](../AGENTS.md)
 | [reference/control-plane-naming-registry.md](reference/control-plane-naming-registry.md) | 控制面命名注册表 |
 | [reference/open-source-readiness.md](reference/open-source-readiness.md) | 开源准备度基线 |
 | [reference/publication-boundary.md](reference/publication-boundary.md) | 公开仓库与本地私有材料边界 |
+| [reference/schemas/README.md](reference/schemas/README.md) | 公开合同 schema 索引 |
 
 ### 🛠️ Runbooks
 

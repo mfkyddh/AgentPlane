@@ -167,7 +167,7 @@ Remove（Offboarding）最小闭环语义：
 
 ## 6. 应用项目交付合同
 
-每个应用仓库必须提供 `deploy/agentplane/contract.yaml`。该文件只描述非敏感交付面，不保存生产 secrets。
+每个应用仓库必须提供 `deploy/agentplane/contract.yaml`。该文件只描述非敏感交付面，不保存生产 secrets。机器可读 schema 见 [app-delivery-contract-v2.schema.json](../reference/schemas/app-delivery-contract-v2.schema.json)。
 
 最小字段：
 
