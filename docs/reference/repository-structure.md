@@ -24,6 +24,17 @@ audience: agent
 | `.agents/` | Agent skill 真源与 marketplace 元数据 | 跨 Agent 通用 skill 目录；skill 内容必须路由回正式 CLI |
 | `.github/`、`.githooks/` | CI 与 Git hook | Hook 和 CI 只能调用模块化命令或正式 CLI |
 
+## 顶层文件合同
+
+| 文件 | 职责 |
+| --- | --- |
+| `README.md` | 项目入口、快速开始和高层导航 |
+| `AGENTS.md` | AI 助手执行规则摘要 |
+| `CONTRIBUTING.md`、`SECURITY.md`、`SUPPORT.md`、`CODE_OF_CONDUCT.md`、`LICENSE` | 开源协作、治理和许可证材料 |
+| `ROADMAP.md` | 项目成熟度、阶段目标和非目标 |
+| `CHANGELOG.md` | 面向人的版本变更摘要 |
+| `pyproject.toml`、`uv.lock` | Python 包、工具链和锁定依赖 |
+
 ## 本地态合同
 
 这些目录允许存在于工作区，但不得进入 Git，不得成为文档或代码默认入口。
