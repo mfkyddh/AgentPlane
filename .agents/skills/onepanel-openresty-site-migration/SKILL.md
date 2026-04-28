@@ -1,6 +1,6 @@
 ---
 name: onepanel-openresty-site-migration
-description: Use when migrating an existing single-domain site on this repository's Ubuntu or Tencent Cloud hosts to a 1Panel-managed OpenResty website, especially when the old public entry must stay online and a new HTTPS port needs parallel validation.
+description: Use when migrating an existing single-domain site on this repository's Ubuntu or Example Cloud hosts to a 1Panel-managed OpenResty website, especially when the old public entry must stay online and a new HTTPS port needs parallel validation.
 ---
 
 # 1Panel OpenResty Site Migration
@@ -85,7 +85,7 @@ Do not use this patch step as an excuse to fork the full OpenResty config away f
 
 ## Real Example Pattern
 
-`token.zzzai.cloud` was migrated with this pattern:
+`token.example.net` was migrated with this pattern:
 
 - the old `:8443` edge stayed on `nginx-ui`
 - the new `:2053` entry was served by the official 1Panel OpenResty website

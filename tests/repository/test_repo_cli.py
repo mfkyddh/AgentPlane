@@ -204,7 +204,11 @@ class CliEntrypointsTests(unittest.TestCase):
 
         repo_help = run_cli("repo", "--help")
         self.assertEqual(repo_help.returncode, 0, msg=repo_help.stderr)
-        _assert_help_commands(self, repo_help.stdout, expected={"health-check", "docs-sanity", "secret-scan", "release-check"})
+        _assert_help_commands(
+            self,
+            repo_help.stdout,
+            expected={"health-check", "docs-sanity", "secret-scan", "privacy-scan", "release-check"},
+        )
 
     def test_app_help_hides_legacy_flat_entrypoints(self) -> None:
         app_help = run_cli("app", "--help")
@@ -239,6 +243,7 @@ class CliEntrypointsTests(unittest.TestCase):
             ("infra", "cleanup", "plan", "wsl", "--repo-root", str(REPO_ROOT)),
             ("infra", "automation", "search", "wsl", "--repo-root", str(REPO_ROOT)),
             ("repo", "secret-scan", "--repo-root", str(REPO_ROOT)),
+            ("repo", "privacy-scan", "--repo-root", str(REPO_ROOT)),
             ("repo", "docs-sanity", "--repo-root", str(REPO_ROOT)),
             ("onepanel", "--env", "wsl", "--json"),
         ]
@@ -347,7 +352,10 @@ class RepoHealthCliTests(unittest.TestCase):
         self.assertEqual(0, result.returncode, msg=result.stderr)
         payload = json.loads(result.stdout)
         self.assertTrue(payload["ok"])
-        self.assertEqual(["cli-help", "secret-scan", "docs-sanity"], [check["name"] for check in payload["checks"]])
+        self.assertEqual(
+            ["cli-help", "secret-scan", "privacy-scan", "docs-sanity"],
+            [check["name"] for check in payload["checks"]],
+        )
 
     def test_docs_sanity_reports_retired_entrypoints(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -503,6 +511,35 @@ class RepoHealthCliTests(unittest.TestCase):
         self.assertEqual(0, result.returncode, msg=result.stderr)
         payload = json.loads(result.stdout)
         self.assertTrue(payload["ok"])
+
+    def test_privacy_scan_reports_private_public_endpoint_material(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            subprocess.run(["git", "init"], cwd=root, text=True, capture_output=True, check=True)
+            private_domain = "token." + "zzzai" + ".cloud"
+            (root / "README.md").write_text(f"Production endpoint: https://{private_domain}\n", encoding="utf-8")
+
+            result = run_cli("repo", "privacy-scan", "--repo-root", str(root))
+
+        self.assertEqual(1, result.returncode)
+        payload = json.loads(result.stdout)
+        self.assertFalse(payload["ok"])
+        self.assertEqual("private-domain", payload["issues"][0]["kind"])
+
+    def test_privacy_scan_reports_tracked_private_inventory_path(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            subprocess.run(["git", "init"], cwd=root, text=True, capture_output=True, check=True)
+            inventory = root / "inventory" / "servers" / "prod0-main" / "inventory.json"
+            inventory.parent.mkdir(parents=True)
+            inventory.write_text("{}\n", encoding="utf-8")
+
+            result = run_cli("repo", "privacy-scan", "--repo-root", str(root))
+
+        self.assertEqual(1, result.returncode)
+        payload = json.loads(result.stdout)
+        self.assertFalse(payload["ok"])
+        self.assertEqual("private-inventory", payload["issues"][0]["kind"])
 
     def test_release_check_reports_dirty_worktree(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

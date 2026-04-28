@@ -506,7 +506,7 @@ class SshTargetTests(unittest.TestCase):
                 json.dumps(
                     {
                         "ssh": {
-                            "aliases": ["prod0-main", "zzzai.cloud"],
+                            "aliases": ["prod0-main", "example.net"],
                             "user": "root",
                         }
                     },
@@ -516,11 +516,11 @@ class SshTargetTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            target = resolve_ssh_target(repo_root, "zzzai.cloud")
+            target = resolve_ssh_target(repo_root, "example.net")
 
             self.assertEqual("root", target.user)
-            self.assertEqual("zzzai.cloud", target.alias)
-            self.assertEqual("root@zzzai.cloud", target.connection_target)
+            self.assertEqual("example.net", target.alias)
+            self.assertEqual("root@example.net", target.connection_target)
 
     def test_resolve_ssh_target_falls_back_when_alias_not_in_inventory(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

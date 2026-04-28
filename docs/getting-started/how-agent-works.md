@@ -97,7 +97,7 @@ AI 会自动：
 
 AI 会给你一份人类可读的摘要：
 
-> "已完成 sub2api 到 prod0-main 的部署。验证结果：容器运行正常，HTTP 探针 200 OK，公网入口 https://token.zzzai.cloud:8443 可访问。操作记录已保存。"
+> "已完成 sub2api 到 prod0-main 的部署。验证结果：容器运行正常，HTTP 探针 200 OK，公网入口 https://token.example.net:8443 可访问。操作记录已保存。"
 
 ---
 

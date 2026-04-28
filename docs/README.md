@@ -28,7 +28,6 @@ audience: both
 | 查看当前状态 | [状态与验证](runbooks/current-state-and-validation.md) |
 | 初始化 Secrets | [Secrets 引导](runbooks/bootstrap-secrets.md) |
 | 管理 WSL 开发环境 | [WSL 治理](runbooks/wsl-host-governance.md) |
-| 管理生产机 | [prod0-main 治理](runbooks/prod0-main-governance.md) |
 | 添加新服务器 | [纳入新服务器](tutorials/add-new-server.md) |
 
 ---
@@ -79,6 +78,7 @@ AI 工作规范：[AGENTS.md](../AGENTS.md)
 | [reference/control-plane-path-policy.md](reference/control-plane-path-policy.md) | 逻辑路径与物理路径规则 |
 | [reference/control-plane-naming-registry.md](reference/control-plane-naming-registry.md) | 控制面命名注册表 |
 | [reference/open-source-readiness.md](reference/open-source-readiness.md) | 开源准备度基线 |
+| [reference/publication-boundary.md](reference/publication-boundary.md) | 公开仓库与本地私有材料边界 |
 
 ### 🛠️ Runbooks
 
@@ -94,12 +94,6 @@ AI 工作规范：[AGENTS.md](../AGENTS.md)
 | [runbooks/onepanel-cli-validation-workflow.md](runbooks/onepanel-cli-validation-workflow.md) | 1Panel CLI 验证流程 |
 | [runbooks/powershell-wsl-remote-bash.md](runbooks/powershell-wsl-remote-bash.md) | PowerShell 到 WSL/remote bash 路由 |
 | [runbooks/wsl-host-governance.md](runbooks/wsl-host-governance.md) | WSL 主机治理 |
-| [runbooks/wsl-secrets-backup.md](runbooks/wsl-secrets-backup.md) | WSL secrets 备份 |
-| [runbooks/wsl-zzz-skills-sync.md](runbooks/wsl-zzz-skills-sync.md) | zzz skills 同步 |
-| [runbooks/prod0-main-governance.md](runbooks/prod0-main-governance.md) | prod0-main 治理 |
-| [runbooks/prod0-main-1panel-public-access.md](runbooks/prod0-main-1panel-public-access.md) | prod0-main 公网入口 |
-| [runbooks/prod2-main-1panel-public-access.md](runbooks/prod2-main-1panel-public-access.md) | prod2-main 公网入口 |
-| [runbooks/prod2-main-relay-trojan.md](runbooks/prod2-main-relay-trojan.md) | prod2-main relay-trojan |
 | [runbooks/current-state-and-validation.md](runbooks/current-state-and-validation.md) | 当前状态和验证快照 |
 
 ### 🧑‍🔧 Maintainers
@@ -123,6 +117,8 @@ AI 工作规范：[AGENTS.md](../AGENTS.md)
 
 ```bash
 uv run python -m agentplane.cli repo docs-sanity --repo-root .
+uv run python -m agentplane.cli repo privacy-scan --repo-root .
 ```
 
 `docs-sanity` 会检查 active 文档断链、旧入口引用、孤立文档、frontmatter 完整性、人类文档术语和长度。
+`privacy-scan` 会检查 Git 可见文件中是否误入真实控制面状态或维护者现场信息。

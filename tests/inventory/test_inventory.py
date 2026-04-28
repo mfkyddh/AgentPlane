@@ -10,8 +10,7 @@ from unittest.mock import patch
 
 import pytest
 from agentplane.cli.inventory import generate_inventory_snapshot
-from agentplane.domain.app.runtime import _render_server_readme
-from agentplane.scripts.onepanel.ledger import _markdown_for, _render_readme_projection, _tenant_rows
+from agentplane.scripts.onepanel.ledger import _tenant_rows
 
 pytestmark = pytest.mark.e2e
 
@@ -80,32 +79,6 @@ class InventoryGenerationTests(unittest.TestCase):
                 self.assertIn(canonical.lower(), content)
                 self.assertRegex(content, r"(pointer|placeholder|projection)")
 
-    def test_server_readme_renderer_marks_json_as_machine_source(self) -> None:
-        inventory_payload = json.loads(
-            (REPO_ROOT / "inventory" / "servers" / "prod2-main" / "inventory.json").read_text(encoding="utf-8")
-        )
-
-        rendered = _render_server_readme("prod2-main", inventory_payload)
-        self.assertIn("机器真源：`inventory/servers/prod2-main/inventory.json`", rendered)
-        self.assertIn("README 只保留非敏感摘要", rendered)
-
-        for path in (
-            REPO_ROOT / "inventory" / "servers" / "wsl" / "README.md",
-            REPO_ROOT / "inventory" / "servers" / "prod0-main" / "README.md",
-            REPO_ROOT / "inventory" / "servers" / "prod2-main" / "README.md",
-        ):
-            with self.subTest(path=str(path)):
-                content = path.read_text(encoding="utf-8")
-                self.assertIn("机器真源：", content)
-                self.assertIn("README 只保留非敏感摘要", content)
-
-    def test_onepanel_readme_projection_uses_repo_root_placeholder(self) -> None:
-        rendered = _render_readme_projection("prod0-main", {"websites": 1}, {})
-
-        self.assertIn("--repo-root <repo-root> --write", rendered)
-        self.assertNotIn("/root/work/AgentPlane", rendered)
-        self.assertIn("--repo-root <repo-root> --write", (REPO_ROOT / "inventory" / "servers" / "prod0-main" / "README.md").read_text(encoding="utf-8"))
-
     def test_tenant_rows_skip_registry_scaffolding_keys(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             server_root = Path(tmp)
@@ -128,45 +101,6 @@ class InventoryGenerationTests(unittest.TestCase):
             rows = _tenant_rows(server_root)
 
         self.assertEqual(["sampleapi", "sub2api"], [row["app_id"] for row in rows])
-
-    def test_ledger_markdown_is_projection_only_summary(self) -> None:
-        rendered = _markdown_for("app_resources", [{"app_id": "sampleapi"}])
-        self.assertIn("Markdown 摘要投影", rendered)
-        self.assertIn("对应 JSON 真源", rendered)
-
-        for path in sorted((REPO_ROOT / "inventory" / "servers").glob("*/ledgers/app_resources.md")):
-            with self.subTest(path=str(path)):
-                content = path.read_text(encoding="utf-8")
-                self.assertIn("Markdown 摘要投影", content)
-                self.assertIn("对应 JSON 真源", content)
-
-        prod2_tenants = (
-            REPO_ROOT / "inventory" / "servers" / "prod2-main" / "ledgers" / "app_resources.md"
-        ).read_text(
-            encoding="utf-8"
-        )
-        self.assertNotIn("`_meta`", prod2_tenants)
-        self.assertNotIn("`infrastructure`", prod2_tenants)
-        self.assertNotIn("`app_resources`", prod2_tenants)
-
-    def test_app_resource_markdown_is_summary_projection(self) -> None:
-        for path in (
-            REPO_ROOT / "inventory" / "servers" / "prod0-main" / "ledgers" / "app_resources.md",
-            REPO_ROOT / "inventory" / "servers" / "prod2-main" / "ledgers" / "app_resources.md",
-        ):
-            with self.subTest(path=str(path)):
-                content = path.read_text(encoding="utf-8")
-                self.assertIn("Markdown 摘要投影", content)
-                self.assertIn("机器真源：", content)
-
-    def test_real_app_ledgers_are_empty_after_local_app_delivery_offboarding(self) -> None:
-        for target in ("wsl", "prod0-main", "prod2-main"):
-            with self.subTest(target=target):
-                ledger_json = json.loads(
-                    (REPO_ROOT / "inventory" / "servers" / target / "ledgers" / "apps.json").read_text(encoding="utf-8")
-                )
-                self.assertEqual([], ledger_json["items"])
-                self.assertEqual(0, ledger_json["count"])
 
     def test_inventory_separates_managed_and_unmanaged_containers(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -295,7 +229,7 @@ def write_app_object_fixture(root: Path) -> Path:
                 "services": {
                     "sub2api": {
                         "control_plane": "compose",
-                        "public_url": "https://token.zzzai.cloud:8443",
+                        "public_url": "https://token.example.net:8443",
                     }
                 },
                 "object_ledgers": {

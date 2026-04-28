@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -14,10 +15,6 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 EXPECTED_MANAGED_SERVICES = {
     "sub2api": {
         "wsl": "infra/compose/sub2api/docker-compose.wsl.yml",
-        "prod": {
-            "infra/compose/sub2api/docker-compose.prod0.yml": "ghcr.io/wei-shaw/sub2api",
-            "infra/compose/sub2api/docker-compose.prod2.yml": "sub2api-prod",
-        },
     },
 }
 
@@ -29,6 +26,11 @@ def image_family(image_ref: str) -> str:
     resolved = match.group(1) if match else image_ref
     resolved = resolved.split("@", 1)[0]
     return resolved.split(":", 1)[0]
+
+
+def tracked_files() -> set[str]:
+    result = subprocess.run(["git", "ls-files"], cwd=REPO_ROOT, text=True, capture_output=True, check=True)
+    return set(result.stdout.splitlines())
 
 class RepoSnapshotContractsTests(unittest.TestCase):
     def test_sub2api_legacy_app_resource_secret_files_are_absent(self) -> None:
@@ -52,13 +54,10 @@ class RepoSnapshotContractsTests(unittest.TestCase):
     def test_expected_compose_snapshots_and_examples_still_exist(self) -> None:
         expected_compose_dirs = [
             "infra/compose/sub2api",
-            "infra/compose/vmail",
         ]
         tracked_examples_by_service = {
             "sub2api": [
                 "templates/services/sub2api.wsl.env.example",
-                "templates/services/sub2api.prod0.env.example",
-                "templates/services/sub2api.prod2.env.example",
             ],
         }
 
@@ -131,7 +130,6 @@ class RepoSnapshotContractsTests(unittest.TestCase):
     def test_active_runbooks_use_internal_remote_example_paths(self) -> None:
         active_runbooks = [
             "docs/runbooks/powershell-wsl-remote-bash.md",
-            "docs/runbooks/prod0-main-governance.md",
         ]
 
         for relative_path in active_runbooks:
@@ -179,13 +177,23 @@ class RepoSnapshotContractsTests(unittest.TestCase):
                 self.assertEqual("ghcr.io/wei-shaw/sub2api", image_family(wsl_service["image"]))
                 self.assertEqual("always", wsl_service["pull_policy"])
 
-            for relative_path, expected_image_family in paths["prod"].items():
-                compose = load_compose(REPO_ROOT / relative_path)
-                service = compose["services"][app_id]
-                with self.subTest(app_id=app_id, path=relative_path, check="prod-container"):
-                    self.assertEqual(f"{app_id}-prod", service["container_name"])
-                with self.subTest(app_id=app_id, path=relative_path, check="image-family"):
-                    self.assertEqual(expected_image_family, image_family(service["image"]))
+    def test_private_control_plane_files_are_not_tracked(self) -> None:
+        tracked = tracked_files()
+        private_paths = [
+            "inventory/servers/prod0-main/inventory.json",
+            "inventory/servers/prod2-main/inventory.json",
+            "inventory/servers/wsl/inventory.json",
+            "inventory/state-snapshot.md",
+            "docs/runbooks/prod0-main-governance.md",
+            "docs/runbooks/prod2-main-relay-trojan.md",
+            "infra/compose/sub2api/docker-compose.prod0.yml",
+            "infra/compose/sub2api/docker-compose.prod2.yml",
+            "templates/services/sub2api.prod0.env.example",
+            "templates/services/sub2api.prod2.env.example",
+        ]
+        for relative_path in private_paths:
+            with self.subTest(path=relative_path):
+                self.assertNotIn(relative_path, tracked)
 
     def test_removed_compatibility_entrypoints_stay_absent(self) -> None:
         removed_paths = [

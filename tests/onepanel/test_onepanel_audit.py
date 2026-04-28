@@ -2,22 +2,14 @@ from __future__ import annotations
 
 import json
 import os
-import re
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
-from unittest import mock
 
 import pytest
 from agentplane.cli.audit import audit_filesystem
-from agentplane.cli.prod0_postgres_app_resource_audit import (
-    _live_runtime_binding,
-    _pg_binding_from_dsn,
-    _prod0_app_resource_live_audit_snapshot,
-)
-from agentplane.domain.app.runtime import _render_server_readme
 from tests.support.app_resources import resource_relative
 
 pytestmark = pytest.mark.e2e
@@ -174,31 +166,6 @@ def baseline_payload(*, include_app_resource_summary: bool = False) -> dict:
             }
         }
     return payload
-
-def assert_live_db_partition_markers(test_case: unittest.TestCase, text: str) -> None:
-    test_case.assertRegex(text, re.compile(r"(DB.?级|数据库级).*(逻辑分区|分区)|逻辑分区.*(DB.?级|数据库级)"))
-    test_case.assertRegex(
-        text,
-        re.compile(r"共享.*(?:runtime|运行时).*(凭据|密码|口令)|共享.*(凭据|密码|口令).*(?:runtime|运行时)"),
-    )
-    test_case.assertRegex(text, re.compile(r"(不|非).*(强|安全).*隔离"))
-    test_case.assertNotIn("remediation-target", text)
-    test_case.assertNotIn("pending-realization", text)
-
-def assert_prod0_mixed_app_resource_credential_semantics(test_case: unittest.TestCase, text: str) -> None:
-    test_case.assertIn(
-        "`app_resource_summary` 供 prod0 台账与对账使用；只有 Redis 采用共享 runtime 凭据，PostgreSQL/MinIO 继续记录各自租户凭据标识，其中 MinIO 额外登记 bucket-scoped policy 元数据。",
-        text,
-    )
-    test_case.assertIn(
-            "Redis 采用共享 runtime 凭据（shared runtime credential），并通过 DB 级逻辑分区 + key prefix 区分租户，不再把 per-app Redis user 视为活跃运行时依赖。",
-        text,
-    )
-    test_case.assertIn("bucket-scoped", text)
-    test_case.assertNotIn(
-        "`app_resource_summary` 反映当前 prod0 台账语义：共享 runtime 凭据，供台账与对账使用。",
-        text,
-    )
 
 class Prod0AuditTests(unittest.TestCase):
     def test_detects_invalid_managed_bridge_network_declaration(self) -> None:
@@ -547,163 +514,3 @@ class Prod0AuditTests(unittest.TestCase):
             result = audit_filesystem(root, "prod0-main")
             codes = {item["id"] for item in result["violations"]}
             self.assertIn("prod0.app_resource.legacy_flat_secret_reference", codes)
-
-    def test_tracked_prod0_registry_uses_normalized_app_resource_summary_values(self) -> None:
-        registry_file = REPO_ROOT / "inventory" / "servers" / "prod0-main" / "app-resources.json"
-        payload = json.loads(registry_file.read_text(encoding="utf-8"))
-        self.assertEqual(["sub2api"], sorted(payload))
-        self.assertEqual("sub2api", payload["sub2api"]["owner_app"])
-        self.assertEqual(1, payload["sub2api"]["redis"]["db"])
-        self.assertEqual("sub2api:", payload["sub2api"]["redis"]["key_prefix"])
-        self.assertEqual("prod0-sub2api-rw", payload["sub2api"]["minio"]["policy_name"])
-        self.assertEqual("bucket-only", payload["sub2api"]["minio"]["policy_scope"])
-        self.assertEqual("bucket-scoped-rw", payload["sub2api"]["minio"]["isolation_level"])
-
-    def test_tracked_resource_tenant_ledgers_mark_live_db_partition_semantics(self) -> None:
-        registry_file = REPO_ROOT / "inventory" / "servers" / "prod0-main" / "app-resources.json"
-        payload = json.loads(registry_file.read_text(encoding="utf-8"))
-        expected_status = {
-            "sub2api": {
-                "runtime_credential_model": "shared-runtime-credentials",
-                "tenant_isolation": "logical-db-partition-not-strong-isolation",
-            },
-        }
-        for app in ("sub2api",):
-            with self.subTest(app=app):
-                status = payload[app].get("ledger_status")
-                if isinstance(status, dict):
-                    self.assertEqual("live-db-partition-ledger", status.get("intent"))
-                    self.assertEqual(expected_status[app]["runtime_credential_model"], status.get("runtime_credential_model"))
-                    self.assertEqual(expected_status[app]["tenant_isolation"], status.get("tenant_isolation"))
-                    self.assertEqual("not-materialized-by-repo", status.get("local_secret_presence"))
-                postgres = payload[app].get("postgres")
-                self.assertIsInstance(postgres, dict)
-                assert isinstance(postgres, dict)
-                self.assertIn("database", postgres)
-                self.assertIn("user", postgres)
-                redis = payload[app].get("redis")
-                self.assertIsInstance(redis, dict)
-                assert isinstance(redis, dict)
-                self.assertIn("db", redis)
-                self.assertIn("key_prefix", redis)
-
-        ledger_md = (
-            REPO_ROOT / "inventory" / "servers" / "prod0-main" / "ledgers" / "app_resources.md"
-        ).read_text(encoding="utf-8")
-        assert_live_db_partition_markers(self, ledger_md)
-
-        server_readme = (REPO_ROOT / "inventory" / "servers" / "prod0-main" / "README.md").read_text(
-            encoding="utf-8"
-        )
-        assert_live_db_partition_markers(self, server_readme)
-
-        inventory_text = (REPO_ROOT / "inventory" / "servers" / "prod0-main" / "inventory.json").read_text(
-            encoding="utf-8"
-        )
-        inventory_payload = json.loads(inventory_text)
-        for app in ("sub2api",):
-            with self.subTest(app=f"{app}-inventory-postgres"):
-                postgres = inventory_payload["services"][app]["app_resource_summary"]["postgres"]
-                self.assertIsInstance(postgres, dict)
-                assert isinstance(postgres, dict)
-                self.assertEqual(
-                    payload[app]["postgres"]["database"],
-                    postgres.get("database"),
-                )
-                self.assertEqual(
-                    payload[app]["postgres"]["user"],
-                    postgres.get("user"),
-                )
-                self.assertEqual(
-                    resource_relative("prod0-main", app, "postgres"),
-                    postgres.get("secret_file"),
-                )
-
-        for app in ("sub2api",):
-            with self.subTest(app=f"{app}-inventory-redis-user"):
-                redis = inventory_payload["services"][app]["app_resource_summary"]["redis"]
-                self.assertIsInstance(redis, dict)
-                assert isinstance(redis, dict)
-                self.assertNotIn("user", redis)
-
-    def test_tracked_prod0_readme_and_renderer_lock_mixed_tenant_credential_semantics(self) -> None:
-        inventory_payload = json.loads(
-            (REPO_ROOT / "inventory" / "servers" / "prod0-main" / "inventory.json").read_text(encoding="utf-8")
-        )
-        tracked_readme = (REPO_ROOT / "inventory" / "servers" / "prod0-main" / "README.md").read_text(
-            encoding="utf-8"
-        )
-
-        assert_prod0_mixed_app_resource_credential_semantics(self, tracked_readme)
-        rendered_readme = _render_server_readme("prod0-main", inventory_payload)
-        assert_prod0_mixed_app_resource_credential_semantics(self, rendered_readme)
-
-    def test_tracked_prod0_inventory_has_single_app_resource_summary_per_formal_app(self) -> None:
-        inventory_file = REPO_ROOT / "inventory" / "servers" / "prod0-main" / "inventory.json"
-        raw = inventory_file.read_text(encoding="utf-8")
-
-        for app in ("sub2api",):
-            anchor = f"\"{app}\": {{"
-            start = raw.find(anchor)
-            self.assertNotEqual(-1, start, msg=f"missing app block in inventory source: {app}")
-            next_start = raw.find("\n    \"", start + len(anchor))
-            app_block = raw[start:] if next_start == -1 else raw[start:next_start]
-            self.assertEqual(
-                1,
-                app_block.count("\"app_resource_summary\""),
-                msg=f"app {app} must have exactly one app_resource_summary block in inventory source",
-            )
-
-    def test_tracked_prod0_inventory_and_registry_have_no_tenant_drift(self) -> None:
-        result = audit_filesystem(REPO_ROOT, "prod0-main")
-        tenant_issue_ids = {
-            "prod0.app_resource.registry_missing",
-            "prod0.app_resource.summary_missing",
-            "prod0.app_resource.summary_duplicate",
-            "prod0.app_resource.drift",
-        }
-        issues = [item for item in result["violations"] if item["id"] in tenant_issue_ids]
-        self.assertEqual([], issues, msg=json.dumps(issues, ensure_ascii=False))
-
-# ======================================================================
-# From: test_prod0_postgres_app_resource_audit.py
-# ======================================================================
-
-class Prod0PostgresAppResourceAuditInternalTests(unittest.TestCase):
-    def test_pg_binding_from_dsn_decodes_username_and_database(self) -> None:
-        database, user = _pg_binding_from_dsn("postgresql://sub2api_prod0%40tenant:pw@db/sub2api_prod0")
-
-        self.assertEqual("sub2api_prod0", database)
-        self.assertEqual("sub2api_prod0@tenant", user)
-
-    def test_live_runtime_binding_prefers_discrete_keys_over_dsn(self) -> None:
-        database, user = _live_runtime_binding(
-            {
-                "env": {
-                    "PGDATABASE": "sub2api_prod0",
-                    "PGUSER": "sub2api_prod0",
-                    "DATABASE_URL": "postgresql://wrong:pw@db/wrong",
-                }
-            }
-        )
-
-        self.assertEqual("sub2api_prod0", database)
-        self.assertEqual("sub2api_prod0", user)
-
-    @mock.patch("agentplane.cli.prod0_postgres_app_resource_audit.execute_remote_bash")
-    def test_prod0_app_resource_live_audit_snapshot_uses_remote_substrate_script_file(
-        self, execute_remote_bash_mock: mock.Mock
-    ) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            script_file = root / "agentplane" / "scripts" / "remote" / "prod0-postgres-app-resource-live-audit.sh"
-            script_file.parent.mkdir(parents=True, exist_ok=True)
-            script_file.write_text("#!/bin/sh\n", encoding="utf-8")
-            execute_remote_bash_mock.return_value = {
-                "result": {"returncode": 0, "stdout": json.dumps({"apps": {}, "catalog": {}}), "stderr": ""},
-            }
-
-            payload = _prod0_app_resource_live_audit_snapshot(root)
-
-            self.assertEqual({"apps": {}, "catalog": {}}, payload)
-            execute_remote_bash_mock.assert_called_once_with(repo_root=root, target="prod0-main", script_file=script_file)

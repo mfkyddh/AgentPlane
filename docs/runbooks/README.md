@@ -38,10 +38,6 @@ audience: human
 | Runbook | 解决什么问题 |
 |---------|-------------|
 | [WSL 开发环境](./wsl-host-governance.md) | WSL 侧的配置、网络和日常运维 |
-| [prod0-main 生产机](./prod0-main-governance.md) | 0 号生产机的治理和维护 |
-| [prod2-main 生产机](./prod2-main-relay-trojan.md) | prod2-main 的专项配置 |
-| [WSL Secrets 备份](./wsl-secrets-backup.md) | 如何备份和恢复 WSL 中的 secrets |
-| [WSL Skills 同步](./wsl-zzz-skills-sync.md) | WSL 与宿主的 skills 文件同步 |
 
 ## 🔧 我想扩展或定制
 

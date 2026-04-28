@@ -24,6 +24,7 @@ audience: agent
 | 默认门禁相关 | `uv run python -m pytest` |
 | 文档规范 | 链接指向 active 文档，命令示例使用 `agentplane ...` |
 | secrets / inventory / projection | 确认真实 secrets 未入库，必要时刷新台账 |
+| 公开边界 | `uv run python -m agentplane.cli repo privacy-scan --repo-root .` |
 
 无法验证时必须在提交或 PR 说明里写清楚：没验证什么、为什么、剩余风险是什么。
 
@@ -34,6 +35,7 @@ uv run python -m agentplane.cli repo health-check --repo-root .
 ```
 
 Secret scan 例外必须写入仓库根目录 `.secret-scan-allowlist`。优先修正文档或测试样例，只有确认为合法样例且无法改写时才加入 allowlist。
+Privacy scan 不设常规 allowlist；命中时优先把真实材料移回 ignored 本地工作区，或改为 `example.net`、`203.0.113.0/24` 等示例值。
 
 ## 生产变更闭环
 
@@ -79,6 +81,7 @@ uv run python -m agentplane.cli repo health-check --repo-root .
 - 是否有 docs/runbooks 指向退役入口。
 - 是否有 live gate 应跑未跑。
 - 是否有 secrets、证书、私钥、真实 `.env` 被误加入 Git。
+- 是否有真实 inventory、生产 runbook、目标渲染 compose 或维护者专用 skill 被误加入 Git。
 
 ## 核心模块减重策略
 

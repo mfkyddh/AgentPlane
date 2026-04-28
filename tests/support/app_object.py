@@ -49,7 +49,7 @@ def write_inventory_with_app(root: Path) -> None:
         "control_plane": "compose",
         "container_name": "sub2api-prod",
         "host_binding": "127.0.0.1:18080",
-        "public_url": "https://token.zzzai.cloud:8443",
+        "public_url": "https://token.example.net:8443",
         "app_resource_summary": {
             "postgres": {
                 "database": "sub2api_prod0",

@@ -56,3 +56,12 @@ infra/compose/relay-trojan/
 # Maintainer-specific service env examples.
 templates/services/*.prod*.env.example
 templates/services/relay-trojan.*.env.example
+
+# Maintainer-specific skills and one-off host repair helpers.
+.agents/skills/nginxui-letsencrypt-cloudflare-dns01/
+.agents/skills/tencent-*/
+.agents/skills/windows-mihomo-cloudflare-latency-debug/
+agentplane/cli/prod0_postgres_app_resource_audit.py
+agentplane/scripts/probe/probe_tencent_server.sh
+agentplane/scripts/remote/remote_prepare_prod0_openresty_host_certs.sh
+agentplane/scripts/remote/remote_verify_prod0_openresty_host_certs.sh

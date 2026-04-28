@@ -44,7 +44,7 @@ cp ~/.ssh/prod3-main.pem secrets/ssh/keys/
 
 ```text
 Host prod3-main
-    HostName 175.178.114.193
+    HostName 203.0.113.10
     User root
     Port 22
     IdentityFile ~/.ssh/keys/prod3-main.pem
@@ -97,8 +97,8 @@ cat > inventory/servers/prod3-main/README.md << 'EOF'
 ## 身份
 
 - 备注：`3号生产机`
-- 云厂商：`Tencent Cloud`
-- 公网 IPv4：`175.178.114.193`
+- 云厂商：`Example Cloud`
+- 公网 IPv4：`203.0.113.10`
 - SSH 别名：`prod3-main`
 
 ## 资料入口
@@ -171,7 +171,7 @@ agentplane repo health-check --repo-root .
 ## 下一步
 
 - **部署应用到新服务器**：跟着 [部署你的第一个应用](./deploy-first-app.md)，把 `--target` 换成 `prod3-main`
-- **配置网络**：如果新服务器需要与其他服务器通信，看 [prod0-main 治理](../runbooks/prod0-main-governance.md) 的网络配置部分
+- **配置网络**：如果新服务器需要与其他服务器通信，先在私有 runbook 中记录目标网络拓扑，再用 `agentplane infra network audit` 验证。
 - **创建治理文档**：参考 [control-plane-domain-onboarding.md](../runbooks/control-plane-domain-onboarding.md) 把新服务器纳入正式治理
 
 ## 常用命令速查

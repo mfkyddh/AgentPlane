@@ -63,8 +63,8 @@ def write_inventory(root: Path) -> None:
                     "public_ingresses": [
                         {
                             "alias": "token",
-                            "primary_domain": "token.zzzai.fun",
-                            "public_url": "https://token.zzzai.fun",
+                            "primary_domain": "token.example.org",
+                            "public_url": "https://token.example.org",
                             "proxy": "http://127.0.0.1:18080",
                             "config_file": "/data/1panel/www/conf.d/token.conf",
                             "ssl_id": 3,
@@ -93,7 +93,7 @@ class FakeWebsiteExecutor:
                 return {"items": []}
             website_id = 9 if self._existing is None else int(self._existing["id"])
             alias = "token" if self._existing is None else str(self._existing["alias"])
-            primary_domain = "token.zzzai.fun" if self._existing is None else str(self._existing["primaryDomain"])
+            primary_domain = "token.example.org" if self._existing is None else str(self._existing["primaryDomain"])
             proxy = "http://127.0.0.1:18080" if self._existing is None else str(self._existing["proxy"])
             return {
                 "items": [
@@ -118,7 +118,7 @@ class FakeWebsiteExecutor:
             return {
                 "id": 9,
                 "alias": "token",
-                "primaryDomain": "token.zzzai.fun",
+                "primaryDomain": "token.example.org",
                 "proxy": "http://127.0.0.1:18080",
                 "status": "Running",
             }
@@ -164,8 +164,8 @@ class WebsiteCliTests(unittest.TestCase):
                 [
                     {
                         "alias": "token",
-                        "primary_domain": "token.zzzai.fun",
-                        "public_url": "https://token.zzzai.fun",
+                        "primary_domain": "token.example.org",
+                        "public_url": "https://token.example.org",
                         "proxy": "http://127.0.0.1:18080",
                         "status": "Running",
                         "config_file": "/data/1panel/www/conf.d/token.conf",
@@ -187,7 +187,7 @@ class WebsiteCliTests(unittest.TestCase):
                 existing={
                     "id": 7,
                     "alias": "token",
-                    "primaryDomain": "token.zzzai.fun",
+                    "primaryDomain": "token.example.org",
                     "proxy": "http://127.0.0.1:18080",
                     "status": "Running",
                 },
@@ -198,7 +198,7 @@ class WebsiteCliTests(unittest.TestCase):
                 payload = get_ingress(root, "prod2-main", "token")
 
             self.assertEqual("token", payload["ingress"]["alias"])
-            self.assertEqual("token.zzzai.fun", payload["ingress"]["primary_domain"])
+            self.assertEqual("token.example.org", payload["ingress"]["primary_domain"])
             self.assertEqual(7, payload["live"]["ingress"]["id"])
             self.assertTrue(payload["live"]["https"]["enable"])
 
@@ -212,7 +212,7 @@ class WebsiteCliTests(unittest.TestCase):
                 existing={
                     "id": 7,
                     "alias": "token",
-                    "primaryDomain": "token.zzzai.fun",
+                    "primaryDomain": "token.example.org",
                     "proxy": "http://127.0.0.1:19090",
                     "status": "Running",
                 },
@@ -310,14 +310,14 @@ def write_publish_files(root: Path) -> tuple[Path, Path]:
     config_file.write_text(
         "\n".join(
             [
-                "PUBLIC_INGRESS_DOMAIN=token.zzzai.cloud",
-                "PUBLIC_INGRESS_ZONE_NAME=zzzai.cloud",
+                "PUBLIC_INGRESS_DOMAIN=token.example.net",
+                "PUBLIC_INGRESS_ZONE_NAME=example.net",
                 "PUBLIC_INGRESS_RECORD_CONTENT=1.2.3.4",
-                "ONEPANEL_DNS_ACCOUNT_NAME=cloudflare-zzzai",
-                "ONEPANEL_DNS_ACCOUNT_EMAIL=admin@zzzai.cloud",
+                "ONEPANEL_DNS_ACCOUNT_NAME=cloudflare-example",
+                "ONEPANEL_DNS_ACCOUNT_EMAIL=admin@example.net",
                 "ONEPANEL_WEBSITE_ALIAS=token",
                 "ONEPANEL_WEBSITE_PROXY=http://127.0.0.1:18080",
-                "ONEPANEL_CERT_DIR=/data/1panel/www/certs/token-zzzai-cloud",
+                "ONEPANEL_CERT_DIR=/data/1panel/www/certs/token-example-net",
                 "ONEPANEL_CERT_RELOAD_SHELL=echo reload",
             ]
         ),
@@ -370,14 +370,14 @@ class WebsitePublishCliTests(unittest.TestCase):
 
             with patch(
                 "agentplane.cli.ingress.plan_public_ingress",
-                return_value={"domain": "token.zzzai.cloud", "steps": [{"kind": "cloudflare_dns"}], "execute_required": True},
+                return_value={"domain": "token.example.net", "steps": [{"kind": "cloudflare_dns"}], "execute_required": True},
             ):
                 payload = handle_ingress_command(args)
 
         self.assertEqual("ingress", payload["command"])
         self.assertEqual("publish.plan", payload["action"])
         self.assertEqual("prod0-main", payload["target"])
-        self.assertEqual("token.zzzai.cloud", payload["payload"]["domain"])
+        self.assertEqual("token.example.net", payload["payload"]["domain"])
         self.assertTrue(payload["payload"]["execute_required"])
 
     def test_ingress_publish_apply_runs_post_verify(self) -> None:

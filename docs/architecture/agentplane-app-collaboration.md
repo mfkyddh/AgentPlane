@@ -200,8 +200,8 @@ infra:
 ingress:
   public_sites:
     - alias: token
-      domain: token.zzzai.cloud
-      public_url: https://token.zzzai.cloud:8443
+      domain: token.example.net
+      public_url: https://token.example.net:8443
       website_object: token
 data:
   mounts:
@@ -337,7 +337,7 @@ agentplane app delivery doc-sync --target <target> --app <app> --repo-root <repo
 `sub2api` 样板：
 
 - 入口对象：`token`
-- 公网入口：`https://token.zzzai.cloud:8443`
+- 公网入口：`https://token.example.net:8443`
 - 回环绑定：`127.0.0.1:18080`
 - 宿主机反代目标：`http://127.0.0.1:18080`
 
@@ -371,7 +371,7 @@ agentplane app delivery doc-sync --target <target> --app <app> --repo-root <repo
 - 正式容器名：`sub2api-prod`
 - 依赖容器：`postgres18-prod`、`redis7-prod`
 - 数据目录：`/data/sub2api/data`
-- 正式入口：`https://token.zzzai.cloud:8443`
+- 正式入口：`https://token.example.net:8443`
 - 回退入口：无独立旧控制面
 
 样板意义：

@@ -166,7 +166,7 @@ class OnePanelObjectCliHandlerTests(unittest.TestCase):
                 "env": "wsl",
                 "onepanel_panel_action": "apply",
                 "key": "bindDomain",
-                "value": "panel.zzzai.cloud",
+                "value": "panel.example.net",
                 "execute": True,
             },
         )()
@@ -178,7 +178,7 @@ class OnePanelObjectCliHandlerTests(unittest.TestCase):
         self.assertEqual("apply", payload["action"])
         self.assertTrue(payload["payload"]["verified"]["ok"])
         self.assertIn(
-            ("POST", "/api/v2/core/settings/update", {"key": "bindDomain", "value": "panel.zzzai.cloud"}),
+            ("POST", "/api/v2/core/settings/update", {"key": "bindDomain", "value": "panel.example.net"}),
             executor.calls,
         )
 
@@ -264,6 +264,16 @@ CATALOG_FILE = REPO_ROOT / ".agents" / "skills" / "catalog.yaml"
 REQUIRED_DOMAINS = {"infra", "service", "ingress", "app-resource", "app", "projection"}
 
 class OnePanelPluginAndSkillsTests(unittest.TestCase):
+    def _tracked_skill_paths(self) -> list[Path]:
+        result = subprocess.run(
+            ["git", "ls-files", ".agents/skills/*/SKILL.md"],
+            cwd=REPO_ROOT,
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        return sorted(REPO_ROOT / line for line in result.stdout.splitlines() if line)
+
     def _load_frontmatter(self, path: Path) -> dict:
         text = path.read_text(encoding="utf-8")
         parts = text.split("---", 2)
@@ -286,7 +296,7 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
         names = [entry["name"] for entry in entries]
         self.assertEqual(len(names), len(set(names)), msg="catalog skill names must be unique")
 
-        repo_skill_names = sorted(path.parent.name for path in (REPO_ROOT / ".agents" / "skills").glob("*/SKILL.md"))
+        repo_skill_names = sorted(path.parent.name for path in self._tracked_skill_paths())
         self.assertEqual(sorted(names), repo_skill_names)
 
         covered_domains = {domain for entry in entries for domain in entry["domains"]}
@@ -295,7 +305,7 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
     def test_catalog_tracks_skill_frontmatter_names(self) -> None:
         payload = self._load_catalog()
         entries = {entry["name"]: entry for entry in payload["skills"]}
-        for path in sorted((REPO_ROOT / ".agents" / "skills").glob("*/SKILL.md")):
+        for path in self._tracked_skill_paths():
             name = path.parent.name
             with self.subTest(name=name):
                 frontmatter = self._load_frontmatter(path)

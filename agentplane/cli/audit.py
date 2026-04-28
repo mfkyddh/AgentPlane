@@ -19,7 +19,7 @@ FORBIDDEN_PROD0_MARKERS = (
     "nginx-ui",
     "nginxwebui",
     "/data/apps/nginx-ui-official",
-    "/usr/local/sbin/renew_zzzai_cloud_cert.sh",
+    "/usr/local/sbin/renew_example_net_cert.sh",
     "2053",
     "2054",
 )

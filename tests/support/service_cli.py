@@ -222,16 +222,16 @@ def write_inventory(root: Path) -> None:
                     "host_binding": "0.0.0.0:24443",
                     "runtime_root": "/data/relay-trojan",
                     "public_endpoint": {
-                        "domain": "relay.zzzai.fun",
+                        "domain": "relay.example.org",
                         "port": 24443,
                         "protocol": "trojan",
                         "transport": "tcp+tls",
                         "cloudflare_proxy": False,
                         "dns": {
                             "provider": "cloudflare",
-                            "zone_name": "zzzai.fun",
+                            "zone_name": "example.org",
                             "record_type": "A",
-                            "record_content": "38.12.32.94",
+                            "record_content": "198.51.100.20",
                             "proxied": False,
                         },
                         "certificate": {
@@ -244,7 +244,7 @@ def write_inventory(root: Path) -> None:
                     "client_profile": {
                         "format": "clash-local-profile",
                         "node_name": "Prod2|Relay",
-                        "sni": "relay.zzzai.fun",
+                        "sni": "relay.example.org",
                     },
                 },
                 "relay-trojan-host": {
@@ -287,7 +287,7 @@ class _FakeCloudflareClient:
             "id": "rec-1",
             "name": record_name,
             "type": record_type,
-            "content": "38.12.32.94",
+            "content": "198.51.100.20",
             "proxied": False,
         }
 

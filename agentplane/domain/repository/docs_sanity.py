@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import subprocess
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
@@ -68,15 +69,32 @@ def _iter_docs(repo_root: Path) -> list[Path]:
     docs: list[Path] = []
     for root_name in DOC_ROOTS:
         root = repo_root / root_name
-        if root.is_file() and root.suffix == ".md":
+        if root.is_file() and root.suffix == ".md" and not _is_git_ignored(repo_root, root):
             docs.append(root)
         elif root.is_dir():
             for path in root.rglob("*.md"):
                 relative_parts = set(path.relative_to(root).parts)
                 if relative_parts & SKIP_DOC_PARTS:
                     continue
+                if _is_git_ignored(repo_root, path):
+                    continue
                 docs.append(path)
     return sorted(docs)
+
+
+def _is_git_ignored(repo_root: Path, path: Path) -> bool:
+    try:
+        relative = path.relative_to(repo_root).as_posix()
+    except ValueError:
+        return False
+    result = subprocess.run(
+        ["git", "check-ignore", "-q", "--", relative],
+        cwd=repo_root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    return result.returncode == 0
 
 
 def _line_for_offset(text: str, offset: int) -> int:

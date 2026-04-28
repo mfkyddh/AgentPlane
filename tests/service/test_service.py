@@ -167,7 +167,7 @@ class ServiceCliTests(unittest.TestCase):
             declared = payload["payload"]["service"]["declared"]
             self.assertEqual("0.0.0.0:24443", declared["host_binding"])
             endpoint = declared["public_endpoint"]
-            self.assertEqual("relay.zzzai.fun", endpoint["domain"])
+            self.assertEqual("relay.example.org", endpoint["domain"])
 
             verify_result = run_cli(
                 "service",
@@ -240,7 +240,7 @@ class ServiceCliTests(unittest.TestCase):
             )
             merge_file.write_text(
                 yaml.safe_dump(
-                    {"prepend__rules": ["DOMAIN-SUFFIX,zzzai.fun,DIRECT"]},
+                    {"prepend__rules": ["DOMAIN-SUFFIX,example.org,DIRECT"]},
                     allow_unicode=True,
                     sort_keys=False,
                 ),
@@ -273,16 +273,16 @@ class ServiceCliTests(unittest.TestCase):
             self.assertEqual("service", payload["command"])
             self.assertEqual("materialize", payload["action"])
             self.assertEqual("clash-local-profile", payload["payload"]["artifact"])
-            self.assertEqual("relay.zzzai.fun", payload["payload"]["resolved"]["server"])
+            self.assertEqual("relay.example.org", payload["payload"]["resolved"]["server"])
             self.assertEqual(24443, payload["payload"]["resolved"]["port"])
             self.assertEqual("Prod2|Relay", payload["payload"]["resolved"]["node_name"])
 
             rendered = yaml.safe_load(output_file.read_text(encoding="utf-8"))
             self.assertEqual("Prod2|Relay", rendered["proxies"][0]["name"])
-            self.assertEqual("relay.zzzai.fun", rendered["proxies"][0]["server"])
+            self.assertEqual("relay.example.org", rendered["proxies"][0]["server"])
             self.assertEqual(["Prod2|Relay", "直接连接"], rendered["proxy-groups"][0]["proxies"])
             self.assertEqual(
-                ["DOMAIN-SUFFIX,zzzai.fun,DIRECT", "DOMAIN-SUFFIX,openai.com,GPT", "MATCH,国外流量"],
+                ["DOMAIN-SUFFIX,example.org,DIRECT", "DOMAIN-SUFFIX,openai.com,GPT", "MATCH,国外流量"],
                 rendered["rules"],
             )
 
@@ -749,7 +749,7 @@ class ServicePublicEndpointCliTests(unittest.TestCase):
             self.assertEqual("reconcile", plan_payload["payload"]["operation"])
             step = plan_payload["payload"]["steps"][0]
             self.assertIn("ensure_cloudflare_dns_record.py", step["display"])
-            self.assertIn("relay.zzzai.fun", step["display"])
+            self.assertIn("relay.example.org", step["display"])
 
             bin_dir = root / "bin"
             bin_dir.mkdir(parents=True, exist_ok=True)

@@ -67,21 +67,21 @@ class RelayTrojanDnsCliTests(unittest.TestCase):
                         "--cloudflare-env-file",
                         str(env_file),
                         "--zone-name",
-                        "zzzai.fun",
+                        "example.org",
                         "--record-name",
-                        "relay.zzzai.fun",
+                        "relay.example.org",
                         "--record-content",
-                        "38.12.32.94",
+                        "198.51.100.20",
                     ]
                 )
 
         self.assertEqual(0, exit_code)
         payload = json.loads(stdout.getvalue())
         self.assertTrue(payload["ok"])
-        self.assertEqual("zzzai.fun", payload["zone_name"])
-        self.assertEqual("relay.zzzai.fun", payload["record_name"])
+        self.assertEqual("example.org", payload["zone_name"])
+        self.assertEqual("relay.example.org", payload["record_name"])
         self.assertEqual("A", payload["record_type"])
-        self.assertEqual("38.12.32.94", payload["record_content"])
+        self.assertEqual("198.51.100.20", payload["record_content"])
         self.assertFalse(payload["proxied"])
         self.assertEqual("unchanged", payload["action"])
 
@@ -139,7 +139,7 @@ class RelayTrojanProfileRendererTests(unittest.TestCase):
         }
         merge = {
             "prepend__rules": [
-                "DOMAIN-SUFFIX,zzzai.fun,DIRECT",
+                "DOMAIN-SUFFIX,example.org,DIRECT",
                 "DOMAIN-SUFFIX,cloudflare.com,GPT",
             ]
         }
@@ -148,20 +148,20 @@ class RelayTrojanProfileRendererTests(unittest.TestCase):
             source,
             merge_template=merge,
             node_name="Prod2|Relay",
-            server="relay.zzzai.fun",
+            server="relay.example.org",
             port=24443,
             password="test-password",
-            sni="relay.zzzai.fun",
+            sni="relay.example.org",
         )
 
         self.assertEqual(
             {
                 "name": "Prod2|Relay",
                 "type": "trojan",
-                "server": "relay.zzzai.fun",
+                "server": "relay.example.org",
                 "port": 24443,
                 "password": "test-password",
-                "sni": "relay.zzzai.fun",
+                "sni": "relay.example.org",
                 "udp": True,
                 "skip-cert-verify": False,
             },
@@ -172,7 +172,7 @@ class RelayTrojanProfileRendererTests(unittest.TestCase):
         self.assertEqual(["国外流量", "DIRECT", "Prod2|Relay"], rendered["proxy-groups"][2]["proxies"])
         self.assertEqual(
             [
-                "DOMAIN-SUFFIX,zzzai.fun,DIRECT",
+                "DOMAIN-SUFFIX,example.org,DIRECT",
                 "DOMAIN-SUFFIX,cloudflare.com,GPT",
                 "DOMAIN-SUFFIX,openai.com,GPT",
                 "MATCH,国外流量",
@@ -181,72 +181,15 @@ class RelayTrojanProfileRendererTests(unittest.TestCase):
         )
 
 # ======================================================================
-# From: test_relay_trojan_compose_layout.py
-# ======================================================================
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
-
-def load_compose(path: Path) -> dict:
-    return yaml.safe_load(path.read_text(encoding="utf-8"))
-
-class RelayTrojanComposeLayoutTests(unittest.TestCase):
-    def test_prod2_template_matches_contract(self) -> None:
-        compose = load_compose(
-            REPO_ROOT / "infra" / "compose" / "relay-trojan" / "docker-compose.prod2.yml"
-        )
-        service = compose["services"]["relay-trojan"]
-
-        self.assertEqual("ghcr.io/xtls/xray-core:25.3.6", service["image"])
-        self.assertEqual("relay-trojan-prod", service["container_name"])
-        self.assertNotIn("env_file", service)
-        self.assertEqual("unless-stopped", service["restart"])
-        self.assertEqual(
-            "run -config /data/relay-trojan/config/config.json", service["command"]
-        )
-        self.assertIn("0.0.0.0:24443:24443", service["ports"])
-        self.assertIn("/data/relay-trojan:/data/relay-trojan", service["volumes"])
-        self.assertEqual(["zqf_network"], service["networks"])
-
-    def test_runtime_config_template_matches_contract(self) -> None:
-        config = load_compose(
-            REPO_ROOT / "infra" / "compose" / "relay-trojan" / "config.template.json"
-        )
-
-        inbound = config["inbounds"][0]
-        client = inbound["settings"]["clients"][0]
-        certificate = inbound["streamSettings"]["tlsSettings"]["certificates"][0]
-
-        self.assertEqual(24443, inbound["port"])
-        self.assertEqual("0.0.0.0", inbound["listen"])
-        self.assertEqual("trojan", inbound["protocol"])
-        self.assertEqual("<RELAY_TROJAN_PASSWORD>", client["password"])
-        self.assertEqual("tls", inbound["streamSettings"]["security"])
-        self.assertEqual(
-            "/data/relay-trojan/certs/fullchain.pem", certificate["certificateFile"]
-        )
-        self.assertEqual("/data/relay-trojan/certs/privkey.pem", certificate["keyFile"])
-
-    def test_prod2_env_template_matches_contract(self) -> None:
-        env_template = (
-            REPO_ROOT
-            / "templates"
-            / "services"
-            / "relay-trojan.prod2.env.example"
-        ).read_text(encoding="utf-8")
-
-        self.assertIn("RELAY_TROJAN_PUBLIC_DOMAIN=relay.zzzai.fun", env_template)
-        self.assertIn("RELAY_TROJAN_PUBLIC_PORT=24443", env_template)
-        self.assertIn("RELAY_TROJAN_PASSWORD=replace-with-32-byte-random-string", env_template)
-        self.assertNotIn("RELAY_TROJAN_IMAGE_REF=", env_template)
-        self.assertNotIn("RELAY_TROJAN_CONTAINER_NAME=", env_template)
-        self.assertNotIn("RELAY_TROJAN_CERT_FULLCHAIN=", env_template)
-        self.assertNotIn("RELAY_TROJAN_CERT_KEY=", env_template)
-
-# ======================================================================
 # From: test_sub2api_compose_layout.py
 # ======================================================================
 
 OFFICIAL_IMAGE = "${SUB2API_IMAGE_REF:-ghcr.io/wei-shaw/sub2api:latest}"
+
+
+def load_compose(path: Path) -> dict:
+    return yaml.safe_load(path.read_text(encoding="utf-8"))
+
 
 class Sub2ApiComposeLayoutTests(unittest.TestCase):
     def test_wsl_template_matches_contract(self) -> None:
@@ -260,26 +203,6 @@ class Sub2ApiComposeLayoutTests(unittest.TestCase):
         self.assertIn("/data/sub2api/data:/app/data", service["volumes"])
         self.assertEqual(["zqf_network"], service["networks"])
 
-    def test_prod_template_matches_contract(self) -> None:
-        compose = load_compose(REPO_ROOT / "infra" / "compose" / "sub2api" / "docker-compose.prod0.yml")
-        service = compose["services"]["sub2api"]
-
-        self.assertEqual(OFFICIAL_IMAGE, service["image"])
-        self.assertEqual("always", service["pull_policy"])
-        self.assertEqual("sub2api-prod", service["container_name"])
-        self.assertIn("127.0.0.1:18080:8080", service["ports"])
-        self.assertIn("/data/sub2api/data:/app/data", service["volumes"])
-        self.assertEqual(["zqf_network"], service["networks"])
-
-    def test_prod2_template_matches_contract(self) -> None:
-        compose = load_compose(REPO_ROOT / "infra" / "compose" / "sub2api" / "docker-compose.prod2.yml")
-        service = compose["services"]["sub2api"]
-
-        self.assertEqual("sub2api-prod", service["container_name"])
-        self.assertIn("127.0.0.1:18080:8080", service["ports"])
-        self.assertIn("../../../secrets/services/sub2api.prod2.env", service["env_file"])
-        self.assertEqual(["zqf_network"], service["networks"])
-
     def test_wsl_env_template_uses_isolated_database(self) -> None:
         env_template = (REPO_ROOT / "templates" / "services" / "sub2api.wsl.env.example").read_text(encoding="utf-8")
 
@@ -287,10 +210,3 @@ class Sub2ApiComposeLayoutTests(unittest.TestCase):
         self.assertIn("DATABASE_DBNAME=sub2api_wsl", env_template)
         self.assertIn("REDIS_DB=1", env_template)
         self.assertIn("REDIS_PASSWORD=<redis_password>", env_template)
-
-    def test_prod2_env_template_exists_for_target_scoped_runtime_projection(self) -> None:
-        env_template = (REPO_ROOT / "templates" / "services" / "sub2api.prod2.env.example").read_text(encoding="utf-8")
-
-        self.assertIn("DATABASE_USER=sub2api_prod2", env_template)
-        self.assertIn("DATABASE_DBNAME=sub2api_prod2", env_template)
-        self.assertIn("REDIS_DB=1", env_template)

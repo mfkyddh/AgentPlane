@@ -42,13 +42,6 @@ skills:
     domains: [service]
     aliases: []
     entrypoint: docker compose
-  - name: nginxui-letsencrypt-cloudflare-dns01
-    frontmatter_name: nginxui-letsencrypt-cloudflare-dns01
-    source_path: .agents/skills/nginxui-letsencrypt-cloudflare-dns01/SKILL.md
-    kind: canonical
-    domains: [ingress, service]
-    aliases: []
-    entrypoint: uv run python -m agentplane.cli
   - name: nginxwebui-docker-setup
     frontmatter_name: nginxwebui-docker-setup
     source_path: .agents/skills/nginxwebui-docker-setup/SKILL.md
@@ -175,20 +168,6 @@ skills:
     domains: [app-resource]
     aliases: []
     entrypoint: uv run python -m agentplane.cli app resource
-  - name: tencent-cloud-service-migration
-    frontmatter_name: tencent-cloud-service-migration
-    source_path: .agents/skills/tencent-cloud-service-migration/SKILL.md
-    kind: canonical
-    domains: [service]
-    aliases: []
-    entrypoint: uv run python -m agentplane.cli
-  - name: tencent-host-mihomo-openai-tuning
-    frontmatter_name: tencent-host-mihomo-openai-tuning
-    source_path: .agents/skills/tencent-host-mihomo-openai-tuning/SKILL.md
-    kind: canonical
-    domains: [infra]
-    aliases: []
-    entrypoint: uv run python -m agentplane.cli
   - name: ubuntu-ssh-security-baseline
     frontmatter_name: ubuntu-ssh-security-baseline
     source_path: .agents/skills/ubuntu-ssh-security-baseline/SKILL.md
@@ -196,10 +175,3 @@ skills:
     domains: [infra]
     aliases: []
     entrypoint: bash
-  - name: windows-mihomo-cloudflare-latency-debug
-    frontmatter_name: windows-mihomo-cloudflare-latency-debug
-    source_path: .agents/skills/windows-mihomo-cloudflare-latency-debug/SKILL.md
-    kind: canonical
-    domains: [ingress, infra]
-    aliases: []
-    entrypoint: pwsh

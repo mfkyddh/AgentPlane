@@ -142,14 +142,8 @@ class SecretLayoutTests(unittest.TestCase):
     def test_compose_and_deploy_scripts_use_target_scoped_secret_paths(self) -> None:
         files_and_expected = {
             REPO_ROOT / "infra" / "compose" / "postgres" / "docker-compose.wsl.yml": "secrets/services/postgres/admin.wsl.env",
-            REPO_ROOT / "infra" / "compose" / "postgres" / "docker-compose.prod0.yml": "secrets/services/postgres/admin.prod0.env",
-            REPO_ROOT / "infra" / "compose" / "postgres" / "docker-compose.prod2.yml": "secrets/services/postgres/admin.prod2.env",
             REPO_ROOT / "infra" / "compose" / "redis" / "docker-compose.wsl.yml": "secrets/services/redis/admin.wsl.conf",
-            REPO_ROOT / "infra" / "compose" / "redis" / "docker-compose.prod0.yml": "secrets/services/redis/admin.prod0.conf",
-            REPO_ROOT / "infra" / "compose" / "redis" / "docker-compose.prod2.yml": "secrets/services/redis/admin.prod2.conf",
             REPO_ROOT / "infra" / "compose" / "minio" / "docker-compose.wsl.yml": "secrets/services/minio/admin.wsl.env",
-            REPO_ROOT / "infra" / "compose" / "minio" / "docker-compose.prod0.yml": "secrets/services/minio/admin.prod0.env",
-            REPO_ROOT / "infra" / "compose" / "minio" / "docker-compose.prod2.yml": "secrets/services/minio/admin.prod2.env",
             REPO_ROOT / "agentplane" / "scripts" / "remote" / "deploy_data_services_to_host.sh": "secrets/services/postgres/admin.${target_alias}.env",
             REPO_ROOT / "agentplane" / "scripts" / "remote" / "remote_deploy_data_services.sh": 'postgres_env="${control_root}/secrets/services/postgres/admin.${target_alias}.env"',
         }

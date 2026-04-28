@@ -47,7 +47,6 @@ from tests.support.app_delivery_targets import (
     write_tenant_secret_files,
 )
 from tests.support.app_resources import resource_relative, resource_root
-from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
 
@@ -742,8 +741,8 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             self.assertIn("docker network inspect zqf_network", log_text)
             self.assertIn("docker inspect sub2api-prod", log_text)
             self.assertIn("http://127.0.0.1:18080/health", log_text)
-            self.assertIn("https://token.zzzai.cloud:8443/health", log_text)
-            self.assertIn("https://token.zzzai.cloud:8443/", log_text)
+            self.assertIn("https://token.example.net:8443/health", log_text)
+            self.assertIn("https://token.example.net:8443/", log_text)
 
     def test_verify_execute_propagates_public_failure(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -1452,8 +1451,8 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
             self.assertIn("for i in $(seq 1 12)", commands[1])
             self.assertIn("curl -fsS http://127.0.0.1:18080/health", commands[1])
             self.assertEqual(commands[1], payload["checks"]["origin"][1]["display"])
-            self.assertIn("curl -fsS https://token.zzzai.cloud:8443/health", commands[2])
-            self.assertIn("curl -fsSI https://token.zzzai.cloud:8443/", commands[3])
+            self.assertIn("curl -fsS https://token.example.net:8443/health", commands[2])
+            self.assertIn("curl -fsSI https://token.example.net:8443/", commands[3])
             ssh_log = log_file.read_text(encoding="utf-8")
             self.assertIn("docker inspect sub2api-prod", ssh_log)
             self.assertIn("for i in $(seq 1 12)", ssh_log)
@@ -2750,7 +2749,7 @@ class TestAppDeliveryDocSyncCliTests(unittest.TestCase):
                 "container_name": "sub2api-prod",
                 "depends_on_containers": ["postgres18-prod", "redis7-prod"],
                 "host_binding": "127.0.0.1:18080",
-                "public_url": "https://token.zzzai.cloud:8443",
+                "public_url": "https://token.example.net:8443",
                 "rollback_entry": {"kind": "systemd", "service_name": "sub2api"},
                 "app_resource_summary": {
                     "postgres": {
@@ -2895,7 +2894,7 @@ class TestAppDeliveryDocSyncCliTests(unittest.TestCase):
                 "container_name": "sampleapi-prod",
                 "depends_on_containers": ["postgres18-prod", "redis7-prod"],
                 "host_binding": "127.0.0.1:3000",
-                "public_url": "https://sampleapi.zzzai.cloud:8443",
+                "public_url": "https://sampleapi.example.net:8443",
                 "rollback_entry": {
                     "kind": "1panel-compose",
                     "project_name": "samplepay-prod",
@@ -2965,7 +2964,7 @@ class TestAppDeliveryDocSyncCliTests(unittest.TestCase):
                 "container_name": "sub2api-prod",
                 "depends_on_containers": ["postgres18-prod", "redis7-prod"],
                 "host_binding": "127.0.0.1:18080",
-                "public_url": "https://token.zzzai.cloud:8443",
+                "public_url": "https://token.example.net:8443",
                 "rollback_entry": {"kind": "systemd", "service_name": "sub2api"},
                 "app_resource_summary": {
                     "postgres": {
@@ -3075,7 +3074,7 @@ class TestAppDeliveryDocSyncCliTests(unittest.TestCase):
                 "container_name": "sub2api-prod",
                 "depends_on_containers": ["postgres18-prod", "redis7-prod"],
                 "host_binding": "127.0.0.1:18080",
-                "public_url": "https://token.zzzai.fun",
+                "public_url": "https://token.example.org",
                 "rollback_entry": {"kind": "none", "note": "prod2-main 首次上线无旧控制面"},
                 "app_resource_summary": {
                     "postgres": {
@@ -3126,7 +3125,7 @@ class TestAppDeliveryDocSyncCliTests(unittest.TestCase):
                 "container_name": "sub2api-prod",
                 "depends_on_containers": ["postgres18-prod", "redis7-prod"],
                 "host_binding": "127.0.0.1:18080",
-                "public_url": "https://token.zzzai.cloud:8443",
+                "public_url": "https://token.example.net:8443",
                 "rollback_entry": {"kind": "systemd", "service_name": "sub2api"},
             }
             inventory_file.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -3245,7 +3244,7 @@ class TestAppDeliveryInventoryCliTests(unittest.TestCase):
             self.assertEqual("compose", app_entry["control_plane"])
             self.assertEqual("sub2api-prod", app_entry["container_name"])
             self.assertEqual(["postgres18-prod", "redis7-prod"], app_entry["depends_on_containers"])
-            self.assertEqual("https://token.zzzai.cloud:8443", app_entry["public_url"])
+            self.assertEqual("https://token.example.net:8443", app_entry["public_url"])
             self.assertEqual(["/data/sub2api/config/sub2api-prod.env"], app_entry["config_files"])
             self.assertEqual("sub2api_prod0", app_entry["app_resource_summary"]["postgres"]["database"])
             self.assertEqual("sub2api:", app_entry["app_resource_summary"]["redis"]["key_prefix"])
@@ -3432,7 +3431,7 @@ class TestAppDeliveryInventoryCliTests(unittest.TestCase):
             payload = json.loads(result.stdout)
             app_entry = payload["payload"]["services"]["sampleapi"]
             self.assertEqual("sampleapi-prod", app_entry["container_name"])
-            self.assertEqual("https://sampleapi.zzzai.fun", app_entry["public_url"])
+            self.assertEqual("https://sampleapi.example.org", app_entry["public_url"])
             self.assertEqual(["postgres18-prod", "redis7-prod", "minio-prod"], app_entry["depends_on_containers"])
             self.assertEqual(["/opt/agentplane/secrets/services/sampleapi.prod2.env"], app_entry["config_files"])
             self.assertEqual("sampleapi_prod2", app_entry["app_resource_summary"]["postgres"]["database"])
@@ -3442,7 +3441,7 @@ class TestAppDeliveryInventoryCliTests(unittest.TestCase):
                 app_entry["app_resource_summary"]["minio"]["secret_file"],
             )
             written_payload = json.loads(inventory_file.read_text(encoding="utf-8"))
-            self.assertEqual("https://sampleapi.zzzai.fun", written_payload["services"]["sampleapi"]["public_url"])
+            self.assertEqual("https://sampleapi.example.org", written_payload["services"]["sampleapi"]["public_url"])
             self.assertEqual(
                 ["/opt/agentplane/secrets/services/sampleapi.prod2.env"],
                 written_payload["services"]["sampleapi"]["config_files"],
@@ -3512,21 +3511,6 @@ class TestAppDeliveryInventoryCliTests(unittest.TestCase):
             refreshed_services = json.loads(result.stdout)["payload"]["services"]
             self.assertNotIn("chatgpt-register-wsl", refreshed_services)
 
-    def test_repo_internal_worker_assets_no_legacy_wsl_compose_path(self) -> None:
-        self.assertFalse((REPO_ROOT / "infra" / "compose" / "chatgpt-register-wsl").exists())
-        self.assertFalse((REPO_ROOT / "templates" / "services" / "chatgpt-register-wsl.env.example").exists())
-        wsl_inventory = json.loads((REPO_ROOT / "inventory" / "servers" / "wsl" / "inventory.json").read_text(encoding="utf-8"))
-        compose_services = wsl_inventory.get("compose_services") or []
-        self.assertIn("sub2api", compose_services)
-        self.assertNotIn("sample-register-v2", compose_services)
-        self.assertNotIn("chatgpt-register-wsl", compose_services)
-
-    def test_repo_prod0_internal_worker_inventory_and_readme_are_offboarded(self) -> None:
-        prod0_inventory = json.loads((REPO_ROOT / "inventory" / "servers" / "prod0-main" / "inventory.json").read_text(encoding="utf-8"))
-        self.assertNotIn("sample-register-v2", prod0_inventory["services"])
-        readme_text = (REPO_ROOT / "inventory" / "servers" / "prod0-main" / "README.md").read_text(encoding="utf-8")
-        self.assertNotIn("sample-register-v2", readme_text)
-
     def test_inventory_refresh_writes_prod2_target_specific_sub2api_entry(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -3548,7 +3532,7 @@ class TestAppDeliveryInventoryCliTests(unittest.TestCase):
             payload = json.loads(result.stdout)
             app_entry = payload["payload"]["services"]["sub2api"]
             self.assertEqual("sub2api-prod", app_entry["container_name"])
-            self.assertEqual("https://token.zzzai.fun", app_entry["public_url"])
+            self.assertEqual("https://token.example.org", app_entry["public_url"])
             self.assertEqual(["postgres18-prod", "redis7-prod"], app_entry["depends_on_containers"])
             self.assertEqual("sub2api_prod2", app_entry["app_resource_summary"]["postgres"]["database"])
             self.assertEqual("prod2-sub2api", app_entry["app_resource_summary"]["minio"]["bucket"])
@@ -3557,4 +3541,4 @@ class TestAppDeliveryInventoryCliTests(unittest.TestCase):
                 app_entry["app_resource_summary"]["minio"]["secret_file"],
             )
             written_payload = json.loads(inventory_file.read_text(encoding="utf-8"))
-            self.assertEqual("https://token.zzzai.fun", written_payload["services"]["sub2api"]["public_url"])
+            self.assertEqual("https://token.example.org", written_payload["services"]["sub2api"]["public_url"])

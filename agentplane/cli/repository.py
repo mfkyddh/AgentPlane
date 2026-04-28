@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from agentplane.domain.repository.docs_sanity import run_docs_sanity
+from agentplane.domain.repository.privacy_scan import scan_repository_for_private_material
 from agentplane.domain.repository.secret_scan import scan_repository_for_secrets
 
 
@@ -29,6 +30,9 @@ def add_repository_parser(subparsers: argparse._SubParsersAction[argparse.Argume
     secret_scan = repo_subparsers.add_parser("secret-scan", help="扫描 Git 可见文件中的敏感信息")
     secret_scan.add_argument("--repo-root", type=Path, default=Path.cwd())
     secret_scan.add_argument("--allowlist", type=Path)
+
+    privacy_scan = repo_subparsers.add_parser("privacy-scan", help="扫描 Git 可见文件中的私有环境信息")
+    privacy_scan.add_argument("--repo-root", type=Path, default=Path.cwd())
 
     release = repo_subparsers.add_parser("release-check", help="运行发布前检查")
     release.add_argument("--repo-root", type=Path, default=Path.cwd())
@@ -62,6 +66,15 @@ def _secret_scan_check(repo_root: Path) -> dict[str, Any]:
     issues = scan_repository_for_secrets(repo_root)
     return {
         "name": "secret-scan",
+        "ok": not issues,
+        "issues": [issue.to_dict() for issue in issues],
+    }
+
+
+def _privacy_scan_check(repo_root: Path) -> dict[str, Any]:
+    issues = scan_repository_for_private_material(repo_root)
+    return {
+        "name": "privacy-scan",
         "ok": not issues,
         "issues": [issue.to_dict() for issue in issues],
     }
@@ -115,6 +128,7 @@ def run_health_check(args: argparse.Namespace) -> dict[str, Any]:
 
     if not args.skip_secrets:
         checks.append(_secret_scan_check(repo_root))
+        checks.append(_privacy_scan_check(repo_root))
 
     if not args.skip_docs:
         checks.append(_docs_sanity_check(repo_root))
@@ -157,6 +171,18 @@ def run_secret_scan(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def run_privacy_scan(args: argparse.Namespace) -> dict[str, Any]:
+    repo_root = args.repo_root.resolve()
+    issues = scan_repository_for_private_material(repo_root)
+    return {
+        "command": "repo",
+        "action": "privacy-scan",
+        "repo_root": str(repo_root),
+        "ok": not issues,
+        "issues": [issue.to_dict() for issue in issues],
+    }
+
+
 def run_release_check(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = args.repo_root.resolve()
     checks = [
@@ -164,6 +190,7 @@ def run_release_check(args: argparse.Namespace) -> dict[str, Any]:
         _run_check("pytest", [sys.executable, "-m", "pytest"], repo_root=repo_root),
         _run_check("cli-help", [sys.executable, "-m", "agentplane.cli", "--help"], repo_root=repo_root),
         _secret_scan_check(repo_root),
+        _privacy_scan_check(repo_root),
         _docs_sanity_check(repo_root),
         _git_clean_check(repo_root),
     ]
@@ -183,6 +210,8 @@ def handle_repository_command(args: argparse.Namespace) -> dict[str, Any]:
         return run_docs_sanity_command(args)
     if args.repo_action == "secret-scan":
         return run_secret_scan(args)
+    if args.repo_action == "privacy-scan":
+        return run_privacy_scan(args)
     if args.repo_action == "release-check":
         return run_release_check(args)
     raise ValueError(f"unsupported repo action: {args.repo_action}")

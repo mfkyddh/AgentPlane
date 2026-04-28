@@ -193,8 +193,8 @@ def write_contract(
             else [
                 {
                     "alias": "token",
-                    "domain": "token.zzzai.cloud",
-                    "public_url": "https://token.zzzai.cloud:8443",
+                    "domain": "token.example.net",
+                    "public_url": "https://token.example.net:8443",
                     "website_object": "token",
                 }
             ],
@@ -279,8 +279,8 @@ def write_target_contract(
             else [
                 {
                     "alias": "token",
-                    "domain": "token.zzzai.cloud",
-                    "public_url": "https://token.zzzai.cloud:8443",
+                    "domain": "token.example.net",
+                    "public_url": "https://token.example.net:8443",
                     "website_object": "token",
                 }
             ],
@@ -438,8 +438,8 @@ def write_prod2_contract(
             "public_sites": [
                 {
                     "alias": "token",
-                    "domain": "token.zzzai.fun",
-                    "public_url": "https://token.zzzai.fun",
+                    "domain": "token.example.org",
+                    "public_url": "https://token.example.org",
                     "website_object": "token",
                 }
             ]
@@ -575,8 +575,8 @@ def write_sampleapi_contract(
         minio_bucket = "prod2-sampleapi"
         minio_access_key = "sampleapi_prod2"
         minio_policy_name = "prod2-sampleapi-rw"
-        domain = "sampleapi.zzzai.fun"
-        public_url = "https://sampleapi.zzzai.fun"
+        domain = "sampleapi.example.org"
+        public_url = "https://sampleapi.example.org"
         docs_path = "docs/AGENTPLANE_DEPLOYMENT.prod2-main.md"
         previous_control_plane = rollback_entry or {
             "kind": "none",
@@ -589,8 +589,8 @@ def write_sampleapi_contract(
         minio_bucket = "prod0-sampleapi"
         minio_access_key = "sampleapi_prod0"
         minio_policy_name = "prod0-sampleapi-rw"
-        domain = "sampleapi.zzzai.cloud"
-        public_url = "https://sampleapi.zzzai.cloud:8443"
+        domain = "sampleapi.example.net"
+        public_url = "https://sampleapi.example.net:8443"
         docs_path = "docs/AGENTPLANE_DEPLOYMENT.md"
         previous_control_plane = rollback_entry or {
             "kind": "1panel-app",

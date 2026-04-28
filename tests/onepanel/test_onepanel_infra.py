@@ -65,15 +65,15 @@ class FakePanelExecutor:
         if path == "/api/v2/websites/acme/search":
             return {"items": [{"id": 1, "email": "acme@1paneldev.com", "type": "letsencrypt"}]}
         if path == "/api/v2/websites/dns/search":
-            return {"items": [{"id": 2, "name": "cloudflare-zzzai", "type": "CloudFlare"}]}
+            return {"items": [{"id": 2, "name": "cloudflare-example", "type": "CloudFlare"}]}
         if path == "/api/v2/websites/ssl/search":
             return {
                 "items": [
                     {
                         "id": 3,
-                        "primaryDomain": "1panel.zzzai.fun",
+                        "primaryDomain": "1panel.example.org",
                         "status": "ready",
-                        "dir": "/data/1panel/www/certs/1panel-zzzai-fun",
+                        "dir": "/data/1panel/www/certs/1panel-example-org",
                         "autoRenew": True,
                     }
                 ]
@@ -84,7 +84,7 @@ class FakePanelExecutor:
                     {
                         "id": 4,
                         "alias": "1panel",
-                        "primaryDomain": "1panel.zzzai.fun",
+                        "primaryDomain": "1panel.example.org",
                         "status": "Running",
                         "proxy": "http://127.0.0.1:2096",
                     }
@@ -109,15 +109,15 @@ class CreatingPanelExecutor(FakePanelExecutor):
         if path == "/api/v2/websites/acme/search":
             return {"items": [{"id": 1, "email": "acme@1paneldev.com", "type": "letsencrypt"}]}
         if path == "/api/v2/websites/dns/search":
-            return {"items": [{"id": 2, "name": "cloudflare-zzzai", "type": "CloudFlare"}]}
+            return {"items": [{"id": 2, "name": "cloudflare-example", "type": "CloudFlare"}]}
         if path == "/api/v2/websites/ssl/search":
             return {
                 "items": [
                     {
                         "id": 3,
-                        "primaryDomain": "token.zzzai.fun",
+                        "primaryDomain": "token.example.org",
                         "status": "ready",
-                        "dir": "/data/1panel/www/certs/token-zzzai-fun",
+                        "dir": "/data/1panel/www/certs/token-example-org",
                         "autoRenew": True,
                     }
                 ]
@@ -129,7 +129,7 @@ class CreatingPanelExecutor(FakePanelExecutor):
                         {
                             "id": 5,
                             "alias": "token",
-                            "primaryDomain": "token.zzzai.fun",
+                            "primaryDomain": "token.example.org",
                             "status": "Running",
                             "proxy": "http://127.0.0.1:18080",
                         }
@@ -168,18 +168,18 @@ class OnePanelPublicIngressTests(unittest.TestCase):
             env_file.write_text(
                 "\n".join(
                     [
-                        "PUBLIC_INGRESS_DOMAIN=1panel.zzzai.fun",
-                        "PUBLIC_INGRESS_ZONE_NAME=zzzai.fun",
+                        "PUBLIC_INGRESS_DOMAIN=1panel.example.org",
+                        "PUBLIC_INGRESS_ZONE_NAME=example.org",
                         "PUBLIC_INGRESS_RECORD_TYPE=A",
-                        "PUBLIC_INGRESS_RECORD_CONTENT=38.12.32.94",
+                        "PUBLIC_INGRESS_RECORD_CONTENT=198.51.100.20",
                         "PUBLIC_INGRESS_RECORD_PROXIED=true",
-                        "ONEPANEL_DNS_ACCOUNT_NAME=cloudflare-zzzai",
+                        "ONEPANEL_DNS_ACCOUNT_NAME=cloudflare-example",
                         "ONEPANEL_DNS_ACCOUNT_PROVIDER=CloudFlare",
-                        "ONEPANEL_DNS_ACCOUNT_EMAIL=admin@zzzai.cloud",
+                        "ONEPANEL_DNS_ACCOUNT_EMAIL=admin@example.net",
                         "ONEPANEL_ACME_EMAIL=acme@1paneldev.com",
                         "ONEPANEL_WEBSITE_ALIAS=1panel",
                         "ONEPANEL_WEBSITE_PROXY=http://127.0.0.1:2096",
-                        "ONEPANEL_CERT_DIR=/data/1panel/www/certs/1panel-zzzai-fun",
+                        "ONEPANEL_CERT_DIR=/data/1panel/www/certs/1panel-example-org",
                         "ONEPANEL_CERT_RELOAD_SHELL=docker exec 1panel-openresty-prod nginx -t && docker exec 1panel-openresty-prod nginx -s reload",
                         "ONEPANEL_HTTPS_PORTS=443,8443",
                     ]
@@ -189,25 +189,25 @@ class OnePanelPublicIngressTests(unittest.TestCase):
 
             config = public_ingress.PublicIngressConfig.from_env_file(env_file)
 
-            self.assertEqual("1panel.zzzai.fun", config.domain)
+            self.assertEqual("1panel.example.org", config.domain)
             self.assertTrue(config.record_proxied)
             self.assertEqual([443, 8443], config.https_ports)
-            self.assertEqual("cloudflare-zzzai", config.dns_account_name)
+            self.assertEqual("cloudflare-example", config.dns_account_name)
 
     def test_cloudflare_client_creates_record_when_absent(self) -> None:
         client = FakeCloudflareClient(
             [
                 {"success": True, "result": [{"id": "zone-1"}]},
                 {"success": True, "result": []},
-                {"success": True, "result": {"id": "record-1", "name": "1panel.zzzai.fun", "content": "38.12.32.94", "proxied": True}},
+                {"success": True, "result": {"id": "record-1", "name": "1panel.example.org", "content": "198.51.100.20", "proxied": True}},
             ]
         )
 
         result = client.ensure_dns_record(
-            zone_name="zzzai.fun",
-            record_name="1panel.zzzai.fun",
+            zone_name="example.org",
+            record_name="1panel.example.org",
             record_type="A",
-            content="38.12.32.94",
+            content="198.51.100.20",
             proxied=True,
         )
 
@@ -246,14 +246,14 @@ class OnePanelPublicIngressTests(unittest.TestCase):
             config_file.write_text(
                 "\n".join(
                     [
-                        "PUBLIC_INGRESS_DOMAIN=1panel.zzzai.fun",
-                        "PUBLIC_INGRESS_ZONE_NAME=zzzai.fun",
-                        "PUBLIC_INGRESS_RECORD_CONTENT=38.12.32.94",
-                        "ONEPANEL_DNS_ACCOUNT_NAME=cloudflare-zzzai",
-                        "ONEPANEL_DNS_ACCOUNT_EMAIL=admin@zzzai.cloud",
+                        "PUBLIC_INGRESS_DOMAIN=1panel.example.org",
+                        "PUBLIC_INGRESS_ZONE_NAME=example.org",
+                        "PUBLIC_INGRESS_RECORD_CONTENT=198.51.100.20",
+                        "ONEPANEL_DNS_ACCOUNT_NAME=cloudflare-example",
+                        "ONEPANEL_DNS_ACCOUNT_EMAIL=admin@example.net",
                         "ONEPANEL_WEBSITE_ALIAS=1panel",
                         "ONEPANEL_WEBSITE_PROXY=http://127.0.0.1:2096",
-                        "ONEPANEL_CERT_DIR=/data/1panel/www/certs/1panel-zzzai-fun",
+                        "ONEPANEL_CERT_DIR=/data/1panel/www/certs/1panel-example-org",
                         "ONEPANEL_CERT_RELOAD_SHELL=echo reload",
                     ]
                 ),
@@ -281,14 +281,14 @@ class OnePanelPublicIngressTests(unittest.TestCase):
 
     def test_manager_noops_when_everything_already_exists(self) -> None:
         config = public_ingress.PublicIngressConfig(
-            domain="1panel.zzzai.fun",
-            zone_name="zzzai.fun",
+            domain="1panel.example.org",
+            zone_name="example.org",
             record_type="A",
-            record_content="38.12.32.94",
+            record_content="198.51.100.20",
             record_proxied=True,
-            dns_account_name="cloudflare-zzzai",
+            dns_account_name="cloudflare-example",
             dns_account_provider="CloudFlare",
-            dns_account_email="admin@zzzai.cloud",
+            dns_account_email="admin@example.net",
             acme_email="acme@1paneldev.com",
             acme_type="letsencrypt",
             acme_key_type="2048",
@@ -298,9 +298,9 @@ class OnePanelPublicIngressTests(unittest.TestCase):
             website_proxy="http://127.0.0.1:2096",
             website_remark="prod2-main 1Panel public ingress",
             website_ipv6=True,
-            cert_primary_domain="1panel.zzzai.fun",
+            cert_primary_domain="1panel.example.org",
             cert_other_domains="",
-            cert_dir="/data/1panel/www/certs/1panel-zzzai-fun",
+            cert_dir="/data/1panel/www/certs/1panel-example-org",
             cert_description="prod2-main 1Panel public ingress",
             cert_key_type="2048",
             cert_auto_renew=True,
@@ -311,7 +311,7 @@ class OnePanelPublicIngressTests(unittest.TestCase):
         cloudflare = FakeCloudflareClient(
             [
                 {"success": True, "result": [{"id": "zone-1"}]},
-                {"success": True, "result": [{"id": "record-1", "content": "38.12.32.94", "proxied": True}]},
+                {"success": True, "result": [{"id": "record-1", "content": "198.51.100.20", "proxied": True}]},
             ]
         )
         manager = public_ingress.PublicIngressManager(FakePanelExecutor(), cloudflare, config)
@@ -324,14 +324,14 @@ class OnePanelPublicIngressTests(unittest.TestCase):
 
     def test_manager_creates_new_proxy_website_with_app_type_new(self) -> None:
         config = public_ingress.PublicIngressConfig(
-            domain="token.zzzai.fun",
-            zone_name="zzzai.fun",
+            domain="token.example.org",
+            zone_name="example.org",
             record_type="A",
-            record_content="38.12.32.94",
+            record_content="198.51.100.20",
             record_proxied=True,
-            dns_account_name="cloudflare-zzzai",
+            dns_account_name="cloudflare-example",
             dns_account_provider="CloudFlare",
-            dns_account_email="admin@zzzai.cloud",
+            dns_account_email="admin@example.net",
             acme_email="acme@1paneldev.com",
             acme_type="letsencrypt",
             acme_key_type="2048",
@@ -341,9 +341,9 @@ class OnePanelPublicIngressTests(unittest.TestCase):
             website_proxy="http://127.0.0.1:18080",
             website_remark="prod2-main sub2api public ingress",
             website_ipv6=True,
-            cert_primary_domain="token.zzzai.fun",
+            cert_primary_domain="token.example.org",
             cert_other_domains="",
-            cert_dir="/data/1panel/www/certs/token-zzzai-fun",
+            cert_dir="/data/1panel/www/certs/token-example-org",
             cert_description="prod2-main sub2api public ingress",
             cert_key_type="2048",
             cert_auto_renew=True,
@@ -354,7 +354,7 @@ class OnePanelPublicIngressTests(unittest.TestCase):
         cloudflare = FakeCloudflareClient(
             [
                 {"success": True, "result": [{"id": "zone-1"}]},
-                {"success": True, "result": [{"id": "record-1", "content": "38.12.32.94", "proxied": True}]},
+                {"success": True, "result": [{"id": "record-1", "content": "198.51.100.20", "proxied": True}]},
             ]
         )
         panel = CreatingPanelExecutor()
@@ -365,7 +365,7 @@ class OnePanelPublicIngressTests(unittest.TestCase):
         create_request = next(body for method, path, body in panel.requests if method == "POST" and path == "/api/v2/websites")
         self.assertEqual("new", create_request["appType"])
         self.assertEqual("proxy", create_request["type"])
-        self.assertEqual([{"domain": "token.zzzai.fun", "port": 80, "ssl": False}], create_request["domains"])
+        self.assertEqual([{"domain": "token.example.org", "port": 80, "ssl": False}], create_request["domains"])
         self.assertEqual(5, result["ingress"]["id"])
 
 # ======================================================================
@@ -745,7 +745,7 @@ class FakeExecutor:
                 "proxyPasswd": "raw-proxy-password",
             }
         if path == "/api/v2/websites/search":
-            return {"items": [{"id": 4, "alias": "token", "primaryDomain": "token.zzzai.fun"}]}
+            return {"items": [{"id": 4, "alias": "token", "primaryDomain": "token.example.org"}]}
         if path == "/api/v2/websites/4":
             return {"id": 4, "alias": "token", "proxy": "http://127.0.0.1:18080"}
         if path == "/api/v2/websites/4/https":
