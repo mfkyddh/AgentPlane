@@ -22,6 +22,7 @@ audience: agent
 | Python 代码 | `uv run python -m agentplane.cli repo health-check --repo-root .`、相关聚焦测试 |
 | CLI 行为 | 相关 CLI 测试、`uv run python -m agentplane.cli --help` |
 | 默认门禁相关 | `uv run python -m pytest` |
+| 发布工程 | `uv run python -m build`、`uv run python -m pip_audit --skip-editable --progress-spinner off` |
 | 文档规范 | 链接指向 active 文档，命令示例使用 `agentplane ...` |
 | secrets / inventory / projection | 确认真实 secrets 未入库，必要时刷新台账 |
 | 公开边界 | `uv run python -m agentplane.cli repo privacy-scan --repo-root .` |
@@ -62,6 +63,8 @@ plan -> apply -> verify -> ledger -> inventory refresh -> doc-sync
 3. 更新 README、CHANGELOG 或 release notes。
 4. 创建版本 tag，例如 `v0.1.0`。
 5. 发布后运行一次最小 smoke check：安装 CLI、`agentplane --help`、默认 pytest。
+
+`release-check` 必须证明代码可 lint、默认测试可通过、快速覆盖率可生成、源码包和 wheel 可构建、依赖审计无已知漏洞、公开边界扫描无泄露，并且工作区干净。
 
 正式发布稳定后，再补自动 changelog、制品签名、SBOM 和 provenance。
 

@@ -4,6 +4,7 @@ import argparse
 import os
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -60,6 +61,73 @@ def _run_check(name: str, argv: list[str], *, repo_root: Path) -> dict[str, Any]
         "stdout_tail": result.stdout.splitlines()[-20:],
         "stderr_tail": result.stderr.splitlines()[-20:],
     }
+
+
+def _run_sequence_check(name: str, commands: list[list[str]], *, repo_root: Path) -> dict[str, Any]:
+    steps: list[dict[str, Any]] = []
+    ok = True
+    for argv in commands:
+        step = _run_check(name, argv, repo_root=repo_root)
+        steps.append(step)
+        if not step["ok"]:
+            ok = False
+            break
+    return {
+        "name": name,
+        "ok": ok,
+        "steps": steps,
+    }
+
+
+def _package_build_check(repo_root: Path) -> dict[str, Any]:
+    with tempfile.TemporaryDirectory(prefix="agentplane-build-") as tmpdir:
+        return _run_check(
+            "package-build",
+            [sys.executable, "-m", "build", "--outdir", tmpdir],
+            repo_root=repo_root,
+        )
+
+
+def _coverage_check(repo_root: Path) -> dict[str, Any]:
+    coverage_dir = repo_root / "tmp" / "coverage"
+    coverage_dir.mkdir(parents=True, exist_ok=True)
+    data_file = coverage_dir / ".coverage.fast"
+    return _run_sequence_check(
+        "coverage-fast",
+        [
+            [
+                sys.executable,
+                "-m",
+                "coverage",
+                "run",
+                "--data-file",
+                str(data_file),
+                "-m",
+                "pytest",
+                "-m",
+                "unit or integration",
+                "-q",
+            ],
+            [
+                sys.executable,
+                "-m",
+                "coverage",
+                "report",
+                "--data-file",
+                str(data_file),
+                "--fail-under=1",
+            ],
+        ],
+        repo_root=repo_root,
+    )
+
+
+def _dependency_audit_check(repo_root: Path) -> dict[str, Any]:
+    return _run_check(
+        "dependency-audit",
+        [sys.executable, "-m", "pip_audit", "--skip-editable", "--progress-spinner", "off"],
+        repo_root=repo_root,
+    )
 
 
 def _secret_scan_check(repo_root: Path) -> dict[str, Any]:
@@ -188,6 +256,9 @@ def run_release_check(args: argparse.Namespace) -> dict[str, Any]:
     checks = [
         _run_check("ruff", [sys.executable, "-m", "ruff", "check", "."], repo_root=repo_root),
         _run_check("pytest", [sys.executable, "-m", "pytest"], repo_root=repo_root),
+        _coverage_check(repo_root),
+        _package_build_check(repo_root),
+        _dependency_audit_check(repo_root),
         _run_check("cli-help", [sys.executable, "-m", "agentplane.cli", "--help"], repo_root=repo_root),
         _secret_scan_check(repo_root),
         _privacy_scan_check(repo_root),

@@ -32,7 +32,11 @@ agentplane = "agentplane.cli.app:main"
 
 [dependency-groups]
 dev = [
-  "pytest>=8.4.2",
+  "build>=1.4.4",
+  "coverage[toml]>=7.13.5",
+  "pip-audit>=2.10.0",
+  "pygments>=2.20.0",
+  "pytest>=9.0.3",
   "pytest-xdist>=3.8.0",
   "ruff>=0.8.0",
 ]
@@ -58,6 +62,14 @@ src = ["agentplane", "tests"]
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.coverage.run]
+branch = true
+source = ["agentplane"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
 
 [tool.hatch.build.targets.wheel]
 packages = ["agentplane"]
