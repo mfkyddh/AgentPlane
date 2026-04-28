@@ -1,7 +1,7 @@
 ---
 status: active
 owner: AgentPlane maintainers
-last_verified: 2026-04-24
+last_verified: 2026-04-29
 superseded_by: null
 audience: agent
 ---
@@ -9,7 +9,7 @@ audience: agent
 
 # Git 规范
 
-结论：Git 提交规范，Conventional Commits + 原子提交 + LF 换行符统一。
+结论：Git 提交与合并规范，默认短生命周期分支 + PR + CI 通过 + squash merge；提交必须遵循 Conventional Commits + 原子提交 + LF 换行符统一。
 
 > 本文档定义 AgentPlane 仓库的完整 Git 工作流规范。核心约束见 `AGENTS.md` 必读摘要。
 
@@ -163,7 +163,7 @@ uv run python -m agentplane.domain.repository.commit_message --message "docs(git
 git config core.hooksPath .githooks
 ```
 
-CI 会检查 PR 范围内的新增提交标题；直接 push 到 `main` 时只检查 HEAD，避免早期历史提交标题阻塞主线。等历史完全收敛后，可把 push 检查收紧为完整 push range。
+CI 会检查 PR 范围内的新增提交标题；直接 push 到 `main` 时只检查 HEAD，避免早期历史提交标题阻塞主线。当前默认流程仍应走短生命周期分支和 PR。
 
 ---
 
@@ -172,13 +172,84 @@ CI 会检查 PR 范围内的新增提交标题；直接 push 到 `main` 时只�
 | # | 规则 | 级别 |
 |---|------|------|
 | 1 | `main` 分支始终可部署 | 🔴 |
-| 2 | 功能开发使用 `feat/<简述>` 分支 | 🟡 |
-| 3 | Bug 修复使用 `fix/<简述>` 分支 | 🟡 |
-| 4 | 重构使用 `refactor/<简述>` 分支 | 🟡 |
-| 5 | 合并到 `main` 前必须通过测试 | 🔴 |
-| 6 | 禁止 `push --force` 到 `main` | 🔴 |
+| 2 | 默认使用短生命周期分支承接新变更 | 🔴 |
+| 3 | 合并到 `main` 前必须通过本地最小验证或 CI | 🔴 |
+| 4 | 默认通过 PR 合并到 `main` | 🔴 |
+| 5 | 默认使用 squash merge，保持 `main` 历史可读 | 🟡 |
+| 6 | 合并后删除已完成的远端和本地工作分支 | 🟡 |
+| 7 | 禁止 `push --force` 到 `main` | 🔴 |
 
-> 🟢 **当前阶段**：单人项目，直接在 `main` 上提交是可接受的。当项目进入多人协作或有 CI 后，应切换到分支 + 合并模式。
+### 分支命名
+
+| 场景 | 推荐分支 |
+| --- | --- |
+| AI Agent 日常变更 | `codex/<简述>` |
+| 功能开发 | `feat/<简述>` |
+| Bug 修复 | `fix/<简述>` |
+| 重构 | `refactor/<简述>` |
+| 文档或配置维护 | `docs/<简述>` / `chore/<简述>` |
+
+### 合并到 main 的标准流程
+
+1. 更新本地主分支：
+
+   ```bash
+   git switch main
+   git pull --ff-only origin main
+   ```
+
+2. 创建短生命周期分支：
+
+   ```bash
+   git switch -c codex/<short-description>
+   ```
+
+3. 按逻辑单元提交，保持每个 commit 可独立解释和回滚：
+
+   ```bash
+   git add <files>
+   git commit -m "fix(scope): describe the change"
+   ```
+
+4. 合并前运行最小验证。普通变更默认运行：
+
+   ```bash
+   uv run python -m agentplane.cli repo health-check --repo-root .
+   ```
+
+   文档-only 变更至少运行：
+
+   ```bash
+   uv run python -m agentplane.cli repo docs-sanity --repo-root .
+   ```
+
+5. 推送分支并打开 PR：
+
+   ```bash
+   git push -u origin codex/<short-description>
+   ```
+
+6. 等待 PR CI 通过。当前 PR gate 包含 fast test、docs-sanity、secret-scan、privacy-scan；发布或手动门禁使用 release-check。
+
+7. CI 通过后默认 squash merge 到 `main`。如果一个 PR 内包含多个必须保留的独立提交，应优先拆成多个 PR，而不是依赖 merge commit 保留混合历史。
+
+8. 合并后同步并清理分支：
+
+   ```bash
+   git switch main
+   git pull --ff-only origin main
+   git branch -d codex/<short-description>
+   git push origin --delete codex/<short-description>
+   ```
+
+### 直接提交到 main 的例外
+
+直接在 `main` 上提交只适用于维护者明确判断的低风险单点变更或紧急修复，并且仍必须满足：
+
+- 提交前运行对应最小验证。
+- 提交消息符合 Conventional Commits。
+- 不使用 `push --force`。
+- 不混入无关文件、真实 secrets 或本地运行态材料。
 
 ---
 

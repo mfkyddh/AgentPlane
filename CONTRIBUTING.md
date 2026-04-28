@@ -1,7 +1,7 @@
 ---
 status: active
 owner: AgentPlane maintainers
-last_verified: 2026-04-25
+last_verified: 2026-04-29
 superseded_by: null
 audience: both
 ---
@@ -28,6 +28,33 @@ Use one source checkout per machine. On Windows, the same checkout may be used b
 - Run `ruff` for Python style and obvious correctness checks.
 - Keep default tests offline and deterministic. Real Docker, SSH, WSL, or provider checks must use explicit pytest markers or formal live-gate commands.
 
+## Branch And Merge Flow
+
+Use a short-lived branch for each logical change:
+
+```bash
+git switch main
+git pull --ff-only origin main
+git switch -c codex/<short-description>
+```
+
+Keep commits atomic and use Conventional Commits:
+
+```bash
+git commit -m "fix(scope): describe the change"
+```
+
+Push the branch, open a PR, wait for CI to pass, then squash merge into `main`. After merge, sync `main` and delete the completed branch:
+
+```bash
+git switch main
+git pull --ff-only origin main
+git branch -d codex/<short-description>
+git push origin --delete codex/<short-description>
+```
+
+Do not force-push to `main`. Direct commits to `main` are reserved for maintainer-approved low-risk or urgent changes and still require the same validation discipline.
+
 ## Before Opening A PR
 
 Run:
@@ -38,7 +65,9 @@ uv run python -m agentplane.cli repo health-check --repo-root .
 
 For docs or contract changes, also run the relevant focused tests under `tests/`.
 
-Commit messages must follow `type(scope): description`. To enable the local check:
+Full Git policy: [docs/reference/git-conventions.md](docs/reference/git-conventions.md).
+
+To enable the local commit message check:
 
 ```bash
 git config core.hooksPath .githooks

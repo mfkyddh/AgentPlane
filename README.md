@@ -131,6 +131,7 @@ AI 会自动转换为**计划 → 执行 → 验证 → 记录**的完整闭环�
 |------|------|
 | [LICENSE](LICENSE) | MIT 开源许可证 |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | 如何参与开发 |
+| [Git 规范](docs/reference/git-conventions.md) | 分支、提交、PR 与 main 合并规则 |
 | [SECURITY.md](SECURITY.md) | 安全策略 |
 | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | 行为准则 |
 | [SUPPORT.md](SUPPORT.md) | 获取帮助 |
