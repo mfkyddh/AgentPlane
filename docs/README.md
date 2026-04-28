@@ -42,7 +42,7 @@ audience: both
 | `app` | [control-plane.md](architecture/control-plane.md) | [app-delivery-workflow.md](runbooks/app-project-delivery-workflow.md) | [naming-registry.md](reference/control-plane-naming-registry.md) |
 | `projection` | [control-plane.md](architecture/control-plane.md) | [execution-flow.md](runbooks/control-plane-agent-execution-flow.md) | [naming-registry.md](reference/control-plane-naming-registry.md) |
 
-AI 工作规范：[AGENTS.md](../AGENTS.md)
+AI 工作规范：[AGENTS.md](../AGENTS.md)；Skill 面盘点：[skill-surface-audit.md](maintainers/skill-surface-audit.md)
 
 ---
 
@@ -104,6 +104,7 @@ AI 工作规范：[AGENTS.md](../AGENTS.md)
 | 文档 | 说明 |
 | --- | --- |
 | [maintainers/control-plane-authoring.md](maintainers/control-plane-authoring.md) | control plane authoring 规则 |
+| [maintainers/skill-surface-audit.md](maintainers/skill-surface-audit.md) | 当前 Skill 面盘点与重构建议 |
 
 ### 🕰️ History And Archive
 

@@ -1,7 +1,7 @@
 ---
 status: active
 owner: AgentPlane maintainers
-last_verified: 2026-04-25
+last_verified: 2026-04-29
 superseded_by: null
 audience: both
 ---
@@ -35,6 +35,7 @@ audience: both
 | 12 | **文档必须可达**：新增 active 文档必须加入索引或被上游文档链接 | 🔴 |
 | 13 | **测试分层+并行**：新增测试必须标记 unit/integration/e2e；禁止按操作/环境拆分测试文件 | 🔴 |
 | 14 | **main 合入门禁**：合入 `main` 前必须通过测试或 CI | 🔴 |
+| 15 | **Skill 同步**：正式能力变更必须同步 `.agents/skills` 或说明无需更新 | 🔴 |
 
 ---
 
@@ -43,6 +44,8 @@ audience: both
 ```bash
 agentplane <domain> <surface> <verb> [flags]
 ```
+
+AI 面向人的意图入口是 Skill；Skill 只做触发、路由和约束，正式执行仍回到 `agentplane ...`。
 
 | 你想做什么 | 正确入口 |
 |-----------|----------|
@@ -108,20 +111,5 @@ agentplane <domain> <surface> <verb> [flags]
 | [docs/architecture/control-plane.md](docs/architecture/control-plane.md) | 控制面核心合同 |
 | [docs/reference/documentation-governance.md](docs/reference/documentation-governance.md) | 文档治理（emoji、链接、门禁） |
 | [docs/reference/cross-platform.md](docs/reference/cross-platform.md) | 跨平台规范 |
+| [docs/maintainers/control-plane-authoring.md](docs/maintainers/control-plane-authoring.md) | 代码、Skill、文档、测试联动 |
 | [docs/reference/git-conventions.md](docs/reference/git-conventions.md) | Git 规范 |
-
----
-
-## 目录速查
-
-| 目录 | 用途 | Git |
-|------|------|-----|
-| `agentplane/` | Python CLI 与自动化代码 | ✅ |
-| `docs/` | 架构、操作手册、参考文档 | ✅ |
-| `infra/compose/` | Docker Compose 资产 | ✅ |
-| `inventory/` | 非敏感状态台账 | ✅ |
-| `templates/` | 非敏感模板 | ✅ |
-| `.agents/` | Agent skill 真源与 marketplace 元数据 | ✅ |
-| `tests/` | 自动化测试 | ✅ |
-| `secrets/` | 本地真实 Secrets | ❌ |
-| `local/` | 本地协作（不纳入仓库） | ❌ |

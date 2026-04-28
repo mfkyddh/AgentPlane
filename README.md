@@ -6,6 +6,8 @@
 >
 > AgentPlane 是一个 Agent-first control plane template repository。
 >
+> `.agents/skills` 是 AI Agent 看到的能力入口；`agentplane ...` 是所有正式执行入口。
+>
 > 当前成熟度：Alpha。仓库治理、离线测试、文档治理和 secrets 边界已经可用；发布自动化、provider 合同和 app delivery schema 仍在收敛。
 
 ---
@@ -78,7 +80,7 @@ agentplane repo health-check --repo-root .
 | ✅ **状态验证** | 持续检测配置漂移，发现问题及时报告 |
 | 📝 **操作留痕** | 每次操作留下可追溯的审计证据 |
 
-**核心设计**：配置即代码 • 敏感信息分离 • AI 友好 CLI • 跨平台
+**核心设计**：Skill 路由 • AI 友好 CLI • 配置即代码 • 敏感信息分离 • 跨平台
 
 ![架构简图](docs/assets/agentplane-architecture.svg)
 
@@ -120,6 +122,7 @@ AI 会自动转换为**计划 → 执行 → 验证 → 记录**的完整闭环�
 
 **🤖 AI 入口**：
 [AGENTS.md](AGENTS.md) ·
+[Skill 盘点](docs/maintainers/skill-surface-audit.md) ·
 [control-plane.md](docs/architecture/control-plane.md) ·
 [execution-flow.md](docs/runbooks/control-plane-agent-execution-flow.md)
 
@@ -144,7 +147,3 @@ AI 会自动转换为**计划 → 执行 → 验证 → 记录**的完整闭环�
 
 AgentPlane 的长期目标，是从 AI-assisted 运维控制面，演进为新项目从创建、开发、发布、部署到运维的统一控制面。
 更多规划见 [Roadmap](ROADMAP.md) 和 [项目定位](docs/reference/project-positioning.md)。
-
-<p align="center">
-  Made with 🤖 for Agents
-</p>

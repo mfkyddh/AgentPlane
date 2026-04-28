@@ -1,7 +1,7 @@
 ---
 status: active
 owner: AgentPlane maintainers
-last_verified: 2026-04-25
+last_verified: 2026-04-29
 superseded_by: null
 audience: agent
 
@@ -42,6 +42,26 @@ audience: agent
 | 文档 | 长期合同与专题解释层 | 架构页讲长期边界，runbook 讲专题流程，maintainer 页讲写法 |
 | 测试 | 回归与约束层 | 冻结 CLI 合同、文档入口、skill 引用与历史事故修复 |
 | 发布或收口 | 一次正式变更的对外一致性 | 至少确认代码、文档、模板、skill、测试没有明显漂移 |
+
+## Skill 同步门禁
+
+AgentPlane 的能力必须以 Skill 形式暴露给 AI Agent。任何改变正式行为的变更，都必须同步检查 `.agents/skills`。
+
+| 变更类型 | 必须同步 |
+| --- | --- |
+| 新增、重命名或删除 CLI 命令 | 更新对应 skill 的触发条件、命令示例和最小验证 |
+| 改变 domain/runtime/provider 行为 | 更新 skill 的边界、禁止行为、ledger 或 inventory 回写要求 |
+| 新增或退役 runbook/reference | 更新 skill 下钻链接，避免 Agent 继续走旧入口 |
+| 新增模板、compose 或 secrets 布局 | 更新 skill 的前置条件和真源路径说明 |
+| 新增正式对象域或 workflow | 新增或重构 skill，并把它登记到 `.agents/skills/catalog.yaml` |
+
+每个相关 PR 或逻辑提交至少满足一项：
+
+1. 已同步修改对应 skill。
+2. 已新增、删除或重构 skill，并更新 catalog。
+3. 已在提交说明或 PR 描述中明确“无需更新 skill”的原因。
+
+不得把“后续再补 skill”作为完成口径。若能力已经进入 `agentplane ...`，但没有可触发的 skill，视为对 Agent 不可用。
 
 每次线上事故、接口变化、权限坑或输出歧义，都应尽量沉淀为以下至少一类资产：
 
@@ -190,6 +210,7 @@ runbook 负责专题流程、风险边界、人工接力点与最小验证；需
 5. 新增正式能力时，代码、文档、skill、测试至少要更新必要组合，而不是只改一处。
 6. 文档示例必须使用正式入口，且能在代码、模板或已验证 runbook 中找到来源。
 7. 历史事故修复不应只停留在聊天记录或临时 shell 历史中，应尽量转化为可回归资产。
+8. 正式能力对外完成前，必须存在可触发的 skill 或明确的“不需要 Skill”记录。
 
 ## 反模式
 

@@ -309,6 +309,55 @@ class OpenSourceReadinessTests(unittest.TestCase):
         self.assertIn("agentplane.cli repo release-check --repo-root .", text)
         self.assertIn("agentplane.cli repo health-check --repo-root .", text)
 
+class SkillCatalogTests(unittest.TestCase):
+    def _catalog_entries(self) -> list[dict[str, str]]:
+        text = (REPO_ROOT / ".agents" / "skills" / "catalog.yaml").read_text(encoding="utf-8")
+        entries: list[dict[str, str]] = []
+        current: dict[str, str] | None = None
+        for line in text.splitlines():
+            if line.startswith("  - name: "):
+                if current is not None:
+                    entries.append(current)
+                current = {"name": line.split(": ", 1)[1]}
+            elif current is not None and line.startswith("    source_path: "):
+                current["source_path"] = line.split(": ", 1)[1]
+            elif current is not None and line.startswith("    frontmatter_name: "):
+                current["frontmatter_name"] = line.split(": ", 1)[1]
+        if current is not None:
+            entries.append(current)
+        return entries
+
+    def test_tracked_skills_are_registered_in_catalog(self) -> None:
+        result = subprocess.run(
+            ["git", "ls-files", ".agents/skills"],
+            cwd=REPO_ROOT,
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        tracked_skill_names = {
+            line.split("/")[2]
+            for line in result.stdout.splitlines()
+            if line.startswith(".agents/skills/") and line.endswith("/SKILL.md")
+        }
+        catalog_names = {entry["name"] for entry in self._catalog_entries()}
+
+        self.assertEqual(tracked_skill_names, catalog_names)
+
+    def test_catalog_skill_paths_and_frontmatter_match(self) -> None:
+        for entry in self._catalog_entries():
+            with self.subTest(skill=entry["name"]):
+                source_path = entry["source_path"]
+                skill_path = REPO_ROOT / source_path
+
+                self.assertTrue(skill_path.is_file(), msg=f"missing catalog skill path: {source_path}")
+                text = skill_path.read_text(encoding="utf-8")
+                frontmatter_name = re.search(r"^name:\s*(.+)$", text, flags=re.MULTILINE)
+                self.assertEqual(entry["name"], Path(source_path).parent.name)
+                self.assertIsNotNone(frontmatter_name)
+                self.assertEqual(entry["name"], frontmatter_name.group(1).strip('"'))
+                self.assertEqual(entry["name"], entry["frontmatter_name"])
+
 # ======================================================================
 # From: test_docs_no_legacy_terms.py
 # ======================================================================
