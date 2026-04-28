@@ -624,6 +624,10 @@ class BootstrapCliTests(unittest.TestCase):
         self.assertIn("host_profile", payload["payload"])
         self.assertIn("required_truths", payload["payload"]["contract"])
         self.assertIn("projection_only", payload["payload"]["contract"])
+        cli_entrypoint = payload["payload"]["cli_entrypoint"]
+        self.assertEqual("agentplane", cli_entrypoint["command"])
+        self.assertIn("uv run python -m agentplane.cli", cli_entrypoint["fallback_commands"])
+        self.assertIn("uv tool install -e", cli_entrypoint["install_command"])
 
     def test_bootstrap_verify_secrets_requires_structured_ssh_contract(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -665,7 +669,9 @@ class BootstrapCliTests(unittest.TestCase):
             self.assertTrue(payload["payload"]["ok"])
             self.assertTrue(payload["payload"]["secrets"]["ok"])
             self.assertFalse(payload["payload"]["projections"]["ok"])
-            self.assertEqual("warning", payload["payload"]["readiness_checks"][-1]["severity"])
+            readiness = {check["name"]: check for check in payload["payload"]["readiness_checks"]}
+            self.assertEqual("warning", readiness["projection-compat"]["severity"])
+            self.assertEqual("warning", readiness["global-cli-entrypoint"]["severity"])
 
 # ======================================================================
 # From: test_zzz_skills_sync.py

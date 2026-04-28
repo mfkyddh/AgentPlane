@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import shutil
 from pathlib import Path, PurePosixPath
 from typing import Any
 
@@ -276,12 +277,35 @@ def inspect_local_bootstrap(repo_root: Path) -> dict[str, Any]:
     payload = inspect_local_host(repo_root)
     payload["bootstrap_targets"] = list(bootstrap_target_names(repo_root))
     payload["contract"] = _contract_payload(repo_root)
+    payload["cli_entrypoint"] = inspect_cli_entrypoint(repo_root)
     return payload
+
+
+def inspect_cli_entrypoint(repo_root: Path) -> dict[str, Any]:
+    executable = shutil.which("agentplane")
+    fallback_commands = [
+        "uv run python -m agentplane.cli",
+        "python -m agentplane.cli",
+    ]
+    install_command = f"uv tool install -e {repo_root}"
+    return {
+        "command": "agentplane",
+        "available": executable is not None,
+        "executable": executable,
+        "fallback_commands": fallback_commands,
+        "install_command": install_command,
+        "recommendation": (
+            "`agentplane` is available on PATH."
+            if executable is not None
+            else "Install the editable tool or use a fallback command when PATH does not expose `agentplane`."
+        ),
+    }
 
 
 def bootstrap_doctor_payload(repo_root: Path, *, secrets_status: dict[str, Any]) -> dict[str, Any]:
     inspect_payload = inspect_local_bootstrap(repo_root)
     projection_status = inspect_bootstrap_projections(repo_root, inspect_payload=inspect_payload)
+    cli_entrypoint = inspect_payload.get("cli_entrypoint", {})
     readiness_checks = [
         {
             "name": "linux-backend-ready",
@@ -301,6 +325,12 @@ def bootstrap_doctor_payload(repo_root: Path, *, secrets_status: dict[str, Any])
             "ok": bool(projection_status.get("ok")),
             "details": "projection/compat 文件存在漂移不会阻断 takeover，但需要在相关 flow 里显式修正。",
         },
+        {
+            "name": "global-cli-entrypoint",
+            "severity": "warning",
+            "ok": bool(cli_entrypoint.get("available")),
+            "details": "`agentplane` 不在 PATH 时，可使用 `uv run python -m agentplane.cli ...` fallback。",
+        },
     ]
 
     ok = all(check["ok"] for check in readiness_checks if check["severity"] == "blocker")
@@ -315,6 +345,8 @@ def bootstrap_doctor_payload(repo_root: Path, *, secrets_status: dict[str, Any])
         next_steps.append("bootstrap truths 已就绪，可以让 Agent 接管后续 domain 动作。")
     if not bool(projection_status.get("ok")):
         next_steps.append("若后续 flow 仍依赖 projection/compat 文件，再按 doctor 的 warning 单独修正。")
+    if not bool(cli_entrypoint.get("available")):
+        next_steps.append("可运行 `uv tool install -e <repo-root>` 注册全局 `agentplane`，或继续使用模块 fallback。")
 
     return {
         "ok": ok,
