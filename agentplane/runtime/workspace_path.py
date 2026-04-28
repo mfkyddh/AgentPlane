@@ -3,7 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from agentplane.runtime.workspace import WorkspaceContext, _looks_like_unc_path, _looks_like_windows_root, _windows_path_to_wsl_posix, _wsl_unc_to_posix
+from agentplane.runtime.workspace import (
+    WorkspaceContext,
+    _looks_like_windows_root,
+    _windows_path_to_wsl_posix,
+    _wsl_unc_to_posix,
+)
 
 
 @dataclass(frozen=True)

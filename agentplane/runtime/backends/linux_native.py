@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from agentplane.runtime.backends.registry import register_backend
 from agentplane.runtime.execution import (
     ExecutionBindings,
     ExecutionPlan,
@@ -7,7 +8,6 @@ from agentplane.runtime.execution import (
     require_local_executable,
     shell_join,
 )
-from agentplane.runtime.backends.registry import register_backend
 
 
 @register_backend("linux-native")

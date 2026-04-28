@@ -4,6 +4,7 @@ import os
 import shlex
 from pathlib import Path
 
+from agentplane.runtime.backends.registry import register_backend
 from agentplane.runtime.execution import (
     ExecutionBindings,
     ExecutionPlan,
@@ -11,7 +12,6 @@ from agentplane.runtime.execution import (
     env_prefixed_command,
     require_local_executable,
 )
-from agentplane.runtime.backends.registry import register_backend
 from agentplane.ssh import SshTarget
 
 

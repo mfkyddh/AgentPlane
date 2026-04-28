@@ -186,6 +186,6 @@ def guard(
 
     if declared == "read-only" and inferred == "mutation":
         raise IntentGuardViolation(
-            f"intent mismatch: declared 'read-only' but command is inferred as "
-            f"'mutation'. Use --intent=mutation."
+            "intent mismatch: declared 'read-only' but command is inferred as "
+            "'mutation'. Use --intent=mutation."
         )

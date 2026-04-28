@@ -10,7 +10,6 @@ from agentplane.runtime.host_profile import detect_host_profile
 from agentplane.runtime.target_resolver import TargetResolver
 from agentplane.ssh import resolve_ssh_target
 
-
 PreflightStatus = Literal["ok", "warning", "failed"]
 
 
@@ -119,7 +118,6 @@ def _check_ssh_key_permissions(ssh_target) -> PreflightCheck:
     if not key_path.exists():
         return PreflightCheck("ssh-key", "failed", f"SSH private key not found: {key_path}")
 
-    import stat
     mode = key_path.stat().st_mode
     if mode & 0o077:
         return PreflightCheck(

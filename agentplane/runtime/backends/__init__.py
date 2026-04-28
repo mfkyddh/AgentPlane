@@ -5,10 +5,9 @@ from agentplane.runtime.execution import BackendRunner
 
 from .linux_native import LinuxNativeBackend
 from .macos_lima import MacosLimaBackend
+from .registry import build_backend_runner, register_backend  # noqa: F401
 from .ssh_linux import SshLinuxBackend
 from .windows_wsl import WindowsWslBackend
-
-from .registry import build_backend_runner, register_backend  # noqa: F401
 
 __all__ = [
     "BackendRunner",
