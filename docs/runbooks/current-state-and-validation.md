@@ -9,7 +9,7 @@ audience: both
 
 # 📊 AgentPlane 当前状态与验证
 
-结论：本页教人"怎么看状态"，不是状态本身。具体快照见 [`inventory/state-snapshot.md`](../../inventory/state-snapshot.md)，运行以下命令查看最新状态。
+结论：本页教人"怎么看状态"，不是状态本身。具体快照由本地运行生成到 `inventory/state-snapshot.md`，不纳入 Git；运行以下命令查看最新状态。
 
 ## 查看仓库健康
 

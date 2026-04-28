@@ -554,7 +554,7 @@ def test_workspace_resolver_returns_canonical_and_resolved_paths() -> None:
         _, result = resolve_app_contract_reference(repo_root, target="prod0-main", app="sub2api")
 
         assert result.canonical_ref == "apps/sub2api/contracts/prod0-main"
-        assert result.resolved_path == contract_file.resolve()
+        assert result.resolved_path.samefile(contract_file)
 
 def test_target_resolver_distinguishes_local_and_remote_execution_policies() -> None:
     resolver = TargetResolver(HostProfile(os_name="windows", linux_backend="windows-wsl", supports_docker=True))

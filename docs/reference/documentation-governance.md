@@ -153,7 +153,7 @@ audience: agent
 | 3 | 强化门禁：元数据完整性、last_verified 过期、README 长度、结论行检查 | ✅ 完成 |
 | 4 | 人机协同：人类意图模板、AI 执行闭环协议 | 🔄 进行中 |
 | 5 | 自动回写：状态摘要由 `ledger / inventory / doc-sync` 生成 | 待启动 |
-| 6 | CI 集成：docs-sanity 和 health-check 纳入 CI pipeline | 待启动 |
+| 6 | CI 集成：fast test、docs-sanity、secret-scan、privacy-scan 纳入 PR pipeline；release-check 保留为发布门禁 | ✅ 完成 |
 
 ## 👤 人类意图输入模板
 

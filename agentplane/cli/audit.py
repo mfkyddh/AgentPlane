@@ -181,6 +181,20 @@ def _wsl_required_compose_targets(repo_root: Path) -> dict[str, set[str]]:
     }
 
 
+def _host_path_exists(path: Path) -> bool:
+    try:
+        return path.exists()
+    except OSError:
+        return False
+
+
+def _host_path_is_symlink(path: Path) -> bool:
+    try:
+        return path.is_symlink()
+    except OSError:
+        return False
+
+
 def _audit_wsl_host_state(repo_root: Path | None = None) -> list[dict[str, Any]]:
     violations: list[dict[str, Any]] = []
     resolved_repo_root = (repo_root or Path.cwd()).resolve(strict=False)
@@ -190,7 +204,7 @@ def _audit_wsl_host_state(repo_root: Path | None = None) -> list[dict[str, Any]]
         Path("/tmp/1panel-src"),
     )
     for path in forbidden_paths:
-        if path.exists():
+        if _host_path_exists(path):
             violations.append(
                 _violation(
                     "wsl",
@@ -206,7 +220,9 @@ def _audit_wsl_host_state(repo_root: Path | None = None) -> list[dict[str, Any]]
         Path("/root/.local/share/openclaw-feishu-uat"): Path("/data/openclaw/config/openclaw-feishu-uat"),
     }
     for path, expected_target in expected_symlinks.items():
-        if path.exists() and not path.is_symlink():
+        path_exists = _host_path_exists(path)
+        path_is_symlink = _host_path_is_symlink(path)
+        if path_exists and not path_is_symlink:
             violations.append(
                 _violation(
                     "wsl",
@@ -216,7 +232,7 @@ def _audit_wsl_host_state(repo_root: Path | None = None) -> list[dict[str, Any]]
                     details={"expected_target": str(expected_target)},
                 )
             )
-        elif path.is_symlink():
+        elif path_is_symlink:
             actual_target = path.resolve(strict=False)
             if actual_target != expected_target:
                 violations.append(
@@ -233,7 +249,7 @@ def _audit_wsl_host_state(repo_root: Path | None = None) -> list[dict[str, Any]]
         Path("/data/openclaw/config/home"),
         Path("/data/openclaw/config/openclaw-feishu-uat"),
     ):
-        if not path.exists():
+        if not _host_path_exists(path):
             violations.append(
                 _violation(
                     "wsl",

@@ -290,7 +290,11 @@ class OpenSourceReadinessTests(unittest.TestCase):
         self.assertIn("ubuntu-latest", text)
         self.assertIn("macos-latest", text)
         self.assertIn("windows-latest", text)
-        self.assertIn("uv run python -m agentplane.cli repo health-check --repo-root .", text)
+        self.assertIn("uv run python -m agentplane.cli test fast --tb=short", text)
+        self.assertIn("uv run python -m agentplane.cli repo docs-sanity --repo-root .", text)
+        self.assertIn("uv run python -m agentplane.cli repo secret-scan --repo-root .", text)
+        self.assertIn("uv run python -m agentplane.cli repo privacy-scan --repo-root .", text)
+        self.assertIn("uv run python -m agentplane.cli repo release-check --repo-root .", text)
         self.assertNotIn("live-gate run --execute", text)
 
     def test_ci_never_executes_live_gate(self) -> None:
