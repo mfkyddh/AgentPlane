@@ -1,11 +1,3 @@
----
-status: active
-owner: AgentPlane maintainers
-last_verified: 2026-04-25
-superseded_by: null
-audience: both
----
-
 # 🛫 AgentPlane
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
