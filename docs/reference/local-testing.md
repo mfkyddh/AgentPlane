@@ -1,4 +1,14 @@
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-29
+superseded_by: null
+audience: both
+---
+
 # 本地测试规范
+
+结论：本文说明如何通过 pre-commit / pre-push 在本地捕获错误，减少 CI 失败和返工。
 
 > **目标**：在推送代码到远程仓库之前，在本地捕获错误，减少 CI 失败。
 
