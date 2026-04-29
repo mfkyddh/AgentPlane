@@ -22,6 +22,8 @@ secrets/
 .workbuddy/
 .cache/
 .ruff_cache/
+.claude/
+plans/
 tmp/
 
 # Python and Node runtime caches.
