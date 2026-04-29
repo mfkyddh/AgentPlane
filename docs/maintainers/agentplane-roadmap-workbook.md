@@ -75,7 +75,7 @@ audience: agent
 | P2 | 操作凭证、例外和复盘模型 | `done` | 已由人类确认：人类可读凭证、Markdown 模板、只定义模型 | Operation Receipt 与 Exception Review 最小模型可用 |
 | P3 | 项目注册表与项目蓝图模型 | `done` | 已由人类确认：弱化 Project Registry、Markdown 规则、只定义关系 | App Catalog 与 Blueprint 边界清晰，Project Registry 暂缓 |
 | P4 | 应用生命周期示范闭环 | `done` | 已由人类确认：文档演练、Markdown 计划、不碰真实运行态 | 示范项目选择标准、生命周期顺序和验收口径已定义 |
-| P5 | 可视化控制面增强 | `active` | 已由人类确认：状态可见化、轻量投影、不创造新真源 | repo status 或静态面板能展示阶段、任务、项目、风险 |
+| P5 | 可视化控制面增强 | `done` | 已由人类确认：状态可见化、轻量投影、不创造新真源 | repo status 能展示阶段、任务、风险和下一步；HTML 面板增加 roadmap/risks/next-step 区块 |
 | P6 | 安全、并发与多 Agent 受控扩展 | `planned` | 待讨论 | 威胁模型、锁机制、审批边界和多 Agent 规则进入正式合同 |
 
 ## P0 蓝图落库与任务机制建立
@@ -415,10 +415,10 @@ P5 的可视化投影必须以本文为阶段和任务状态真源。首轮投�
 
 | ID | 任务 | 状态 | 完成日期 | 验证或证据 | 后续影响 |
 | --- | --- | --- | --- | --- | --- |
-| P5-T4 | 在 `repo status` JSON 输出中实现 roadmap 投影 | `todo` | | | Agent "继续执行"协议可消费 JSON 中的 roadmap 状态 |
-| P5-T5 | 在 `repo status` JSON 输出中实现风险和下一步摘要推导 | `todo` | | | 面板能提示阻塞、异常和推荐下一步 |
-| P5-T6 | 在静态 HTML 面板中增加 roadmap/risks/next-step 区块 | `todo` | | | 人类可直接浏览阶段、任务、风险和推荐下一步 |
-| P5-T7 | 运行最小验证并回写本阶段任务状态 | `todo` | | | P5 阶段验收 |
+| P5-T4 | 在 `repo status` JSON 输出中实现 roadmap 投影 | `done` | 2026-04-29 | `_workbook_status()` 解析 workbook Markdown 并返回 current_phase/next_task/resume_entry/source；28 个单元测试通过 | 下一步实现风险和下一步摘要推导 |
+| P5-T5 | 在 `repo status` JSON 输出中实现风险和下一步摘要推导 | `done` | 2026-04-29 | `_derive_risks()` 推导 7 种风险类型，`_derive_next_step()` 按 5 级优先级推导；12 个新增单元测试通过 | 下一步 HTML 面板增强 |
+| P5-T6 | 在静态 HTML 面板中增加 roadmap/risks/next-step 区块 | `done` | 2026-04-29 | `_render_roadmap_section()` / `_render_risks_section()` / `_render_next_step_section()`；e2e 测试通过 | 下一步运行最小验证 |
+| P5-T7 | 运行最小验证并回写本阶段任务状态 | `done` | 2026-04-29 | docs-sanity ok、skills check ok、28+12 单元测试通过、e2e repo status 测试通过 | P5 阶段完成，推进到 P6 |
 
 ## P6 安全、并发与多 Agent 受控扩展
 
@@ -431,10 +431,9 @@ P5 的可视化投影必须以本文为阶段和任务状态真源。首轮投�
 
 ## ✅ 当前继续入口
 
-当前阶段：P5 可视化控制面增强。
+当前阶段：P6 安全、并发与多 Agent 受控扩展。
 
 下一步：
 
-1. 执行 P5-T4：在 `repo status` JSON 输出中实现 roadmap 投影。
-2. 执行前先检查工作区和仓库状态。
-3. P5-T4 完成后回写任务状态、验证证据和后续影响。
+1. P6 阶段门待讨论，需先和人类确认实施方向、技术采用和概念边界。
+2. 讨论通过后将 P6 状态更新为 `approved` 并拆分任务。
