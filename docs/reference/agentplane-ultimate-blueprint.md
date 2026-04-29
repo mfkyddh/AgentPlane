@@ -182,3 +182,4 @@ AgentPlane 从 alpha 走向 beta，不取决于 Skill 数量，而取决于这�
 - [Agent 执行闭环](../runbooks/control-plane-agent-execution-flow.md)
 - [文档治理规范](documentation-governance.md)
 - [项目定位](project-positioning.md)
+- [威胁模型](threat-model.md)

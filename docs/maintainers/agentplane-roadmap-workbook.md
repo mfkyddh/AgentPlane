@@ -76,7 +76,7 @@ audience: agent
 | P3 | 项目注册表与项目蓝图模型 | `done` | 已由人类确认：弱化 Project Registry、Markdown 规则、只定义关系 | App Catalog 与 Blueprint 边界清晰，Project Registry 暂缓 |
 | P4 | 应用生命周期示范闭环 | `done` | 已由人类确认：文档演练、Markdown 计划、不碰真实运行态 | 示范项目选择标准、生命周期顺序和验收口径已定义 |
 | P5 | 可视化控制面增强 | `done` | 已由人类确认：状态可见化、轻量投影、不创造新真源 | repo status 能展示阶段、任务、风险和下一步；HTML 面板增加 roadmap/risks/next-step 区块 |
-| P6 | 安全、并发与多 Agent 受控扩展 | `approved` | 已由人类确认：纯文档定义、Agent 派遣子任务、三类威胁 | 威胁模型、锁规则、审批边界和子 Agent 协作规则进入正式合同 |
+| P6 | 安全、并发与多 Agent 受控扩展 | `done` | 已由人类确认：纯文档定义、Agent 派遣子任务、三类威胁 | 威胁模型、锁规则、审批边界和子 Agent 协作规则进入正式文档 |
 
 ## P0 蓝图落库与任务机制建立
 
@@ -485,17 +485,16 @@ P6 只定义审批门禁的概念模型。建议未来在 CLI 中扩展为：`--
 
 | ID | 任务 | 状态 | 完成日期 | 验证或证据 | 后续影响 |
 | --- | --- | --- | --- | --- | --- |
-| P6-T1 | 定义 AgentPlane 威胁模型（三类威胁分类框架、触发条件、现有缓解和待补项） | `todo` | | | |
-| P6-T2 | 定义子 Agent 协作边界（派遣模型、权限委托、结果回传、禁止行为） | `todo` | | | |
-| P6-T3 | 定义锁规则和审批边界（文件级锁规则、审批门禁 vs 阶段门、Agent ID 传递） | `todo` | | | |
-| P6-T4 | 运行最小验证并回写本阶段任务状态 | `todo` | | | |
+| P6-T4 | 运行最小验证并回写本阶段任务状态 | `done` | 2026-04-29 | docs-sanity ok、skills check ok、repo status ok | P6 阶段完成，需人类决定是否新增阶段 |
+| P6-T1 | 定义 AgentPlane 威胁模型（三类威胁分类框架、触发条件、现有缓解和待补项） | `done` | 2026-04-29 | `docs/reference/threat-model.md`，docs-sanity ok | 下一步执行 P6-T2 |
+| P6-T2 | 定义子 Agent 协作边界（派遣模型、权限委托、结果回传、禁止行为） | `done` | 2026-04-29 | `docs/reference/agent-collaboration.md`，docs-sanity ok | 下一步执行 P6-T3 |
+| P6-T3 | 定义锁规则和审批边界（文件级锁规则、审批门禁 vs 阶段门、Agent ID 传递） | `done` | 2026-04-29 | `docs/reference/concurrency-and-approval.md`，docs-sanity ok | 下一步执行 P6-T4 |
 
 ## ✅ 当前继续入口
 
-当前阶段：P6 安全、并发与多 Agent 受控扩展（阶段门已确认，状态 `approved`）。
+P6 安全、并发与多 Agent 受控扩展 已完成（状态 `done`）。
 
-下一步：
+下一步选项：
 
-1. 执行 P6-T1：定义 AgentPlane 威胁模型。
-2. 依次推进 P6-T2、P6-T3。
-3. 全部完成后执行 P6-T4 运行最小验证并回写状态。
+1. 新增 P7 阶段（需先讨论阶段门：实施方向、技术采用、概念边界）。
+2. 当前路线图暂告一段落，后续阶段按需新增。
