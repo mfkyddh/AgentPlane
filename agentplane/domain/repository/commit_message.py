@@ -16,8 +16,8 @@ from pathlib import Path
 ALLOWED_TYPES = ("feat", "fix", "refactor", "docs", "test", "chore", "style", "perf")
 SUBJECT_RE = re.compile(
     r"^(?P<type>feat|fix|refactor|docs|test|chore|style|perf)"
-    r"(?:\([a-z0-9][a-z0-9._-]*\))?: "
-    r"(?P<description>[a-z0-9].*)$"
+    r"(?:\([a-zA-Z0-9][a-zA-Z0-9._-]*\))?: "
+    r"(?P<description>.+)$"
 )
 
 
@@ -60,6 +60,7 @@ def _subjects_from_range(commit_range: str) -> list[str]:
         result = subprocess.run(
             ["git", "log", "-1", "--format=%s", range_spec],
             text=True,
+            encoding="utf-8",
             capture_output=True,
             check=False,
         )
@@ -76,6 +77,7 @@ def _subjects_from_range(commit_range: str) -> list[str]:
     result = subprocess.run(
         ["git", "log", "--no-merges", "--format=%s", range_spec],
         text=True,
+        encoding="utf-8",
         capture_output=True,
         check=False,
     )
