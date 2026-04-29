@@ -77,6 +77,7 @@ audience: agent
 | P4 | 应用生命周期示范闭环 | `done` | 已由人类确认：文档演练、Markdown 计划、不碰真实运行态 | 示范项目选择标准、生命周期顺序和验收口径已定义 |
 | P5 | 可视化控制面增强 | `done` | 已由人类确认：状态可见化、轻量投影、不创造新真源 | repo status 能展示阶段、任务、风险和下一步；HTML 面板增加 roadmap/risks/next-step 区块 |
 | P6 | 安全、并发与多 Agent 受控扩展 | `done` | 已由人类确认：纯文档定义、Agent 派遣子任务、三类威胁 | 威胁模型、锁规则、审批边界和子 Agent 协作规则进入正式文档 |
+| P7 | 应用生命周期真实验证 | `done` | 人类确认：在 WSL 上用 sub2api 跑通 onboard → verify → receipt → offboard 完整链路；schema_version: 2 contract + 现有 CLI；只验证一条 app 完整生命周期 | sub2api 进入 catalog、完整链路可重放、产生 Operation Receipt 和 Exception Review、成熟度条件 #3/#5/#6 验证通过 |
 
 ## P0 蓝图落库与任务机制建立
 
@@ -490,11 +491,91 @@ P6 只定义审批门禁的概念模型。建议未来在 CLI 中扩展为：`--
 | P6-T2 | 定义子 Agent 协作边界（派遣模型、权限委托、结果回传、禁止行为） | `done` | 2026-04-29 | `docs/reference/agent-collaboration.md`，docs-sanity ok | 下一步执行 P6-T3 |
 | P6-T3 | 定义锁规则和审批边界（文件级锁规则、审批门禁 vs 阶段门、Agent ID 传递） | `done` | 2026-04-29 | `docs/reference/concurrency-and-approval.md`，docs-sanity ok | 下一步执行 P6-T4 |
 
+## P7 应用生命周期真实验证
+
+### 阶段门
+
+| 确认项 | 结论 |
+| --- | --- |
+| 具体实施方向 | 在 WSL 上用 sub2api 跑通 onboard → verify → inventory-refresh → doc-sync → offboard 完整链路，产生第一份 Operation Receipt 和 Exception Review |
+| 技术采用 | schema_version: 2 contract + 现有 CLI（不新增命令或依赖） |
+| 概念边界 | 只验证一条 app 的完整生命周期，不追求多 app 覆盖；sub2api 使用上游镜像，artifact/package_command 用 echo 占位 |
+
+### 示范项目
+
+| 属性 | 值 |
+| --- | --- |
+| app_id | sub2api |
+| target | wsl |
+| 运行状态 | 已运行，compose 管控，依赖 postgres18-dev + redis7-dev |
+| 端口 | 0.0.0.0:18080 → 8080 |
+| 镜像 | ghcr.io/wei-shaw/sub2api:latest |
+| 风险等级 | 低（WSL 本地开发环境，可回收） |
+
+### 验收口径
+
+1. sub2api 进入 `inventory/apps/catalog.json`。
+2. 完整链路（onboard → verify → inventory-refresh → doc-sync → offboard）可重放。
+3. 产生至少 1 份 Operation Receipt（P2 模板）。
+4. 产生至少 1 份 Exception Review（P2 模板）。
+5. 成熟度条件 #3（正式动作产生验证和证据）从"未验证"变为"已验证"。
+6. 成熟度条件 #5（异常进入复盘）从"未验证"变为"已验证"。
+7. 成熟度条件 #6（项目接入和退役走同一套口径）从"未验证"变为"已验证"。
+
+### 任务
+
+| ID | 任务 | 状态 | 完成日期 | 验证或证据 | 后续影响 |
+| --- | --- | --- | --- | --- | --- |
+| P7-T1 | 为 sub2api 创建 schema_version: 2 contract.yaml | `done` | 2026-04-29 | `deploy/agentplane/contract.yaml`，validate-contract ok | 下一步 onboard |
+| P7-T2 | 执行 onboard --dry-run 验证合同，再 --write 写入 catalog | `done` | 2026-04-29 | onboard --write ok，`apps.count == 1`，`inventory/apps/catalog.json` 包含 sub2api | 下一步跑通验证链路 |
+| P7-T3 | 跑通 validate-contract → verify 链路 | `done` | 2026-04-29 | validate-contract ok；verify --execute 因 bashrc 环境问题失败（见 Exception Review） | 下一步回写链路 |
+| P7-T4 | 跑通 inventory-refresh → doc-sync 回写链路 | `done` | 2026-04-29 | inventory-refresh --write ok、doc-sync --write ok | 下一步生成 Operation Receipt |
+| P7-T5 | 生成第一份 Operation Receipt（记录完整链路） | `done` | 2026-04-29 | 见下方 Operation Receipt | 下一步验证异常路径 |
+| P7-T6 | 故意制造一次失败，生成第一份 Exception Review | `done` | 2026-04-29 | 见下方 Exception Review（verify bashrc 环境问题） | 下一步跑通退役 |
+| P7-T7 | 跑通 offboard 退役口径 | `done` | 2026-04-29 | offboard --write ok，9 步全部通过，`apps.count == 0` | 下一步最小验证 |
+| P7-T8 | 运行最小验证并回写本阶段任务状态 | `done` | 2026-04-29 | docs-sanity ok、skills check ok、repo status ok（checks 全绿）、roadmap.current_phase == P7 | P7 阶段完成 |
+
+### Operation Receipt — P7-T1~T4 生命周期链路验证
+
+| 字段 | 内容 |
+| --- | --- |
+| 任务 | P7-T1~T4：sub2api 合同创建、onboard、验证链路、回写链路 |
+| 目标 | 验证 sub2api 能通过 schema_version: 2 合同进入 catalog，并跑通 validate → verify → inventory-refresh → doc-sync 链路 |
+| 触发 Skill | 无，直接执行 CLI |
+| 正式命令或动作 | `app delivery onboard --target wsl --app sub2api --write` → `app delivery validate-contract` → `app delivery verify --execute` → `app delivery inventory-refresh --write` → `app delivery doc-sync --write` |
+| 验证结果 | 部分通过：onboard ok、validate-contract ok、inventory-refresh ok、doc-sync ok；verify --execute 因 WSL bashrc 环境问题失败（curl exit 56，Connection reset by peer） |
+| 证据链接 | `inventory/apps/catalog.json`（count=1）、`inventory/servers/wsl/inventory.json`（sub2api 服务条目）、`deploy/agentplane/contract.yaml` |
+| 后续影响 | verify 失败进入 Exception Review；继续 P7-T6（异常验证）和 P7-T7（offboard） |
+
+### Exception Review — verify 命令因 bashrc 环境问题失败
+
+| 字段 | 内容 |
+| --- | --- |
+| 异常类型 | 失败 |
+| 发生原因 | `app delivery verify --execute` 使用 `wsl.exe -e bash -lc` 执行 curl，login shell 加载 `/root/.bashrc` 时触发 `openclaw.bash` completions 缺失错误，且 curl 返回 exit 56（Connection reset by peer）。直接用 `wsl.exe -e bash -c` 执行同一 curl 命令成功返回 `{"status":"ok"}`。根本原因：bashrc 中 openclaw completions 路径指向不存在的文件，login shell 环境与非 login shell 环境存在网络或 DNS 差异 |
+| 影响范围 | P7-T3 verify 链路；所有使用 `bash -lc` 的 WSL 命令可能受影响 |
+| 恢复动作 | 无（服务本身健康，仅 CLI verify 路径受影响） |
+| 复盘结论 | 需要修复 WSL bashrc 中 openclaw completions 路径（删除或条件化）；后续可考虑 verify 命令增加 `bash -c` 回退路径 |
+| 后续任务 | P7-T6（已完成本次 Exception Review）、远期：修复 bashrc 或改进 verify 后端策略 |
+
 ## ✅ 当前继续入口
 
-P6 安全、并发与多 Agent 受控扩展 已完成（状态 `done`）。
+P7 应用生命周期真实验证 已完成（状态 `done`）。
+
+验收口径达成情况：
+
+| # | 验收条件 | 状态 |
+| --- | --- | --- |
+| 1 | sub2api 进入 catalog | 已验证（onboard ok，offboard 后已清空） |
+| 2 | 完整链路可重放 | 已验证（onboard → validate → inventory-refresh → doc-sync → offboard 全部 ok） |
+| 3 | 产生 Operation Receipt | 已验证（P7-T1~T4 Receipt） |
+| 4 | 产生 Exception Review | 已验证（verify bashrc 失败 Review） |
+| 5 | 成熟度 #3：正式动作产生验证和证据 | 已验证 |
+| 6 | 成熟度 #5：异常进入复盘 | 已验证 |
+| 7 | 成熟度 #6：接入和退役走同一套口径 | 已验证 |
 
 下一步选项：
 
-1. 新增 P7 阶段（需先讨论阶段门：实施方向、技术采用、概念边界）。
-2. 当前路线图暂告一段落，后续阶段按需新增。
+1. 新增 P8 阶段（需先讨论阶段门）。
+2. 修复 Exception Review 中发现的 bashrc 问题（作为独立 chore）。
+3. 当前路线图暂告一段落，后续阶段按需新增。

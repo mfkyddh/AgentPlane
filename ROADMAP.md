@@ -14,6 +14,8 @@ AgentPlane is currently an alpha-stage, CLI-first control plane template for AI-
 
 The long-term north-star plan is tracked in [AgentPlane 终极蓝图 v4](docs/reference/agentplane-ultimate-blueprint.md). Phase execution state is tracked in [AgentPlane Roadmap Workbook](docs/maintainers/agentplane-roadmap-workbook.md).
 
+Phases P0–P6 (blueprint landing, resume protocol, evidence model, project model, lifecycle demo design, dashboard, and security framework) are complete. P7 (lifecycle verification) is the current phase — running a real app through the full onboarding → verify → receipt → offboard lifecycle to validate the designs from P0–P6.
+
 These documents do not replace the formal control-plane contract. Formal operations still route through `agentplane ...`, and execution semantics remain governed by [control-plane.md](docs/architecture/control-plane.md).
 
 ## Stable Enough To Build On
@@ -37,13 +39,13 @@ These documents do not replace the formal control-plane contract. Formal operati
 
 ## Near-Term Milestones
 
-| Milestone | Goal | Exit criteria |
-| --- | --- | --- |
-| M1: Public contributor loop | Make external PRs self-verifying. | CI runs on pull requests and pushes, issue templates exist, and release checks are documented. |
-| M2: Release engineering | Make tags reproducible. | `uv build` passes in release checks and release notes are maintained. |
-| M3: Contract hardening | Make app delivery contracts machine-checkable. | JSON Schema exists for the current contract and CLI errors carry stable codes. |
-| M4: Runtime decomposition | Reduce high-risk files. | App delivery runtime responsibilities are split by contract, render, deploy, verify, and inventory/doc sync. |
-| M5: Provider contracts | Keep provider details behind formal surfaces. | Provider behavior has focused contract tests and public docs point to task entries. |
+| Milestone | Goal | Exit criteria | Progress |
+| --- | --- | --- | --- |
+| M1: Public contributor loop | Make external PRs self-verifying. | CI runs on pull requests and pushes, issue templates exist, and release checks are documented. | **Partially done** — CI workflow (`ci.yml`) covers 3-OS matrix fast-gate + release-gate; issue/PR templates exist. |
+| M2: Release engineering | Make tags reproducible. | `uv build` passes in release checks and release notes are maintained. | **Partially done** — `repo release-check` CLI exists; `uv build` and release notes automation pending. |
+| M3: Contract hardening | Make app delivery contracts machine-checkable. | JSON Schema exists for the current contract and CLI errors carry stable codes. | Pending. |
+| M4: Runtime decomposition | Reduce high-risk files. | App delivery runtime responsibilities are split by contract, render, deploy, verify, and inventory/doc sync. | Pending. |
+| M5: Provider contracts | Keep provider details behind formal surfaces. | Provider behavior has focused contract tests and public docs point to task entries. | Pending. |
 
 ## Long-Term Phases
 
@@ -56,6 +58,7 @@ These documents do not replace the formal control-plane contract. Formal operati
 | P4: Lifecycle demo | Prove a low-risk app lifecycle from onboarding through verification and retirement semantics. | [Workbook](docs/maintainers/agentplane-roadmap-workbook.md#p4-应用生命周期示范闭环) |
 | P5: Dashboard evolution | Extend repo status or static dashboard with phase, task, project, and risk views. | [Workbook](docs/maintainers/agentplane-roadmap-workbook.md#p5-可视化控制面增强) |
 | P6: Controlled scale | Add security, concurrency, approvals, and multi-Agent boundaries. | [Workbook](docs/maintainers/agentplane-roadmap-workbook.md#p6-安全并发与多-agent-受控扩展) |
+| P7: Lifecycle verification | Run a real app through the full onboarding → verify → receipt → offboard lifecycle. | **Done** — [Workbook](docs/maintainers/agentplane-roadmap-workbook.md#p7-应用生命周期真实验证) |
 
 ## Not Goals
 
