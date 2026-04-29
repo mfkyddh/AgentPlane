@@ -10,7 +10,7 @@ from typing import Any
 from agentplane.runtime.execution import CommandRunner
 from agentplane.ssh import resolve_ssh_target
 
-SUPPORTED_NETWORK_TARGETS = ("prod0-main", "prod2-main")
+SUPPORTED_NETWORK_TARGETS = ("prod0-main",)
 
 
 def managed_bridge_network_declaration_errors(inventory: dict[str, Any]) -> list[str]:

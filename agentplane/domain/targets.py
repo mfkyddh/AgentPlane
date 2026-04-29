@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-FORMAL_TARGETS: tuple[str, ...] = ("wsl", "prod0-main", "prod2-main")
-PRODUCTION_TARGETS: tuple[str, ...] = ("prod0-main", "prod2-main")
+FORMAL_TARGETS: tuple[str, ...] = ("wsl", "prod0-main")
+PRODUCTION_TARGETS: tuple[str, ...] = ("prod0-main",)
 
 TARGET_ALIASES: dict[str, str] = {
     "wsl": "wsl",
     "prod0-main": "prod0",
-    "prod2-main": "prod2",
 }
 
 SUPPORTED_APP_TARGETS = FORMAL_TARGETS

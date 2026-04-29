@@ -15,7 +15,7 @@ audience: both
 
 ---
 
-## 1. 测试金字塔与并行契约
+## 🧪 测试金字塔与并行契约
 
 | 层级 | Marker | 特征 | 目标耗时 | 并行策略 |
 |------|--------|------|----------|----------|
@@ -35,7 +35,7 @@ audience: both
 
 ---
 
-## 2. Marker 定义
+## 🏷️ Marker 定义
 
 ```python
 @pytest.mark.unit          # 纯函数/无 I/O / 无全局状态
@@ -61,7 +61,7 @@ audience: both
 
 ---
 
-## 3. 文件组织规则
+## 📁 文件组织规则
 
 ### 规则
 
@@ -69,12 +69,11 @@ audience: both
 2. **环境是参数，不是文件名**：
    ```python
    # ✅ 正确
-   @pytest.mark.parametrize("target", ["prod0-main", "prod2-main", "wsl"])
+   @pytest.mark.parametrize("target", ["prod0-main", "wsl"])
    def test_lifecycle(target): ...
 
    # ❌ 错误
    test_app_lifecycle_prod0_main.py
-   test_app_lifecycle_prod2_main.py
    test_app_lifecycle_wsl.py
    ```
 3. **操作是类或参数，不是文件名**：
@@ -101,7 +100,7 @@ audience: both
 
 ---
 
-## 4. Fixture 体系
+## 🔧 Fixture 体系
 
 ### 核心 fixture
 
@@ -123,7 +122,7 @@ def cli_tmpdir(tmp_path: Path) -> Path:
 
 ---
 
-## 5. CLI 入口
+## 💻 CLI 入口
 
 ```bash
 agentplane test          # 等价于 agentplane test fast
@@ -134,7 +133,7 @@ agentplane test e2e      # 只跑 e2e, -n 4
 
 ---
 
-## 6. 门禁规则
+## 🚧 门禁规则
 
 | 规则 | 触发条件 | 动作 |
 |------|----------|------|
@@ -145,7 +144,7 @@ agentplane test e2e      # 只跑 e2e, -n 4
 
 ---
 
-## 7. 实施路线
+## 🗺️ 实施路线
 
 | 优先级 | 动作 | 状态 |
 |--------|------|------|

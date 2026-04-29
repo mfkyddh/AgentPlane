@@ -9,7 +9,6 @@ from tests.support.app_delivery import (
     sync_app_catalog_for_contract,
     write_app_catalog_entry,
     write_contract,
-    write_prod2_contract,
     write_sampleapi_contract,
     write_target_contract,
 )
@@ -25,7 +24,6 @@ __all__ = [
     "sync_app_catalog_for_contract",
     "write_app_catalog_entry",
     "write_contract",
-    "write_prod2_contract",
     "write_sampleapi_contract",
     "write_target_contract",
 ]

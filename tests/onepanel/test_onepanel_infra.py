@@ -296,12 +296,12 @@ class OnePanelPublicIngressTests(unittest.TestCase):
             website_type="proxy",
             website_group_id=1,
             website_proxy="http://127.0.0.1:2096",
-            website_remark="prod2-main 1Panel public ingress",
+            website_remark="prod0-main 1Panel public ingress",
             website_ipv6=True,
             cert_primary_domain="1panel.example.org",
             cert_other_domains="",
             cert_dir="/data/1panel/www/certs/1panel-example-org",
-            cert_description="prod2-main 1Panel public ingress",
+            cert_description="prod0-main 1Panel public ingress",
             cert_key_type="2048",
             cert_auto_renew=True,
             cert_reload_shell="docker exec 1panel-openresty-prod nginx -t && docker exec 1panel-openresty-prod nginx -s reload",
@@ -339,12 +339,12 @@ class OnePanelPublicIngressTests(unittest.TestCase):
             website_type="proxy",
             website_group_id=1,
             website_proxy="http://127.0.0.1:18080",
-            website_remark="prod2-main sub2api public ingress",
+            website_remark="prod0-main sub2api public ingress",
             website_ipv6=True,
             cert_primary_domain="token.example.org",
             cert_other_domains="",
             cert_dir="/data/1panel/www/certs/token-example-org",
-            cert_description="prod2-main sub2api public ingress",
+            cert_description="prod0-main sub2api public ingress",
             cert_key_type="2048",
             cert_auto_renew=True,
             cert_reload_shell="docker exec 1panel-openresty-prod nginx -t && docker exec 1panel-openresty-prod nginx -s reload",
@@ -490,12 +490,12 @@ class OnePanelEnvTargetsTests(unittest.TestCase):
 
     def test_prod_targets_use_agentplane_remote_paths_and_support_prod2(self) -> None:
         prod0_target = env_targets.get_target("prod0-main")
-        prod2_target = env_targets.get_target("prod2-main")
+        prod2_target = env_targets.get_target("prod0-main")
 
         self.assertEqual("ssh", prod0_target.mode)
         self.assertEqual("ssh", prod2_target.mode)
         self.assertEqual("prod0-main", prod0_target.ssh_alias)
-        self.assertEqual("prod2-main", prod2_target.ssh_alias)
+        self.assertEqual("prod0-main", prod2_target.ssh_alias)
         self.assertEqual(Path("/opt/agentplane/secrets/services/onepanel-api.env"), prod0_target.api_env_file)
         self.assertEqual(
             Path("/opt/agentplane/agentplane/scripts/onepanel/signed_request.py"),
@@ -508,7 +508,7 @@ class OnePanelEnvTargetsTests(unittest.TestCase):
         )
 
     def test_supported_targets_include_prod2(self) -> None:
-        self.assertIn("prod2-main", env_targets.supported_targets())
+        self.assertIn("prod0-main", env_targets.supported_targets())
 
     def test_wsl_local_api_request_command_uses_backend_paths(self) -> None:
         target = env_targets.TargetConfig(
@@ -845,7 +845,7 @@ class OnePanelVerificationSuiteTests(unittest.TestCase):
             payload = run_verification_suite(
                 executor,
                 profile="prod2-readonly",
-                env="prod2-main",
+                env="prod0-main",
                 repo_root=root,
                 write_report=True,
                 website_alias="token",
@@ -862,8 +862,8 @@ class OnePanelVerificationSuiteTests(unittest.TestCase):
                 checks["project"]["payload"]["error"]["message"],
             )
             self.assertTrue(checks["app"]["ok"])
-            self.assertTrue((root / "inventory" / "servers" / "prod2-main" / "ledgers" / "verification-prod2-readonly.json").is_file())
-            self.assertTrue((root / "inventory" / "servers" / "prod2-main" / "ledgers" / "verification-prod2-readonly.md").is_file())
+            self.assertTrue((root / "inventory" / "servers" / "prod0-main" / "ledgers" / "verification-prod2-readonly.json").is_file())
+            self.assertTrue((root / "inventory" / "servers" / "prod0-main" / "ledgers" / "verification-prod2-readonly.md").is_file())
 
     def test_suite_can_resolve_cronjob_by_name(self) -> None:
         executor = CronjobByNameExecutor()

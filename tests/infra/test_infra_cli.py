@@ -274,12 +274,12 @@ class HostCliTests(unittest.TestCase):
     def test_infra_network_audit_uses_formal_host_shape_without_compat_source(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            inventory_dir = root / "inventory" / "servers" / "prod2-main"
+            inventory_dir = root / "inventory" / "servers" / "prod0-main"
             inventory_dir.mkdir(parents=True, exist_ok=True)
             inventory_dir.joinpath("inventory.json").write_text(
                 json.dumps(
                     {
-                        "ssh": {"aliases": ["prod2-main"], "user": "root"},
+                        "ssh": {"aliases": ["prod0-main"], "user": "root"},
                         "managed_bridge_networks": [
                             {
                                 "name": "zqf_network",
@@ -296,7 +296,7 @@ class HostCliTests(unittest.TestCase):
                 encoding="utf-8",
             )
             (root / "secrets" / "ssh").mkdir(parents=True, exist_ok=True)
-            (root / "secrets" / "ssh" / "config").write_text("Host prod2-main\n", encoding="utf-8")
+            (root / "secrets" / "ssh" / "config").write_text("Host prod0-main\n", encoding="utf-8")
             bin_dir = root / "bin"
             bin_dir.mkdir(parents=True, exist_ok=True)
             log_file = root / "network-audit.log"
@@ -308,7 +308,7 @@ class HostCliTests(unittest.TestCase):
                 "infra",
                 "network",
                 "audit",
-                "prod2-main",
+                "prod0-main",
                 "--repo-root",
                 str(root),
                 env_overrides={
@@ -323,18 +323,18 @@ class HostCliTests(unittest.TestCase):
             self.assertEqual({"command", "action", "target", "payload"}, set(payload))
             self.assertEqual("infra", payload["command"])
             self.assertEqual("network.audit", payload["action"])
-            self.assertEqual("prod2-main", payload["target"])
+            self.assertEqual("prod0-main", payload["target"])
             self.assertFalse(payload["payload"]["ok"])
 
     def test_network_audit_fails_when_required_container_is_missing(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            inventory_dir = root / "inventory" / "servers" / "prod2-main"
+            inventory_dir = root / "inventory" / "servers" / "prod0-main"
             inventory_dir.mkdir(parents=True, exist_ok=True)
             inventory_dir.joinpath("inventory.json").write_text(
                 json.dumps(
                     {
-                        "ssh": {"aliases": ["prod2-main"], "user": "root"},
+                        "ssh": {"aliases": ["prod0-main"], "user": "root"},
                         "managed_bridge_networks": [
                             {
                                 "name": "zqf_network",
@@ -378,7 +378,7 @@ class HostCliTests(unittest.TestCase):
                 return {"ok": False, "stdout": ""}
 
             with patch("agentplane.domain.networks._remote_step", side_effect=fake_remote_step):
-                payload = network_domain.audit_managed_bridge_networks(root, "prod2-main")
+                payload = network_domain.audit_managed_bridge_networks(root, "prod0-main")
 
             network = payload["networks"][0]
             self.assertFalse(payload["ok"])
@@ -388,12 +388,12 @@ class HostCliTests(unittest.TestCase):
     def test_infra_network_ensure_uses_formal_host_shape_without_compat_source(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            inventory_dir = root / "inventory" / "servers" / "prod2-main"
+            inventory_dir = root / "inventory" / "servers" / "prod0-main"
             inventory_dir.mkdir(parents=True, exist_ok=True)
             inventory_dir.joinpath("inventory.json").write_text(
                 json.dumps(
                     {
-                        "ssh": {"aliases": ["prod2-main"], "user": "root"},
+                        "ssh": {"aliases": ["prod0-main"], "user": "root"},
                         "managed_bridge_networks": [
                             {
                                 "name": "zqf_network",
@@ -410,7 +410,7 @@ class HostCliTests(unittest.TestCase):
                 encoding="utf-8",
             )
             (root / "secrets" / "ssh").mkdir(parents=True, exist_ok=True)
-            (root / "secrets" / "ssh" / "config").write_text("Host prod2-main\n", encoding="utf-8")
+            (root / "secrets" / "ssh" / "config").write_text("Host prod0-main\n", encoding="utf-8")
             state = {"gateway_present": False, "route_present": False}
 
             def fake_remote_step(repo_root: Path, target: str, command: str) -> dict[str, object]:
@@ -446,7 +446,7 @@ class HostCliTests(unittest.TestCase):
             args = SimpleNamespace(
                 infra_action="network",
                 infra_network_action="ensure",
-                target="prod2-main",
+                target="prod0-main",
                 repo_root=str(root),
             )
             with patch("agentplane.domain.networks._remote_step", side_effect=fake_remote_step):
@@ -455,7 +455,7 @@ class HostCliTests(unittest.TestCase):
             self.assertEqual({"command", "action", "target", "payload"}, set(payload))
             self.assertEqual("infra", payload["command"])
             self.assertEqual("network.ensure", payload["action"])
-            self.assertEqual("prod2-main", payload["target"])
+            self.assertEqual("prod0-main", payload["target"])
             self.assertTrue(payload["payload"]["ok"])
 
 # ======================================================================

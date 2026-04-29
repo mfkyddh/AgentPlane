@@ -71,7 +71,7 @@ agentplane infra live-gate run --profile prod0-main --repo-root <repo-root> --ex
 - `projection runtime-env verify --target wsl --app <app>`。
 - `service verify --target wsl --name <app>`。
 
-`prod0-main` / `prod2-main` profile 覆盖：
+`prod0-main` profile 覆盖：
 
 - SSH 可达性。
 - 远端 Docker daemon 基线。

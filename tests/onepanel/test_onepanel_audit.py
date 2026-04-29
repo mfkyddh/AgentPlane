@@ -179,9 +179,9 @@ class Prod0AuditTests(unittest.TestCase):
         ]
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            write_inventory(root, "prod2-main", payload)
+            write_inventory(root, "prod0-main", payload)
 
-            result = audit_filesystem(root, "prod2-main")
+            result = audit_filesystem(root, "prod0-main")
             codes = {item["id"] for item in result["violations"]}
 
             self.assertIn("prod.bridge_network.declaration", codes)
@@ -463,7 +463,7 @@ class Prod0AuditTests(unittest.TestCase):
             codes = {item["id"] for item in result["violations"]}
             self.assertIn("prod0.openresty.listen_ports", codes)
 
-    def test_prod2_openresty_443_contract_comes_from_inventory_declaration(self) -> None:
+    def test_prod_openresty_443_contract_comes_from_inventory_declaration(self) -> None:
         payload = {
             "managed_bridge_networks": [
                 {
@@ -481,17 +481,17 @@ class Prod0AuditTests(unittest.TestCase):
         }
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            write_inventory(root, "prod2-main", payload)
+            write_inventory(root, "prod0-main", payload)
 
-            result = audit_filesystem(root, "prod2-main")
+            result = audit_filesystem(root, "prod0-main")
             self.assertEqual([], result["violations"], msg=json.dumps(result, ensure_ascii=False))
-            cli_result = run_cli("infra", "audit", "prod2-main", "--repo-root", str(root))
+            cli_result = run_cli("infra", "audit", "prod0-main", "--repo-root", str(root))
             self.assertEqual(0, cli_result.returncode, msg=cli_result.stderr)
             cli_payload = json.loads(cli_result.stdout)
             self.assertEqual({"command", "action", "target", "payload"}, set(cli_payload))
             self.assertEqual("infra", cli_payload["command"])
             self.assertEqual("audit", cli_payload["action"])
-            self.assertEqual("prod2-main", cli_payload["target"])
+            self.assertEqual("prod0-main", cli_payload["target"])
             self.assertEqual([], cli_payload["payload"]["violations"], msg=json.dumps(cli_payload, ensure_ascii=False))
 
     def test_tenant_audit_detects_legacy_flat_secret_references_for_formal_apps(self) -> None:

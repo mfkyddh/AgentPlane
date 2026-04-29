@@ -163,9 +163,8 @@ def test_resolve_expression_all_returns_known_targets(tmp_path: Path) -> None:
     # With repo_root containing inventory servers
     servers = tmp_path / "inventory" / "servers"
     (servers / "prod0-main").mkdir(parents=True)
-    (servers / "prod2-main").mkdir(parents=True)
     results = resolver.resolve_expression("all", repo_root=tmp_path)
-    assert [r.target for r in results] == ["wsl", "prod0-main", "prod2-main"]
+    assert [r.target for r in results] == ["wsl", "prod0-main"]
 
 def test_resolve_expression_comma_separated() -> None:
     resolver = TargetResolver(HostProfile(os_name="windows", linux_backend="windows-wsl", supports_docker=True))
@@ -176,11 +175,10 @@ def test_resolve_expression_wildcard(tmp_path: Path) -> None:
     resolver = TargetResolver(HostProfile(os_name="windows", linux_backend="windows-wsl", supports_docker=True))
     servers = tmp_path / "inventory" / "servers"
     (servers / "prod0-main").mkdir(parents=True)
-    (servers / "prod2-main").mkdir(parents=True)
     (servers / "staging0").mkdir(parents=True)
 
     results = resolver.resolve_expression("prod*", repo_root=tmp_path)
-    assert [r.target for r in results] == ["prod0-main", "prod2-main"]
+    assert [r.target for r in results] == ["prod0-main"]
 
 def test_resolve_expression_unknown_target_falls_back_to_literal() -> None:
     resolver = TargetResolver(HostProfile(os_name="windows", linux_backend="windows-wsl", supports_docker=True))

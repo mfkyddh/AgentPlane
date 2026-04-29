@@ -26,9 +26,6 @@ audience: agent
   - Primary API regression and fixture environment.
   - Preferred local env source: `secrets/hosts/wsl/onepanel/api.env`
   - Projection env path: `secrets/services/onepanel-api.wsl.env`
-- `prod2-main`
-  - Live API validation target for `v2.1.7`.
-  - Reads and low-risk idempotent writes may be validated here after WSL passes.
 - `prod0-main`
   - Upgrade-prep audit target.
   - Default posture in this phase is read-only API inspection.
@@ -65,11 +62,11 @@ audience: agent
 - Skills and plugins must never construct signed 1Panel HTTP requests themselves.
 - Python modules under `agentplane/scripts/onepanel/` are provider substrate, not public script entrypoints. The signed request helper is `signed_request.py` and is invoked only by repository-owned providers.
 - Human operators should default to concise CLI text output; plugins and automations should append `--json` and reuse the CLI result model directly.
-- New object support should first land in WSL, then validate on `prod2-main`, then be considered for `prod0-main`.
+- New object support should first land in WSL, then be considered for `prod0-main`.
 - When a stable 1Panel API is unavailable or unverified, AgentPlane may temporarily read from tracked inventory, but that boundary must be documented explicitly.
 - `plan` and `apply` remain separate states. `apply` must not execute unless `--execute` is present.
 - `projection verification run` remains read-only. Any WSL fixture mutation must go through `agentplane projection fixture ...`.
-- On targets such as `prod2-main`, `suite run` may be used as a live API audit even when some selectors intentionally do not resolve to 1Panel-native objects. A persisted failure report is valid audit evidence, not automatically a service-health failure.
+- On production targets, `suite run` may be used as a live API audit even when some selectors intentionally do not resolve to 1Panel-native objects. A persisted failure report is valid audit evidence, not automatically a service-health failure.
 
 ## Error Model
 

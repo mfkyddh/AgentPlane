@@ -13,7 +13,7 @@ from agentplane.runtime.target_resolver import TargetResolver
 
 LEGACY_PORTS = {2053, 2054}
 REQUIRED_NETWORK = "zqf_network"
-SUPPORTED_AUDIT_ENVS = ("wsl", "prod0-main", "prod2-main")
+SUPPORTED_AUDIT_ENVS = ("wsl", "prod0-main")
 RUNTIME_SERVICE_CONTROL_PLANES = {"compose", "onepanel-app", "onepanel-compose"}
 FORBIDDEN_PROD0_MARKERS = (
     "nginx-ui",
@@ -772,19 +772,6 @@ def _audit_prod0_inventory(repo_root: Path) -> list[dict[str, Any]]:
     return violations
 
 
-def _audit_prod2_inventory(repo_root: Path) -> list[dict[str, Any]]:
-    inventory_file = repo_root / "inventory" / "servers" / "prod2-main" / "inventory.json"
-    payload, error = _load_json(inventory_file, "prod2")
-    if error is not None:
-        return [error]
-    assert payload is not None
-    return (
-        _audit_openresty_contract("prod2", inventory_file, payload)
-        + _audit_managed_bridge_network_declarations("prod", inventory_file, payload)
-        + _audit_runtime_service_summary_contract("prod2", inventory_file, payload)
-    )
-
-
 def audit_filesystem(
     repo_root: Path,
     target_env: str,
@@ -807,8 +794,6 @@ def audit_filesystem(
         violations = _audit_wsl_templates(resolved_root) + host_violations
     elif target_env == "prod0-main":
         violations = _audit_prod0_inventory(resolved_root)
-    elif target_env == "prod2-main":
-        violations = _audit_prod2_inventory(resolved_root)
     else:
         raise ValueError(f"Unsupported audit env: {target_env}")
     return {

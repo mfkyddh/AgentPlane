@@ -44,7 +44,7 @@ def run_cli(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[
     )
 
 def write_inventory(root: Path) -> None:
-    inventory_file = root / "inventory" / "servers" / "prod2-main" / "inventory.json"
+    inventory_file = root / "inventory" / "servers" / "prod0-main" / "inventory.json"
     inventory_file.parent.mkdir(parents=True, exist_ok=True)
     inventory_file.write_text(
         json.dumps(
@@ -63,7 +63,7 @@ def write_inventory(root: Path) -> None:
     )
 
 def write_registry(root: Path) -> None:
-    registry_file = root / "inventory" / "servers" / "prod2-main" / "app-resources.json"
+    registry_file = root / "inventory" / "servers" / "prod0-main" / "app-resources.json"
     registry_file.parent.mkdir(parents=True, exist_ok=True)
     registry_file.write_text(
         json.dumps(
@@ -73,8 +73,8 @@ def write_registry(root: Path) -> None:
                     "postgres": {"database": "sub2api_prod2", "user": "sub2api_prod2"},
                     "redis": {"db": 1, "key_prefix": "sub2api:"},
                     "secret_files": [
-                        resource_relative("prod2-main", "sub2api", "postgres"),
-                        resource_relative("prod2-main", "sub2api", "redis"),
+                        resource_relative("prod0-main", "sub2api", "postgres"),
+                        resource_relative("prod0-main", "sub2api", "redis"),
                     ],
                 }
             },
@@ -85,7 +85,7 @@ def write_registry(root: Path) -> None:
     )
 
 def write_resource_secrets(root: Path) -> None:
-    resource_dir = resource_root(root, "prod2-main", "sub2api")
+    resource_dir = resource_root(root, "prod0-main", "sub2api")
     resource_dir.mkdir(parents=True, exist_ok=True)
     (resource_dir / "postgres.env").write_text(
         "PGHOST=postgres18-prod\nPGPORT=5432\nPGDATABASE=sub2api_prod2\nPGUSER=sub2api_prod2\nPGPASSWORD=secret\nPGSSLMODE=disable\n",
@@ -109,7 +109,7 @@ class ProjectionRuntimeEnvCliTests(unittest.TestCase):
                 "runtime-env",
                 "plan",
                 "--target",
-                "prod2-main",
+                "prod0-main",
                 "--app",
                 "sampleapi",
                 "--repo-root",
@@ -135,7 +135,7 @@ class ProjectionRuntimeEnvCliTests(unittest.TestCase):
                 "runtime-env",
                 "plan",
                 "--target",
-                "prod2-main",
+                "prod0-main",
                 "--app",
                 "sub2api",
                 "--repo-root",
@@ -160,7 +160,7 @@ class ProjectionRuntimeEnvCliTests(unittest.TestCase):
                 "runtime-env",
                 "plan",
                 "--target",
-                "prod2-main",
+                "prod0-main",
                 "--app",
                 "sub2api",
                 "--repo-root",
@@ -186,7 +186,7 @@ class ProjectionRuntimeEnvCliTests(unittest.TestCase):
                 "runtime-env",
                 "verify",
                 "--target",
-                "prod2-main",
+                "prod0-main",
                 "--app",
                 "sub2api",
                 "--repo-root",
@@ -218,7 +218,7 @@ class ProjectionRuntimeEnvCliTests(unittest.TestCase):
                 "runtime-env",
                 "verify",
                 "--target",
-                "prod2-main",
+                "prod0-main",
                 "--app",
                 "sub2api",
                 "--repo-root",

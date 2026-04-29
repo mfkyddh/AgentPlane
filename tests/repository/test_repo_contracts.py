@@ -41,9 +41,6 @@ class RepoSnapshotContractsTests(unittest.TestCase):
             "secrets/app-resources/prod0-main/sub2api/postgres.env",
             "secrets/app-resources/prod0-main/sub2api/redis.env",
             "secrets/app-resources/prod0-main/sub2api/minio.env",
-            "secrets/app-resources/prod2-main/sub2api/postgres.env",
-            "secrets/app-resources/prod2-main/sub2api/redis.env",
-            "secrets/app-resources/prod2-main/sub2api/minio.env",
         ]
 
         for relative_path in legacy_paths:
@@ -153,7 +150,7 @@ class RepoSnapshotContractsTests(unittest.TestCase):
         self.assertIn("默认正式 app 交付镜像 family 固定为 `<app_id>-prod`", text)
         self.assertIn("必须等于 `<app_id>-prod`", text)
         self.assertIn("必须等于 `<app_id>-dev`", text)
-        self.assertIn("| `sub2api` | `infra/compose/sub2api` | `wsl/prod0-main: ghcr.io/wei-shaw/sub2api`; `prod2-main: sub2api-prod` | `sub2api-prod` | `sub2api-dev` | `sub2api` |", text)
+        self.assertIn("| `sub2api` | `infra/compose/sub2api` | `wsl/prod0-main: ghcr.io/wei-shaw/sub2api` | `sub2api-prod` | `sub2api-dev` | `sub2api` |", text)
         self.assertNotIn("| `newapi` | `infra/compose/newapi` | `newapi-prod` | `newapi-prod` | `newapi-dev` | `newapi` |", text)
         self.assertNotIn(
             "| `sub2apipay` | `infra/compose/sub2apipay` | `sub2apipay-prod` | `sub2apipay-prod` | `sub2apipay-dev` | `sub2apipay` |",
@@ -181,15 +178,11 @@ class RepoSnapshotContractsTests(unittest.TestCase):
         tracked = tracked_files()
         private_paths = [
             "inventory/servers/prod0-main/inventory.json",
-            "inventory/servers/prod2-main/inventory.json",
             "inventory/servers/wsl/inventory.json",
             "inventory/state-snapshot.md",
             "docs/runbooks/prod0-main-governance.md",
-            "docs/runbooks/prod2-main-relay-trojan.md",
             "infra/compose/sub2api/docker-compose.prod0.yml",
-            "infra/compose/sub2api/docker-compose.prod2.yml",
             "templates/services/sub2api.prod0.env.example",
-            "templates/services/sub2api.prod2.env.example",
         ]
         for relative_path in private_paths:
             with self.subTest(path=relative_path):

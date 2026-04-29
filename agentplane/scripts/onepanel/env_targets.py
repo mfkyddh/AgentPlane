@@ -169,17 +169,6 @@ def get_target(name: str, env_file_override: str | None = None) -> TargetConfig:
             ssh_user="root",
             ssh_requires_sudo=False,
         )
-    if name == "prod2-main":
-        return TargetConfig(
-            name=name,
-            mode="ssh",
-            api_env_file=Path("/opt/agentplane/secrets/services/onepanel-api.env"),
-            api_request_script=Path("/opt/agentplane/agentplane/scripts/onepanel/signed_request.py"),
-            ssh_alias="prod2-main",
-            ssh_config=workspace.private_root / "ssh" / "config",
-            ssh_user="root",
-            ssh_requires_sudo=False,
-        )
     if name == "wsl":
         host_truth_env = workspace.private_root / "hosts" / "wsl" / "onepanel" / "api.env"
         default_env = host_truth_env if host_truth_env.is_file() else workspace.private_root / "services" / "onepanel-api.wsl.env"
@@ -194,4 +183,4 @@ def get_target(name: str, env_file_override: str | None = None) -> TargetConfig:
 
 
 def supported_targets() -> tuple[str, ...]:
-    return ("prod0-main", "prod2-main", "wsl")
+    return ("prod0-main", "wsl")

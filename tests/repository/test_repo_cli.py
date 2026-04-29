@@ -22,7 +22,7 @@ def _listed_targets(help_text: str) -> set[str]:
     for choice_group in re.findall(r"\{([^}]+)\}", help_text):
         for token in choice_group.split(","):
             candidate = token.strip()
-            if candidate in {"wsl", "prod0-main", "prod2-main"}:
+            if candidate in {"wsl", "prod0-main", "prod0-main"}:
                 targets.add(candidate)
     return targets
 
@@ -400,7 +400,7 @@ class CliEntrypointsTests(unittest.TestCase):
         result = run_cli("infra", "automation", "search", "--help")
 
         self.assertEqual(result.returncode, 0, msg=result.stderr)
-        self.assertTrue({"wsl", "prod0-main", "prod2-main"}.issubset(_listed_targets(result.stdout)))
+        self.assertTrue({"wsl", "prod0-main", "prod0-main"}.issubset(_listed_targets(result.stdout)))
 
     def test_top_level_automation_entry_is_removed(self) -> None:
         result = run_cli("automation", "--help")
@@ -661,7 +661,7 @@ def seed_bootstrap_templates(root: Path) -> None:
     (root / "templates" / "secrets" / "targets" / "_template").mkdir(parents=True, exist_ok=True)
     (root / "inventory" / "servers" / "wsl").mkdir(parents=True, exist_ok=True)
     (root / "inventory" / "servers" / "prod0-main").mkdir(parents=True, exist_ok=True)
-    (root / "inventory" / "servers" / "prod2-main").mkdir(parents=True, exist_ok=True)
+    (root / "inventory" / "servers" / "prod0-main").mkdir(parents=True, exist_ok=True)
 
     (root / "templates" / "env" / "prod-jump.env.example").write_text(
         "CLOUDFLARE_API_TOKEN=replace-with-api-token\n",
@@ -684,7 +684,7 @@ def seed_bootstrap_templates(root: Path) -> None:
         "target <target>\n",
         encoding="utf-8",
     )
-    for target in ("wsl", "prod0-main", "prod2-main"):
+    for target in ("wsl", "prod0-main", "prod0-main"):
         (root / "inventory" / "servers" / target / "inventory.json").write_text(
             json.dumps({"target": target}, ensure_ascii=False),
             encoding="utf-8",
@@ -698,14 +698,14 @@ def write_takeover_ready_ssh_contract(root: Path) -> None:
         "  User root\n"
         "  IdentityFile <repo-root>/secrets/ssh/keys/prod0-main.pem\n"
         "\n"
-        "Host prod2-main 5.6.7.8\n"
+        "Host prod0-main 5.6.7.8\n"
         "  HostName 5.6.7.8\n"
         "  User root\n"
-        "  IdentityFile <repo-root>/secrets/ssh/keys/prod2-main.pem\n",
+        "  IdentityFile <repo-root>/secrets/ssh/keys/prod0-main.pem\n",
         encoding="utf-8",
     )
     (root / "secrets" / "ssh" / "keys" / "prod0-main.pem").write_text("demo-prod0", encoding="utf-8")
-    (root / "secrets" / "ssh" / "keys" / "prod2-main.pem").write_text("demo-prod2", encoding="utf-8")
+    (root / "secrets" / "ssh" / "keys" / "prod0-main.pem").write_text("demo-prod2", encoding="utf-8")
 
 class BootstrapCliTests(unittest.TestCase):
     def test_bootstrap_init_secrets_creates_only_takeover_truth_scaffold(self) -> None:
@@ -722,7 +722,7 @@ class BootstrapCliTests(unittest.TestCase):
             self.assertTrue((root / "secrets" / "local" / "control-plane").is_dir())
             self.assertTrue((root / "secrets" / "targets" / "wsl").is_dir())
             self.assertTrue((root / "secrets" / "targets" / "prod0-main").is_dir())
-            self.assertTrue((root / "secrets" / "targets" / "prod2-main").is_dir())
+            self.assertTrue((root / "secrets" / "targets" / "prod0-main").is_dir())
             self.assertTrue((root / "secrets" / "ssh" / "config").is_file())
             self.assertTrue((root / "secrets" / "ssh" / "keys").is_dir())
             self.assertFalse((root / "secrets" / "env" / "prod-jump.env").exists())
@@ -775,7 +775,7 @@ class BootstrapCliTests(unittest.TestCase):
             payload = json.loads(result.stdout)
             self.assertFalse(payload["payload"]["ok"])
             issues = payload["payload"]["checks"][0]["issues"]
-            self.assertIn("missing-ssh-host:prod2-main", issues)
+            self.assertIn("missing-ssh-host:prod0-main", issues)
             self.assertIn("missing-ssh-key:prod0-main.pem", issues)
 
     def test_bootstrap_doctor_reports_projection_warnings_without_blocking_takeover(self) -> None:

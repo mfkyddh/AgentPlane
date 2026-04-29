@@ -51,7 +51,7 @@ agentplane <domain> --help
 - **路径策略**: 只跟踪逻辑路径（`apps/<app>`）。物理路径（Windows 盘符、WSL UNC、`/mnt/...`）仅出现在运行时解析或验证证据中。
 - **Skill 路由**: `.agents/skills/` 定义映射到 CLI 命令的能力。Skill 永不直接执行。
 
-**目标环境**: `wsl`（本地开发）、`prod0-main`、`prod2-main`（生产服务器）。
+**目标环境**: `wsl`（本地开发）、`prod0-main`（生产服务器）。
 
 ## 约定
 

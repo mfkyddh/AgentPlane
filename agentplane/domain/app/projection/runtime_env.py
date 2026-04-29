@@ -30,8 +30,6 @@ def service_env_file(repo_root: Path, target: str, app_id: str) -> Path:
         return resolved_secrets_root / "services" / f"{app_id}.wsl.env"
     if target == "prod0-main":
         return resolved_secrets_root / "services" / f"{app_id}.prod0.env"
-    if target == "prod2-main":
-        return resolved_secrets_root / "services" / f"{app_id}.prod2.env"
     raise ValueError(f"Unsupported target for env projection: {target}")
 
 

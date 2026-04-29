@@ -98,25 +98,6 @@ class SecretsCliTests(unittest.TestCase):
             self.assertEqual("existing_user", postgres_values["POSTGRES_USER"])
             self.assertEqual("existing_password", postgres_values["POSTGRES_PASSWORD"])
 
-    def test_init_data_services_supports_prod2_target(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            result = run_cli("infra", "secrets", "init-data-services", "prod2-main", "--repo-root", str(root))
-            self.assertEqual(result.returncode, 0, msg=result.stderr)
-
-            payload = json.loads(result.stdout)
-            self.assertEqual({"command", "action", "target", "payload"}, set(payload))
-            self.assertEqual("infra", payload.get("command"))
-            self.assertEqual("secrets.init-data-services", payload.get("action"))
-            self.assertEqual("prod2-main", payload.get("target"))
-            self.assertIn("files", payload["payload"])
-            postgres_file = root / "secrets" / "services" / "postgres" / "admin.prod2.env"
-            self.assertTrue(postgres_file.is_file())
-            self.assertTrue((root / "secrets" / "services" / "redis" / "admin.prod2.conf").is_file())
-            self.assertTrue((root / "secrets" / "services" / "minio" / "admin.prod2.env").is_file())
-            postgres_values = parse_env_text(postgres_file.read_text(encoding="utf-8"))
-            self.assertEqual("postgres", postgres_values["POSTGRES_USER"])
-
     def test_sync_layout_projects_backup_env_to_legacy_path_with_host_first_source_dir(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -151,13 +132,6 @@ class SecretLayoutTests(unittest.TestCase):
             with self.subTest(path=str(path)):
                 self.assertIn(expected, path.read_text(encoding="utf-8"))
 
-    def test_deploy_data_services_script_supports_prod2_target(self) -> None:
-        script = (REPO_ROOT / "agentplane" / "scripts" / "remote" / "deploy_data_services_to_host.sh").read_text(encoding="utf-8")
-        self.assertIn("prod2-main", script)
-        self.assertIn("target_alias", script)
-        self.assertIn("admin.${target_alias}.env", script)
-        self.assertIn("admin.${target_alias}.conf", script)
-
     def test_data_service_deploy_scripts_pin_canonical_compose_file_names(self) -> None:
         local_script = (REPO_ROOT / "agentplane" / "scripts" / "remote" / "deploy_data_services_to_host.sh").read_text(
             encoding="utf-8"
@@ -166,7 +140,7 @@ class SecretLayoutTests(unittest.TestCase):
             encoding="utf-8"
         )
 
-        for compose_name in ("docker-compose.prod0.yml", "docker-compose.prod2.yml"):
+        for compose_name in ("docker-compose.prod0.yml",):
             with self.subTest(compose_name=compose_name):
                 self.assertIn(compose_name, local_script)
                 self.assertIn(compose_name, remote_script)

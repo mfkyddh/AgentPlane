@@ -53,9 +53,9 @@ def run_cli(*args: str, cwd: Path | None = None, env_overrides: dict[str, str] |
     )
 
 def write_inventory(root: Path) -> None:
-    server_root = root / "inventory" / "servers" / "prod2-main"
+    server_root = root / "inventory" / "servers" / "prod0-main"
     server_root.mkdir(parents=True, exist_ok=True)
-    (server_root / "README.md").write_text("# prod2-main 摘要\n", encoding="utf-8")
+    (server_root / "README.md").write_text("# prod0-main 摘要\n", encoding="utf-8")
     (server_root / "inventory.json").write_text(
         json.dumps(
             {
@@ -139,7 +139,7 @@ class WebsiteCliTests(unittest.TestCase):
                 "ingress",
                 "apply",
                 "--target",
-                "prod2-main",
+                "prod0-main",
                 "--alias",
                 "token",
                 "--operation",
@@ -158,7 +158,7 @@ class WebsiteCliTests(unittest.TestCase):
             root = Path(tmp)
             write_inventory(root)
 
-            payload = search_ingresses(root, "prod2-main")
+            payload = search_ingresses(root, "prod0-main")
 
             self.assertEqual(
                 [
@@ -195,7 +195,7 @@ class WebsiteCliTests(unittest.TestCase):
             )
 
             with patch("agentplane.domain.ingress.handlers._executor_for_target", return_value=executor):
-                payload = get_ingress(root, "prod2-main", "token")
+                payload = get_ingress(root, "prod0-main", "token")
 
             self.assertEqual("token", payload["ingress"]["alias"])
             self.assertEqual("token.example.org", payload["ingress"]["primary_domain"])
@@ -220,7 +220,7 @@ class WebsiteCliTests(unittest.TestCase):
             )
 
             with patch("agentplane.domain.ingress.handlers._executor_for_target", return_value=executor):
-                payload = verify_ingress(root, "prod2-main", "token")
+                payload = verify_ingress(root, "prod0-main", "token")
 
             self.assertFalse(payload["ok"])
             self.assertTrue(payload["checks"]["alias"]["ok"])
@@ -237,7 +237,7 @@ class WebsiteCliTests(unittest.TestCase):
             executor = FakeWebsiteExecutor(existing=None)
 
             with patch("agentplane.domain.ingress.handlers._executor_for_target", return_value=executor):
-                payload = plan_ingress_operation(root, "prod2-main", "token", "reconcile")
+                payload = plan_ingress_operation(root, "prod0-main", "token", "reconcile")
 
             self.assertEqual("reconcile", payload["operation"])
             self.assertEqual("missing", payload["drift"]["status"])
@@ -255,7 +255,7 @@ class WebsiteCliTests(unittest.TestCase):
 
             args = SimpleNamespace(
                 ingress_action="apply",
-                target="prod2-main",
+                target="prod0-main",
                 alias="token",
                 operation="reconcile",
                 repo_root=str(root),
@@ -287,7 +287,7 @@ class WebsiteCliTests(unittest.TestCase):
 
             args = SimpleNamespace(
                 ingress_action="refresh-ledger",
-                target="prod2-main",
+                target="prod0-main",
                 repo_root=str(root),
                 write=True,
             )
@@ -296,8 +296,8 @@ class WebsiteCliTests(unittest.TestCase):
 
             self.assertEqual("ingress", payload["command"])
             self.assertEqual(1, payload["payload"]["counts"]["websites"])
-            self.assertTrue((root / "inventory" / "servers" / "prod2-main" / "ledgers" / "websites.json").is_file())
-            persisted_inventory = json.loads((root / "inventory" / "servers" / "prod2-main" / "inventory.json").read_text(encoding="utf-8"))
+            self.assertTrue((root / "inventory" / "servers" / "prod0-main" / "ledgers" / "websites.json").is_file())
+            persisted_inventory = json.loads((root / "inventory" / "servers" / "prod0-main" / "inventory.json").read_text(encoding="utf-8"))
             self.assertEqual("token", persisted_inventory["services"]["public_ingresses"][0]["alias"])
             self.assertEqual(1, persisted_inventory["object_ledgers"]["counts"]["websites"])
 

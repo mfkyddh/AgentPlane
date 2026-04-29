@@ -54,7 +54,7 @@ Windows 宿主统一走：
    ```text
    [PASS] SSH config exists
    [PASS] SSH keys found: 2
-   [PASS] Target secrets scaffold: wsl, prod0-main, prod2-main
+   [PASS] Target secrets scaffold: wsl, prod0-main
    ```
 
 5. 汇总当前仓库是否已具备 Agent 接管条件：
@@ -75,7 +75,6 @@ Windows 宿主统一走：
 - `secrets/local/control-plane/README.md`
 - `secrets/targets/wsl/README.md`
 - `secrets/targets/prod0-main/README.md`
-- `secrets/targets/prod2-main/README.md`
 - `secrets/ssh/config`
 - `secrets/ssh/keys/`
 

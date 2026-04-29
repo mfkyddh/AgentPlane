@@ -8,7 +8,6 @@ from agentplane.domain.ingress.models import IngressDefinition
 INGRESS_VERIFICATION_PROFILE_BY_TARGET = {
     "wsl": "wsl-fixture",
     "prod0-main": "prod0-readonly",
-    "prod2-main": "prod2-readonly",
 }
 
 

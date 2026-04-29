@@ -187,8 +187,6 @@ def _write_json(path: Path, payload: object) -> None:
 def _target_contract_relpath(target: str) -> str:
     if target == "wsl":
         return "deploy/agentplane/contract.wsl.yaml"
-    if target == "prod2-main":
-        return "deploy/agentplane/contract.prod2.yaml"
     return "deploy/agentplane/contract.yaml"
 
 def _target_fixture_profile(target: str) -> dict[str, str]:

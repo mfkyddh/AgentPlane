@@ -48,7 +48,7 @@ FIXED_SERVICE_DEFINITIONS: dict[str, ServiceDefinition] = {
         runtime_kind="docker",
         control_plane="onepanel-app",
         supported_operations=("restart", "reload"),
-        supported_targets=("prod0-main", "prod2-main"),
+        supported_targets=("prod0-main",),
         inventory_key="onepanel_openresty",
         metadata={"container_name_key": "container_name"},
     ),

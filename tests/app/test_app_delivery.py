@@ -20,11 +20,9 @@ from tests.support.app_delivery_contracts import (
     ERROR_ID_TENANT_SECRET_FILE_MISSING,
     ERROR_ID_TENANT_SECRET_FILE_SCOPE,
     init_git_repo,
-    init_git_repo_with_tag,
     sync_app_catalog_for_contract,
     write_app_catalog_entry,
     write_contract,
-    write_prod2_contract,
     write_sampleapi_contract,
     write_target_contract,
 )
@@ -38,10 +36,6 @@ from tests.support.app_delivery_targets import (
     write_fake_command,
     write_internal_worker_compose_template,
     write_inventory,
-    write_prod2_compose_template,
-    write_prod2_inventory,
-    write_prod2_tenant_registry,
-    write_prod2_tenant_secret_files,
     write_sampleapi_compose_templates,
     write_sampleapi_tenant_files,
     write_tenant_secret_files,
@@ -232,76 +226,6 @@ class TestAppDeliveryBuildCliTests(unittest.TestCase):
             self.assertEqual(f"0.1.104-{fork_version}", build_env["image_tag"])
             self.assertEqual(fork_version, build_env["fork_version"])
             self.assertEqual(f"0.1.104+{fork_version}", build_env["delivery_version"])
-
-    def test_build_artifact_auto_version_uses_git_tag_when_version_file_missing(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            write_prod2_inventory(root)
-            write_app_resource_registry(
-                root,
-                {
-                    "sampleapi": {
-                        "owner_app": "sampleapi",
-                        "postgres": {"database": "sampleapi_prod2", "user": "sampleapi_prod2"},
-                        "redis": {"db": 2, "key_prefix": "sampleapi:"},
-                        "minio": {
-                            "bucket": "prod2-sampleapi",
-                            "access_key": "sampleapi_prod2",
-                            "policy_name": "prod2-sampleapi-rw",
-                            "policy_scope": "bucket-only",
-                            "isolation_level": "bucket-scoped-rw",
-                        },
-                        "secret_files": [
-                            resource_relative("prod2-main", "sampleapi", "postgres"),
-                            resource_relative("prod2-main", "sampleapi", "redis"),
-                            resource_relative("prod2-main", "sampleapi", "minio"),
-                        ],
-                    }
-                },
-                target="prod2-main",
-            )
-            write_sampleapi_tenant_files(root, target="prod2-main", include_minio=True)
-            sha = init_git_repo_with_tag(root, "v0.11.9-alpha.2")
-            deploy_dir = root / "deploy"
-            deploy_dir.mkdir(parents=True, exist_ok=True)
-            script_file = deploy_dir / "build-runtime-artifacts.sh"
-            output_file = root / ".built-image-tag"
-            script_file.write_text(
-                "\n".join(
-                    [
-                        "#!/usr/bin/env bash",
-                        "set -euo pipefail",
-                        'mkdir -p "$ARTIFACT_OUTPUT_PATH"',
-                        f'printf \"%s\" \"$IMAGE_TAG\" > \"{output_file}\"',
-                    ]
-                )
-                + "\n",
-                encoding="utf-8",
-            )
-            script_file.chmod(0o755)
-            write_sampleapi_contract(
-                root,
-                target="prod2-main",
-                include_minio=True,
-                schema_version=2,
-                build_command="bash deploy/build-runtime-artifacts.sh",
-                package_command="bash deploy/package-runtime-image.sh",
-            )
-
-            result = run_app_delivery_cli(
-                "build-artifact",
-                repo_root=root,
-                app="sampleapi",
-                target="prod2-main",
-                extra_args=("--auto-version",),
-            )
-
-            self.assertEqual(result.returncode, 0, msg=result.stderr)
-            payload = json.loads(result.stdout)["payload"]
-            today = datetime.now(UTC).strftime("%Y%m%d")
-            expected_tag = f"v0.11.9-alpha.2-zzz.{today}.v1.g{sha}"
-            self.assertEqual(f"sampleapi-prod:{expected_tag}", payload["packaging"]["image_ref"])
-            self.assertEqual(expected_tag, output_file.read_text(encoding="utf-8"))
 
     def test_build_artifact_dry_run_does_not_consume_fork_sequence(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -664,33 +588,6 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             self.assertIn("/data/sub2api/config/sub2api-prod.env", log_text)
             self.assertIn("systemctl disable --now sub2api || true", log_text)
             self.assertIn("docker compose -f docker-compose.prod0.yml up -d --pull never", log_text)
-
-    def test_deploy_dry_run_uses_prod2_specific_remote_paths(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            write_prod2_inventory(root)
-            write_prod2_tenant_secret_files(root)
-            write_prod2_tenant_registry(root)
-            write_prod2_contract(root)
-            write_prod2_compose_template(root)
-
-            result = run_app_delivery_cli(
-                "deploy",
-                repo_root=root,
-                app="sub2api",
-                target="prod2-main",
-                extra_args=("--image-ref", "sub2api-prod:test", "--dry-run"),
-            )
-
-            self.assertEqual(result.returncode, 0, msg=result.stderr)
-            payload = json.loads(result.stdout)
-            self.assertEqual("/opt/agentplane/secrets/services/sub2api.prod2.env", payload["payload"]["remote_env"])
-            self.assertEqual("/opt/agentplane/infra/compose/sub2api/docker-compose.prod2.yml", payload["payload"]["remote_compose"])
-            self.assertTrue(payload["payload"]["local_env"].replace("\\", "/").endswith("secrets/services/sub2api.prod2.env"))
-            commands = "\n".join(payload["payload"]["commands"])
-            self.assertIn("root@prod2-main", commands)
-            self.assertIn("install -Dm600 /tmp/sub2api.prod2.env /opt/agentplane/secrets/services/sub2api.prod2.env", commands)
-            self.assertIn("docker compose -f docker-compose.prod2.yml up -d --pull never", commands)
 
     def test_verify_execute_returns_origin_and_public_results(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -1201,34 +1098,6 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
             self.assertIn("zqf_network", content)
             self.assertIn("/data/sub2api/config/sub2api-prod.env", content)
 
-    def test_render_runtime_outputs_sub2api_prod2_compose(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            write_prod2_inventory(root)
-            write_prod2_tenant_secret_files(root)
-            write_prod2_tenant_registry(root)
-            write_prod2_contract(root)
-            write_prod2_compose_template(root)
-
-            result = run_app_delivery_cli(
-                "render-runtime",
-                repo_root=root,
-                app="sub2api",
-                target="prod2-main",
-                extra_args=("--image-ref", "sub2api-prod:test"),
-            )
-
-            self.assertEqual(result.returncode, 0, msg=result.stderr)
-            payload = json.loads(result.stdout)
-            self.assertEqual("sub2api-prod", payload["payload"]["container_name"])
-            self.assertTrue(payload["payload"]["compose_file"].endswith("docker-compose.prod2.yml"))
-            content = payload["payload"]["compose"]
-            self.assertIn("image: sub2api-prod:test", content)
-            self.assertIn("container_name: sub2api-prod", content)
-            self.assertIn("127.0.0.1:18080:8080", content)
-            self.assertIn("postgres18-prod", content)
-            self.assertIn("redis7-prod", content)
-
     def test_render_runtime_outputs_sampleapi_wsl_compose_with_public_binding(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -1269,55 +1138,6 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
             self.assertIn("0.0.0.0:3000:3000", compose)
             self.assertIn("DATABASE_HOST: postgres18-dev", compose)
             self.assertIn("REDIS_HOST: redis7-dev", compose)
-
-    def test_render_runtime_outputs_sampleapi_prod2_compose_with_prod2_env(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            write_prod2_inventory(root)
-            write_app_resource_registry(
-                root,
-                {
-                    "sampleapi": {
-                        "owner_app": "sampleapi",
-                        "postgres": {"database": "sampleapi_prod2", "user": "sampleapi_prod2"},
-                        "redis": {"db": 2, "key_prefix": "sampleapi:"},
-                        "minio": {
-                            "bucket": "prod2-sampleapi",
-                            "access_key": "sampleapi_prod2",
-                            "policy_name": "prod2-sampleapi-rw",
-                            "policy_scope": "bucket-only",
-                            "isolation_level": "bucket-scoped-rw",
-                        },
-                        "secret_files": [
-                            resource_relative("prod2-main", "sampleapi", "postgres"),
-                            resource_relative("prod2-main", "sampleapi", "redis"),
-                            resource_relative("prod2-main", "sampleapi", "minio"),
-                        ],
-                    }
-                },
-                target="prod2-main",
-            )
-            write_sampleapi_tenant_files(root, target="prod2-main", include_minio=True)
-            write_sampleapi_contract(root, target="prod2-main", include_minio=True)
-            write_sampleapi_compose_templates(root, include_prod2=True)
-
-            result = run_app_delivery_cli(
-                "render-runtime",
-                repo_root=root,
-                app="sampleapi",
-                target="prod2-main",
-                extra_args=("--image-ref", "sampleapi-prod:test"),
-            )
-
-            self.assertEqual(result.returncode, 0, msg=result.stderr)
-            payload = json.loads(result.stdout)
-            self.assertEqual("sampleapi-prod", payload["payload"]["container_name"])
-            self.assertTrue(payload["payload"]["compose_file"].endswith("docker-compose.prod2.yml"))
-            compose = payload["payload"]["compose"]
-            self.assertIn("image: sampleapi-prod:test", compose)
-            self.assertIn("container_name: sampleapi-prod", compose)
-            self.assertIn("../../../secrets/services/sampleapi.prod2.env", compose)
-            self.assertIn("127.0.0.1:3000:3000", compose)
 
     def test_render_runtime_keeps_internal_worker_without_default_db_env(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -1691,87 +1511,6 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
             self.assertTrue(payload["ok"])
             self.assertEqual(["curl -fsS http://127.0.0.1:3000/api/status"], payload["commands"])
             self.assertIn("curl -fsS http://127.0.0.1:3000/api/status", log_file.read_text(encoding="utf-8"))
-
-    def test_network_audit_reports_missing_gateway_and_route(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            write_prod2_inventory(root, include_managed_bridge_networks=True)
-            (root / "secrets" / "ssh").mkdir(parents=True, exist_ok=True)
-            (root / "secrets" / "ssh" / "config").write_text("Host prod2-main\n", encoding="utf-8")
-            bin_dir = root / "bin"
-            bin_dir.mkdir(parents=True, exist_ok=True)
-            log_file = root / "network-audit.log"
-            state_dir = root / "fake-network-state"
-            state_dir.mkdir(parents=True, exist_ok=True)
-            write_fake_bridge_network_ssh(bin_dir)
-
-            result = run_cli(
-                "infra",
-                "network",
-                "audit",
-                "prod2-main",
-                "--repo-root",
-                str(root),
-                env_overrides={
-                    "PATH": f"{bin_dir}:{os.environ['PATH']}",
-                    "FAKE_CMD_LOG": str(log_file),
-                    "FAKE_NETWORK_STATE_DIR": str(state_dir),
-                },
-            )
-
-            self.assertEqual(result.returncode, 0, msg=result.stderr)
-            payload = json.loads(result.stdout)
-            self.assertEqual("infra", payload["command"])
-            self.assertEqual("network.audit", payload["action"])
-            self.assertFalse(payload["payload"]["ok"])
-            network = payload["payload"]["networks"][0]
-            self.assertEqual("zqf_network", network["name"])
-            self.assertFalse(network["checks"]["gateway_ip_present"])
-            self.assertFalse(network["checks"]["route_present"])
-            self.assertEqual("br-66f7da1be943", network["bridge_interface"])
-
-    def test_network_ensure_repairs_missing_gateway_and_route(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            write_prod2_inventory(root, include_managed_bridge_networks=True)
-            (root / "secrets" / "ssh").mkdir(parents=True, exist_ok=True)
-            (root / "secrets" / "ssh" / "config").write_text("Host prod2-main\n", encoding="utf-8")
-            bin_dir = root / "bin"
-            bin_dir.mkdir(parents=True, exist_ok=True)
-            log_file = root / "network-ensure.log"
-            state_dir = root / "fake-network-state"
-            state_dir.mkdir(parents=True, exist_ok=True)
-            write_fake_bridge_network_ssh(bin_dir)
-
-            result = run_cli(
-                "infra",
-                "network",
-                "ensure",
-                "prod2-main",
-                "--repo-root",
-                str(root),
-                env_overrides={
-                    "PATH": f"{bin_dir}:{os.environ['PATH']}",
-                    "FAKE_CMD_LOG": str(log_file),
-                    "FAKE_NETWORK_STATE_DIR": str(state_dir),
-                },
-            )
-
-            self.assertEqual(result.returncode, 0, msg=result.stderr)
-            payload = json.loads(result.stdout)
-            self.assertEqual("infra", payload["command"])
-            self.assertEqual("network.ensure", payload["action"])
-            self.assertTrue(payload["payload"]["ok"])
-            self.assertEqual(2, len(payload["payload"]["repairs"]))
-            self.assertTrue((state_dir / "gateway_present").exists())
-            self.assertTrue((state_dir / "route_present").exists())
-            network = payload["payload"]["networks"][0]
-            self.assertTrue(network["checks"]["gateway_ip_present"])
-            self.assertTrue(network["checks"]["route_present"])
-            log_text = log_file.read_text(encoding="utf-8")
-            self.assertIn("docker network inspect zqf_network", log_text)
-            self.assertIn("ip addr add 172.19.0.1/16 dev br-66f7da1be943", log_text)
-            self.assertIn("ip route replace 172.19.0.0/16 dev br-66f7da1be943 src 172.19.0.1", log_text)
 
 # ======================================================================
 # From: test_app_delivery_validate_cli.py
@@ -3044,72 +2783,6 @@ class TestAppDeliveryDocSyncCliTests(unittest.TestCase):
             self.assertIn("postgres18-dev", wsl_text)
             self.assertNotEqual(prod_text, wsl_text)
 
-    def test_doc_sync_uses_actual_contract_path_in_app_summary(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            app_root = root / "sub2api"
-            contract_dir = app_root / "deploy" / "agentplane"
-            contract_dir.mkdir(parents=True, exist_ok=True)
-            write_inventory(root)
-            write_tenant_secret_files(root, include_minio=True)
-            contract_file = write_contract(
-                app_root,
-                tenant_resources=baseline_tenant_resources(include_minio=True),
-                docs_config={"app_summary_file": "docs/AGENTPLANE_DEPLOYMENT.prod2-main.md"},
-            )
-            renamed_contract = contract_dir / "contract.prod2.yaml"
-            contract_file.rename(renamed_contract)
-            sync_app_catalog_for_contract(
-                root,
-                contract_file=renamed_contract,
-                app="sub2api",
-                service_key="sub2api",
-                app_root=app_root,
-            )
-
-            inventory_file = root / "inventory" / "servers" / "prod0-main" / "inventory.json"
-            payload = json.loads(inventory_file.read_text(encoding="utf-8"))
-            payload["services"]["sub2api"] = {
-                "control_plane": "compose",
-                "container_name": "sub2api-prod",
-                "depends_on_containers": ["postgres18-prod", "redis7-prod"],
-                "host_binding": "127.0.0.1:18080",
-                "public_url": "https://token.example.org",
-                "rollback_entry": {"kind": "none", "note": "prod2-main 首次上线无旧控制面"},
-                "app_resource_summary": {
-                    "postgres": {
-                        "database": "sub2api_prod2",
-                        "user": "sub2api_prod2",
-                        "secret_file": resource_relative("prod2-main", "sub2api", "postgres"),
-                    },
-                    "redis": {
-                        "db": 1,
-                        "key_prefix": "sub2api:",
-                        "secret_file": resource_relative("prod2-main", "sub2api", "redis"),
-                    },
-                    "minio": {
-                        "bucket": "prod2-sub2api",
-                        "access_key": "sub2api_prod2",
-                        "policy_name": "prod2-sub2api-rw",
-                        "policy_scope": "bucket-only",
-                        "isolation_level": "bucket-scoped-rw",
-                        "secret_file": resource_relative("prod2-main", "sub2api", "minio"),
-                    },
-                },
-            }
-            inventory_file.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-
-            result = run_app_delivery_cli(
-                "doc-sync",
-                repo_root=root,
-                app="sub2api",
-                extra_args=("--write",),
-            )
-
-            self.assertEqual(result.returncode, 0, msg=result.stderr)
-            app_summary = app_root / "docs" / "AGENTPLANE_DEPLOYMENT.prod2-main.md"
-            self.assertIn("deploy/agentplane/contract.prod2.yaml", app_summary.read_text(encoding="utf-8"))
-
     def test_doc_sync_marks_missing_app_resource_summary_instead_of_falling_back_to_contract(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -3387,66 +3060,6 @@ class TestAppDeliveryInventoryCliTests(unittest.TestCase):
                 rollback_entry["compose_file"],
             )
 
-    def test_inventory_refresh_writes_prod2_target_specific_sampleapi_entry(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            write_prod2_inventory(root)
-            write_app_resource_registry(
-                root,
-                {
-                    "sampleapi": {
-                        "owner_app": "sampleapi",
-                        "postgres": {"database": "sampleapi_prod2", "user": "sampleapi_prod2"},
-                        "redis": {"db": 2, "key_prefix": "sampleapi:"},
-                        "minio": {
-                            "bucket": "prod2-sampleapi",
-                            "access_key": "sampleapi_prod2",
-                            "policy_name": "prod2-sampleapi-rw",
-                            "policy_scope": "bucket-only",
-                            "isolation_level": "bucket-scoped-rw",
-                        },
-                        "secret_files": [
-                            resource_relative("prod2-main", "sampleapi", "postgres"),
-                            resource_relative("prod2-main", "sampleapi", "redis"),
-                            resource_relative("prod2-main", "sampleapi", "minio"),
-                        ],
-                    }
-                },
-                target="prod2-main",
-            )
-            write_sampleapi_tenant_files(root, target="prod2-main", include_minio=True)
-            write_sampleapi_contract(root, target="prod2-main", include_minio=True)
-            write_sampleapi_compose_templates(root, include_prod2=True)
-            inventory_file = root / "inventory" / "servers" / "prod2-main" / "inventory.json"
-
-            result = run_app_delivery_cli(
-                "inventory-refresh",
-                repo_root=root,
-                app="sampleapi",
-                target="prod2-main",
-                extra_args=("--write",),
-            )
-
-            self.assertEqual(result.returncode, 0, msg=result.stderr)
-            payload = json.loads(result.stdout)
-            app_entry = payload["payload"]["services"]["sampleapi"]
-            self.assertEqual("sampleapi-prod", app_entry["container_name"])
-            self.assertEqual("https://sampleapi.example.org", app_entry["public_url"])
-            self.assertEqual(["postgres18-prod", "redis7-prod", "minio-prod"], app_entry["depends_on_containers"])
-            self.assertEqual(["/opt/agentplane/secrets/services/sampleapi.prod2.env"], app_entry["config_files"])
-            self.assertEqual("sampleapi_prod2", app_entry["app_resource_summary"]["postgres"]["database"])
-            self.assertEqual("prod2-sampleapi", app_entry["app_resource_summary"]["minio"]["bucket"])
-            self.assertEqual(
-                resource_relative("prod2-main", "sampleapi", "minio"),
-                app_entry["app_resource_summary"]["minio"]["secret_file"],
-            )
-            written_payload = json.loads(inventory_file.read_text(encoding="utf-8"))
-            self.assertEqual("https://sampleapi.example.org", written_payload["services"]["sampleapi"]["public_url"])
-            self.assertEqual(
-                ["/opt/agentplane/secrets/services/sampleapi.prod2.env"],
-                written_payload["services"]["sampleapi"]["config_files"],
-            )
-
     def test_inventory_refresh_internal_worker_uses_internal_probe_url(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -3511,34 +3124,4 @@ class TestAppDeliveryInventoryCliTests(unittest.TestCase):
             refreshed_services = json.loads(result.stdout)["payload"]["services"]
             self.assertNotIn("chatgpt-register-wsl", refreshed_services)
 
-    def test_inventory_refresh_writes_prod2_target_specific_sub2api_entry(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            write_prod2_inventory(root)
-            write_prod2_tenant_secret_files(root, include_minio=True)
-            write_prod2_tenant_registry(root, include_minio=True)
-            write_prod2_contract(root, include_minio=True)
-            inventory_file = root / "inventory" / "servers" / "prod2-main" / "inventory.json"
 
-            result = run_app_delivery_cli(
-                "inventory-refresh",
-                repo_root=root,
-                app="sub2api",
-                target="prod2-main",
-                extra_args=("--write",),
-            )
-
-            self.assertEqual(result.returncode, 0, msg=result.stderr)
-            payload = json.loads(result.stdout)
-            app_entry = payload["payload"]["services"]["sub2api"]
-            self.assertEqual("sub2api-prod", app_entry["container_name"])
-            self.assertEqual("https://token.example.org", app_entry["public_url"])
-            self.assertEqual(["postgres18-prod", "redis7-prod"], app_entry["depends_on_containers"])
-            self.assertEqual("sub2api_prod2", app_entry["app_resource_summary"]["postgres"]["database"])
-            self.assertEqual("prod2-sub2api", app_entry["app_resource_summary"]["minio"]["bucket"])
-            self.assertEqual(
-                resource_relative("prod2-main", "sub2api", "minio"),
-                app_entry["app_resource_summary"]["minio"]["secret_file"],
-            )
-            written_payload = json.loads(inventory_file.read_text(encoding="utf-8"))
-            self.assertEqual("https://token.example.org", written_payload["services"]["sub2api"]["public_url"])

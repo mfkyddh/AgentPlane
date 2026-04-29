@@ -639,35 +639,6 @@ class WslAuditTests(unittest.TestCase):
             wsl_violations = [item for item in result["violations"] if item["scope"] == "wsl"]
             self.assertEqual([], wsl_violations, msg=json.dumps(result, ensure_ascii=False))
 
-    def test_exempts_prod2_only_compose_directories_from_wsl_template_requirement(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            service_dir = root / "infra" / "compose" / "vmail"
-            service_dir.mkdir(parents=True, exist_ok=True)
-            (service_dir / "docker-compose.prod2.yml").write_text("services: {}\n", encoding="utf-8")
-
-            prod2_inventory = root / "inventory" / "servers" / "prod2-main" / "inventory.json"
-            prod2_inventory.parent.mkdir(parents=True, exist_ok=True)
-            prod2_inventory.write_text(
-                json.dumps(
-                    {
-                        "services": {
-                            "vmail": {
-                                "control_plane": "compose",
-                            }
-                        }
-                    },
-                    ensure_ascii=False,
-                    indent=2,
-                ),
-                encoding="utf-8",
-            )
-
-            result = audit_filesystem(root, "wsl")
-            codes = {item["id"] for item in result["violations"]}
-
-            self.assertNotIn("wsl.missing.compose_wsl", codes)
-            self.assertNotIn("wsl.missing.compose_prod0", codes)
 
 # ======================================================================
 # From: test_wsl_first_docs.py

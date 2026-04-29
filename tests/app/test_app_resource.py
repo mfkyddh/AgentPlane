@@ -62,27 +62,27 @@ def run_cli(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[
     )
 
 def write_inventory(root: Path, *, projection_drift: bool = False) -> None:
-    server_root = root / "inventory" / "servers" / "prod2-main"
+    server_root = root / "inventory" / "servers" / "prod0-main"
     server_root.mkdir(parents=True, exist_ok=True)
-    (server_root / "README.md").write_text("# prod2-main 摘要\n", encoding="utf-8")
+    (server_root / "README.md").write_text("# prod0-main 摘要\n", encoding="utf-8")
     app_resource_summary = {
         "postgres": {
-            "database": "sub2api_prod2",
-            "user": "sub2api_prod2",
-            "secret_file": resource_relative("prod2-main", "sub2api", "postgres"),
+            "database": "sub2api_prod0",
+            "user": "sub2api_prod0",
+            "secret_file": resource_relative("prod0-main", "sub2api", "postgres"),
         },
         "redis": {
             "db": 1 if not projection_drift else 9,
             "key_prefix": "sub2api:",
-            "secret_file": resource_relative("prod2-main", "sub2api", "redis"),
+            "secret_file": resource_relative("prod0-main", "sub2api", "redis"),
         },
         "minio": {
-            "bucket": "prod2-sub2api",
-            "access_key": "sub2api_prod2",
-            "policy_name": "prod2-sub2api-rw",
+            "bucket": "prod0-sub2api",
+            "access_key": "sub2api_prod0",
+            "policy_name": "prod0-sub2api-rw",
             "policy_scope": "bucket-only",
             "isolation_level": "bucket-scoped-rw",
-            "secret_file": resource_relative("prod2-main", "sub2api", "minio"),
+            "secret_file": resource_relative("prod0-main", "sub2api", "minio"),
         },
     }
     (server_root / "inventory.json").write_text(
@@ -103,7 +103,7 @@ def write_inventory(root: Path, *, projection_drift: bool = False) -> None:
     )
 
 def write_registry(root: Path, *, secret_file: str | None = None) -> None:
-    registry_file = root / "inventory" / "servers" / "prod2-main" / "app-resources.json"
+    registry_file = root / "inventory" / "servers" / "prod0-main" / "app-resources.json"
     registry_file.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "sub2api": {
@@ -115,34 +115,34 @@ def write_registry(root: Path, *, secret_file: str | None = None) -> None:
                 "local_secret_presence": "materialized-in-agentplane",
             },
             "postgres": {
-                "database": "sub2api_prod2",
-                "user": "sub2api_prod2",
+                "database": "sub2api_prod0",
+                "user": "sub2api_prod0",
             },
             "redis": {
                 "db": 1,
                 "key_prefix": "sub2api:",
             },
             "minio": {
-                "bucket": "prod2-sub2api",
-                "access_key": "sub2api_prod2",
-                "policy_name": "prod2-sub2api-rw",
+                "bucket": "prod0-sub2api",
+                "access_key": "sub2api_prod0",
+                "policy_name": "prod0-sub2api-rw",
                 "policy_scope": "bucket-only",
                 "isolation_level": "bucket-scoped-rw",
             },
             "secret_files": [
-                resource_relative("prod2-main", "sub2api", "postgres"),
-                secret_file or resource_relative("prod2-main", "sub2api", "redis"),
-                resource_relative("prod2-main", "sub2api", "minio"),
+                resource_relative("prod0-main", "sub2api", "postgres"),
+                secret_file or resource_relative("prod0-main", "sub2api", "redis"),
+                resource_relative("prod0-main", "sub2api", "minio"),
             ],
         }
     }
     registry_file.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 def write_resource_secrets(root: Path, *, include_redis: bool = True) -> None:
-    resource_dir = resource_root(root, "prod2-main", "sub2api")
+    resource_dir = resource_root(root, "prod0-main", "sub2api")
     resource_dir.mkdir(parents=True, exist_ok=True)
     (resource_dir / "postgres.env").write_text(
-        "PGHOST=postgres18-prod\nPGPORT=5432\nPGDATABASE=sub2api_prod2\nPGUSER=sub2api_prod2\nPGPASSWORD=secret\n",
+        "PGHOST=postgres18-prod\nPGPORT=5432\nPGDATABASE=sub2api_prod0\nPGUSER=sub2api_prod0\nPGPASSWORD=secret\n",
         encoding="utf-8",
     )
     if include_redis:
@@ -151,7 +151,7 @@ def write_resource_secrets(root: Path, *, include_redis: bool = True) -> None:
             encoding="utf-8",
         )
     (resource_dir / "minio.env").write_text(
-        "MINIO_BUCKET=prod2-sub2api\nMINIO_ACCESS_KEY=sub2api_prod2\nMINIO_SECRET_KEY=secret\n",
+        "MINIO_BUCKET=prod0-sub2api\nMINIO_ACCESS_KEY=sub2api_prod0\nMINIO_SECRET_KEY=secret\n",
         encoding="utf-8",
     )
 
@@ -172,7 +172,7 @@ def write_catalog(
                         "repo_name": app,
                         "repo_root": f"/tmp/{app}",
                         "service_key": service_key,
-                        "contracts": {"prod2-main": "deploy/agentplane/contract.yaml"},
+                        "contracts": {"prod0-main": "deploy/agentplane/contract.yaml"},
                     }
                 ]
             },
@@ -188,7 +188,7 @@ class AppResourceCliTests(unittest.TestCase):
             root = Path(tmp)
             write_registry(root)
 
-            result = run_cli("app", "resource", "search", "--target", "prod2-main", "--repo-root", str(root))
+            result = run_cli("app", "resource", "search", "--target", "prod0-main", "--repo-root", str(root))
 
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             payload = json.loads(result.stdout)
@@ -212,7 +212,7 @@ class AppResourceCliTests(unittest.TestCase):
             write_registry(root)
             write_resource_secrets(root)
 
-            result = run_cli("app", "resource", "get", "--target", "prod2-main", "--app", "sub2api", "--repo-root", str(root))
+            result = run_cli("app", "resource", "get", "--target", "prod0-main", "--app", "sub2api", "--repo-root", str(root))
 
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             payload = json.loads(result.stdout)
@@ -227,7 +227,7 @@ class AppResourceCliTests(unittest.TestCase):
             write_registry(root)
             write_resource_secrets(root)
 
-            result = run_cli("app", "resource", "verify", "--target", "prod2-main", "--app", "sub2api", "--repo-root", str(root))
+            result = run_cli("app", "resource", "verify", "--target", "prod0-main", "--app", "sub2api", "--repo-root", str(root))
 
             self.assertEqual(result.returncode, 1, msg=result.stdout)
             payload = json.loads(result.stdout)
@@ -240,7 +240,7 @@ class AppResourceCliTests(unittest.TestCase):
             root = Path(tmp)
             write_inventory(root)
             write_registry(root)
-            registry_file = root / "inventory" / "servers" / "prod2-main" / "app-resources.json"
+            registry_file = root / "inventory" / "servers" / "prod0-main" / "app-resources.json"
             registry_payload = json.loads(registry_file.read_text(encoding="utf-8"))
             entry = registry_payload["sub2api"]
             entry["tenant_app"] = "legacy-sub2api"
@@ -252,8 +252,8 @@ class AppResourceCliTests(unittest.TestCase):
             registry_file.write_text(json.dumps(registry_payload, ensure_ascii=False, indent=2), encoding="utf-8")
             write_resource_secrets(root)
 
-            verify = run_cli("app", "resource", "verify", "--target", "prod2-main", "--app", "sub2api", "--repo-root", str(root))
-            search = run_cli("app", "resource", "search", "--target", "prod2-main", "--repo-root", str(root))
+            verify = run_cli("app", "resource", "verify", "--target", "prod0-main", "--app", "sub2api", "--repo-root", str(root))
+            search = run_cli("app", "resource", "search", "--target", "prod0-main", "--repo-root", str(root))
 
             self.assertEqual(verify.returncode, 0, msg=verify.stderr)
             verify_payload = json.loads(verify.stdout)
@@ -279,7 +279,7 @@ class AppResourceCliTests(unittest.TestCase):
             args = SimpleNamespace(
                 app_surface="resource",
                 app_resource_action="refresh-ledger",
-                target="prod2-main",
+                target="prod0-main",
                 repo_root=str(root),
                 write=True,
             )
@@ -299,12 +299,12 @@ class AppResourceCliTests(unittest.TestCase):
             write_inventory(root)
             write_resource_secrets(root)
             write_registry(root)
-            registry_file = root / "inventory" / "servers" / "prod2-main" / "app-resources.json"
+            registry_file = root / "inventory" / "servers" / "prod0-main" / "app-resources.json"
             registry_payload = json.loads(registry_file.read_text(encoding="utf-8"))
             registry_payload["legacy-chatgpt-register"] = registry_payload.pop("sub2api")
             registry_payload["legacy-chatgpt-register"]["owner_app"] = app_id
             registry_file.write_text(json.dumps(registry_payload, ensure_ascii=False, indent=2), encoding="utf-8")
-            inventory_file = root / "inventory" / "servers" / "prod2-main" / "inventory.json"
+            inventory_file = root / "inventory" / "servers" / "prod0-main" / "inventory.json"
             inventory_payload = json.loads(inventory_file.read_text(encoding="utf-8"))
             inventory_payload["services"] = {
                 service_key: inventory_payload["services"].pop("sub2api"),
@@ -312,7 +312,7 @@ class AppResourceCliTests(unittest.TestCase):
             inventory_payload["services"][service_key]["app_resource_summary"]["redis"]["key_prefix"] = "sub2api:"
             inventory_file.write_text(json.dumps(inventory_payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
-            get = run_cli("app", "resource", "get", "--target", "prod2-main", "--app", app_id, "--repo-root", str(root))
+            get = run_cli("app", "resource", "get", "--target", "prod0-main", "--app", app_id, "--repo-root", str(root))
 
             self.assertEqual(0, get.returncode, msg=get.stderr + get.stdout)
             payload = json.loads(get.stdout)
@@ -333,7 +333,7 @@ class AppResourceObjectCliTests(unittest.TestCase):
             root = Path(tmp)
             write_registry(root)
 
-            items = available_app_resources(root, "prod2-main")
+            items = available_app_resources(root, "prod0-main")
 
             self.assertEqual(
                 [
@@ -362,7 +362,7 @@ class AppResourceObjectCliTests(unittest.TestCase):
             write_registry(root)
             write_resource_secrets(root)
 
-            payload = get_app_resource(root, "prod2-main", "sub2api")
+            payload = get_app_resource(root, "prod0-main", "sub2api")
 
             self.assertEqual("sub2api", payload["resource"]["app"])
             self.assertEqual("sub2api", payload["declared"]["owner_app"])
@@ -382,7 +382,7 @@ class AppResourceObjectCliTests(unittest.TestCase):
             write_registry(root)
             write_resource_secrets(root)
 
-            payload = verify_app_resource(root, "prod2-main", "sub2api")
+            payload = verify_app_resource(root, "prod0-main", "sub2api")
 
             self.assertFalse(payload["ok"])
             self.assertTrue(payload["checks"]["secret_files"]["ok"])
@@ -398,11 +398,11 @@ class AppResourceObjectCliTests(unittest.TestCase):
             write_registry(root)
             write_resource_secrets(root)
 
-            payload = verify_app_resource(root, "prod2-main", "sub2api")
+            payload = verify_app_resource(root, "prod0-main", "sub2api")
 
             self.assertTrue(payload["ok"])
-            self.assertEqual("targets/prod2-main/app-resources/sub2api", payload["canonical_ref"])
-            self.assertEqual("targets/prod2-main/app-resources/sub2api", payload["ledger_fields"]["canonical_ref"])
+            self.assertEqual("targets/prod0-main/app-resources/sub2api", payload["canonical_ref"])
+            self.assertEqual("targets/prod0-main/app-resources/sub2api", payload["ledger_fields"]["canonical_ref"])
             self.assertEqual("sub2api", payload["ledger_fields"]["app"])
             self.assertNotIn("declared", payload["ledger_fields"])
             self.assertIn("declared", payload["verification_fields"])
@@ -417,13 +417,13 @@ class AppResourceObjectCliTests(unittest.TestCase):
             write_inventory(root)
             write_registry(
                 root,
-                secret_file=resource_relative("prod2-main", "sub2api", "redis").replace(
+                secret_file=resource_relative("prod0-main", "sub2api", "redis").replace(
                     "/redis.env", "/../otherapp/redis.env"
                 ),
             )
             write_resource_secrets(root, include_redis=False)
 
-            payload = verify_app_resource(root, "prod2-main", "sub2api")
+            payload = verify_app_resource(root, "prod0-main", "sub2api")
 
             self.assertFalse(payload["ok"])
             self.assertFalse(payload["checks"]["secret_files"]["ok"])
@@ -442,7 +442,7 @@ class AppResourceObjectCliTests(unittest.TestCase):
             args = SimpleNamespace(
                 app_surface="resource",
                 app_resource_action="refresh-ledger",
-                target="prod2-main",
+                target="prod0-main",
                 repo_root=str(root),
                 write=True,
             )
@@ -452,13 +452,13 @@ class AppResourceObjectCliTests(unittest.TestCase):
             self.assertEqual("app", payload["command"])
             self.assertEqual("resource.refresh-ledger", payload["action"])
             self.assertEqual(1, payload["payload"]["counts"]["app_resources"])
-            self.assertTrue((root / "inventory" / "servers" / "prod2-main" / "ledgers" / "app_resources.json").is_file())
+            self.assertTrue((root / "inventory" / "servers" / "prod0-main" / "ledgers" / "app_resources.json").is_file())
             persisted_registry = json.loads(
-                (root / "inventory" / "servers" / "prod2-main" / "app-resources.json").read_text(encoding="utf-8")
+                (root / "inventory" / "servers" / "prod0-main" / "app-resources.json").read_text(encoding="utf-8")
             )
             self.assertEqual("sub2api", persisted_registry["sub2api"]["owner_app"])
             persisted_inventory = json.loads(
-                (root / "inventory" / "servers" / "prod2-main" / "inventory.json").read_text(encoding="utf-8")
+                (root / "inventory" / "servers" / "prod0-main" / "inventory.json").read_text(encoding="utf-8")
             )
             self.assertEqual(1, persisted_inventory["object_ledgers"]["counts"]["app_resources"])
 

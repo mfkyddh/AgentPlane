@@ -7,7 +7,6 @@ from typing import Any, Callable
 TARGET_ALIASES = {
     "wsl": "wsl",
     "prod0-main": "prod0",
-    "prod2-main": "prod2",
 }
 
 SUPPORTED_SECRET_TARGETS = tuple(TARGET_ALIASES.keys())
@@ -26,7 +25,7 @@ def _user(prefix: str, target: str) -> str:
 
 
 def _postgres_admin_user(target: str) -> str:
-    if target in {"prod0-main", "prod2-main"}:
+    if target == "prod0-main":
         return "postgres"
     return _user("pgadmin", target)
 
@@ -170,8 +169,6 @@ def _legacy_runtime_env_path(repo_root: Path, target: str, app_id: str) -> Path:
 def _legacy_onepanel_env_path(repo_root: Path, target: str) -> Path:
     if target == "wsl":
         return repo_root / "secrets" / "services" / "onepanel-api.wsl.env"
-    if target == "prod2-main":
-        return repo_root / "secrets" / "services" / "onepanel-api.prod2.env"
     return repo_root / "secrets" / "services" / "onepanel-api.env"
 
 

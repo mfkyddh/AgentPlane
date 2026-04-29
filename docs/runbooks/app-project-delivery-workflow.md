@@ -50,7 +50,7 @@ audience: both
 - `runtime` 只描述运行态
 - `infra.tenant_resources` 负责声明 app resource 依赖
 
-`sub2api` 当前样板已经按这套 schema 通过了 `wsl`、`prod0-main`、`prod2-main` 三份合同校验。
+`sub2api` 当前样板已经按这套 schema 通过了 `wsl`、`prod0-main` 两份合同校验。
 
 ## 最小接入清单
 

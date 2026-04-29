@@ -10,7 +10,7 @@ from agentplane.providers.onepanel_objects import load_cronjob, onepanel_target_
 from agentplane.scripts.automation.backup_secrets_r2 import DEFAULT_ENV_FILE, load_config, run_backup
 from agentplane.scripts.automation.sync_zzz_skills import run_sync
 
-SUPPORTED_AUTOMATION_TARGETS = ("wsl", "prod0-main", "prod2-main")
+SUPPORTED_AUTOMATION_TARGETS = ("wsl", "prod0-main")
 SUPPORTED_AUTOMATION_OPERATIONS = ("reconcile", "run", "trigger")
 
 

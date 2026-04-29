@@ -29,7 +29,7 @@ audience: agent
 
 | app_id | compose_dir | image_family | prod_container | dev_container | inventory.service_key |
 | --- | --- | --- | --- | --- | --- |
-| `sub2api` | `infra/compose/sub2api` | `wsl/prod0-main: ghcr.io/wei-shaw/sub2api`; `prod2-main: sub2api-prod` | `sub2api-prod` | `sub2api-dev` | `sub2api` |
+| `sub2api` | `infra/compose/sub2api` | `wsl/prod0-main: ghcr.io/wei-shaw/sub2api` | `sub2api-prod` | `sub2api-dev` | `sub2api` |
 
 ## 使用要求
 

@@ -450,10 +450,6 @@ def _target_policy_summary(repo_root: Path, *, target: str) -> dict[str, Any]:
         from agentplane.domain.app.lifecycle_prod0_main import lane2_policy_helper as prod0_policy_helper
 
         return prod0_policy_helper()
-    if target == "prod2-main":
-        from agentplane.domain.app.lifecycle_prod2_main import build_prod2_main_lifecycle_policy
-
-        return build_prod2_main_lifecycle_policy(repo_root)
     return {"target": target}
 
 

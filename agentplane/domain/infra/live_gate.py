@@ -10,7 +10,7 @@ from agentplane.runtime.host_profile import detect_host_profile
 from agentplane.runtime.platform import HostPlatform, detect_host_platform
 from agentplane.runtime.redaction import redact_execution_payload
 
-LIVE_GATE_PROFILES: tuple[str, ...] = ("wsl", "prod0-main", "prod2-main")
+LIVE_GATE_PROFILES: tuple[str, ...] = ("wsl", "prod0-main")
 DEFAULT_APP = "sub2api"
 DEFAULT_WSL_PROJECTION_PROFILE = "wsl-fixture"
 LiveGateExecution = Literal["infra", "linux-backend"]
@@ -164,7 +164,7 @@ def build_live_gate_steps(
     root = Path(repo_root)
     if profile == "wsl":
         return _wsl_steps(root, app=app, projection_profile=projection_profile)
-    if profile in {"prod0-main", "prod2-main"}:
+    if profile == "prod0-main":
         return _ssh_target_steps(root, target=profile, app=app)
     raise ValueError(f"unsupported live gate profile: {profile}")
 

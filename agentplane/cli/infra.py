@@ -35,7 +35,7 @@ from agentplane.domain.infra.live_gate import (
 from agentplane.domain.targets import SUPPORTED_INFRA_TARGETS
 from agentplane.runtime.wsl_bridge import normalize_repo_root_for_current_host
 
-FORMAL_INFRA_TARGETS = ("wsl", "prod0-main", "prod2-main")
+FORMAL_INFRA_TARGETS = ("wsl", "prod0-main")
 
 INFRA_ACTION_SCOPE_HELP = (
     "基座治理: inventory / audit / live-gate\n"
@@ -61,7 +61,7 @@ def add_infra_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     infra_parser = subparsers.add_parser(
         "infra",
         help="基础设施治理（主机、网络、Secrets、自动化）",
-        description="统一 infra 治理入口（Phase 3 formal targets: wsl / prod0-main / prod2-main）",
+        description="统一 infra 治理入口（Phase 3 formal targets: wsl / prod0-main）",
         epilog=INFRA_ACTION_SCOPE_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

@@ -19,14 +19,8 @@ case "$target_host" in
     redis_compose_file="docker-compose.prod0.yml"
     minio_compose_file="docker-compose.prod0.yml"
     ;;
-  prod2-main)
-    target_alias="prod2"
-    postgres_compose_file="docker-compose.prod2.yml"
-    redis_compose_file="docker-compose.prod2.yml"
-    minio_compose_file="docker-compose.prod2.yml"
-    ;;
   *)
-    echo "Unsupported host alias: $target_host (expected: prod0-main or prod2-main)" >&2
+    echo "Unsupported host alias: $target_host (expected: prod0-main)" >&2
     exit 1
     ;;
 esac

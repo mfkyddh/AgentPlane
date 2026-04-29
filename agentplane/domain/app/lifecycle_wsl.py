@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 WSL_ONLY_TARGET = "wsl"
-FORBIDDEN_PRODUCTION_TARGETS = {"prod0-main", "prod2-main"}
+FORBIDDEN_PRODUCTION_TARGETS = {"prod0-main"}
 FORBIDDEN_NETWORKS = {"zqf_network", "zqf-net", "prod-network", "zqf-private"}
 ALLOWED_ONBOARDING_OPERATIONS = (
     "inventory_sync",

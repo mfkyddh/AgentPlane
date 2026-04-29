@@ -13,7 +13,7 @@ from agentplane.runtime.execution import ExecutionBindings, ExecutionPlan
 from agentplane.runtime.host_profile import HostProfile, detect_host_profile
 from agentplane.runtime.target_resolver import TargetResolver
 
-SUPPORTED_INVENTORY_TARGETS = ("wsl", "prod0-main", "prod2-main")
+SUPPORTED_INVENTORY_TARGETS = ("wsl", "prod0-main")
 _WSL_SNAPSHOT_SCRIPT = """
 import json
 import pathlib
@@ -76,10 +76,6 @@ def _wsl_inventory_file(repo_root: Path) -> Path:
 
 def _prod0_inventory_file(repo_root: Path) -> Path:
     return repo_root / "inventory" / "servers" / "prod0-main" / "inventory.json"
-
-
-def _prod2_inventory_file(repo_root: Path) -> Path:
-    return repo_root / "inventory" / "servers" / "prod2-main" / "inventory.json"
 
 
 def _load_existing_wsl_metadata(repo_root: Path) -> dict[str, Any]:
@@ -257,9 +253,6 @@ def generate_inventory_snapshot(
         inventory_file = _wsl_inventory_file(resolved_root)
     elif target == "prod0-main":
         inventory_file = _prod0_inventory_file(resolved_root)
-        payload = _load_json_file(inventory_file)
-    elif target == "prod2-main":
-        inventory_file = _prod2_inventory_file(resolved_root)
         payload = _load_json_file(inventory_file)
     else:
         raise ValueError(f"Unsupported inventory target: {target}")

@@ -231,8 +231,6 @@ def write_contract(
 def _target_contract_relpath(target: str) -> str:
     if target == "wsl":
         return "deploy/agentplane/contract.wsl.yaml"
-    if target == "prod2-main":
-        return "deploy/agentplane/contract.prod2.yaml"
     return "deploy/agentplane/contract.yaml"
 
 
@@ -364,183 +362,6 @@ def write_internal_worker_compose_template(root: Path) -> Path:
     return compose_file
 
 
-def write_prod2_inventory(root: Path, *, include_managed_bridge_networks: bool = False) -> Path:
-    payload = {
-        "ssh": {"aliases": ["prod2-main"], "user": "root"},
-        "services": {
-            "postgres": {"container_name": "postgres18-prod"},
-            "redis": {"container_name": "redis7-prod"},
-            "minio": {"container_name": "minio-prod"},
-        },
-    }
-    if include_managed_bridge_networks:
-        payload["managed_bridge_networks"] = managed_bridge_networks_payload()
-    inventory_file = root / "inventory" / "servers" / "prod2-main" / "inventory.json"
-    inventory_file.parent.mkdir(parents=True, exist_ok=True)
-    inventory_file.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    return inventory_file
-
-
-def write_prod2_contract(
-    root: Path,
-    *,
-    include_minio: bool = False,
-    schema_version: int | None = 1,
-    build_command: str = "bash deploy/package-runtime-image.sh",
-    package_command: str | None = None,
-    packaging_backend: str = "native-posix",
-    artifact_output_path: str = "dist/oplinux",
-) -> Path:
-    contract_file = root / "contract.prod2.yaml"
-    infra: dict[str, object] = {
-        "depends_on_containers": ["postgres18-prod", "redis7-prod"],
-        "tenant_resources": {
-            "postgres": {
-                "required": True,
-                "database": "sub2api_prod2",
-                "user": "sub2api_prod2",
-                "secret_file": resource_relative("prod2-main", "sub2api", "postgres"),
-            },
-            "redis": {
-                "required": True,
-                "db": 1,
-                "key_prefix": "sub2api:",
-                "secret_file": resource_relative("prod2-main", "sub2api", "redis"),
-            },
-        },
-    }
-    if include_minio:
-        infra["tenant_resources"]["minio"] = {
-            "required": True,
-            "bucket": "prod2-sub2api",
-            "access_key": "sub2api_prod2",
-            "policy_name": "prod2-sub2api-rw",
-            "policy_scope": "bucket-only",
-            "isolation_level": "bucket-scoped-rw",
-            "secret_file": resource_relative("prod2-main", "sub2api", "minio"),
-        }
-    depends_on_containers = ["postgres18-prod", "redis7-prod"]
-    if include_minio:
-        depends_on_containers.append("minio-prod")
-
-    contract = {
-        "app_id": "sub2api",
-        "runtime": {
-            "kind": "compose",
-            "container_name": "sub2api-prod",
-            "container_port": 8080,
-            "host_binding": "127.0.0.1:18080",
-            "healthcheck": {"path": "/health", "expected_status": 200},
-            "env_template": "deploy/agentplane/runtime.env.example",
-        },
-        "infra": infra,
-        "ingress": {
-            "public_sites": [
-                {
-                    "alias": "token",
-                    "domain": "token.example.org",
-                    "public_url": "https://token.example.org",
-                    "website_object": "token",
-                }
-            ]
-        },
-        "data": {"mounts": [{"host_path": "/data/sub2api/data", "container_path": "/app/data"}]},
-        "rollback": {"previous_control_plane": {"kind": "none", "note": "prod2-main 首次上线无旧控制面"}},
-        "docs": {"app_summary_file": "docs/AGENTPLANE_DEPLOYMENT.prod2-main.md"},
-        "inventory": {"service_key": "sub2api"},
-    }
-    contract.update(
-        delivery_contract_sections(
-            schema_version=schema_version,
-            build_command=build_command,
-            image_name="sub2api-prod",
-            package_command=package_command,
-            packaging_backend=packaging_backend,
-            artifact_output_path=artifact_output_path,
-        )
-    )
-    if schema_version is not None:
-        contract["schema_version"] = schema_version
-    contract_file.write_text(yaml.safe_dump(contract, sort_keys=False, allow_unicode=False), encoding="utf-8")
-    write_app_catalog_entry(
-        _catalog_repo_root(root),
-        app="sub2api",
-        repo_name=root.name,
-        app_root=root,
-        service_key="sub2api",
-        contracts={"prod2-main": contract_file.name},
-    )
-    return contract_file
-
-
-def write_prod2_tenant_registry(root: Path, *, include_minio: bool = False) -> Path:
-    payload: dict[str, object] = {
-        "sub2api": {
-            "owner_app": "sub2api",
-            "postgres": {"database": "sub2api_prod2", "user": "sub2api_prod2"},
-            "redis": {"db": 1, "key_prefix": "sub2api:"},
-            "secret_files": [
-                resource_relative("prod2-main", "sub2api", "postgres"),
-                resource_relative("prod2-main", "sub2api", "redis"),
-            ],
-        }
-    }
-    if include_minio:
-        payload["sub2api"]["minio"] = {
-            "bucket": "prod2-sub2api",
-            "access_key": "sub2api_prod2",
-            "policy_name": "prod2-sub2api-rw",
-            "policy_scope": "bucket-only",
-            "isolation_level": "bucket-scoped-rw",
-        }
-        payload["sub2api"]["secret_files"].append(resource_relative("prod2-main", "sub2api", "minio"))
-    registry_file = root / "inventory" / "servers" / "prod2-main" / "app-resources.json"
-    registry_file.parent.mkdir(parents=True, exist_ok=True)
-    registry_file.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    return registry_file
-
-
-def write_prod2_tenant_secret_files(root: Path, *, include_minio: bool = False) -> None:
-    tenant_root = resource_root(root, "prod2-main", "sub2api")
-    tenant_root.mkdir(parents=True, exist_ok=True)
-    (tenant_root / "postgres.env").write_text("PGDATABASE=sub2api_prod2\nPGUSER=sub2api_prod2\n", encoding="utf-8")
-    (tenant_root / "redis.env").write_text(
-        "REDIS_PASSWORD=prod2-redis-password\nREDIS_DB=1\nREDIS_KEY_PREFIX=sub2api:\n",
-        encoding="utf-8",
-    )
-    if include_minio:
-        (tenant_root / "minio.env").write_text(
-            "S3_BUCKET=prod2-sub2api\nS3_ACCESS_KEY=sub2api_prod2\nS3_SECRET_KEY=sub2api-s3-secret\n",
-            encoding="utf-8",
-        )
-
-
-def write_prod2_compose_template(root: Path) -> Path:
-    compose_file = root / "infra" / "compose" / "sub2api" / "docker-compose.prod2.yml"
-    compose_file.parent.mkdir(parents=True, exist_ok=True)
-    compose_file.write_text(
-        yaml.safe_dump(
-            {
-                "services": {
-                    "sub2api": {
-                        "image": "sub2api-prod:latest",
-                        "container_name": "sub2api-prod",
-                        "env_file": ["../../../secrets/services/sub2api.prod2.env"],
-                        "ports": ["127.0.0.1:18080:8080"],
-                        "environment": {},
-                        "networks": ["zqf_network"],
-                    }
-                },
-                "networks": {"zqf_network": {"external": True}},
-            },
-            sort_keys=False,
-            allow_unicode=False,
-        ),
-        encoding="utf-8",
-    )
-    return compose_file
-
-
 def write_sampleapi_contract(
     root: Path,
     *,
@@ -567,20 +388,6 @@ def write_sampleapi_contract(
         previous_control_plane = rollback_entry or {
             "kind": "none",
             "note": "wsl local runtime",
-        }
-    elif target == "prod2-main":
-        target_alias = "prod2"
-        postgres_database = "sampleapi_prod2"
-        postgres_user = "sampleapi_prod2"
-        minio_bucket = "prod2-sampleapi"
-        minio_access_key = "sampleapi_prod2"
-        minio_policy_name = "prod2-sampleapi-rw"
-        domain = "sampleapi.example.org"
-        public_url = "https://sampleapi.example.org"
-        docs_path = "docs/AGENTPLANE_DEPLOYMENT.prod2-main.md"
-        previous_control_plane = rollback_entry or {
-            "kind": "none",
-            "note": "prod2-main 首次上线无旧控制面",
         }
     else:
         target_alias = "prod0"
@@ -676,8 +483,6 @@ def write_sampleapi_contract(
         contract["schema_version"] = schema_version
     contract_file.write_text(yaml.safe_dump(contract, sort_keys=False, allow_unicode=False), encoding="utf-8")
     contracts = {"prod0-main": contract_file.name, "wsl": contract_file.name}
-    if target == "prod2-main":
-        contracts = {"prod2-main": contract_file.name}
     write_app_catalog_entry(
         _catalog_repo_root(root),
         app="sampleapi",
@@ -698,12 +503,6 @@ def write_sampleapi_tenant_files(root: Path, *, target: str = "prod0-main", incl
         minio_bucket = "wsl-sampleapi"
         minio_access_key = "sampleapi_wsl"
         redis_key_prefix = "sampleapi:wsl:"
-    elif target == "prod2-main":
-        postgres_database = "sampleapi_prod2"
-        postgres_user = "sampleapi_prod2"
-        minio_bucket = "prod2-sampleapi"
-        minio_access_key = "sampleapi_prod2"
-        redis_key_prefix = "sampleapi:"
     else:
         postgres_database = "sampleapi_prod0"
         postgres_user = "sampleapi_prod0"
@@ -725,7 +524,7 @@ def write_sampleapi_tenant_files(root: Path, *, target: str = "prod0-main", incl
         )
 
 
-def write_sampleapi_compose_templates(root: Path, *, include_prod2: bool = False) -> None:
+def write_sampleapi_compose_templates(root: Path) -> None:
     compose_root = root / "infra" / "compose" / "sampleapi"
     compose_root.mkdir(parents=True, exist_ok=True)
     wsl_file = compose_root / "docker-compose.wsl.yml"
@@ -760,25 +559,6 @@ def write_sampleapi_compose_templates(root: Path, *, include_prod2: bool = False
     }
     prod_file.write_text(yaml.safe_dump(prod_payload, sort_keys=False, allow_unicode=False), encoding="utf-8")
     wsl_file.write_text(yaml.safe_dump(wsl_payload, sort_keys=False, allow_unicode=False), encoding="utf-8")
-    if include_prod2:
-        prod2_payload = {
-            "services": {
-                "sampleapi": {
-                    "image": "sampleapi-prod:latest",
-                    "container_name": "sampleapi-prod",
-                    "command": ["--log-dir", "/app/logs"],
-                    "env_file": ["../../../secrets/services/sampleapi.prod2.env"],
-                    "ports": ["127.0.0.1:3000:3000"],
-                    "volumes": ["/data/sampleapi/data:/data", "/data/sampleapi/logs:/app/logs"],
-                    "networks": ["zqf_network"],
-                }
-            },
-            "networks": {"zqf_network": {"external": True}},
-        }
-        (compose_root / "docker-compose.prod2.yml").write_text(
-            yaml.safe_dump(prod2_payload, sort_keys=False, allow_unicode=False),
-            encoding="utf-8",
-        )
 
 
 def baseline_app_resource_registry_payload() -> dict[str, object]:

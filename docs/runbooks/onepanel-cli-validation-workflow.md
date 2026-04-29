@@ -25,7 +25,6 @@ audience: both
 | profile | target | 角色 | 当前状态 |
 | --- | --- | --- | --- |
 | `wsl-fixture` | `wsl` | 本地 mutation / regression 面 | 已通过 |
-| `prod2-readonly` | `prod2-main` | 现场只读审计面 | 未在本轮重点复核 |
 | `prod0-readonly` | `prod0-main` | 升级前只读审计面 | 当前失败，远端 helper 缺失 |
 
 ## 当前已确认的问题

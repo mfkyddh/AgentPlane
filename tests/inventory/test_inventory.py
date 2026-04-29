@@ -86,7 +86,7 @@ class InventoryGenerationTests(unittest.TestCase):
             registry_file.write_text(
                 json.dumps(
                     {
-                        "_meta": {"infra": "prod2-main"},
+                        "_meta": {"infra": "prod0-main"},
                         "infrastructure": {"postgres": {"status": "running"}},
                         "app_resources": {"sampleapi": {"owner_app": "sampleapi"}},
                         "sampleapi": {"owner_app": "sampleapi"},

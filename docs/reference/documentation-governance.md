@@ -38,7 +38,7 @@ audience: agent
 | `docs/README.md` | 人类和 AI 的完整文档地图 | 具体操作步骤 |
 | `docs/getting-started/` | 核心概念、第一次阅读路径 | 现场细节、事故记录 |
 | `docs/architecture/` | 长期架构合同和边界 | 单次迁移、命令流水账 |
-| `docs/reference/` | 稳定规范、命名、结构、风格 | 案例叙事、临时排障 |
+| `docs/reference/` | 稳定规范、命名、结构、风格（含术语表） | 案例叙事、临时排障 |
 | `docs/runbooks/` | 专题流程、风险、验证、回写 | 第二套实现或 raw shell 默认入口 |
 | `docs/maintainers/` | 文档、skill、测试、模板的写作规则 | 具体主机操作步骤 |
 | `docs/history/`、`docs/archive/` | 历史材料和退役口径 | 当前事实真源 |
@@ -163,7 +163,7 @@ audience: agent
 
 ```markdown
 🎯 目标：（一句话说明要达成什么）
-🖥️ 目标环境：（wsl / prod0-main / prod2-main）
+🖥️ 目标环境：（wsl / prod0-main）
 🚫 不希望改变的东西：（约束和边界）
 ✅ 验收标准：（怎么判断做完了）
 ⚠️ 风险等级：（低 / 中 / 高）
