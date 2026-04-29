@@ -58,6 +58,7 @@ agentplane bootstrap verify-secrets --repo-root .
 ### 3️⃣ 查看状态
 
 ```bash
+agentplane repo status --repo-root . --html tmp/agentplane-status.html
 agentplane repo health-check --repo-root .
 ```
 

@@ -207,7 +207,7 @@ class CliEntrypointsTests(unittest.TestCase):
         _assert_help_commands(
             self,
             repo_help.stdout,
-            expected={"health-check", "docs-sanity", "secret-scan", "privacy-scan", "release-check", "skills"},
+            expected={"health-check", "status", "docs-sanity", "secret-scan", "privacy-scan", "release-check", "skills"},
         )
 
         repo_skills_help = run_cli("repo", "skills", "--help")
@@ -253,6 +253,7 @@ class CliEntrypointsTests(unittest.TestCase):
             ("repo", "secret-scan", "--repo-root", str(REPO_ROOT)),
             ("repo", "privacy-scan", "--repo-root", str(REPO_ROOT)),
             ("repo", "docs-sanity", "--repo-root", str(REPO_ROOT)),
+            ("repo", "status", "--repo-root", str(REPO_ROOT)),
             ("repo", "skills", "check", "--repo-root", str(REPO_ROOT)),
             ("repo", "skills", "list", "--repo-root", str(REPO_ROOT)),
             ("repo", "skills", "sync", "--repo-root", str(REPO_ROOT)),
@@ -265,6 +266,35 @@ class CliEntrypointsTests(unittest.TestCase):
                 payload = json.loads(result.stdout)
                 self.assertIsInstance(payload, dict)
                 self.assertIn("command", payload)
+
+    def test_repo_status_summarizes_control_plane_state(self) -> None:
+        result = run_cli("repo", "status", "--repo-root", str(REPO_ROOT))
+
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertEqual("repo", payload["command"])
+        self.assertEqual("status", payload["action"])
+        self.assertIn("summary", payload)
+        self.assertIn("checks", payload)
+        self.assertIn("skills", payload["checks"])
+        self.assertIn("apps", payload)
+        self.assertIn("targets", payload)
+        self.assertGreaterEqual(payload["summary"]["public_skills"], 1)
+        self.assertIsNone(payload["dashboard"]["html"])
+
+    def test_repo_status_writes_static_html_dashboard(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="agentplane-status-") as tmp:
+            output = Path(tmp) / "status.html"
+            result = run_cli("repo", "status", "--repo-root", str(REPO_ROOT), "--html", str(output))
+            html_text = output.read_text(encoding="utf-8")
+
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertEqual(str(output), payload["dashboard"]["html"])
+        self.assertIn("<!doctype html>", html_text)
+        self.assertIn("AgentPlane Status", html_text)
+        self.assertIn("Public Skills", html_text)
+        self.assertIn("Targets", html_text)
 
     def test_repo_skills_check_validates_public_skill_surface(self) -> None:
         result = run_cli("repo", "skills", "check", "--repo-root", str(REPO_ROOT))

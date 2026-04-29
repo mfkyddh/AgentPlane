@@ -1,7 +1,7 @@
 ---
 status: active
 owner: AgentPlane maintainers
-last_verified: 2026-04-25
+last_verified: 2026-04-29
 superseded_by: null
 audience: both
 
@@ -9,17 +9,22 @@ audience: both
 
 # 📊 AgentPlane 当前状态与验证
 
-结论：本页教人"怎么看状态"，不是状态本身。具体快照由本地运行生成到 `inventory/state-snapshot.md`，不纳入 Git；运行以下命令查看最新状态。
+结论：本页教人"怎么看状态"，不是状态本身。先用 `repo status` 查看本地控制面摘要和静态面板，再按需要运行更重的健康检查。
 
 ## 查看仓库健康
 
 ```bash
+agentplane repo status --repo-root .
+agentplane repo status --repo-root . --html tmp/agentplane-status.html
 agentplane repo health-check --repo-root .
 ```
+
+`status` 只读本地仓库状态，会聚合文档、隐私边界、Skill、app catalog 和 inventory target 摘要；`--html` 会生成可直接打开的静态面板。`health-check` 会运行仓库默认健康检查，用来确认当前工作区是否适合继续执行。
 
 **预期输出**：
 
 ```text
+[PASS] Status summary generated
 [PASS] 仓库结构检查
 [PASS] docs-sanity 链接检查
 [PASS] 入口漂移检查

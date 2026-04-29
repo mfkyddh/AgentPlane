@@ -18,6 +18,7 @@ from agentplane.domain.repository.skills import (
     skill_sync_report,
     write_skill_export,
 )
+from agentplane.domain.repository.status import build_repo_status, write_status_html
 
 
 def add_repository_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
@@ -31,6 +32,10 @@ def add_repository_parser(subparsers: argparse._SubParsersAction[argparse.Argume
     health.add_argument("--skip-secrets", action="store_true")
     health.add_argument("--skip-cli-help", action="store_true")
     health.add_argument("--skip-docs", action="store_true")
+
+    status = repo_subparsers.add_parser("status", help="生成当前控制面状态摘要")
+    status.add_argument("--repo-root", type=Path, default=Path.cwd())
+    status.add_argument("--html", type=Path, help="写出静态 HTML 仪表盘")
 
     docs_sanity = repo_subparsers.add_parser("docs-sanity", help="检查 active 文档链接和正式入口引用")
     docs_sanity.add_argument("--repo-root", type=Path, default=Path.cwd())
@@ -239,6 +244,18 @@ def run_health_check(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def run_status_command(args: argparse.Namespace) -> dict[str, Any]:
+    repo_root = args.repo_root.resolve()
+    payload = build_repo_status(repo_root)
+    html_output = args.html.resolve() if args.html else None
+    if html_output is not None:
+        write_status_html(payload, html_output)
+    payload["dashboard"] = {
+        "html": str(html_output) if html_output is not None else None,
+    }
+    return payload
+
+
 def run_docs_sanity_command(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = args.repo_root.resolve()
     issues = run_docs_sanity(repo_root)
@@ -350,6 +367,8 @@ def run_skills_command(args: argparse.Namespace) -> dict[str, Any]:
 def handle_repository_command(args: argparse.Namespace) -> dict[str, Any]:
     if args.repo_action == "health-check":
         return run_health_check(args)
+    if args.repo_action == "status":
+        return run_status_command(args)
     if args.repo_action == "docs-sanity":
         return run_docs_sanity_command(args)
     if args.repo_action == "secret-scan":

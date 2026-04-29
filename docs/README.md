@@ -122,9 +122,11 @@ AI 工作规范：[AGENTS.md](../AGENTS.md)；Skill 面盘点：[skill-surface-a
 ```bash
 uv run python -m agentplane.cli repo docs-sanity --repo-root .
 uv run python -m agentplane.cli repo skills check --repo-root .
+uv run python -m agentplane.cli repo status --repo-root . --html tmp/agentplane-status.html
 uv run python -m agentplane.cli repo privacy-scan --repo-root .
 ```
 
 `docs-sanity` 会检查 active 文档断链、旧入口引用、孤立文档、frontmatter 完整性、人类文档术语和长度。
 `skills check` 会检查公开 Skill catalog、frontmatter、必备章节和正式 CLI 路由。
+`status --html` 会生成本地静态控制面状态面板，默认写到 ignored 的 `tmp/`。
 `privacy-scan` 会检查 Git 可见文件中是否误入真实控制面状态或维护者现场信息。

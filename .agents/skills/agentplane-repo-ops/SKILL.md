@@ -19,6 +19,8 @@ uv run python -m agentplane.cli repo skills check --repo-root <repo-root>
 uv run python -m agentplane.cli repo skills list --repo-root <repo-root>
 uv run python -m agentplane.cli repo skills export --repo-root <repo-root>
 uv run python -m agentplane.cli repo skills sync --repo-root <repo-root>
+uv run python -m agentplane.cli repo status --repo-root <repo-root>
+uv run python -m agentplane.cli repo status --repo-root <repo-root> --html tmp/agentplane-status.html
 uv run python -m agentplane.cli repo health-check --repo-root <repo-root>
 uv run python -m agentplane.cli repo release-check --repo-root <repo-root>
 uv run python -m agentplane.cli test fast --tb=short

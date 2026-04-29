@@ -82,6 +82,7 @@ Plan（预览）→ Apply（执行）→ Verify（验证）
 
 ## 下一步
 
+- **想先看全局状态？** → `agentplane repo status --repo-root . --html tmp/agentplane-status.html`
 - **想深入理解概念？** → [核心概念详解](core-concepts.md)
 - **想上手操作？** → [应用交付流程](../runbooks/app-project-delivery-workflow.md)
 - **想了解 AI 怎么工作？** → [AI 执行流程](how-agent-works.md)
