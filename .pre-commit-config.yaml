@@ -1,0 +1,60 @@
+# Pre-commit configuration for AgentPlane
+# Install: pre-commit install && pre-commit install --hook-type pre-push
+# Run manually: pre-commit run --all-files
+
+repos:
+  # Ruff for Python linting and formatting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.3
+    hooks:
+      - id: ruff
+        args: [--exit-non-zero-on-fix]
+      - id: ruff-format
+
+  # Local hooks for project-specific checks
+  - repo: local
+    hooks:
+      # Commit message validation (runs during commit-msg stage)
+      - id: validate-commit-msg
+        name: "Validate commit message"
+        entry: python -c "
+          import sys
+          from pathlib import Path
+          msg = Path(sys.argv[1]).read_text().strip()
+          import subprocess
+          result = subprocess.run(
+              ['uv', 'run', 'python', '-m', 'agentplane.domain.repository.commit_message', '--message', msg],
+              capture_output=True,
+              text=True
+          )
+          if result.returncode != 0:
+              print(result.stdout)
+              print(result.stderr)
+          sys.exit(result.returncode)
+        "
+        language: system
+        stages: [commit-msg]
+
+      # Fast test gate (runs before push)
+      - id: fast-test
+        name: "Fast test gate"
+        entry: uv run python -m agentplane.cli test fast --tb=short
+        language: system
+        stages: [pre-push]
+        pass_filenames: false
+
+      # Documentation sanity check (runs before push)
+      - id: docs-sanity
+        name: "Documentation sanity check"
+        entry: uv run python -m agentplane.cli repo docs-sanity --repo-root .
+        language: system
+        stages: [pre-push]
+        pass_filenames: false
+
+      # Secret scan (runs before push)
+      - id: secret-scan
+        name: "Secret scan"
+        entry: uv run python -m agentplane.cli repo secret-scan --repo-root .
+        language: system
+        stages: [pre-push]
+        pass_filenames: false

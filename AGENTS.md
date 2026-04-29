@@ -37,6 +37,7 @@ audience: both
 | 14 | **main 合入门禁**：合入 `main` 前必须通过测试或 CI | 🔴 |
 | 15 | **Skill 同步**：正式能力变更必须同步 `.agents/skills` 或说明无需更新 | 🔴 |
 | 16 | **单人维护收尾**：小任务完成后必须自动 commit、合入本地 `main`、推送 `origin main` | 🔴 |
+| 17 | **提交前必须通过本地检查**：`git commit` 前通过 pre-commit，`git push` 前通过 pre-push | 🔴 |
 
 ---
 

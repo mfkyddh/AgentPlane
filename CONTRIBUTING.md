@@ -55,6 +55,22 @@ git push origin --delete codex/<short-description>
 
 Do not force-push to `main`. Direct commits to `main` are reserved for maintainer-approved low-risk or urgent changes and still require the same validation discipline.
 
+## Local Testing (Recommended)
+
+Set up pre-commit hooks to catch errors before pushing to CI:
+
+```bash
+uv pip install pre-commit
+pre-commit install
+pre-commit install --hook-type pre-push
+```
+
+This runs the same checks as CI (`fast-gate`) locally:
+- **pre-commit**: Ruff lint, commit message validation
+- **pre-push**: Fast tests, docs sanity, secret scan
+
+Detailed guide: [docs/reference/local-testing.md](docs/reference/local-testing.md)
+
 ## Before Opening A PR
 
 Run:
