@@ -73,7 +73,7 @@ audience: agent
 | P0 | 蓝图落库与任务机制建立 | `done` | 已由人类确认：active 战略文档、Markdown 任务书、严格阶段门 | 蓝图、任务书、Roadmap、文档地图落库并通过最小验证 |
 | P1 | 任务书与“继续执行”闭环稳定 | `done` | 已由人类确认：恢复上下文、Markdown 规则、只管继续执行 | Agent 能稳定恢复上下文、定位下一任务、回写状态 |
 | P2 | 操作凭证、例外和复盘模型 | `done` | 已由人类确认：人类可读凭证、Markdown 模板、只定义模型 | Operation Receipt 与 Exception Review 最小模型可用 |
-| P3 | 项目注册表与项目蓝图模型 | `planned` | 待讨论 | project registry、app catalog、blueprint 边界清晰 |
+| P3 | 项目注册表与项目蓝图模型 | `done` | 已由人类确认：弱化 Project Registry、Markdown 规则、只定义关系 | App Catalog 与 Blueprint 边界清晰，Project Registry 暂缓 |
 | P4 | 应用生命周期示范闭环 | `planned` | 待讨论 | 低风险示范项目完成接入、变更、验证、回写、退役口径 |
 | P5 | 可视化控制面增强 | `planned` | 待讨论 | repo status 或静态面板能展示阶段、任务、项目、风险 |
 | P6 | 安全、并发与多 Agent 受控扩展 | `planned` | 待讨论 | 威胁模型、锁机制、审批边界和多 Agent 规则进入正式合同 |
@@ -201,12 +201,44 @@ Agent 不得自动把已有未提交变更纳入当前任务，也不得自动�
 
 ## P3 项目注册表与项目蓝图模型
 
-阶段开始前必须先讨论方向、技术采用和概念边界。
+### 阶段门
+
+| 确认项 | 结论 |
+| --- | --- |
+| 具体实施方向 | 弱化 Project Registry：当前不建立项目总台账，先讲清 App Catalog 与 Blueprint 的关系 |
+| 技术采用 | Markdown 规则：首轮只维护本文，不新增 reference、schema、CLI 或真实数据文件 |
+| 概念边界 | 只定义关系：不创建 Project Registry，不创建真实 blueprint 文件，不修改 `inventory/apps/catalog.json` |
+
+### 概念关系
+
+P3 不要求同时建设三个机制。当前只保留两个必要概念，并把 Project Registry 延后。
+
+| 概念 | 当前定位 | 是否现在建设 |
+| --- | --- | --- |
+| App Catalog | 已存在的 app delivery 执行索引，回答“哪些 app 能被 `agentplane app delivery ...` 正式识别和交付” | 是，沿用 `inventory/apps/catalog.json` |
+| Blueprint | 未来复用项目创建或接入经验的标准配方，回答“同类项目下次怎么创建/接入” | 只保留概念，不创建文件 |
+| Project Registry | 上层项目资产总表，回答“我长期管理哪些项目” | 暂缓，等项目数量和类型变多后再讨论 |
+
+更简单的关系：
+
+```text
+App Catalog = 已进入正式 app delivery 执行面的应用索引
+Blueprint = 创建或接入同类项目时复用的方法模板
+Project Registry = 未来可能需要的全部项目资产总表
+```
+
+### 当前规则
+
+1. 需要 `agentplane app delivery ...` 正式识别的应用，才进入 App Catalog。
+2. 重复出现的项目创建、接入或交付经验，才沉淀为 Blueprint。
+3. 文档站、工具库、控制面自身等“不是 app delivery 应用”的对象，不要硬塞进 App Catalog。
+4. Project Registry 暂时不落文件、不定义 schema、不作为当前阶段验收口径。
+5. 后续如果出现多个非 app delivery 项目需要统一管理，再单独开启 Project Registry 阶段。
 
 | ID | 候选任务 | 状态 |
 | --- | --- | --- |
-| P3-T1 | 区分 project registry 与 app catalog | `todo` |
-| P3-T2 | 定义第一个低风险项目蓝图候选 | `todo` |
+| P3-T1 | 区分 project registry 与 app catalog | `done` |
+| P3-T2 | 定义第一个低风险项目蓝图候选 | `done` |
 
 ## P4 应用生命周期示范闭环
 
@@ -237,11 +269,11 @@ Agent 不得自动把已有未提交变更纳入当前任务，也不得自动�
 
 ## ✅ 当前继续入口
 
-当前阶段：P3 项目注册表与项目蓝图模型。
+当前阶段：P4 应用生命周期示范闭环。
 
 下一步：
 
-1. 先和人类讨论 P3 的实施方向。
-2. 再讨论 P3 的技术采用。
-3. 最后确认 P3 的概念边界。
-4. 三项确认后，再拆 P3 的具体任务。
+1. 先和人类讨论 P4 的实施方向。
+2. 再讨论 P4 的技术采用。
+3. 最后确认 P4 的概念边界。
+4. 三项确认后，再拆 P4 的具体任务。
