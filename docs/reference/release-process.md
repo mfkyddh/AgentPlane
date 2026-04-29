@@ -1,7 +1,7 @@
 ---
 status: active
 owner: AgentPlane maintainers
-last_verified: 2026-04-24
+last_verified: 2026-04-29
 superseded_by: null
 audience: agent
 
@@ -28,6 +28,14 @@ audience: agent
 | 公开边界 | `uv run python -m agentplane.cli repo privacy-scan --repo-root .` |
 
 无法验证时必须在提交或 PR 说明里写清楚：没验证什么、为什么、剩余风险是什么。
+
+单人维护模式下，日常小任务通过最小验证后还必须完成 Git 收尾：
+
+```text
+git status -> git add -> git commit -> merge into local main if needed -> git push origin main
+```
+
+若验证失败、合并冲突、远程推送失败或人类明确要求暂停，才允许不提交或不推送；最终回复必须说明原因和未完成的 Git 状态。
 
 默认统一入口：
 

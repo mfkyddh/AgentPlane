@@ -10,6 +10,12 @@ audience: both
 
 AgentPlane is currently an alpha-stage, CLI-first control plane template for AI-assisted infrastructure operations.
 
+## Strategic Blueprint
+
+The long-term north-star plan is tracked in [AgentPlane 终极蓝图 v4](docs/reference/agentplane-ultimate-blueprint.md). Phase execution state is tracked in [AgentPlane Roadmap Workbook](docs/maintainers/agentplane-roadmap-workbook.md).
+
+These documents do not replace the formal control-plane contract. Formal operations still route through `agentplane ...`, and execution semantics remain governed by [control-plane.md](docs/architecture/control-plane.md).
+
 ## Stable Enough To Build On
 
 | Area | Current status |
@@ -39,10 +45,21 @@ AgentPlane is currently an alpha-stage, CLI-first control plane template for AI-
 | M4: Runtime decomposition | Reduce high-risk files. | App delivery runtime responsibilities are split by contract, render, deploy, verify, and inventory/doc sync. |
 | M5: Provider contracts | Keep provider details behind formal surfaces. | Provider behavior has focused contract tests and public docs point to task entries. |
 
+## Long-Term Phases
+
+| Phase | Goal | Tracking |
+| --- | --- | --- |
+| P0: Blueprint landing | Land the active strategic blueprint and workplan mechanism. | [Workbook](docs/maintainers/agentplane-roadmap-workbook.md#p0-蓝图落库与任务机制建立) |
+| P1: Resume protocol | Make "continue execution" reliably recover current phase, next task, and status updates. | [Workbook](docs/maintainers/agentplane-roadmap-workbook.md#p1-任务书与继续执行闭环稳定) |
+| P2: Evidence model | Define operation receipts, exceptions, and review records. | [Blueprint](docs/reference/agentplane-ultimate-blueprint.md#长期机制) |
+| P3: Project model | Separate project registry, app catalog, and blueprints. | [Blueprint](docs/reference/agentplane-ultimate-blueprint.md#长期机制) |
+| P4: Lifecycle demo | Prove a low-risk app lifecycle from onboarding through verification and retirement semantics. | [Workbook](docs/maintainers/agentplane-roadmap-workbook.md#p4-应用生命周期示范闭环) |
+| P5: Dashboard evolution | Extend repo status or static dashboard with phase, task, project, and risk views. | [Workbook](docs/maintainers/agentplane-roadmap-workbook.md#p5-可视化控制面增强) |
+| P6: Controlled scale | Add security, concurrency, approvals, and multi-Agent boundaries. | [Workbook](docs/maintainers/agentplane-roadmap-workbook.md#p6-安全并发与多-agent-受控扩展) |
+
 ## Not Goals
 
 - AgentPlane is not a replacement for Terraform or a full GitOps controller.
 - AgentPlane is not an SSH script collection.
 - AgentPlane does not store production secrets, private host inventories, or maintainer-local runbooks in public Git.
 - AgentPlane does not make application repositories own production control-plane state.
-

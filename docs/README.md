@@ -1,7 +1,7 @@
 ---
 status: active
 owner: AgentPlane maintainers
-last_verified: 2026-04-25
+last_verified: 2026-04-29
 superseded_by: null
 audience: both
 ---
@@ -24,6 +24,8 @@ audience: both
 | 部署第一个应用 | [教程：部署 sub2api](tutorials/deploy-first-app.md) ⭐ |
 | 排查部署失败 | [教程：排查失败](tutorials/troubleshoot-failed-deployment.md) ⭐ |
 | 了解完整交付流程 | [应用交付流程](runbooks/app-project-delivery-workflow.md) |
+| 查看长期蓝图 | [AgentPlane 终极蓝图 v4](reference/agentplane-ultimate-blueprint.md) |
+| 继续长期路线图任务 | [Roadmap Workbook](maintainers/agentplane-roadmap-workbook.md) |
 | 部署失败了怎么办 | [失败处理](runbooks/app-delivery-failure-handling.md) |
 | 查看当前状态 | [状态与验证](runbooks/current-state-and-validation.md) |
 | 初始化 Secrets | [Secrets 引导](runbooks/bootstrap-secrets.md) |
@@ -63,6 +65,7 @@ AI 工作规范：[AGENTS.md](../AGENTS.md)；Skill 面盘点：[skill-surface-a
 | 文档 | 说明 |
 | --- | --- |
 | [reference/documentation-governance.md](reference/documentation-governance.md) | 文档分层、emoji、链接和门禁规范 |
+| [reference/agentplane-ultimate-blueprint.md](reference/agentplane-ultimate-blueprint.md) | 长期战略蓝图、阶段路线和核心机制 |
 | [reference/project-positioning.md](reference/project-positioning.md) | 项目定位、非目标和工具边界 |
 | [reference/repository-structure.md](reference/repository-structure.md) | 顶层目录和新文件放置规则 |
 | [reference/code-style.md](reference/code-style.md) | 代码和文档风格基线 |
@@ -104,6 +107,7 @@ AI 工作规范：[AGENTS.md](../AGENTS.md)；Skill 面盘点：[skill-surface-a
 | 文档 | 说明 |
 | --- | --- |
 | [maintainers/control-plane-authoring.md](maintainers/control-plane-authoring.md) | control plane authoring 规则 |
+| [maintainers/agentplane-roadmap-workbook.md](maintainers/agentplane-roadmap-workbook.md) | 长期阶段推进、任务状态和继续执行协议 |
 | [maintainers/skill-surface-audit.md](maintainers/skill-surface-audit.md) | 当前 Skill 面盘点与重构建议 |
 
 ### 🕰️ History And Archive

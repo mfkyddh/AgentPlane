@@ -36,6 +36,7 @@ audience: both
 | 13 | **测试分层+并行**：新增测试必须标记 unit/integration/e2e；禁止按操作/环境拆分测试文件 | 🔴 |
 | 14 | **main 合入门禁**：合入 `main` 前必须通过测试或 CI | 🔴 |
 | 15 | **Skill 同步**：正式能力变更必须同步 `.agents/skills` 或说明无需更新 | 🔴 |
+| 16 | **单人维护收尾**：小任务完成后必须自动 commit、合入本地 `main`、推送 `origin main` | 🔴 |
 
 ---
 
@@ -83,7 +84,7 @@ AI 面向人的意图入口是 Skill；Skill 只做触发、路由和约束，�
 - Conventional Commits：`type(scope): description`，type 仅限 `feat|fix|refactor|docs|test|chore|style|perf`
 - 超过 3 个文件或跨模块变更时必须有 body
 - `.gitattributes` 为换行符唯一权威（`* text=auto eol=lf`），`core.autocrlf=false`
-- 默认短生命周期分支 + PR + CI 通过 + squash merge，合并后清理分支
+- 单人维护默认完成小任务后自动 commit、合入本地 `main`、推送 `origin main`
 - 禁止 `push --force` 到 main
 
 > 完整规范：[docs/reference/git-conventions.md](docs/reference/git-conventions.md)
