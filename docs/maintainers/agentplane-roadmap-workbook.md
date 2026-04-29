@@ -75,7 +75,7 @@ audience: agent
 | P2 | 操作凭证、例外和复盘模型 | `done` | 已由人类确认：人类可读凭证、Markdown 模板、只定义模型 | Operation Receipt 与 Exception Review 最小模型可用 |
 | P3 | 项目注册表与项目蓝图模型 | `done` | 已由人类确认：弱化 Project Registry、Markdown 规则、只定义关系 | App Catalog 与 Blueprint 边界清晰，Project Registry 暂缓 |
 | P4 | 应用生命周期示范闭环 | `done` | 已由人类确认：文档演练、Markdown 计划、不碰真实运行态 | 示范项目选择标准、生命周期顺序和验收口径已定义 |
-| P5 | 可视化控制面增强 | `approved` | 已由人类确认：状态可见化、轻量投影、不创造新真源 | repo status 或静态面板能展示阶段、任务、项目、风险 |
+| P5 | 可视化控制面增强 | `active` | 已由人类确认：状态可见化、轻量投影、不创造新真源 | repo status 或静态面板能展示阶段、任务、项目、风险 |
 | P6 | 安全、并发与多 Agent 受控扩展 | `planned` | 待讨论 | 威胁模型、锁机制、审批边界和多 Agent 规则进入正式合同 |
 
 ## P0 蓝图落库与任务机制建立
@@ -296,12 +296,41 @@ P4 本轮只要求完成示范方案设计。验收通过条件：
 | 技术采用 | 轻量投影：优先增强 `agentplane repo status`，必要时生成静态 HTML 面板；不引入数据库、前端框架或常驻服务 |
 | 概念边界 | 只展示已有真源：阶段状态来自本文，仓库状态来自 `repo status`，target / app 状态来自 inventory / ledger；面板不是新的管理中心 |
 
+### Workbook 状态投影规则
+
+P5 的可视化投影必须以本文为阶段和任务状态真源。首轮投影只读取 Markdown，不把状态复制到新的持久化文件。
+
+建议未来在 `agentplane repo status --repo-root .` 中增加只读 `roadmap` 区块；如果选择静态 HTML 面板，也必须复用同一组字段，不另起一套解释规则。
+
+最小投影字段：
+
+| 字段 | 来源 | 含义 |
+| --- | --- | --- |
+| `current_phase.id` | 阶段总览第一个非 `done`、非 `superseded` 阶段 | 当前长期推进阶段 |
+| `current_phase.name` | 阶段总览 | 当前阶段名称 |
+| `current_phase.status` | 阶段总览 | 当前阶段状态 |
+| `current_phase.gate` | 阶段总览或阶段门表 | 人类已确认或待确认的阶段门 |
+| `next_task.id` | 当前阶段第一个非 `done`、非 `deferred` 任务 | 下一步任务 |
+| `next_task.title` | 当前阶段任务表 | 下一步任务标题 |
+| `next_task.status` | 当前阶段任务表 | 下一步任务状态 |
+| `resume_entry` | “当前继续入口”段落 | 面向 Agent 的继续执行提示 |
+| `source.path` | 固定为本文路径 | 投影来源 |
+| `source.last_verified` | frontmatter `last_verified` | 文档最近人工确认日期 |
+
+投影规则：
+
+1. `done` 和 `superseded` 阶段不作为当前阶段。
+2. `done` 和 `deferred` 任务不作为下一步任务。
+3. 如果当前阶段是 `planned` 或 `discussion-required`，`next_task` 应为空，`resume_entry` 应提示先讨论阶段门。
+4. 如果 Markdown 解析失败，`repo status` 不应伪造状态；应返回 warning，并提示人类直接查看本文。
+5. 投影只负责展示，不自动修改任务状态、不自动推进阶段。
+
 ### 第一轮任务
 
 | ID | 任务 | 状态 | 完成日期 | 验证或证据 | 后续影响 |
 | --- | --- | --- | --- | --- | --- |
 | P5-T0 | 记录 P5 阶段门并拆分第一轮任务 | `done` | 2026-04-29 | 本节阶段门与第一轮任务表 | 下一步从 P5-T1 开始执行 |
-| P5-T1 | 定义 Workbook 状态如何投影到 `repo status` 或静态面板 | `todo` |  |  | 明确阶段、任务、下一步的展示来源 |
+| P5-T1 | 定义 Workbook 状态如何投影到 `repo status` 或静态面板 | `done` | 2026-04-29 | 本节“Workbook 状态投影规则” | 下一步定义风险和下一步摘要字段 |
 | P5-T2 | 定义风险和下一步摘要的最小字段 | `todo` |  |  | 让面板能提示阻塞、异常和推荐下一步 |
 | P5-T3 | 决定首轮采用 CLI JSON 输出增强还是静态 HTML 面板 | `todo` |  |  | 避免过早引入前端或服务化复杂度 |
 
@@ -320,6 +349,6 @@ P4 本轮只要求完成示范方案设计。验收通过条件：
 
 下一步：
 
-1. 执行 P5-T1：定义 Workbook 状态如何投影到 `repo status` 或静态面板。
+1. 执行 P5-T2：定义风险和下一步摘要的最小字段。
 2. 执行前先检查工作区和仓库状态。
-3. P5-T1 完成后回写任务状态、验证证据和后续影响。
+3. P5-T2 完成后回写任务状态、验证证据和后续影响。
