@@ -72,7 +72,7 @@ audience: agent
 | --- | --- | --- | --- | --- |
 | P0 | 蓝图落库与任务机制建立 | `done` | 已由人类确认：active 战略文档、Markdown 任务书、严格阶段门 | 蓝图、任务书、Roadmap、文档地图落库并通过最小验证 |
 | P1 | 任务书与“继续执行”闭环稳定 | `done` | 已由人类确认：恢复上下文、Markdown 规则、只管继续执行 | Agent 能稳定恢复上下文、定位下一任务、回写状态 |
-| P2 | 操作凭证、例外和复盘模型 | `planned` | 待讨论 | Operation Receipt 与 Exception Review 最小模型可用 |
+| P2 | 操作凭证、例外和复盘模型 | `done` | 已由人类确认：人类可读凭证、Markdown 模板、只定义模型 | Operation Receipt 与 Exception Review 最小模型可用 |
 | P3 | 项目注册表与项目蓝图模型 | `planned` | 待讨论 | project registry、app catalog、blueprint 边界清晰 |
 | P4 | 应用生命周期示范闭环 | `planned` | 待讨论 | 低风险示范项目完成接入、变更、验证、回写、退役口径 |
 | P5 | 可视化控制面增强 | `planned` | 待讨论 | repo status 或静态面板能展示阶段、任务、项目、风险 |
@@ -139,12 +139,65 @@ Agent 不得自动把已有未提交变更纳入当前任务，也不得自动�
 
 ## P2 操作凭证、例外和复盘模型
 
-阶段开始前必须先讨论方向、技术采用和概念边界。
+### 阶段门
+
+| 确认项 | 结论 |
+| --- | --- |
+| 具体实施方向 | 人类可读凭证：让正式任务完成后留下可读、可追踪、可复盘的长期记忆 |
+| 技术采用 | Markdown 模板：首轮只在本文定义填写规则，不新增 CLI、schema 或自动化 |
+| 概念边界 | 只定义模型：不决定保存目录，不接入 `tmp/operation-ledger`、inventory ledger、repo status 或 dashboard |
+
+### 触发规则
+
+| 场景 | 必须产物 |
+| --- | --- |
+| 正式阶段任务完成 | Operation Receipt |
+| 验证失败 | Operation Receipt + Exception Review |
+| 紧急绕过 | Operation Receipt + Exception Review |
+| 回滚发生 | Operation Receipt + Exception Review |
+| 审批拒绝 | Exception Review |
+
+### Operation Receipt 模板
+
+用于每个正式阶段任务完成后，记录人类可读的完成凭证。
+
+```markdown
+#### Operation Receipt
+
+| 字段 | 内容 |
+| --- | --- |
+| 任务 | <阶段任务 ID 和标题> |
+| 目标 | <本次任务要达成什么> |
+| 触发 Skill | <使用或匹配到的 Skill；无则写“无，原因：...”> |
+| 正式命令或动作 | <关键 agentplane 命令、验证命令或文档动作摘要> |
+| 验证结果 | <通过/失败/未运行及原因> |
+| 证据链接 | <相关文档、commit、ledger、status 输出或报告引用> |
+| 后续影响 | <推进到哪个阶段、留下什么 follow-up> |
+```
+
+### Exception Review 模板
+
+用于失败、紧急绕过、回滚、审批拒绝等异常场景。目标是把异常转化为规范、Skill、测试或后续任务。
+
+```markdown
+#### Exception Review
+
+| 字段 | 内容 |
+| --- | --- |
+| 异常类型 | <失败 / 紧急绕过 / 回滚 / 审批拒绝> |
+| 发生原因 | <已知原因；未知则写待查> |
+| 影响范围 | <影响的阶段、任务、target、app 或文档> |
+| 恢复动作 | <已经做了什么恢复；没有则写无> |
+| 复盘结论 | <需要新增规则、Skill、测试、文档或后续任务吗> |
+| 后续任务 | <任务 ID 或待创建任务> |
+```
+
+### 任务
 
 | ID | 候选任务 | 状态 |
 | --- | --- | --- |
-| P2-T1 | 定义 Operation Receipt 最小字段 | `todo` |
-| P2-T2 | 定义 Exception Review 最小字段 | `todo` |
+| P2-T1 | 定义 Operation Receipt 最小字段 | `done` |
+| P2-T2 | 定义 Exception Review 最小字段 | `done` |
 
 ## P3 项目注册表与项目蓝图模型
 
@@ -184,11 +237,11 @@ Agent 不得自动把已有未提交变更纳入当前任务，也不得自动�
 
 ## ✅ 当前继续入口
 
-当前阶段：P2 操作凭证、例外和复盘模型。
+当前阶段：P3 项目注册表与项目蓝图模型。
 
 下一步：
 
-1. 先和人类讨论 P2 的实施方向。
-2. 再讨论 P2 的技术采用。
-3. 最后确认 P2 的概念边界。
-4. 三项确认后，再拆 P2 的具体任务。
+1. 先和人类讨论 P3 的实施方向。
+2. 再讨论 P3 的技术采用。
+3. 最后确认 P3 的概念边界。
+4. 三项确认后，再拆 P3 的具体任务。
