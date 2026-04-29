@@ -325,13 +325,70 @@ P5 的可视化投影必须以本文为阶段和任务状态真源。首轮投�
 4. 如果 Markdown 解析失败，`repo status` 不应伪造状态；应返回 warning，并提示人类直接查看本文。
 5. 投影只负责展示，不自动修改任务状态、不自动推进阶段。
 
+### 风险与下一步摘要字段
+
+风险是已有真源的推导视图，不是新真源。面板通过风险字段让人类快速定位阻塞和异常，通过下一步摘要字段给出推荐动作。
+
+#### 风险字段
+
+| 字段 | 含义 |
+| --- | --- |
+| `risks[].kind` | 风险类型枚举，见下表 |
+| `risks[].severity` | `high`：阻塞推进；`medium`：需要关注但不阻塞；`low`：信息提示 |
+| `risks[].message` | 人类可读的风险描述 |
+| `risks[].source_ref` | 产生风险的真源位置（阶段 ID、任务 ID、target 名、check 名等） |
+
+风险类型推导规则：
+
+| kind | 来源 | severity | 触发条件 |
+| --- | --- | --- | --- |
+| `blocked_phase` | workbook 阶段状态 | high | 阶段状态为 `blocked` |
+| `discussion_required` | workbook 阶段状态 | high | 阶段状态为 `discussion-required` 或 `planned`（当前阶段） |
+| `blocked_task` | workbook 任务状态 | medium | 当前阶段中存在 `blocked` 任务 |
+| `failed_check` | repo status checks | high | `checks.docs.ok` / `checks.boundaries.ok` / `checks.skills.ok` 为 false |
+| `missing_inventory` | repo status targets | medium | target 缺 `inventory.json` 或 `README.md` |
+| `stale_data` | repo status targets | low | target 的 `ledger_updated` 超过 30 天未更新 |
+| `dirty_worktree` | git status | medium | 存在未提交变更 |
+
+推导规则：
+
+1. 风险只从 workbook、repo status、git status 三个已有真源推导，不引入新数据源。
+2. 每种 kind 最多出现一次；同一 kind 下如有多个实例，合并到 `message` 中说明。
+3. 当前阶段的 `planned` 状态只在当前阶段时产生 `discussion_required` 风险；后续未到达的阶段不产生风险。
+4. `stale_data` 的 30 天阈值与 `inventory/state-snapshot.md` 的时效性检查一致。
+5. 如果没有任何风险，`risks` 为空数组，面板不展示风险区。
+
+#### 下一步摘要字段
+
+| 字段 | 含义 |
+| --- | --- |
+| `next_step.type` | 推荐动作类型枚举，见下表 |
+| `next_step.description` | 人类可读的推荐动作描述 |
+| `next_step.target_ref` | 关联的阶段 / 任务 / 问题 / 文件引用 |
+
+推荐动作类型推导规则（按优先级从高到低，命中第一条即返回）：
+
+| 优先级 | type | 触发条件 | description 示例 |
+| --- | --- | --- | --- |
+| 1 | `fix_issue` | 存在 `failed_check` 风险 | "修复 docs-sanity 错误后再继续推进" |
+| 2 | `commit_changes` | 存在 `dirty_worktree` 风险 | "先提交或处理工作区残留变更" |
+| 3 | `discuss_gate` | 当前阶段为 `planned` 或 `discussion-required` | "P6 阶段门待讨论，请确认实施方向、技术采用和概念边界" |
+| 4 | `continue_task` | 当前阶段为 `approved` 或 `active`，有 `todo` 或 `in-progress` 任务 | "执行 P5-T2：定义风险和下一步摘要的最小字段" |
+| 5 | `all_done` | 所有阶段为 `done` 或 `superseded` | "当前路线已完成，需要人类新增阶段" |
+
+推导规则：
+
+1. 下一步摘要是风险的补集：如果有阻塞风险，先建议修复风险；如果没有风险，建议推进任务。
+2. `target_ref` 指向具体的阶段 ID、任务 ID 或 check 名，方便人类直接定位。
+3. 如果 `next_step.type` 为 `all_done`，面板应提示人类检查是否需要新增阶段或结束路线。
+
 ### 第一轮任务
 
 | ID | 任务 | 状态 | 完成日期 | 验证或证据 | 后续影响 |
 | --- | --- | --- | --- | --- | --- |
 | P5-T0 | 记录 P5 阶段门并拆分第一轮任务 | `done` | 2026-04-29 | 本节阶段门与第一轮任务表 | 下一步从 P5-T1 开始执行 |
 | P5-T1 | 定义 Workbook 状态如何投影到 `repo status` 或静态面板 | `done` | 2026-04-29 | 本节“Workbook 状态投影规则” | 下一步定义风险和下一步摘要字段 |
-| P5-T2 | 定义风险和下一步摘要的最小字段 | `todo` |  |  | 让面板能提示阻塞、异常和推荐下一步 |
+| P5-T2 | 定义风险和下一步摘要的最小字段 | `done` | 2026-04-29 | 本节"风险与下一步摘要字段"定义了风险类型推导规则和下一步摘要推导规则 | 下一步决定首轮采用 CLI JSON 输出增强还是静态 HTML 面板 |
 | P5-T3 | 决定首轮采用 CLI JSON 输出增强还是静态 HTML 面板 | `todo` |  |  | 避免过早引入前端或服务化复杂度 |
 
 ## P6 安全、并发与多 Agent 受控扩展
@@ -349,6 +406,6 @@ P5 的可视化投影必须以本文为阶段和任务状态真源。首轮投�
 
 下一步：
 
-1. 执行 P5-T2：定义风险和下一步摘要的最小字段。
+1. 执行 P5-T3：决定首轮采用 CLI JSON 输出增强还是静态 HTML 面板。
 2. 执行前先检查工作区和仓库状态。
-3. P5-T2 完成后回写任务状态、验证证据和后续影响。
+3. P5-T3 完成后回写任务状态、验证证据和后续影响。
