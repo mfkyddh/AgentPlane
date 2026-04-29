@@ -389,7 +389,36 @@ P5 的可视化投影必须以本文为阶段和任务状态真源。首轮投�
 | P5-T0 | 记录 P5 阶段门并拆分第一轮任务 | `done` | 2026-04-29 | 本节阶段门与第一轮任务表 | 下一步从 P5-T1 开始执行 |
 | P5-T1 | 定义 Workbook 状态如何投影到 `repo status` 或静态面板 | `done` | 2026-04-29 | 本节“Workbook 状态投影规则” | 下一步定义风险和下一步摘要字段 |
 | P5-T2 | 定义风险和下一步摘要的最小字段 | `done` | 2026-04-29 | 本节"风险与下一步摘要字段"定义了风险类型推导规则和下一步摘要推导规则 | 下一步决定首轮采用 CLI JSON 输出增强还是静态 HTML 面板 |
-| P5-T3 | 决定首轮采用 CLI JSON 输出增强还是静态 HTML 面板 | `todo` |  |  | 避免过早引入前端或服务化复杂度 |
+| P5-T3 | 决定首轮采用 CLI JSON 输出增强还是静态 HTML 面板 | `done` | 2026-04-29 | 见本节"首轮技术方案决策" | 下一步实现 roadmap 投影的代码和测试 |
+
+### 首轮技术方案决策
+
+结论：**首轮采用 CLI JSON 输出增强**，HTML 面板作为后续增量。
+
+理由：
+
+1. **阶段门方向一致**：P5 阶段门确认"优先增强 `agentplane repo status`"，JSON 输出就是 `repo status` 的核心产物。
+2. **数据层优先**：当前代码已分离数据层（`build_repo_status()` → JSON dict）和展示层（`render_status_html()` → HTML string）。JSON 是 HTML 的上游数据源；先做数据层，展示层只需在 `render_status_html()` 中增加对应的 HTML 片段即可自然跟进。
+3. **不引入前端复杂度**：JSON 增强只需在 `build_repo_status()` 中增加一个 `roadmap` key，解析 workbook Markdown 并填充 T1/T2 定义的投影字段。不需要前端框架、数据库或常驻服务。
+4. **机器可读先于人类可视**：JSON 输出可以被 Agent、CI、脚本直接消费；HTML 面板只服务人类浏览。Agent 的"继续执行"协议依赖 JSON 输出中的 roadmap 状态，这一闭环比人类浏览面板更紧迫。
+5. **已有 HTML 基础可复用**：`render_status_html()` 已有卡片、表格、状态指示器等组件模板。后续增加 roadmap/risks/next-step 区块只需复用 `_card()` 和 `<section class="panel">` 模式。
+
+实现路径：
+
+1. 在 `agentplane/domain/repository/status.py` 中新增 `_workbook_status(repo_root)` 函数，解析 workbook Markdown 并返回 roadmap 投影字段。
+2. 在 `build_repo_status()` 中调用 `_workbook_status()`，将结果作为 `roadmap` key 加入 payload。
+3. `roadmap` 区块的结构严格对应 T1 投影字段 + T2 风险和下一步摘要字段。
+4. 如果 workbook 文件不存在或 Markdown 解析失败，`roadmap` 区块返回 `{"ok": false, "error": "..."}`，不伪造状态。
+5. 后续增量：在 `render_status_html()` 中增加 roadmap/risks/next-step 面板区块。
+
+### 第二轮任务
+
+| ID | 任务 | 状态 | 完成日期 | 验证或证据 | 后续影响 |
+| --- | --- | --- | --- | --- | --- |
+| P5-T4 | 在 `repo status` JSON 输出中实现 roadmap 投影 | `todo` | | | Agent "继续执行"协议可消费 JSON 中的 roadmap 状态 |
+| P5-T5 | 在 `repo status` JSON 输出中实现风险和下一步摘要推导 | `todo` | | | 面板能提示阻塞、异常和推荐下一步 |
+| P5-T6 | 在静态 HTML 面板中增加 roadmap/risks/next-step 区块 | `todo` | | | 人类可直接浏览阶段、任务、风险和推荐下一步 |
+| P5-T7 | 运行最小验证并回写本阶段任务状态 | `todo` | | | P5 阶段验收 |
 
 ## P6 安全、并发与多 Agent 受控扩展
 
@@ -406,6 +435,6 @@ P5 的可视化投影必须以本文为阶段和任务状态真源。首轮投�
 
 下一步：
 
-1. 执行 P5-T3：决定首轮采用 CLI JSON 输出增强还是静态 HTML 面板。
+1. 执行 P5-T4：在 `repo status` JSON 输出中实现 roadmap 投影。
 2. 执行前先检查工作区和仓库状态。
-3. P5-T3 完成后回写任务状态、验证证据和后续影响。
+3. P5-T4 完成后回写任务状态、验证证据和后续影响。
