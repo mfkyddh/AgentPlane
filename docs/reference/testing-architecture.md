@@ -7,13 +7,13 @@ audience: agent
 
 ---
 
-# Testing Architecture
+# 测试架构
 
 结论：测试架构，默认离线确定性测试 + live gate 显式标记分层。
 
 AgentPlane's test suite is organized around deterministic default tests and explicit live gates.
 
-## Default Gate
+## 🧪 默认门禁
 
 `uv run python -m pytest` is the default local gate. It must not require:
 
@@ -25,7 +25,7 @@ AgentPlane's test suite is organized around deterministic default tests and expl
 
 The default gate is allowed to inspect tracked templates, render dry-run plans, and use temporary directories.
 
-## Live Gates
+## 🔴 Live Gates
 
 Tests or commands that touch real WSL, Docker, SSH, or provider endpoints must be explicitly marked:
 
@@ -38,7 +38,7 @@ Tests or commands that touch real WSL, Docker, SSH, or provider endpoints must b
 
 Marker assignment lives in `tests/support/markers.py` so the policy is visible in one place.
 
-## Shared Test Helpers
+## 🛠️ 共享测试工具
 
 Shared helpers live under `tests/support/`:
 

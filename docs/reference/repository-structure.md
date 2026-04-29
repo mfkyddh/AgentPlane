@@ -11,7 +11,7 @@ audience: agent
 
 结论：AgentPlane 仓库采用固定顶层职责，不再保留顶层 `scripts/` 或公开兼容脚本入口。新增文件必须先归入现有职责；不能归入时，先更新本文和结构守门测试。
 
-## 顶层目录合同
+## 📂 顶层目录合同
 
 | 路径 | 职责 | 约束 |
 | --- | --- | --- |
@@ -24,7 +24,7 @@ audience: agent
 | `.agents/` | Agent skill 真源与 marketplace 元数据 | 跨 Agent 通用 skill 目录；skill 内容必须路由回正式 CLI |
 | `.github/`、`.githooks/` | CI 与 Git hook | Hook 和 CI 只能调用模块化命令或正式 CLI |
 
-## 顶层文件合同
+## 📄 顶层文件合同
 
 | 文件 | 职责 |
 | --- | --- |
@@ -35,7 +35,7 @@ audience: agent
 | `CHANGELOG.md` | 面向人的版本变更摘要 |
 | `pyproject.toml`、`uv.lock` | Python 包、工具链和锁定依赖 |
 
-## 本地态合同
+## 🔒 本地态合同
 
 这些目录允许存在于工作区，但不得进入 Git，不得成为文档或代码默认入口。
 
@@ -56,7 +56,7 @@ audience: agent
 3. 它是否会引入新的执行入口。
 4. 是否需要新增结构守门测试。
 
-## 新文件放置决策表
+## 🧭 新文件放置决策表
 
 | 新文件类型 | 放置位置 |
 | --- | --- |
@@ -75,7 +75,7 @@ audience: agent
 | 真实 secret | `secrets/`，禁止提交 |
 | 一次性迁移脚本 | 不入库；如果必须留痕，写成 runbook 结果或归档说明 |
 
-## 禁止事项
+## ⚠️ 禁止事项
 
 - 禁止新增顶层业务目录，除非本文先定义长期职责。
 - 禁止新增顶层 `scripts/`、`tools/`、`ops/` 作为第二入口。
@@ -84,7 +84,7 @@ audience: agent
 - 禁止在 tracked 文件里保存 Windows 盘符、WSL UNC、`/mnt/...`、`/root/...` 等宿主物理路径作为真源。
 - 禁止继续登记兼容入口；旧入口要么删除，要么移入 `docs/archive/` 作为历史说明。
 
-## 结构变更 Checklist
+## ✅ 结构变更 Checklist
 
 每次新增、移动或删除文件前，先确认：
 

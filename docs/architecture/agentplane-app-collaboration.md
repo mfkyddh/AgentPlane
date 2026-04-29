@@ -10,7 +10,7 @@ audience: agent
 
 结论：本文定义 AgentPlane 控制面仓库与应用仓库之间的边界、交付合同和变更流程，确保控制面收口到 AgentPlane，应用仓库只保留业务代码和交付合同。
 
-## 1. 目的
+## 🎯 目的
 
 本规范定义 `AgentPlane` 与应用层项目的长期边界、真源划分、交付合同和变更流程。目标是把正式生产控制面统一收口到 `AgentPlane`，让应用仓库只保留业务代码、构建资产、Docker 资产和非敏感交付合同。
 
@@ -21,7 +21,7 @@ audience: agent
 - 当前正式样板：`sub2api`
 - 当前正式 schema：仅 `schema_version: 2`，且只覆盖 Docker / Compose 应用
 
-## 2. 核心原则
+## 📌 核心原则
 
 - `AgentPlane` 是正式生产控制面的唯一真源。
 - 应用仓库不保存生产 secrets、SSH 密钥、Cloudflare 私有材料、正式 inventory、正式回滚脚本。
@@ -40,7 +40,7 @@ audience: agent
 - 同步官方更新时，固定从 `origin/main` 切 `sync/upstream-YYYYMMDD`，先 merge，再验证，再合回主线。
 - 已发布主线不通过反复 rebase 官方分支来保持同步。
 
-## 3. 职责边界
+## 🔗 职责边界
 
 ### 3.1 AgentPlane 负责
 
@@ -115,7 +115,7 @@ Remove（Offboarding）最小闭环语义：
 - 不要在应用仓库写死正式机密路径后继续把它当成权威流程。
 - 不要在 `zqf_network` 中通过临时 IP 或宿主机回环地址访问依赖容器。
 
-## 4. 真源划分
+## 📊 真源划分
 
 | 主题 | 真源仓库 | 真源文件/入口 | 应用仓库可见内容 |
 | --- | --- | --- | --- |
@@ -141,7 +141,7 @@ Remove（Offboarding）最小闭环语义：
 - 模板文档与 runbook 可以解释输入骨架和流程，但不应复制出第二套正式控制面。
 - `ledger` 在 `app` 域当前表现为自动写入的 operation ledger，而不是单独的人工维护命令。
 
-## 5. 控制面选择矩阵
+## 🧭 控制面选择矩阵
 
 | 场景 | 推荐控制面 | 说明 |
 | --- | --- | --- |
@@ -165,7 +165,7 @@ Remove（Offboarding）最小闭环语义：
 - [应用项目接入 AgentPlane 工作流](../runbooks/app-project-delivery-workflow.md)
 - [应用交付版本规范](../reference/app-delivery-versioning.md)
 
-## 6. 应用项目交付合同
+## 📋 应用项目交付合同
 
 每个应用仓库必须提供 `deploy/agentplane/contract.yaml`。该文件只描述非敏感交付面，不保存生产 secrets。机器可读 schema 见 [app-delivery-contract-v2.schema.json](../reference/schemas/app-delivery-contract-v2.schema.json)。
 
@@ -238,7 +238,7 @@ inventory:
 - `docs.app_summary_file`：不区分 target 时的单文件非敏感摘要回写路径。
 - `inventory.service_key`：该应用写入 AgentPlane inventory 时的服务键名。
 
-## 7. 容器命名治理
+## 🏷️ 容器命名治理
 
 本节是正式容器命名与改名约束的唯一完整描述；其他 active 文档只做引用，不再重复展开。
 
@@ -260,7 +260,7 @@ inventory:
 
 未完成以上同步前，不允许直接改容器名。
 
-## 8. 标准工作流
+## 🛠️ 标准工作流
 
 ### 8.1 应用仓库 agent 的输出
 
@@ -309,7 +309,7 @@ Docker 类应用的推荐正式路径：
 - 新版本验证成功并经过最小观察窗口后，再删除旧容器。
 - 若本次发布包含不可逆数据变更，必须额外定义数据回退能力，不能只靠旧容器假装可回滚。
 
-## 9. 标准命令入口
+## 💻 标准命令入口
 
 所有正式动作都从 AgentPlane 执行，公开稳定输入统一是 `target + app`：
 
@@ -327,7 +327,7 @@ agentplane app delivery inventory-refresh --target <target> --app <app> --repo-r
 agentplane app delivery doc-sync --target <target> --app <app> --repo-root <repo-root> --write
 ```
 
-## 10. 1Panel 与网站入口规则
+## 🌐 1Panel 与网站入口规则
 
 - 正式公网域名必须先在 `1Panel` 中存在入口对象。
 - 入口对象负责把公网请求转发到宿主机回环绑定，例如 `http://127.0.0.1:18080`。
@@ -341,7 +341,7 @@ agentplane app delivery doc-sync --target <target> --app <app> --repo-root <repo
 - 回环绑定：`127.0.0.1:18080`
 - 宿主机反代目标：`http://127.0.0.1:18080`
 
-## 11. inventory 与文档同步
+## 📥 inventory 与文档同步
 
 - AgentPlane inventory 是正式真实状态的结构化真源。
 - `tmp/operation-ledger/*.jsonl` 是 app workflow 的机器 ledger 证据。
@@ -362,7 +362,7 @@ agentplane app delivery doc-sync --target <target> --app <app> --repo-root <repo
 3. AgentPlane 刷新 inventory
 4. AgentPlane 回写应用摘要
 
-## 12. Sub2API 样板
+## 🧩 Sub2API 样板
 
 `sub2api` 是当前正式样板，其目标状态如下：
 

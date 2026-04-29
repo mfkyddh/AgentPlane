@@ -12,25 +12,36 @@ audience: both
 
 ---
 
-## 👤 人类入口：按你想做什么
+## 👤 人类入口
 
 > 📌 所有 runbook 的完整列表和按场景分类见 [Runbook 导航](runbooks/README.md)。
+
+### 🚀 快速开始
 
 | 你想做什么 | 从这里开始 |
 | --- | --- |
 | 第一次了解项目 | [5 分钟速览](getting-started/5-minute-overview.md) ⭐ |
 | 理解核心概念 | [核心概念](getting-started/core-concepts.md) |
-| 了解 AI 怎么工作 | [AI 执行流程](getting-started/how-agent-works.md) |
 | 部署第一个应用 | [教程：部署 sub2api](tutorials/deploy-first-app.md) ⭐ |
-| 排查部署失败 | [教程：排查失败](tutorials/troubleshoot-failed-deployment.md) ⭐ |
+
+### 🔍 常见任务
+
+| 你想做什么 | 从这里开始 |
+| --- | --- |
 | 了解完整交付流程 | [应用交付流程](runbooks/app-project-delivery-workflow.md) |
-| 查看长期蓝图 | [AgentPlane 终极蓝图 v4](reference/agentplane-ultimate-blueprint.md) |
-| 继续长期路线图任务 | [Roadmap Workbook](maintainers/agentplane-roadmap-workbook.md) |
-| 部署失败了怎么办 | [失败处理](runbooks/app-delivery-failure-handling.md) |
-| 查看当前状态 | [状态与验证](runbooks/current-state-and-validation.md) |
-| 初始化 Secrets | [Secrets 引导](runbooks/bootstrap-secrets.md) |
-| 管理 WSL 开发环境 | [WSL 治理](runbooks/wsl-host-governance.md) |
+| 排查部署失败 | [教程：排查失败](tutorials/troubleshoot-failed-deployment.md) ⭐ |
 | 添加新服务器 | [纳入新服务器](tutorials/add-new-server.md) |
+| 管理 WSL 开发环境 | [WSL 治理](runbooks/wsl-host-governance.md) |
+| 初始化 Secrets | [Secrets 引导](runbooks/bootstrap-secrets.md) |
+
+### 📐 深入理解
+
+| 你想做什么 | 从这里开始 |
+| --- | --- |
+| 了解 AI 怎么工作 | [AI 执行流程](getting-started/how-agent-works.md) |
+| 查看当前状态 | [状态与验证](runbooks/current-state-and-validation.md) |
+| 查看长期蓝图 | [AgentPlane 终极蓝图 v4](reference/agentplane-ultimate-blueprint.md) |
+| 继续路线图任务 | [Roadmap Workbook](maintainers/agentplane-roadmap-workbook.md) |
 
 ---
 
@@ -64,6 +75,7 @@ AI 工作规范：[AGENTS.md](../AGENTS.md)；Skill 面盘点：[skill-surface-a
 
 | 文档 | 说明 |
 | --- | --- |
+| [reference/glossary.md](reference/glossary.md) | 核心术语统一定义 |
 | [reference/documentation-governance.md](reference/documentation-governance.md) | 文档分层、emoji、链接和门禁规范 |
 | [reference/agentplane-ultimate-blueprint.md](reference/agentplane-ultimate-blueprint.md) | 长期战略蓝图、阶段路线和核心机制 |
 | [reference/project-positioning.md](reference/project-positioning.md) | 项目定位、非目标和工具边界 |

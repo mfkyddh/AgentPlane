@@ -6,16 +6,16 @@ superseded_by: null
 audience: agent
 ---
 
-# Linux Governance Specification
+# Linux 治理规范
 
 结论：本文定义 Linux/WSL 环境下的统一治理约束，确保自动化可复用、可验证、可审计，且不改变宿主入口选择。
 
-## 目标
+## 🎯 目标
 
 定义本仓库在 Linux/WSL 环境下的统一治理约束，确保自动化可复用、可验证、可审计。
 本页只定义 Linux / WSL backend 约束，不改变宿主入口选择。
 
-## 治理边界
+## 📂 治理边界
 
 - 代码与模板（可跟踪）：`infra/compose/`、`agentplane/`、`templates/`、`docs/`、`inventory/`。
 - 本地敏感文件（不可跟踪）：`secrets/`。
@@ -25,7 +25,7 @@ audience: agent
 - 根 `AGENTS.md` 仅保留稳定规则，执行细节下沉到 runbook。
 - AgentPlane 管理的应用仓库若使用 Git worktree，默认根目录为应用仓库内 `.worktrees/`，且应用仓库 `.gitignore` 必须忽略该目录。
 
-## 执行模型
+## ⚙️ 执行模型
 
 - 默认采用 `host-entry-first, backend-aware`。
 - Windows 宿主场景固定走 `pwsh -> formal CLI -> WSL/SSH backend`；Linux/macOS 继续使用原生 POSIX shell。
@@ -37,7 +37,7 @@ audience: agent
 - 远端 Linux 生产机默认走 `root` 直连 SSH；只有尚未完成 root 直连准备的目标，才临时走具备 sudo 权限账户。
 - 命令和文件路径使用绝对 Linux 路径，避免跨目录误执行。
 
-## 自动化与执行入口治理
+## 🤖 自动化与执行入口治理
 
 - 仓库自动化主栈固定为 Python + `uv`。
 - 每个物理 checkout 只保留根目录 `.venv`；不使用 `.venv-win`、`.venv-wsl` 或 `UV_PROJECT_ENVIRONMENT` 分叉虚拟环境。
@@ -65,7 +65,7 @@ audience: agent
   - 对应 runbook 与验证命令
 - 涉及 `secrets/` 的周期性远端备份时，必须采用“快速指纹 + 强指纹”双阶段检测，避免无变化时重复打包上传。
 
-## 资源与网络治理
+## 🌐 资源与网络治理
 
 - Compose 服务模板必须同时维护：
   - `docker-compose.wsl.yml`
@@ -78,7 +78,7 @@ audience: agent
 - 生产环境项目容器默认接入 `zqf_network`。
 - `openresty` 相关 1Panel 容器是例外，必须使用 Docker `infra` 网络。
 
-## Secrets 治理
+## 🔐 Secrets 治理
 
 - 真实 SSH、env、密钥统一放在 `secrets/`。
 - 模板统一放在 `templates/`。
@@ -86,7 +86,7 @@ audience: agent
 - 本地 secrets 初始化统一参考：
   [bootstrap-secrets.md](../runbooks/bootstrap-secrets.md)
 
-## 变更与验证基线
+## ✅ 变更与验证基线
 
 - 变更前先确认当前真实状态（容器、网络、配置），不要只依赖历史文档。
 - 变更后至少完成：
@@ -95,7 +95,7 @@ audience: agent
   - 文档一致性更新
 - 公网/Cloudflare 路径排障时，优先用 loopback 或直连 IP 作为基准链路。
 
-## 非目标
+## 🚫 非目标
 
 - 本文不替代服务专用 runbook，不覆盖特定生产专题操作步骤。
 - 涉及专题迁移与切换的细节，按对应 runbook 执行。

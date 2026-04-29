@@ -6,11 +6,11 @@ superseded_by: null
 audience: agent
 ---
 
-# AgentPlane Unified Control Plane
+# 控制面核心合同
 
 结论：`docs/architecture/control-plane.md` 是 `AgentPlane` 控制面核心合同的唯一正文真源。方法论、CLI 合同、task-entry 模型、inventory / ledger 投影模型的长期稳定内容统一维护在本文；专题步骤继续放在对应 runbook。
 
-## Scope
+## 📋 范围
 
 本文约束以下长期稳定事项：
 
@@ -25,7 +25,7 @@ audience: agent
 - 某次事故、迁移或变更的现场细节
 - 兼容脚本的逐步操作手册
 
-## Terms
+## 📖 核心术语
 
 | 术语 | 含义 |
 | --- | --- |
@@ -36,7 +36,7 @@ audience: agent
 | `ledger` | 围绕某类对象或某次验证生成的机器派生记录 |
 | `live state` | 通过现场命令、API、文件读取等方式获得的当前真实状态 |
 
-## Principles
+## 📌 核心原则
 
 ### CLI-first
 
@@ -97,7 +97,7 @@ resolver / backend 可以把逻辑路径解析成当前宿主可访问的 `resol
 3. 需要状态投影回写时，进入 `agentplane projection verification ...` 或 `projection ledger refresh ...`。
 4. 人类摘要与文档同步只消费投影结果，不反向充当真源。
 
-## CLI Contract
+## 🛠️ CLI 合同
 
 ### Command Shape
 
@@ -237,7 +237,7 @@ agentplane <domain> <surface> <verb> [flags]
 - `cutover`
 - `doctor`
 
-## Task-Entry Model
+## 🎯 任务入口模型
 
 ### Definition
 
@@ -301,7 +301,7 @@ agentplane <domain> <surface> <verb> [flags]
 - 用户很少单独调用
 - 缺少前置上下文就不安全
 
-## Inventory And Ledger Projection
+## 📊 投影模型
 
 ### Three Projection Layers
 
@@ -348,7 +348,7 @@ agentplane <domain> <surface> <verb> [flags]
 4. 将必要摘要投影回 `inventory`。
 5. 在需要时更新应用摘要或主机摘要生成区块。
 
-## Required Rules
+## ✅ 必须遵守的规则
 
 1. 正式入口必须写成 `agentplane ...`。
 2. 新增能力前必须先定义：对象、任务入口、输入、输出、验证与回写位置。
@@ -359,7 +359,7 @@ agentplane <domain> <surface> <verb> [flags]
 7. runbook 只能解释正式流程，不能变成实现副本。
 8. 新文档、新 skill、新测试都必须与本文术语和边界对齐。
 
-## Anti-Patterns
+## ⚠️ 反模式
 
 常见反模式：
 
@@ -378,7 +378,7 @@ agentplane <domain> <surface> <verb> [flags]
 4. 禁止只实现 `apply` 而没有计划阶段或验证阶段。
 5. 禁止在没有正式证据的情况下写入“已验证”状态。
 
-## Minimal Command Examples
+## 💻 命令示例
 
 当前正式入口示例：
 

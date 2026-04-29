@@ -6,7 +6,7 @@ superseded_by: null
 audience: both
 ---
 
-# ADR 0001: CLI-First Control Plane
+# 架构决策 0001：CLI-First 控制面
 
 结论：AgentPlane 采用 CLI-first 控制面。正式能力必须通过 `agentplane ...` 暴露，脚本、provider helper 和 skill 只能作为实现或路由层。
 
