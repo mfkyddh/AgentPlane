@@ -1,14 +1,14 @@
 ---
 status: active
 owner: AgentPlane maintainers
-last_verified: 2026-04-25
+last_verified: 2026-04-29
 superseded_by: null
 audience: human
 ---
 
 # 🤖 AI 是怎么工作的？
 
-结论：AgentPlane 中的 AI 不是"黑箱操作"。它每次执行都遵循固定套路——先计划、再确认、后执行、必验证、留记录。人类在关键节点介入，其余由 AI 自动完成。
+结论：AgentPlane 中的 AI 不是"黑箱操作"。它每次执行都遵循固定套路——先匹配 Skill，再计划、确认、执行、验证和留记录。人类在关键节点介入，其余由 AI 自动完成。
 
 ---
 
@@ -17,6 +17,7 @@ audience: human
 每次你与 AgentPlane 的 AI 对话时，系统会自动给它发送一份工作手册（[AGENTS.md](../../AGENTS.md)），里面包含：
 
 - **必须遵守的规则**：比如所有操作必须从 `agentplane ...` 进入，敏感信息绝不提交 Git
+- **Skill 能力入口**：比如应用交付、服务治理、主机纳管、网站入口和仓库治理该从哪个 Skill 开始
 - **正式入口清单**：不同场景该用什么命令
 - **禁止事项**：比如不能直接执行原始 SSH 命令
 
@@ -35,8 +36,8 @@ AI 会执行以下流程：
 ![AI 执行闭环](../assets/agent-execution-flow.svg)
 
 ```
-1. 理解意图 → 2. 制定计划 → 3. 向你确认
-4. 执行操作 → 5. 验证结果 → 6. 留下记录 → 7. 向你汇报
+1. 理解意图 → 2. 匹配 Skill → 3. 制定计划 → 4. 向你确认
+5. 执行操作 → 6. 验证结果 → 7. 留下记录 → 8. 向你汇报
 ```
 
 ### 第 1 步：理解意图
@@ -50,7 +51,18 @@ AI 会把你的自然语言翻译成结构化意图：
 | 版本 | 最新镜像 | 使用最新构建的镜像 |
 | 约束 | 先预览再执行 | 必须走 Plan → Apply 两步 |
 
-### 第 2 步：制定计划
+### 第 2 步：匹配 Skill
+
+AI 会从 `.agents/skills` 中选择能力入口。这个例子会匹配 `app-delivery-ops`，因为它负责应用合同校验、构建、部署、验证、状态刷新和摘要回写。
+
+Skill 会提醒 AI：
+
+- 先校验合同，再构建和部署
+- 部署先 `--dry-run`，确认后才 `--execute`
+- 执行后必须验证并回写非敏感摘要
+- 不要绕到原始 SSH、Docker 或 provider API
+
+### 第 3 步：制定计划
 
 AI 生成具体的执行计划：
 
@@ -60,7 +72,7 @@ agentplane app delivery build-artifact --target prod0-main --app sub2api --image
 agentplane app delivery deploy --target prod0-main --app sub2api --dry-run
 ```
 
-### 第 3 步：向你确认
+### 第 4 步：向你确认
 
 AI 会停下来问你：
 
@@ -68,7 +80,7 @@ AI 会停下来问你：
 
 **这是人类的第一个介入点**。如果你不同意，AI 会重新调整计划。
 
-### 第 4 步：执行操作
+### 第 5 步：执行操作
 
 你确认后，AI 才会加上 `--execute` 真正执行：
 
@@ -76,7 +88,7 @@ AI 会停下来问你：
 agentplane app delivery deploy --target prod0-main --app sub2api --execute
 ```
 
-### 第 5 步：验证结果
+### 第 6 步：验证结果
 
 执行后，AI 必须验证：
 
@@ -86,14 +98,14 @@ agentplane app delivery verify --target prod0-main --app sub2api --execute
 
 验证内容包括：容器是否运行、健康检查是否通过、公网入口是否可访问。
 
-### 第 6 步：留下记录
+### 第 7 步：留下记录
 
 AI 会自动：
 - 把操作记录写入机器证据目录（`tmp/operation-logs/`）
 - 刷新状态记录目录（`inventory/`）
 - 更新相关文档摘要
 
-### 第 7 步：向你汇报
+### 第 8 步：向你汇报
 
 AI 会给你一份人类可读的摘要：
 
@@ -123,6 +135,10 @@ AI 会给你一份人类可读的摘要：
 
 AI 应该明确告诉你它执行了哪些 `agentplane ...` 命令。**如果 AI 执行的是原始 Shell 命令而不是 `agentplane ...`，那就是越界了**。
 
+### 看 Skill，不看猜测
+
+AI 应该能说清楚这次任务对应哪个 Skill。比如部署应用用 `app-delivery-ops`，检查仓库用 `agentplane-repo-ops`。如果它跳过 Skill 直接凭记忆拼命令，就容易绕过项目约束。
+
 ### 看验证，不看"已完成"
 
 AI 说完"已完成"后，必须附带验证证据：
@@ -143,6 +159,7 @@ AI 不会说"我记得上次部署成功了"。它应该指向具体的记录文
 | 定目标 | ✅ 描述你要做什么 | ❌ |
 | 定约束 | ✅ 说清边界和风险接受度 | ❌ |
 | 制定计划 | ❌ | ✅ 生成可执行计划 |
+| 选择 Skill | ❌ | ✅ 匹配能力入口和边界 |
 | 确认计划 | ✅ 审核并批准 | ❌ |
 | 执行操作 | ❌ | ✅ 通过 `agentplane ...` 执行 |
 | 验证结果 | ❌ | ✅ 运行验证命令 |
@@ -154,5 +171,6 @@ AI 不会说"我记得上次部署成功了"。它应该指向具体的记录文
 ## 🔗 关联文档
 
 - [AGENTS.md](../../AGENTS.md) — AI 的完整工作规范
+- [../maintainers/skill-surface-audit.md](../maintainers/skill-surface-audit.md) — 当前 Skill 能力面
 - [control-plane-agent-execution-flow.md](../runbooks/control-plane-agent-execution-flow.md) — AI 执行闭环的技术规范
 - [core-concepts.md](core-concepts.md) — AgentPlane 核心概念

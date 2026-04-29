@@ -1,14 +1,14 @@
 ---
 status: active
 owner: AgentPlane maintainers
-last_verified: 2026-04-25
+last_verified: 2026-04-29
 superseded_by: null
 audience: human
 ---
 
 # 🧠 AgentPlane 核心概念
 
-结论：AgentPlane 的核心是三个机制——标准化入口（AI 不直接操作底层，走统一命令）、配置中心模型（Git 管期望状态，现场只做验证）、执行闭环（Plan → Apply → Verify → 记录 → 刷新记录 → 同步文档）。
+结论：AgentPlane 的核心是四个机制——Skill 路由（AI 先选择能力入口）、标准化入口（正式执行只走统一命令）、配置中心模型（Git 管期望状态，现场只做验证）、执行闭环（Plan → Apply → Verify → 记录 → 刷新记录 → 同步文档）。
 
 ---
 
@@ -30,9 +30,30 @@ AgentPlane 的核心工作是**持续对比以下三层状态**：
 
 ---
 
-## 2️⃣ 标准化入口
+## 2️⃣ Skill 路由
 
-标准化入口回答的问题是：**"AI 应该怎么操作基础设施？"**
+Skill 路由回答的问题是：**"AI 应该把自然语言意图交给哪个能力面？"**
+
+用户通常不会说完整命令，而是说：
+
+> "帮我把这个应用部署到 prod0-main，先预览再执行。"
+
+AI 先匹配 `.agents/skills` 中的能力入口，例如：
+
+| 意图 | Skill | 下一层正式入口 |
+|------|-------|----------------|
+| 应用交付 | `app-delivery-ops` | `agentplane app delivery ...` |
+| App 对象或资源 | `agentplane-app-ops` | `agentplane app object/resource ...` |
+| 服务运行态 | `agentplane-service-ops` | `agentplane service ...` |
+| 主机和 Secrets | `agentplane-infra-ops` | `agentplane infra ...` |
+| 状态整理和记录刷新 | `agentplane-projection-ops` | `agentplane projection ...` |
+| 仓库自检 | `agentplane-repo-ops` | `agentplane repo ...` |
+
+Skill 是意图入口，不是第二套操作系统。它负责触发条件、边界、命令选择和最小验证；真正执行必须回到 `agentplane ...`。
+
+## 3️⃣ 标准化入口
+
+标准化入口回答的问题是：**"AI 应该怎么正式操作基础设施？"**
 
 **传统方式的问题**：
 
@@ -85,7 +106,7 @@ AgentPlane 把基础设施抽象为 **4 个核心对象域**：
 
 ---
 
-## 3️⃣ 跨平台解析
+## 4️⃣ 跨平台解析
 
 AgentPlane 支持 Windows、Linux、macOS 三种宿主环境。路径转换层负责**把统一的逻辑路径解析为当前平台可执行的具体操作**。
 
@@ -95,7 +116,7 @@ AgentPlane 支持 Windows、Linux、macOS 三种宿主环境。路径转换层�
 
 ---
 
-## 4️⃣ 执行闭环
+## 5️⃣ 执行闭环
 
 AgentPlane 对任何影响正式状态的操作，都强制遵循 **6 步闭环**：
 
@@ -120,6 +141,7 @@ AgentPlane 对任何影响正式状态的操作，都强制遵循 **6 步闭环*
 | 概念 | 含义 |
 |------|------|
 | 配置中心 | 被所有系统承认的权威状态定义，Git 中的配置文件就是配置中心 |
+| Skill | AI Agent 的意图入口，负责把自然语言路由到正式 CLI |
 | 标准化入口 | AI 不直接操作底层资源，而是通过高层语义化命令执行任务 |
 | 路径转换器 | 把与平台无关的逻辑路径解析为当前平台可访问的物理路径 |
 | 操作记录 | 机器生成的操作证据文件，用于故障排查和审计追溯 |

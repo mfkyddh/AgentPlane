@@ -27,7 +27,7 @@ uv run python -m agentplane.cli app delivery inventory-refresh --target <target>
 uv run python -m agentplane.cli app delivery doc-sync --target <target> --app <app> --repo-root <repo-root> --write
 ```
 
-## Required Discipline
+## Rules
 
 - Validate the contract before build, deploy, rollback, verify, or doc-sync.
 - Use `--dry-run` for deployment planning and `--execute` only after the user accepts the plan.

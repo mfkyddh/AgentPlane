@@ -207,7 +207,15 @@ class CliEntrypointsTests(unittest.TestCase):
         _assert_help_commands(
             self,
             repo_help.stdout,
-            expected={"health-check", "docs-sanity", "secret-scan", "privacy-scan", "release-check"},
+            expected={"health-check", "docs-sanity", "secret-scan", "privacy-scan", "release-check", "skills"},
+        )
+
+        repo_skills_help = run_cli("repo", "skills", "--help")
+        self.assertEqual(repo_skills_help.returncode, 0, msg=repo_skills_help.stderr)
+        _assert_help_commands(
+            self,
+            repo_skills_help.stdout,
+            expected={"check", "list", "export", "sync"},
         )
 
     def test_app_help_hides_legacy_flat_entrypoints(self) -> None:
@@ -245,6 +253,9 @@ class CliEntrypointsTests(unittest.TestCase):
             ("repo", "secret-scan", "--repo-root", str(REPO_ROOT)),
             ("repo", "privacy-scan", "--repo-root", str(REPO_ROOT)),
             ("repo", "docs-sanity", "--repo-root", str(REPO_ROOT)),
+            ("repo", "skills", "check", "--repo-root", str(REPO_ROOT)),
+            ("repo", "skills", "list", "--repo-root", str(REPO_ROOT)),
+            ("repo", "skills", "sync", "--repo-root", str(REPO_ROOT)),
             ("onepanel", "--env", "wsl", "--json"),
         ]
         for args in cases:
@@ -254,6 +265,55 @@ class CliEntrypointsTests(unittest.TestCase):
                 payload = json.loads(result.stdout)
                 self.assertIsInstance(payload, dict)
                 self.assertIn("command", payload)
+
+    def test_repo_skills_check_validates_public_skill_surface(self) -> None:
+        result = run_cli("repo", "skills", "check", "--repo-root", str(REPO_ROOT))
+
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertTrue(payload["ok"])
+        self.assertEqual("skills.check", payload["action"])
+        self.assertEqual([], payload["issues"])
+
+    def test_repo_skills_list_and_export_report_catalog_entries(self) -> None:
+        list_result = run_cli("repo", "skills", "list", "--repo-root", str(REPO_ROOT))
+        self.assertEqual(list_result.returncode, 0, msg=list_result.stderr)
+        list_payload = json.loads(list_result.stdout)
+        names = {skill["name"] for skill in list_payload["skills"]}
+
+        self.assertIn("agentplane-infra-ops", names)
+        self.assertIn("app-delivery-ops", names)
+        self.assertTrue(all(skill["exists"] for skill in list_payload["skills"]))
+
+        with tempfile.TemporaryDirectory(prefix="agentplane-skills-export-") as tmp:
+            output = Path(tmp) / "skills.json"
+            export_result = run_cli(
+                "repo",
+                "skills",
+                "export",
+                "--repo-root",
+                str(REPO_ROOT),
+                "--output",
+                str(output),
+            )
+            self.assertEqual(export_result.returncode, 0, msg=export_result.stderr)
+            export_payload = json.loads(export_result.stdout)
+            written = json.loads(output.read_text(encoding="utf-8"))
+
+        self.assertEqual("skills.export", export_payload["action"])
+        self.assertEqual(2, export_payload["payload"]["version"])
+        self.assertEqual(export_payload["payload"], written)
+
+    def test_repo_skills_sync_is_dry_run_report(self) -> None:
+        result = run_cli("repo", "skills", "sync", "--repo-root", str(REPO_ROOT))
+
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertEqual("skills.sync", payload["action"])
+        self.assertTrue(payload["ok"])
+        self.assertFalse(payload["would_write"])
+        self.assertEqual([], payload["catalog_only"])
+        self.assertEqual([], payload["tracked_only"])
 
     def test_onepanel_defaults_to_human_text_but_can_emit_json(self) -> None:
         text_result = run_cli("onepanel", "--env", "wsl")
@@ -353,7 +413,7 @@ class RepoHealthCliTests(unittest.TestCase):
         payload = json.loads(result.stdout)
         self.assertTrue(payload["ok"])
         self.assertEqual(
-            ["cli-help", "secret-scan", "privacy-scan", "docs-sanity"],
+            ["cli-help", "secret-scan", "privacy-scan", "docs-sanity", "skills-check"],
             [check["name"] for check in payload["checks"]],
         )
 

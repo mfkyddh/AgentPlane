@@ -11,6 +11,13 @@ from typing import Any
 from agentplane.domain.repository.docs_sanity import run_docs_sanity
 from agentplane.domain.repository.privacy_scan import scan_repository_for_private_material
 from agentplane.domain.repository.secret_scan import scan_repository_for_secrets
+from agentplane.domain.repository.skills import (
+    check_skill_surface,
+    export_skill_surface,
+    list_skill_entries,
+    skill_sync_report,
+    write_skill_export,
+)
 
 
 def add_repository_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
@@ -37,6 +44,17 @@ def add_repository_parser(subparsers: argparse._SubParsersAction[argparse.Argume
 
     release = repo_subparsers.add_parser("release-check", help="运行发布前检查")
     release.add_argument("--repo-root", type=Path, default=Path.cwd())
+
+    skills = repo_subparsers.add_parser("skills", help="Skill 能力面治理")
+    skills_subparsers = skills.add_subparsers(dest="repo_skills_action", required=True)
+    skills_parent = argparse.ArgumentParser(add_help=False)
+    skills_parent.add_argument("--repo-root", type=Path, default=Path.cwd())
+
+    skills_subparsers.add_parser("check", parents=[skills_parent], help="检查 Skill catalog、frontmatter 和公开能力面")
+    skills_subparsers.add_parser("list", parents=[skills_parent], help="列出公开 Skill 能力面")
+    export = skills_subparsers.add_parser("export", parents=[skills_parent], help="导出公开 Skill 能力面 JSON")
+    export.add_argument("--output", type=Path)
+    skills_subparsers.add_parser("sync", parents=[skills_parent], help="dry-run 报告 Skill catalog 与 tracked Skill 漂移")
 
 
 def _run_check(name: str, argv: list[str], *, repo_root: Path) -> dict[str, Any]:
@@ -161,6 +179,15 @@ def _docs_sanity_check(repo_root: Path) -> dict[str, Any]:
     }
 
 
+def _skills_check(repo_root: Path) -> dict[str, Any]:
+    issues = check_skill_surface(repo_root)
+    return {
+        "name": "skills-check",
+        "ok": not issues,
+        "issues": [issue.to_dict() for issue in issues],
+    }
+
+
 def _git_clean_check(repo_root: Path) -> dict[str, Any]:
     result = subprocess.run(
         ["git", "status", "--short"],
@@ -200,6 +227,8 @@ def run_health_check(args: argparse.Namespace) -> dict[str, Any]:
 
     if not args.skip_docs:
         checks.append(_docs_sanity_check(repo_root))
+
+    checks.append(_skills_check(repo_root))
 
     return {
         "command": "repo",
@@ -263,6 +292,7 @@ def run_release_check(args: argparse.Namespace) -> dict[str, Any]:
         _secret_scan_check(repo_root),
         _privacy_scan_check(repo_root),
         _docs_sanity_check(repo_root),
+        _skills_check(repo_root),
         _git_clean_check(repo_root),
     ]
     return {
@@ -272,6 +302,49 @@ def run_release_check(args: argparse.Namespace) -> dict[str, Any]:
         "ok": all(check.get("ok") is True for check in checks),
         "checks": checks,
     }
+
+
+def run_skills_command(args: argparse.Namespace) -> dict[str, Any]:
+    repo_root = args.repo_root.resolve()
+    if args.repo_skills_action == "check":
+        issues = check_skill_surface(repo_root)
+        return {
+            "command": "repo",
+            "action": "skills.check",
+            "repo_root": str(repo_root),
+            "ok": not issues,
+            "issues": [issue.to_dict() for issue in issues],
+        }
+    if args.repo_skills_action == "list":
+        return {
+            "command": "repo",
+            "action": "skills.list",
+            "repo_root": str(repo_root),
+            "ok": True,
+            "skills": list_skill_entries(repo_root),
+        }
+    if args.repo_skills_action == "export":
+        payload = export_skill_surface(repo_root)
+        output = args.output.resolve() if args.output else None
+        if output is not None:
+            write_skill_export(repo_root, output)
+        return {
+            "command": "repo",
+            "action": "skills.export",
+            "repo_root": str(repo_root),
+            "ok": True,
+            "output": str(output) if output is not None else None,
+            "payload": payload,
+        }
+    if args.repo_skills_action == "sync":
+        report = skill_sync_report(repo_root)
+        return {
+            "command": "repo",
+            "action": "skills.sync",
+            "repo_root": str(repo_root),
+            **report,
+        }
+    raise ValueError(f"unsupported repo skills action: {args.repo_skills_action}")
 
 
 def handle_repository_command(args: argparse.Namespace) -> dict[str, Any]:
@@ -285,4 +358,6 @@ def handle_repository_command(args: argparse.Namespace) -> dict[str, Any]:
         return run_privacy_scan(args)
     if args.repo_action == "release-check":
         return run_release_check(args)
+    if args.repo_action == "skills":
+        return run_skills_command(args)
     raise ValueError(f"unsupported repo action: {args.repo_action}")

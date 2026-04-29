@@ -11,7 +11,7 @@ Use this workflow skill for initial setup or repair of repository-managed Docker
 
 Prefer a formal AgentPlane CLI workflow when one exists. When the repository has not yet wrapped a setup task, keep the raw compose work scoped to `infra/compose/<service>` and turn durable lessons into templates, tests, or reference docs.
 
-## Standard Pattern
+## Commands
 
 ```bash
 uv run python -m agentplane.cli infra remote bash <target> -- docker version

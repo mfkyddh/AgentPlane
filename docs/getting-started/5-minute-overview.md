@@ -1,14 +1,14 @@
 ---
 status: active
 owner: AgentPlane maintainers
-last_verified: 2026-04-25
+last_verified: 2026-04-29
 superseded_by: null
 audience: human
 ---
 
 # 🧭 5 分钟了解 AgentPlane
 
-结论：AgentPlane 是一套让 AI 安全接管基础设施的"遥控器"系统。你下指令，AI 执行，全程有计划、有验证、有记录。
+结论：AgentPlane 是一套让 AI 安全接管基础设施的"遥控器"系统。你下指令，AI 先匹配 Skill，再通过 `agentplane ...` 执行，全程有计划、有验证、有记录。
 
 ---
 
@@ -30,6 +30,8 @@ AI 直接执行原始命令操作服务器——相当于让一个没有安全�
 检查依赖 → 执行操作 → 验证结果 → 留下记录
 ```
 
+AI Agent 看到的第一层入口是 `.agents/skills`。Skill 负责理解“部署应用”“纳管主机”“迁移网站”这类意图，并把它路由到正式 CLI；真正执行仍然只走 `agentplane ...`。
+
 ---
 
 ## 三个核心概念（类比理解）
@@ -42,7 +44,20 @@ AI 直接执行原始命令操作服务器——相当于让一个没有安全�
 
 > 💡 为什么不用现场状态当权威？因为现场状态今天对、明天可能就被手动改乱了。Git 里的配置可以回滚到任意历史版本。
 
-### 2️⃣ 标准化入口
+### 2️⃣ Skill 路由
+
+人类不用记命令，只要说目标。AI 会先选择对应 Skill：
+
+| 你的说法 | AI 选择的 Skill | 正式入口 |
+| --- | --- | --- |
+| 部署一个应用 | `app-delivery-ops` | `agentplane app delivery ...` |
+| 检查服务状态 | `agentplane-service-ops` | `agentplane service ...` |
+| 纳管新主机 | `host-onboarding-ops` | `agentplane bootstrap ...` / `agentplane infra ...` |
+| 发布网站入口 | `agentplane-ingress-ops` | `agentplane ingress ...` |
+
+Skill 不直接操作现场，它只告诉 AI 应该用什么正式入口、先验证什么、哪些行为禁止。
+
+### 3️⃣ 标准化入口
 
 AI 不直接执行 `ssh ... docker restart`，而是走标准化命令：
 
@@ -52,7 +67,7 @@ agentplane service apply --target prod --name myapp --execute
 
 这个命令内部会自动：检查主机在线、选择正确的执行后端、执行操作、验证健康状态、写入操作记录。
 
-### 3️⃣ 执行闭环
+### 4️⃣ 执行闭环
 
 任何影响正式状态的操作，必须走完 6 步：
 

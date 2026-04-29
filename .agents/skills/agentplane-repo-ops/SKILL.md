@@ -15,6 +15,10 @@ Use this domain skill for repository self-governance: documentation checks, priv
 uv run python -m agentplane.cli repo docs-sanity --repo-root <repo-root>
 uv run python -m agentplane.cli repo privacy-scan --repo-root <repo-root>
 uv run python -m agentplane.cli repo secret-scan --repo-root <repo-root>
+uv run python -m agentplane.cli repo skills check --repo-root <repo-root>
+uv run python -m agentplane.cli repo skills list --repo-root <repo-root>
+uv run python -m agentplane.cli repo skills export --repo-root <repo-root>
+uv run python -m agentplane.cli repo skills sync --repo-root <repo-root>
 uv run python -m agentplane.cli repo health-check --repo-root <repo-root>
 uv run python -m agentplane.cli repo release-check --repo-root <repo-root>
 uv run python -m agentplane.cli test fast --tb=short
