@@ -1,7 +1,7 @@
 ---
 status: active
 owner: AgentPlane maintainers
-last_verified: 2026-04-25
+last_verified: 2026-04-30
 superseded_by: null
 audience: agent
 layer: engineering
@@ -45,17 +45,20 @@ layer: engineering
 
 ## ✍️ 人类可读标准
 
-| 规则 | 标准 |
-| --- | --- |
-| README 保持干净 | 根 `README.md` 是开源首页，不使用可见 YAML frontmatter；治理元数据保留在 `docs/**`、`AGENTS.md` 等执行文档 |
-| emoji 有语义 | 标题、导航和提示块可用 emoji；每个 emoji 应帮助扫描，不做装饰堆叠 |
-| 文字短 | 一个段落优先 1-3 句；能用表格表达就不用长段落 |
-| 先给结论 | 每页开头先说明“这页解决什么问题”或“结论” |
-| 少 AI 味 | 避免空泛套话，如“全面赋能”“极致体验”；直接写对象、动作、边界 |
-| 命令真实 | 示例命令必须优先来自已实现 CLI、模板、测试或已验证 runbook |
-| 风险显眼 | 破坏性动作、secret、生产环境、live gate 必须有 `⚠️` 或明确风险小节 |
+| 规则 | 级别 | 标准 |
+| --- | --- | --- |
+| README 保持干净 | 🔴 | 根 `README.md` 是开源首页，不使用可见 YAML frontmatter；治理元数据保留在 `docs/**`、`AGENTS.md` 等执行文档 |
+| emoji 有语义 | 🔴 | `##` 标题必须带语义 emoji（从下方词典选取）；每个 emoji 帮助扫描，不做装饰堆叠 |
+| 标题有序号 | 🟡 | 索引/导航类文档（README、目录页）的 `##` 标题建议带序号（`## 🧭 1. 入门路线`）；正文文档不强制 |
+| 先给结论 | 🔴 | 每页 frontmatter 后第一行必须是 `结论：` 开头的一句话，说明本文解决什么问题 |
+| 文字短 | 🔴 | 一个段落优先 1-3 句；能用表格表达就不用长段落 |
+| 少 AI 味 | 🔴 | 避免空泛套话，如”全面赋能””极致体验”；直接写对象、动作、边界 |
+| 命令真实 | 🔴 | 示例命令必须优先来自已实现 CLI、模板、测试或已验证 runbook |
+| 风险显眼 | 🔴 | 破坏性动作、secret、生产环境、live gate 必须有 `⚠️` 或明确风险小节 |
+| 提示块标记 | 🟡 | 重要提示、强制规则用 `> 📌` callout；风险用 `> ⚠️`；不用普通段落强调 |
+| 章节分隔 | 🟡 | `##` 章节之间用 `---` 分隔线，帮助视觉分段 |
 
-推荐 emoji 语义：
+### emoji 语义词典
 
 | emoji | 用途 |
 | --- | --- |
@@ -71,6 +74,26 @@ layer: engineering
 | 👤 | 人类决策点 |
 | 🧪 | 测试、门禁 |
 | 📌 | 稳定原则、强制规则 |
+| 📋 | 任务、进度、清单 |
+| 📦 | 部署、打包、运维 |
+| 🚀 | 快速上手、教程 |
+| 🔧 | 工具、基础设施 |
+| 🕰️ | 历史、归档 |
+
+### 可读性分层
+
+不同文档类型采用不同程度的可读性增强：
+
+| 文档类型 | emoji 标题 | 序号 | 结论行 | 分隔线 | callout | 示例 |
+| --- | --- | --- |--- | --- | --- | --- |
+| 索引/导航（README、目录页） | 🔴 | 🔴 | 🔴 | 🔴 | 🟡 | `docs/README.md` |
+| 入门/教程（getting-started、tutorials） | 🔴 | 🟡 | 🔴 | 🔴 | 🟡 | `docs/getting-started/architecture-overview.md` |
+| 正文规范（reference、architecture、runbook） | 🔴 | 🟢 | 🔴 | 🔴 | 🟡 | `docs/reference/cross-platform.md` |
+| 决策记录（decisions/ADR） | 🟡 | 🟢 | 🔴 | 🟡 | 🟢 | `docs/strategy/decisions/002-boundary.md` |
+| 维护者内部（maintainers） | 🟡 | 🟢 | 🔴 | 🟡 | 🟢 | `docs/maintainers/control-plane-authoring.md` |
+| 历史/归档（history、archive） | 🟢 | 🟢 | 🟡 | 🟢 | 🟢 | `docs/history/index.md` |
+
+级别说明：🔴 必须　🟡 建议　🟢 不强制
 
 ## 🔗 链接标准
 
@@ -121,22 +144,39 @@ layer: engineering
 新 active 文档优先使用这个骨架：
 
 ```markdown
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: YYYY-MM-DD
+superseded_by: null
+audience: agent|human|both
+layer: engineering|technical
+---
+
 # 标题
 
 结论：一句话说明本文解决什么问题。
 
-## 🎯 适用场景
+---
+
+## 🎯 1. 适用场景
 
 | 场景 | 是否适用 |
 | --- | --- |
 
-## 🛠️ 正式入口
+---
+
+## 🛠️ 2. 正式入口
 
 `agentplane ...`
 
-## ✅ 最小验证
+---
+
+## ✅ 3. 最小验证
 
 `agentplane ... verify`
+
+---
 
 ## 🔗 关联文档
 
