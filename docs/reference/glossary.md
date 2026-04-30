@@ -24,12 +24,14 @@ audience: both
 
 ## 投影与台账
 
-| 术语 | 一句话定义 | 详细说明 |
-|------|-----------|----------|
-| **inventory** | 目标环境的正式非敏感台账，记录受管对象和摘要状态 | [控制面合同](../architecture/control-plane.md) |
-| **ledger** | 围绕某类对象或某次验证生成的机器派生记录 | [控制面合同](../architecture/control-plane.md) |
-| **projection** | 从真源派生的只读视图（如 inventory、ledger、app summary） | [控制面合同](../architecture/control-plane.md) |
-| **app summary** | 面向应用项目或主机摘要的非敏感结果 | [控制面合同](../architecture/control-plane.md) |
+| 术语 | 一句话定义 | 类比 | 详细说明 |
+|------|-----------|------|----------|
+| **inventory** | 来自 Git 的**声明**，记录"我们希望系统有什么" | 仓库的"货物清单" | [架构概览](../getting-started/architecture-overview.md) |
+| **ledger** | 来自现场的**验证**，记录"系统实际有什么" | 仓库的"盘点记录" | [架构概览](../getting-started/architecture-overview.md) |
+| **projection** | 从真源派生的只读视图（如 inventory、ledger、app summary） | 数据库的"视图" | [架构概览](../getting-started/architecture-overview.md) |
+| **app summary** | 面向人类的**摘要**，记录"当前状况如何" | 仓库的"月度报告" | [架构概览](../getting-started/architecture-overview.md) |
+
+**核心区别**：Inventory 是"声明"（来自 Git），Ledger 是"证据"（来自现场验证）。两者分开存储，是为了发现"声明"和"实际"的不一致。
 
 ## 执行流程
 
