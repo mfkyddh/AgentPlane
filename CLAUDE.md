@@ -32,7 +32,7 @@ uv run agentplane ...                # 无需全局安装
 uv run python -m pytest                            # 默认离线测试
 uv run python -m pytest -m unit                    # 仅单元测试
 uv run python -m pytest -m "unit or integration"   # 单元 + 集成
-uv run python -m agentplane.cli test fast --tb=short  # 快速测试（CI 使用）
+agentplane test fast --tb=short                    # 快速测试（CI 使用）
 
 # Lint / 格式化
 uv run ruff check .

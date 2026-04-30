@@ -14,11 +14,11 @@ Toolchain setup is supporting infrastructure, not a production control-plane obj
 ## Commands
 
 ```bash
-uv run python -m agentplane.cli infra remote bash <target> -- node -v
-uv run python -m agentplane.cli infra remote bash <target> -- npm -v
-uv run python -m agentplane.cli infra remote bash <target> -- java -version
-uv run python -m agentplane.cli infra remote bash <target> -- mvn -v
-uv run python -m agentplane.cli infra audit <target> --repo-root <repo-root>
+agentplane infra remote bash <target> -- node -v
+agentplane infra remote bash <target> -- npm -v
+agentplane infra remote bash <target> -- java -version
+agentplane infra remote bash <target> -- mvn -v
+agentplane infra audit <target> --repo-root <repo-root>
 ```
 
 ## Rules

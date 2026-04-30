@@ -158,8 +158,8 @@ audience: both
 > 📌 新增或移动文档后必须运行以下命令，CI 会检查。
 
 ```bash
-uv run python -m agentplane.cli repo docs-sanity --repo-root .
-uv run python -m agentplane.cli repo skills check --repo-root .
-uv run python -m agentplane.cli repo status --repo-root . --html tmp/agentplane-status.html
-uv run python -m agentplane.cli repo privacy-scan --repo-root .
+agentplane repo docs-sanity --repo-root .
+agentplane repo skills check --repo-root .
+agentplane repo status --repo-root . --html tmp/agentplane-status.html
+agentplane repo privacy-scan --repo-root .
 ```

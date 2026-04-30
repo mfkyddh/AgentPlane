@@ -273,7 +273,7 @@ agentplane repo release-check --repo-root .
 ## ✅ 最小验证
 
 ```bash
-uv run python -m agentplane.cli repo health-check --repo-root .
+agentplane repo health-check --repo-root .
 ```
 
 ---

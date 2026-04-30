@@ -20,11 +20,11 @@ Use this workflow skill for OpenClaw tasks. First choose the lane: repository-ma
 ## Commands
 
 ```bash
-uv run python -m agentplane.cli infra inventory <target> --repo-root <repo-root>
-uv run python -m agentplane.cli infra remote bash <target> -- command -v openclaw
-uv run python -m agentplane.cli service search --target <target> --repo-root <repo-root>
-uv run python -m agentplane.cli service verify --target <target> --name openclaw --repo-root <repo-root>
-uv run python -m agentplane.cli projection ledger refresh --target <target> --repo-root <repo-root> --write
+agentplane infra inventory <target> --repo-root <repo-root>
+agentplane infra remote bash <target> -- command -v openclaw
+agentplane service search --target <target> --repo-root <repo-root>
+agentplane service verify --target <target> --name openclaw --repo-root <repo-root>
+agentplane projection ledger refresh --target <target> --repo-root <repo-root> --write
 ```
 
 ## Rules

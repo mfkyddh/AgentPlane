@@ -36,8 +36,8 @@ layer: technical
 优先先确认控制面和 backend 绑定：
 
 ```powershell
-uv run python -m agentplane.cli bootstrap inspect-local --repo-root <repo-root>
-uv run python -m agentplane.cli infra local inspect --repo-root <repo-root>
+agentplane bootstrap inspect-local --repo-root <repo-root>
+agentplane infra local inspect --repo-root <repo-root>
 ```
 
 ### 如果你已经在 WSL backend

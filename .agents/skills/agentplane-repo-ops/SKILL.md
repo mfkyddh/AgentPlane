@@ -12,18 +12,18 @@ Use this domain skill for repository self-governance: documentation checks, priv
 ## Commands
 
 ```bash
-uv run python -m agentplane.cli repo docs-sanity --repo-root <repo-root>
-uv run python -m agentplane.cli repo privacy-scan --repo-root <repo-root>
-uv run python -m agentplane.cli repo secret-scan --repo-root <repo-root>
-uv run python -m agentplane.cli repo skills check --repo-root <repo-root>
-uv run python -m agentplane.cli repo skills list --repo-root <repo-root>
-uv run python -m agentplane.cli repo skills export --repo-root <repo-root>
-uv run python -m agentplane.cli repo skills sync --repo-root <repo-root>
-uv run python -m agentplane.cli repo status --repo-root <repo-root>
-uv run python -m agentplane.cli repo status --repo-root <repo-root> --html tmp/agentplane-status.html
-uv run python -m agentplane.cli repo health-check --repo-root <repo-root>
-uv run python -m agentplane.cli repo release-check --repo-root <repo-root>
-uv run python -m agentplane.cli test fast --tb=short
+agentplane repo docs-sanity --repo-root <repo-root>
+agentplane repo privacy-scan --repo-root <repo-root>
+agentplane repo secret-scan --repo-root <repo-root>
+agentplane repo skills check --repo-root <repo-root>
+agentplane repo skills list --repo-root <repo-root>
+agentplane repo skills export --repo-root <repo-root>
+agentplane repo skills sync --repo-root <repo-root>
+agentplane repo status --repo-root <repo-root>
+agentplane repo status --repo-root <repo-root> --html tmp/agentplane-status.html
+agentplane repo health-check --repo-root <repo-root>
+agentplane repo release-check --repo-root <repo-root>
+agentplane test fast --tb=short
 ```
 
 ## Rules

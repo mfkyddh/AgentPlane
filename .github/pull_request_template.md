@@ -11,7 +11,7 @@
 
 ## Verification
 
-- [ ] `uv run python -m agentplane.cli repo health-check --repo-root .`
+- [ ] `agentplane repo health-check --repo-root .`
 - [ ] Focused tests for touched behavior:
 
 ## Risk Notes

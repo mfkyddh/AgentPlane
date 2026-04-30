@@ -14,21 +14,21 @@ This skill absorbs the public parts of the previous host, panel, firewall, and c
 ## Commands
 
 ```bash
-uv run python -m agentplane.cli infra inventory <target> --repo-root <repo-root>
-uv run python -m agentplane.cli infra audit <target> --repo-root <repo-root>
-uv run python -m agentplane.cli infra network audit <target> --repo-root <repo-root>
-uv run python -m agentplane.cli infra network ensure <target> --repo-root <repo-root>
-uv run python -m agentplane.cli infra remote bash <target> -- whoami
-uv run python -m agentplane.cli infra automation search <target> --repo-root <repo-root>
-uv run python -m agentplane.cli infra automation get <target> --name <automation-name> --repo-root <repo-root>
-uv run python -m agentplane.cli infra automation verify <target> --name <automation-name> --repo-root <repo-root>
-uv run python -m agentplane.cli infra automation plan <target> --name <automation-name> --operation <operation> --repo-root <repo-root>
-uv run python -m agentplane.cli infra automation apply <target> --name <automation-name> --operation <operation> --repo-root <repo-root> --execute
-uv run python -m agentplane.cli infra secrets init-data-services <target> --repo-root <repo-root>
-uv run python -m agentplane.cli infra secrets sync-layout <target> --repo-root <repo-root> --write
-uv run python -m agentplane.cli onepanel --env <target> panel get
-uv run python -m agentplane.cli onepanel --env <target> firewall verify --tab port --expected-active true --json
-uv run python -m agentplane.cli onepanel --env <target> cronjob search --info <keyword>
+agentplane infra inventory <target> --repo-root <repo-root>
+agentplane infra audit <target> --repo-root <repo-root>
+agentplane infra network audit <target> --repo-root <repo-root>
+agentplane infra network ensure <target> --repo-root <repo-root>
+agentplane infra remote bash <target> -- whoami
+agentplane infra automation search <target> --repo-root <repo-root>
+agentplane infra automation get <target> --name <automation-name> --repo-root <repo-root>
+agentplane infra automation verify <target> --name <automation-name> --repo-root <repo-root>
+agentplane infra automation plan <target> --name <automation-name> --operation <operation> --repo-root <repo-root>
+agentplane infra automation apply <target> --name <automation-name> --operation <operation> --repo-root <repo-root> --execute
+agentplane infra secrets init-data-services <target> --repo-root <repo-root>
+agentplane infra secrets sync-layout <target> --repo-root <repo-root> --write
+agentplane onepanel --env <target> panel get
+agentplane onepanel --env <target> firewall verify --tab port --expected-active true --json
+agentplane onepanel --env <target> cronjob search --info <keyword>
 ```
 
 ## Rules

@@ -21,7 +21,7 @@ assignees: ""
 ## Verification Output
 
 ```text
-uv run python -m agentplane.cli repo health-check --repo-root .
+agentplane repo health-check --repo-root .
 ```
 
 ## Environment

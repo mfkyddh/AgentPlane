@@ -12,15 +12,15 @@ Use this domain skill when the user asks about app objects, app catalog state, a
 ## Commands
 
 ```bash
-uv run python -m agentplane.cli app object search --target <target> --repo-root <repo-root>
-uv run python -m agentplane.cli app object get --target <target> --app <app> --repo-root <repo-root>
-uv run python -m agentplane.cli app object verify --target <target> --app <app> --repo-root <repo-root>
-uv run python -m agentplane.cli app object refresh-ledger --target <target> --repo-root <repo-root> --write
-uv run python -m agentplane.cli app resource search --target <target> --repo-root <repo-root>
-uv run python -m agentplane.cli app resource get --target <target> --app <app> --repo-root <repo-root>
-uv run python -m agentplane.cli app resource verify --target <target> --app <app> --repo-root <repo-root>
-uv run python -m agentplane.cli app resource refresh-ledger --target <target> --repo-root <repo-root> --write
-uv run python -m agentplane.cli infra secrets sync-layout <target> --repo-root <repo-root> --write
+agentplane app object search --target <target> --repo-root <repo-root>
+agentplane app object get --target <target> --app <app> --repo-root <repo-root>
+agentplane app object verify --target <target> --app <app> --repo-root <repo-root>
+agentplane app object refresh-ledger --target <target> --repo-root <repo-root> --write
+agentplane app resource search --target <target> --repo-root <repo-root>
+agentplane app resource get --target <target> --app <app> --repo-root <repo-root>
+agentplane app resource verify --target <target> --app <app> --repo-root <repo-root>
+agentplane app resource refresh-ledger --target <target> --repo-root <repo-root> --write
+agentplane infra secrets sync-layout <target> --repo-root <repo-root> --write
 ```
 
 ## Rules

@@ -60,7 +60,7 @@ cat CHANGELOG.md
 
 ```bash
 # 确认新版本通过所有门禁
-uv run python -m agentplane.cli repo release-check --repo-root .
+agentplane repo release-check --repo-root .
 ```
 
 **预期输出**：
@@ -118,10 +118,10 @@ git diff HEAD@{1}..HEAD -- agentplane/cli/
 git diff HEAD@{1}..HEAD -- agentplane/domain/
 
 # 2. 检查受影响的 skill
-uv run python -m agentplane.cli repo skills check --repo-root .
+agentplane repo skills check --repo-root .
 
 # 3. 检查文档一致性
-uv run python -m agentplane.cli repo docs-sanity --repo-root .
+agentplane repo docs-sanity --repo-root .
 ```
 
 ---

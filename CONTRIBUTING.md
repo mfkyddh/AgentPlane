@@ -14,7 +14,7 @@ Thanks for helping improve AgentPlane.
 
 1. Fork or clone the repository.
 2. Install `uv`.
-3. Run `uv run python -m agentplane.cli --help`.
+3. Run `agentplane --help`.
 4. Run `uv run python -m pytest`.
 
 Use one source checkout per machine. On Windows, the same checkout may be used by the WSL backend through resolver-managed path mapping. Do not create platform-specific virtualenvs such as `.venv-win` or `.venv-wsl`.
@@ -76,7 +76,7 @@ Detailed guide: [docs/reference/testing-conventions.md](docs/reference/testing-c
 Run:
 
 ```bash
-uv run python -m agentplane.cli repo health-check --repo-root .
+agentplane repo health-check --repo-root .
 ```
 
 For docs or contract changes, also run the relevant focused tests under `tests/`.

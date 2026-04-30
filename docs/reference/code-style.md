@@ -61,7 +61,7 @@ layer: engineering
 提交前优先运行：
 
 ```bash
-uv run python -m agentplane.cli repo health-check --repo-root .
+agentplane repo health-check --repo-root .
 ```
 
 如果改动只涉及文档，至少确认相关链接和命令示例仍然指向正式入口。

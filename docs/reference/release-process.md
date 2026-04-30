@@ -19,13 +19,13 @@ layer: engineering
 
 | 场景 | 必做检查 |
 | --- | --- |
-| Python 代码 | `uv run python -m agentplane.cli repo health-check --repo-root .`、相关聚焦测试 |
-| CLI 行为 | 相关 CLI 测试、`uv run python -m agentplane.cli --help` |
+| Python 代码 | `agentplane repo health-check --repo-root .`、相关聚焦测试 |
+| CLI 行为 | 相关 CLI 测试、`agentplane --help` |
 | 默认门禁相关 | `uv run python -m pytest` |
 | 发布工程 | `uv run python -m build`、`uv run python -m pip_audit --skip-editable --progress-spinner off` |
 | 文档规范 | 链接指向 active 文档，命令示例使用 `agentplane ...` |
 | secrets / inventory / projection | 确认真实 secrets 未入库，必要时刷新台账 |
-| 公开边界 | `uv run python -m agentplane.cli repo privacy-scan --repo-root .` |
+| 公开边界 | `agentplane repo privacy-scan --repo-root .` |
 
 无法验证时必须在提交或 PR 说明里写清楚：没验证什么、为什么、剩余风险是什么。
 
@@ -40,7 +40,7 @@ git status -> git add -> git commit -> merge into local main if needed -> git pu
 默认统一入口：
 
 ```bash
-uv run python -m agentplane.cli repo health-check --repo-root .
+agentplane repo health-check --repo-root .
 ```
 
 Secret scan 例外必须写入仓库根目录 `.secret-scan-allowlist`。优先修正文档或测试样例，只有确认为合法样例且无法改写时才加入 allowlist。
@@ -66,7 +66,7 @@ plan -> apply -> verify -> ledger -> inventory refresh -> doc-sync
 
 首次公开 tag 前，使用轻量发布流程：
 
-1. 运行 `uv run python -m agentplane.cli repo release-check --repo-root .`。
+1. 运行 `agentplane repo release-check --repo-root .`。
 2. 确认 open source readiness 中没有阻塞项。
 3. 更新 README、CHANGELOG 或 release notes。
 4. 创建版本 tag，例如 `v0.1.0`。
@@ -90,7 +90,7 @@ plan -> apply -> verify -> ledger -> inventory refresh -> doc-sync
 
 ```bash
 git status --short
-uv run python -m agentplane.cli repo health-check --repo-root .
+agentplane repo health-check --repo-root .
 ```
 
 同时人工扫一遍：

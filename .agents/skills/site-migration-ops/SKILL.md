@@ -14,13 +14,13 @@ The common provider may be 1Panel OpenResty, nginx-ui, or Cloudflare, but provid
 ## Commands
 
 ```bash
-uv run python -m agentplane.cli ingress search --target <target> --repo-root <repo-root>
-uv run python -m agentplane.cli ingress get --target <target> --alias <alias> --repo-root <repo-root>
-uv run python -m agentplane.cli ingress plan --target <target> --alias <alias> --operation reconcile --repo-root <repo-root>
-uv run python -m agentplane.cli ingress publish plan --target <target> --config-file <config-file> --cloudflare-env-file <cloudflare-env-file> --repo-root <repo-root>
-uv run python -m agentplane.cli ingress publish apply --target <target> --config-file <config-file> --cloudflare-env-file <cloudflare-env-file> --repo-root <repo-root> --execute
-uv run python -m agentplane.cli ingress publish verify --target <target> --config-file <config-file> --cloudflare-env-file <cloudflare-env-file> --repo-root <repo-root>
-uv run python -m agentplane.cli ingress refresh-ledger --target <target> --repo-root <repo-root> --write
+agentplane ingress search --target <target> --repo-root <repo-root>
+agentplane ingress get --target <target> --alias <alias> --repo-root <repo-root>
+agentplane ingress plan --target <target> --alias <alias> --operation reconcile --repo-root <repo-root>
+agentplane ingress publish plan --target <target> --config-file <config-file> --cloudflare-env-file <cloudflare-env-file> --repo-root <repo-root>
+agentplane ingress publish apply --target <target> --config-file <config-file> --cloudflare-env-file <cloudflare-env-file> --repo-root <repo-root> --execute
+agentplane ingress publish verify --target <target> --config-file <config-file> --cloudflare-env-file <cloudflare-env-file> --repo-root <repo-root>
+agentplane ingress refresh-ledger --target <target> --repo-root <repo-root> --write
 ```
 
 ## Rules

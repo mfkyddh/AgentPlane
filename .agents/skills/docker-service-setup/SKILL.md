@@ -14,10 +14,10 @@ Prefer a formal AgentPlane CLI workflow when one exists. When the repository has
 ## Commands
 
 ```bash
-uv run python -m agentplane.cli infra remote bash <target> -- docker version
-uv run python -m agentplane.cli infra secrets sync-layout <target> --repo-root <repo-root> --write
-uv run python -m agentplane.cli service search --target <target> --repo-root <repo-root>
-uv run python -m agentplane.cli service verify --target <target> --name <service> --repo-root <repo-root>
+agentplane infra remote bash <target> -- docker version
+agentplane infra secrets sync-layout <target> --repo-root <repo-root> --write
+agentplane service search --target <target> --repo-root <repo-root>
+agentplane service verify --target <target> --name <service> --repo-root <repo-root>
 ```
 
 If compose is still the implementation path, use the tracked service directory:

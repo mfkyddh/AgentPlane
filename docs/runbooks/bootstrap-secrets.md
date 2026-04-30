@@ -11,14 +11,9 @@ layer: technical
 
 结论：`agentplane bootstrap ...` 负责 takeover truths、target scope README 和 readiness 判定，人类只填 secrets 和少量 identity。
 
-Linux / WSL 里直接用 `agentplane ...`。
+所有平台统一用 `agentplane ...`。首次使用前执行 `uv tool install -e <repo-root>`。
 
-Windows 宿主统一走：
-`uv run python -m agentplane.cli ...`
-
-不要在 Windows 控制面根目录直接执行 `uv run ...`，否则会踩 Linux `.venv` 与 Windows 本地环境混用问题。
-
-`bootstrap inspect-local` 会报告 `cli_entrypoint`：如果 `agentplane` 已在 PATH 中可用，会显示实际 executable；否则会给出 `uv run python -m agentplane.cli` fallback 和 `uv tool install -e <repo-root>` 安装建议。
+`bootstrap inspect-local` 会报告 `cli_entrypoint`：如果 `agentplane` 已在 PATH 中可用，会显示实际 executable；否则会给出 `uv tool install -e <repo-root>` 安装建议。
 
 日零启动只保留五个正式动作：
 

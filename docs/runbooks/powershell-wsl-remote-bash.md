@@ -44,7 +44,7 @@ agentplane infra remote bash <target> [--repo-root <linux-path>] [--script-file 
 Windows 主控制面正式入口：
 
 ```powershell
-uv run python -m agentplane.cli infra remote bash prod0-main --dry-run --script-file <repo-root>/agentplane/scripts/internal/remote/example.sh
+agentplane infra remote bash prod0-main --dry-run --script-file <repo-root>/agentplane/scripts/internal/remote/example.sh
 ```
 
 如果当前已经在 WSL/Linux shell，直接执行正式 CLI：
@@ -85,7 +85,7 @@ docker ps --format 'table {{.Names}}\t{{.Status}}' | sed -n '1,10p'
 再执行：
 
 ```powershell
-uv run python -m agentplane.cli infra remote bash prod0-main --script-file <repo-root>/agentplane/scripts/internal/remote/example.sh
+agentplane infra remote bash prod0-main --script-file <repo-root>/agentplane/scripts/internal/remote/example.sh
 ```
 
 ### 2. 纯 Linux shell 内部直接 pipe
@@ -105,7 +105,7 @@ printf '%s\n' \
 Windows 宿主：
 
 ```powershell
-uv run python -m agentplane.cli infra remote bash prod0-main --script-file <repo-root>/agentplane/scripts/internal/remote/example-arg.sh -- postgres18-prod
+agentplane infra remote bash prod0-main --script-file <repo-root>/agentplane/scripts/internal/remote/example-arg.sh -- postgres18-prod
 ```
 
 远端脚本：
@@ -154,7 +154,7 @@ uv run python -m pytest tests/host/test_ssh_targets.py tests/repository/test_cli
 最小 dry-run 验证：
 
 ```powershell
-uv run python -m agentplane.cli infra remote bash prod0-main --dry-run --script-file <repo-root>/agentplane/scripts/internal/remote/example.sh
+agentplane infra remote bash prod0-main --dry-run --script-file <repo-root>/agentplane/scripts/internal/remote/example.sh
 ```
 
 最小远端连通性验证：

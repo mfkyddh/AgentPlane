@@ -12,11 +12,11 @@ Use this domain skill for runtime service objects such as managed containers. Th
 ## Commands
 
 ```bash
-uv run python -m agentplane.cli service search --target <target> --repo-root <repo-root>
-uv run python -m agentplane.cli service get --target <target> --name <service> --repo-root <repo-root>
-uv run python -m agentplane.cli service verify --target <target> --name <service> --repo-root <repo-root>
-uv run python -m agentplane.cli service plan --target <target> --name <service> --operation restart --repo-root <repo-root>
-uv run python -m agentplane.cli service apply --target <target> --name <service> --operation restart --repo-root <repo-root> --execute
+agentplane service search --target <target> --repo-root <repo-root>
+agentplane service get --target <target> --name <service> --repo-root <repo-root>
+agentplane service verify --target <target> --name <service> --repo-root <repo-root>
+agentplane service plan --target <target> --name <service> --operation restart --repo-root <repo-root>
+agentplane service apply --target <target> --name <service> --operation restart --repo-root <repo-root> --execute
 ```
 
 ## Rules

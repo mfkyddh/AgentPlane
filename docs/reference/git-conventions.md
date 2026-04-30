@@ -302,13 +302,13 @@ CI 会检查 PR 范围内的新增提交标题；直接 push 到 `main` 时只�
 4. 合并前运行最小验证。普通变更默认运行：
 
    ```bash
-   uv run python -m agentplane.cli repo health-check --repo-root .
+   agentplane repo health-check --repo-root .
    ```
 
    文档-only 变更至少运行：
 
    ```bash
-   uv run python -m agentplane.cli repo docs-sanity --repo-root .
+   agentplane repo docs-sanity --repo-root .
    ```
 
 5. 推送分支并打开 PR：

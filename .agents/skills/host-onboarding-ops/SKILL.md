@@ -14,14 +14,14 @@ Root SSH or password login is a break-glass exception, not the default onboardin
 ## Commands
 
 ```bash
-uv run python -m agentplane.cli bootstrap inspect-local --repo-root <repo-root>
-uv run python -m agentplane.cli bootstrap doctor --repo-root <repo-root>
-uv run python -m agentplane.cli bootstrap init-secrets --repo-root <repo-root>
-uv run python -m agentplane.cli bootstrap verify-secrets --repo-root <repo-root>
-uv run python -m agentplane.cli infra inventory <target> --repo-root <repo-root>
-uv run python -m agentplane.cli infra audit <target> --repo-root <repo-root>
-uv run python -m agentplane.cli infra remote bash <target> -- uname -a
-uv run python -m agentplane.cli infra network audit <target> --repo-root <repo-root>
+agentplane bootstrap inspect-local --repo-root <repo-root>
+agentplane bootstrap doctor --repo-root <repo-root>
+agentplane bootstrap init-secrets --repo-root <repo-root>
+agentplane bootstrap verify-secrets --repo-root <repo-root>
+agentplane infra inventory <target> --repo-root <repo-root>
+agentplane infra audit <target> --repo-root <repo-root>
+agentplane infra remote bash <target> -- uname -a
+agentplane infra network audit <target> --repo-root <repo-root>
 ```
 
 ## Rules
