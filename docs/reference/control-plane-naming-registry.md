@@ -4,7 +4,7 @@ owner: AgentPlane maintainers
 last_verified: 2026-04-02
 superseded_by: null
 audience: agent
-
+layer: engineering
 ---
 
 # 控制面命名注册表

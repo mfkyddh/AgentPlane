@@ -4,6 +4,7 @@ owner: AgentPlane maintainers
 last_verified: 2026-04-30
 superseded_by: null
 audience: both
+layer: engineering
 ---
 
 # 📖 核心术语表
@@ -45,8 +46,8 @@ audience: both
 
 | 术语 | 一句话定义 | 详细说明 |
 |------|-----------|----------|
-| **substrate** | 被 AgentPlane 管理的底层基础设施平台（如 1Panel、Docker Compose） | [项目定位](project-positioning.md) |
-| **provider** | 封装外部平台 API 的适配层，让上层代码不用关心底层细节 | [项目定位](project-positioning.md) |
+| **substrate** | 被 AgentPlane 管理的底层基础设施平台（如 1Panel、Docker Compose） | [愿景](../strategy/vision.md) |
+| **provider** | 封装外部平台 API 的适配层，让上层代码不用关心底层细节 | [愿景](../strategy/vision.md) |
 | **adapter** | 处理运行时环境差异的适配器（如 docker_runtime、systemd_runtime） | [仓库结构](repository-structure.md) |
 
 ## 应用交付

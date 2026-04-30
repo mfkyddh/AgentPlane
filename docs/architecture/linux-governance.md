@@ -4,6 +4,7 @@ owner: AgentPlane maintainers
 last_verified: 2026-04-25
 superseded_by: null
 audience: agent
+layer: technical
 ---
 
 # Linux 治理规范

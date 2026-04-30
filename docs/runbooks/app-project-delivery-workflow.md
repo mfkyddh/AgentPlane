@@ -4,7 +4,7 @@ owner: AgentPlane maintainers
 last_verified: 2026-04-25
 superseded_by: null
 audience: both
-
+layer: technical
 ---
 
 # 📦 应用项目接入 AgentPlane 工作流

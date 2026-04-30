@@ -4,7 +4,7 @@ owner: AgentPlane maintainers
 last_verified: 2026-04-25
 superseded_by: null
 audience: human
-
+layer: technical
 ---
 
 # 📖 Runbook 导航
@@ -32,12 +32,25 @@ audience: human
 |---------|-------------|
 | [仓库健康检查](./current-state-and-validation.md) | 查看仓库结构、链接、入口是否健康 |
 | [现场验证](./live-integration-gate.md) | 运行真实的 WSL/SSH/Docker 集成验证 |
+| [监控与告警](./monitoring-and-alerting.md) | 监控目标、健康检查、容器监控、告警规则和工具集成 |
 
 ## 🖥️ 我想管理特定机器
 
 | Runbook | 解决什么问题 |
 |---------|-------------|
 | [WSL 开发环境](./wsl-host-governance.md) | WSL 侧的配置、网络和日常运维 |
+
+## 🛡️ 我想备份或恢复
+
+| Runbook | 解决什么问题 |
+|---------|-------------|
+| [备份与恢复](./backup-and-recovery.md) | secrets、inventory 和配置的备份策略、恢复流程与灾难恢复 |
+
+## 🔄 我想升级或迁移
+
+| Runbook | 解决什么问题 |
+|---------|-------------|
+| [升级与迁移指南](./upgrade-and-migration.md) | 版本升级、Breaking change 处理、数据迁移和回滚 |
 
 ## 🔧 我想扩展或定制
 

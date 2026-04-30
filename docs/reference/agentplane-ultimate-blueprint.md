@@ -4,6 +4,7 @@ owner: AgentPlane maintainers
 last_verified: 2026-04-29
 superseded_by: null
 audience: both
+layer: strategy
 ---
 
 # AgentPlane 终极蓝图 v4
@@ -181,5 +182,5 @@ AgentPlane 从 alpha 走向 beta，不取决于 Skill 数量，而取决于这�
 - [控制面合同](../architecture/control-plane.md)
 - [Agent 执行闭环](../runbooks/control-plane-agent-execution-flow.md)
 - [文档治理规范](documentation-governance.md)
-- [项目定位](project-positioning.md)
+- [愿景](../strategy/vision.md)
 - [威胁模型](threat-model.md)

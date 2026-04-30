@@ -4,6 +4,7 @@ owner: AgentPlane maintainers
 last_verified: 2026-04-29
 superseded_by: null
 audience: both
+layer: technical
 ---
 
 # 架构决策 0001：CLI-First 控制面

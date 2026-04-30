@@ -4,6 +4,7 @@ owner: AgentPlane maintainers
 last_verified: 2026-04-29
 superseded_by: null
 audience: agent
+layer: engineering
 ---
 
 # AgentPlane 威胁模型

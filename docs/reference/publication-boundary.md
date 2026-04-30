@@ -4,6 +4,7 @@ owner: AgentPlane maintainers
 last_verified: 2026-04-28
 superseded_by: null
 audience: both
+layer: engineering
 ---
 
 # 公开边界规范

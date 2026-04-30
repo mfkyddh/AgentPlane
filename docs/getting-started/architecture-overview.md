@@ -551,4 +551,4 @@ projection retirement → runtime environment cleanup → ledger retirement → 
 - [入门指南](getting-started.md) — 快速了解 AgentPlane
 - [控制面核心合同](../architecture/control-plane.md) — 投影模型的权威定义（面向 AI）
 - [术语表](../reference/glossary.md) — 核心术语统一定义
-- [项目定位](../reference/project-positioning.md) — AgentPlane 的边界和适用场景
+- [愿景](../strategy/vision.md) — AgentPlane 的边界和适用场景

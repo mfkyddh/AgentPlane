@@ -4,7 +4,7 @@ owner: AgentPlane maintainers
 last_verified: 2026-04-22
 superseded_by: null
 audience: agent
-
+layer: engineering
 ---
 
 # Open Source Readiness
@@ -13,7 +13,7 @@ audience: agent
 
 This repository is being shaped as a one-checkout, cross-platform open source control plane template.
 
-Public positioning lives in [project-positioning.md](project-positioning.md). Release maturity and staged goals live in [../../ROADMAP.md](../../ROADMAP.md).
+Public positioning lives in [vision.md](../strategy/vision.md). Release maturity and staged goals live in [../../ROADMAP.md](../../ROADMAP.md).
 
 ## Baseline Requirements
 
