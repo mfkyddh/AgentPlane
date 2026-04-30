@@ -186,9 +186,9 @@ AgentPlane 项目经过多次重构，需要明确长期定位和战略方向。
 
 ## 相关决策
 
-- [002-boundary.md](002-boundary.md) — 边界决策（待创建）
-- [003-phases.md](003-phases.md) — 阶段划分决策（待创建）
-- [004-architecture.md](004-architecture.md) — 架构演进决策（待创建）
+- [002-boundary.md](002-boundary.md) — 边界决策
+- [003-phases.md](003-phases.md) — 阶段划分决策
+- [004-architecture.md](004-architecture.md) — 架构演进决策
 
 ## 关联文档
 
