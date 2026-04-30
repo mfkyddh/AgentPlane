@@ -4,6 +4,7 @@ owner: AgentPlane maintainers
 last_verified: 2026-04-29
 superseded_by: null
 audience: agent
+layer: engineering
 ---
 
 
@@ -154,6 +155,41 @@ AGENTS.md 是每次对话自动注入的工作手册，**不是规范文档**。
 | `app` | 应用生命周期相关 |
 
 跨模块变更时，选择**主要影响**的模块作为 scope。如果影响均匀，可省略 scope（如 `chore: ...`）。
+
+### 层级标注
+
+为明确变更所属的知识层级，在 commit message 的 `type(scope)` 之后添加 `[层级]` 标注。这有助于快速筛选和理解变更的性质。
+
+**格式**：
+```
+<type>(<scope>): <description> [层级]
+```
+
+**四层体系**：
+
+| 层级 | 标注 | 涵盖范围 |
+|------|------|---------|
+| 战略层 | `[战略层]` | 愿景、原则、路线图、决策记录 |
+| 项目层 | `[项目层]` | 项目章程、角色、沟通、风险 |
+| 工程层 | `[工程层]` | 代码风格、Git 规范、测试、发布 |
+| 技术层 | `[技术层]` | 架构、规范、运维 |
+
+**判断规则**：
+- 变更涉及项目愿景、原则或高层决策 → `[战略层]`
+- 变更涉及项目管理、角色分工或沟通流程 → `[项目层]`
+- 变更涉及开发流程、代码规范或 CI/CD → `[工程层]`
+- 变更涉及系统架构、接口规范或运维部署 → `[技术层]`
+- 不确定时，根据变更的主要影响选择层级
+- 纯粹的代码实现（如修复 bug、添加功能）默认归属 `[技术层]`
+
+**示例**：
+```
+docs(strategy): add strategic roadmap with three-phase progression [战略层]
+docs(project): update project charter and roles [项目层]
+refactor(domain): rename host to infra [技术层]
+chore(ci): update test matrix configuration [工程层]
+feat(app): add application deployment feature [技术层]
+```
 
 ### Description 规则
 

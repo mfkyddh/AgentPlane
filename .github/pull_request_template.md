@@ -2,6 +2,13 @@
 
 - 
 
+## Change Layer
+
+- [ ] **Strategy** — Vision, principles, roadmap, decision records
+- [ ] **Project** — Project charter, roles, communication, risks
+- [ ] **Engineering** — Code style, Git conventions, testing, release
+- [ ] **Technical** — Architecture, specifications, operations
+
 ## Verification
 
 - [ ] `uv run python -m agentplane.cli repo health-check --repo-root .`
