@@ -6,6 +6,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 AgentPlane 是一个 Agent-first 控制面 CLI 工具。所有正式操作通过 `agentplane <domain> <surface> <verb> [flags]` 进入，提供 plan → execute → verify → record 生命周期。`.agents/skills/` 中定义的 Skill 是 AI 入口，它们路由到 CLI 命令——永远不要绕过 CLI。
 
+## 协作协议
+
+本项目采用"人类表达意图，AI 自主推进"的协作模式。详见 `docs/reference/human-ai-collaboration.md`。
+
+**会话开始**：读取 `docs/project/backlog.md`，确认主线进度，向人类报告当前位置。
+
+**需求处理**：收到任何需求后，先判断归属：
+- 直接服务主线（Alpha 退出条件）→ 合入主线，立即执行
+- 间接相关 → 创建分支任务，完成后回归主线
+- 完全无关 → 记录到 backlog，询问是否现在做
+
+**会话结束**：更新 `docs/project/backlog.md`，标记完成项，记录进度。
+
+**主线**：当前阶段的唯一目标是 Alpha 退出标准（见 backlog.md）。所有工作都应围绕主线推进。
+
 ## 常用命令
 
 ```bash
