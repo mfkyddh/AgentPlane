@@ -160,6 +160,7 @@ agentplane repo health-check --repo-root .
 > 💡 体检通过后，Agent 就可以接管后续操作了。
 
 📖 **第一次用？** → [入门指南](docs/getting-started/getting-started.md)
+🏗️ **想深入？** → [架构概览](docs/getting-started/architecture-overview.md)
 🚀 **想动手？** → [部署你的第一个应用](docs/tutorials/deploy-first-app.md)
 🔍 **出错了？** → [排查部署失败](docs/tutorials/troubleshoot-failed-deployment.md)
 

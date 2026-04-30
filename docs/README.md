@@ -21,6 +21,7 @@ audience: both
 | 你想做什么 | 从这里开始 |
 | --- | --- |
 | 第一次了解项目 | [入门指南](getting-started/getting-started.md) ⭐ |
+| 深入理解架构 | [架构概览](getting-started/architecture-overview.md) ⭐ |
 | 部署第一个应用 | [教程：部署 sub2api](tutorials/deploy-first-app.md) ⭐ |
 
 ### 🔍 常见任务
