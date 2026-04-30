@@ -13,7 +13,7 @@ layer: engineering
 
 This repository is being shaped as a one-checkout, cross-platform open source control plane template.
 
-Public positioning lives in [vision.md](../strategy/vision.md). Release maturity and staged goals live in [../../ROADMAP.md](../../ROADMAP.md).
+Public positioning lives in [vision.md](../strategy/vision.md). Release maturity and staged goals live in [roadmap.md](../strategy/roadmap.md).
 
 ## 📋 Baseline Requirements
 

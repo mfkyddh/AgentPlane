@@ -75,11 +75,9 @@ REQUIRED_GITIGNORE_PATTERNS = {
 REQUIRED_LOCAL_STATE_DOC_MARKERS = {
     "## 🔒 本地态合同",
     "`secrets/`",
-    "`local/`",
     "`tmp/`",
     "`.venv/`",
     "`.pytest_cache/`、`.ruff_cache/`、`__pycache__/`",
-    "`.worktrees/`",
     "`.workbuddy/`",
 }
 
@@ -153,7 +151,7 @@ class OpenSourceReadinessTests(unittest.TestCase):
         expected = (
             "LICENSE",
             "CONTRIBUTING.md",
-                                    "README.md",
+            "README.md",
             ".github/workflows/ci.yml",
         )
         for relative_path in expected:

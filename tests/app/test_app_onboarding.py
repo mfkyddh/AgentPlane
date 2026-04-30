@@ -75,10 +75,11 @@ class AppOnboardingStandardTests(unittest.TestCase):
         text = (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")
         required_headings = (
             "## 必读摘要",
-            "## 执行入口",
-            "## 跨平台核心约束",
-            "## 安全核心约束",
-            "## Git 核心约束",
+            "## 项目概述",
+            "## 跨平台约束",
+            "## 安全约束",
+            "## Git 约束",
+            "## 编码行为准则",
             "## 文档索引",
         )
         for heading in required_headings:

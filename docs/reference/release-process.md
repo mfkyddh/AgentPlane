@@ -80,7 +80,7 @@ plan -> apply -> verify -> ledger -> inventory refresh -> doc-sync
 
 | 文件 | 作用 |
 | --- | --- |
-| [../../ROADMAP.md](../../ROADMAP.md) | 说明 alpha 边界、近期里程碑和非目标。 |
+| [../strategy/roadmap.md](../strategy/roadmap.md) | 说明 alpha 边界、近期里程碑和非目标。 |
 | [../../CHANGELOG.md](../../CHANGELOG.md) | 记录面向人的版本变更摘要。 |
 | [../architecture/decisions/README.md](../architecture/decisions/README.md) | 记录会影响长期维护的架构决策。 |
 
