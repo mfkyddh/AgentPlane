@@ -23,6 +23,7 @@ audience: both
 | 第一次了解项目 | [入门指南](getting-started/getting-started.md) ⭐ |
 | 深入理解架构 | [架构概览](getting-started/architecture-overview.md) ⭐ |
 | 部署第一个应用 | [教程：部署 sub2api](tutorials/deploy-first-app.md) ⭐ |
+| 了解怎么跟 AI 协作 | [人机协作协议](reference/human-ai-collaboration.md) ⭐ |
 
 ### 🔍 常见任务
 
@@ -78,6 +79,7 @@ AI 工作规范：[AGENTS.md](../AGENTS.md)；Skill 面盘点：[skill-surface-a
 | 文档 | 说明 |
 | --- | --- |
 | [project/README.md](project/README.md) | 项目层导航 |
+| [project/backlog.md](project/backlog.md) | 主线追踪器：任务进度、分支任务、backlog |
 | [project/charter.md](project/charter.md) | 项目章程：目标、范围、约束、假设 |
 | [project/roles.md](project/roles.md) | 角色与职责：维护者、贡献者、用户、AI Agent |
 | [project/communication.md](project/communication.md) | 沟通机制：决策流程、反馈渠道、状态报告 |
@@ -98,6 +100,7 @@ AI 工作规范：[AGENTS.md](../AGENTS.md)；Skill 面盘点：[skill-surface-a
 | 文档 | 说明 |
 | --- | --- |
 | [reference/glossary.md](reference/glossary.md) | 核心术语统一定义 |
+| [reference/human-ai-collaboration.md](reference/human-ai-collaboration.md) | 人机协作协议：主线机制、会话流程、需求收敛 |
 | [reference/documentation-governance.md](reference/documentation-governance.md) | 文档分层、emoji、链接和门禁规范 |
 | [reference/layer-review-checklist.md](reference/layer-review-checklist.md) | 四层体系审查清单与检查点 |
 | [reference/agentplane-ultimate-blueprint.md](reference/agentplane-ultimate-blueprint.md) | 长期战略蓝图、阶段路线和核心机制 |
