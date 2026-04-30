@@ -38,6 +38,7 @@ audience: both
 
 | 你想做什么 | 从这里开始 |
 | --- | --- |
+| 了解项目战略 | [战略总览](strategy/README.md) ⭐ |
 | 查看当前状态 | [状态与验证](runbooks/current-state-and-validation.md) |
 | 查看长期蓝图 | [AgentPlane 终极蓝图 v4](reference/agentplane-ultimate-blueprint.md) |
 | 继续路线图任务 | [Roadmap Workbook](maintainers/agentplane-roadmap-workbook.md) |

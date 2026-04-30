@@ -187,6 +187,8 @@ AgentPlane 不是 Terraform、Kubernetes controller 或 SSH 脚本集合。
 
 **👤 人类入口**：
 [入门指南](docs/getting-started/getting-started.md) ·
+[架构概览](docs/getting-started/architecture-overview.md) ·
+[战略](docs/strategy/README.md) ·
 [部署应用](docs/runbooks/app-project-delivery-workflow.md) ·
 [术语表](docs/reference/glossary.md)
 
