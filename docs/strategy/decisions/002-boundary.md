@@ -4,6 +4,7 @@ owner: AgentPlane maintainers
 last_verified: 2026-04-30
 superseded_by: null
 audience: human
+layer: strategy
 ---
 
 # 决策记录：项目边界
@@ -146,4 +147,3 @@ AgentPlane 定位为"给 Agent 的产品全生命周期控制面"，需要明确
 - [愿景](../vision.md) — 项目愿景
 - [原则](../principles.md) — 哲学原则
 - [路线图](../roadmap.md) — 长期路线图
-- [项目定位](../../reference/project-positioning.md) — 项目边界和适用场景

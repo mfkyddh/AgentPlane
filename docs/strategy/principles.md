@@ -4,6 +4,7 @@ owner: AgentPlane maintainers
 last_verified: 2026-04-30
 superseded_by: null
 audience: human
+layer: strategy
 ---
 
 # 🧠 哲学原则
@@ -279,4 +280,3 @@ audience: human
 - [愿景](vision.md) — 项目愿景
 - [战略总览](README.md) — 战略文档导航
 - [求是 skills](https://github.com/HughYau/qiushi-skill) — 求是原则的实现
-- [项目定位](../reference/project-positioning.md) — 项目边界和适用场景

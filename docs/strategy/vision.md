@@ -3,7 +3,8 @@ status: active
 owner: AgentPlane maintainers
 last_verified: 2026-04-30
 superseded_by: null
-audience: human
+audience: both
+layer: strategy
 ---
 
 # 🌟 AgentPlane 愿景
@@ -21,6 +22,18 @@ audience: human
 - **产品**：包含多个业务系统 + 全局配置
 - **全生命周期**：从创建到运维的所有阶段
 - **控制面**：决策层，不是执行层
+
+---
+
+## 解决什么问题
+
+| 问题 | AgentPlane 的回答 |
+| --- | --- |
+| AI 直接 SSH 或 Docker 操作不可追溯 | 所有正式动作收口到 `agentplane ...`，输出结构化证据。 |
+| 生产 secrets 和公开仓库容易混淆 | 真实 secrets 只在 ignored `secrets/`，公开仓库只保留模板和示例。 |
+| Windows、WSL、Linux 路径和执行方式漂移 | 上层使用逻辑路径，runtime/backend 负责解析。 |
+| 运维动作只执行不验证 | 正式动作遵循 plan -> apply -> verify -> ledger -> inventory refresh -> doc-sync。 |
+| 应用仓库成为第二控制面 | 应用仓库只交付代码、构建资产和合同，生产控制面归 AgentPlane。 |
 
 ---
 
@@ -116,6 +129,16 @@ audience: human
 | **代码编辑** | 不做代码编辑器 | 留给专业工具 |
 | **版本控制** | 不做版本控制系统 | 留给 Git 等工具 |
 
+### 与常见工具的边界
+
+| 工具或模式 | 边界 |
+| --- | --- |
+| Shell scripts | 脚本可作为内部实现资产，但不能成为正式入口。 |
+| Ansible | Ansible 偏配置执行编排；AgentPlane 偏 Agent 任务入口、证据、台账和文档回写。 |
+| Terraform | Terraform 偏声明云资源；AgentPlane 偏已存在主机和应用交付闭环。 |
+| 1Panel / Docker Compose | 这些是可被管理的 substrate；正式任务入口仍是 `agentplane ...`。 |
+| 应用仓库 CI/CD | 应用仓库负责构建和测试自身；AgentPlane 负责正式部署、验证和控制面记录。 |
+
 ---
 
 ## 项目定义
@@ -147,9 +170,31 @@ audience: human
 
 ---
 
+## 成熟度口径
+
+当前项目是 alpha。可依赖的是仓库治理、文档治理、离线门禁、CLI-first 约束和 secrets 边界；仍在收敛的是发布自动化、provider 合同、app delivery schema 和 live gate 自动化。
+
+---
+
+## 正式入口
+
+```bash
+agentplane --help
+agentplane repo health-check --repo-root .
+agentplane repo release-check --repo-root .
+```
+
+## 最小验证
+
+```bash
+uv run python -m agentplane.cli repo health-check --repo-root .
+```
+
+---
+
 ## 关联文档
 
 - [战略总览](README.md) — 战略文档导航
 - [哲学原则](principles.md) — 哲学和工程原则
 - [长期路线图](roadmap.md) — 长期演进计划
-- [项目定位](../reference/project-positioning.md) — 项目边界和适用场景
+- [终极蓝图](../reference/agentplane-ultimate-blueprint.md) — 长期战略蓝图

@@ -4,6 +4,7 @@ owner: AgentPlane maintainers
 last_verified: 2026-04-30
 superseded_by: null
 audience: human
+layer: strategy
 ---
 
 # 决策记录：项目定位
@@ -194,4 +195,3 @@ AgentPlane 项目经过多次重构，需要明确长期定位和战略方向。
 
 - [愿景](../vision.md) — 项目愿景
 - [战略总览](../README.md) — 战略文档导航
-- [项目定位](../../reference/project-positioning.md) — 项目边界和适用场景

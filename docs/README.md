@@ -39,6 +39,8 @@ audience: both
 | 你想做什么 | 从这里开始 |
 | --- | --- |
 | 了解项目战略 | [战略总览](strategy/README.md) ⭐ |
+| 了解项目管理 | [项目层](project/README.md) ⭐ |
+| 了解四层文档体系 | [四层文档体系](reference/documentation-layers.md) ⭐ |
 | 查看当前状态 | [状态与验证](runbooks/current-state-and-validation.md) |
 | 查看长期蓝图 | [AgentPlane 终极蓝图 v4](reference/agentplane-ultimate-blueprint.md) |
 | 继续路线图任务 | [Roadmap Workbook](maintainers/agentplane-roadmap-workbook.md) |
@@ -61,6 +63,26 @@ AI 工作规范：[AGENTS.md](../AGENTS.md)；Skill 面盘点：[skill-surface-a
 
 ## 📚 完整索引（按类别）
 
+### 🎯 战略层
+
+| 文档 | 说明 |
+| --- | --- |
+| [strategy/README.md](strategy/README.md) | 战略文档导航 |
+| [strategy/vision.md](strategy/vision.md) | 项目愿景、定位、非目标和工具边界 |
+| [strategy/principles.md](strategy/principles.md) | 哲学原则与工程原则 |
+| [strategy/roadmap.md](strategy/roadmap.md) | 三阶段路线图 |
+| [strategy/decisions/](strategy/decisions/) | 战略决策记录 |
+
+### 📋 项目层
+
+| 文档 | 说明 |
+| --- | --- |
+| [project/README.md](project/README.md) | 项目层导航 |
+| [project/charter.md](project/charter.md) | 项目章程：目标、范围、约束、假设 |
+| [project/roles.md](project/roles.md) | 角色与职责：维护者、贡献者、用户、AI Agent |
+| [project/communication.md](project/communication.md) | 沟通机制：决策流程、反馈渠道、状态报告 |
+| [project/risk-management.md](project/risk-management.md) | 风险管理：识别、评估、应对、监控 |
+
 ### 🧠 架构合同
 
 | 文档 | 说明 |
@@ -77,8 +99,9 @@ AI 工作规范：[AGENTS.md](../AGENTS.md)；Skill 面盘点：[skill-surface-a
 | --- | --- |
 | [reference/glossary.md](reference/glossary.md) | 核心术语统一定义 |
 | [reference/documentation-governance.md](reference/documentation-governance.md) | 文档分层、emoji、链接和门禁规范 |
+| [reference/layer-review-checklist.md](reference/layer-review-checklist.md) | 四层体系审查清单与检查点 |
 | [reference/agentplane-ultimate-blueprint.md](reference/agentplane-ultimate-blueprint.md) | 长期战略蓝图、阶段路线和核心机制 |
-| [reference/project-positioning.md](reference/project-positioning.md) | 项目定位、非目标和工具边界 |
+| [strategy/vision.md](strategy/vision.md) | 项目愿景、定位、非目标和工具边界 |
 | [reference/repository-structure.md](reference/repository-structure.md) | 顶层目录和新文件放置规则 |
 | [reference/code-style.md](reference/code-style.md) | 代码和文档风格基线 |
 | [reference/tech-stack.md](reference/tech-stack.md) | 技术栈约束 |
@@ -113,6 +136,9 @@ AI 工作规范：[AGENTS.md](../AGENTS.md)；Skill 面盘点：[skill-surface-a
 | [runbooks/powershell-wsl-remote-bash.md](runbooks/powershell-wsl-remote-bash.md) | PowerShell 到 WSL/remote bash 路由 |
 | [runbooks/wsl-host-governance.md](runbooks/wsl-host-governance.md) | WSL 主机治理 |
 | [runbooks/current-state-and-validation.md](runbooks/current-state-and-validation.md) | 当前状态和验证快照 |
+| [runbooks/monitoring-and-alerting.md](runbooks/monitoring-and-alerting.md) | 监控目标、健康检查、容器监控、告警规则和工具集成 |
+| [runbooks/upgrade-and-migration.md](runbooks/upgrade-and-migration.md) | 升级与迁移指南 |
+| [runbooks/backup-and-recovery.md](runbooks/backup-and-recovery.md) | 备份与恢复操作手册 |
 
 ### 🧑‍🔧 Maintainers
 
@@ -120,6 +146,7 @@ AI 工作规范：[AGENTS.md](../AGENTS.md)；Skill 面盘点：[skill-surface-a
 | --- | --- |
 | [maintainers/control-plane-authoring.md](maintainers/control-plane-authoring.md) | control plane authoring 规则 |
 | [maintainers/agentplane-roadmap-workbook.md](maintainers/agentplane-roadmap-workbook.md) | 长期阶段推进、任务状态和继续执行协议 |
+| [maintainers/layer-health-report.md](maintainers/layer-health-report.md) | 四层体系健康度指标与报告机制 |
 | [maintainers/skill-surface-audit.md](maintainers/skill-surface-audit.md) | 当前 Skill 面盘点与重构建议 |
 
 ### 🕰️ History And Archive

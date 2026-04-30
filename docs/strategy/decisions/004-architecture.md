@@ -4,6 +4,7 @@ owner: AgentPlane maintainers
 last_verified: 2026-04-30
 superseded_by: null
 audience: human
+layer: strategy
 ---
 
 # 决策记录：架构演进

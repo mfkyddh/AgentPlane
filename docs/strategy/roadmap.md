@@ -4,6 +4,7 @@ owner: AgentPlane maintainers
 last_verified: 2026-04-30
 superseded_by: null
 audience: human
+layer: strategy
 ---
 
 # 🗺️ AgentPlane 路线图
@@ -131,5 +132,4 @@ Alpha（当前）          Beta                   GA
 
 - [愿景](vision.md) — 我们要去哪里
 - [原则](principles.md) — 我们如何思考
-- [项目定位](../reference/project-positioning.md) — 项目边界和适用场景
 - [技术路线图](../../ROADMAP.md) — 详细技术里程碑
