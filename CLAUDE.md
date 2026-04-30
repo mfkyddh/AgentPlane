@@ -58,7 +58,7 @@ agentplane <domain> --help
 - **Python 3.12+**，唯一运行时依赖是 `PyYAML>=6.0`。
 - **包管理器**: `uv`。根目录单个 `.venv`——不创建平台变种 venv。
 - **Ruff**: line-length=120, rules E4/E7/E9/F/I。
-- **提交**: Conventional Commits 格式——`type(scope): description`。type 仅限 `feat|fix|refactor|docs|test|chore|style|perf`。
+- **提交**: Conventional Commits 格式——`type(scope): description`。type 仅限 `feat|fix|refactor|docs|test|chore|style|perf`。**强制原子提交**：一个提交只包含一个逻辑变更单元，能用一句话说清"这次提交做了什么"；超过 15 个文件必须评估拆分。详见 `docs/reference/git-conventions.md`。
 - **测试**: 新测试必须标记 `unit`/`integration`/`e2e`。默认运行排除 `live_gate`、`integration_wsl`、`integration_remote`、`external_app`、`docker_required`、`ssh_required`。
 - **Secrets**: 真实 secrets 仅放 `secrets/`（已 gitignore）。非敏感模板放 `templates/`。
 - **Windows**: 用 `pwsh`，不用 `cmd`。Linux 操作用 `wsl.exe -e <program>`。远程 Linux 用 `agentplane infra remote bash`。
@@ -72,6 +72,53 @@ agentplane <domain> --help
 2. **简洁优先** — 最少代码解决问题；不加未要求的功能、抽象、配置项；200 行能 50 行搞定就重写
 3. **精准改动** — 只改必须改的；不顺手"改进"相邻代码；匹配现有风格；只清理自己制造的无用代码
 4. **目标驱动** — 定义可验证的成功标准；多步任务写出计划并逐步验证
+
+## 求是 Skills 使用原则
+
+在以下场景必须主动调用对应的 qiushi-skill：
+
+| 场景 | 调用的 Skill | 触发信号 |
+|------|-------------|---------|
+| 做重大判断或决策前 | `qiushi-skill:investigation-first` | 信息不足、需要先摸清现状 |
+| 面对复杂问题不知从何入手 | `qiushi-skill:contradiction-analysis` | 多个因素冲突、主次不清 |
+| 完成阶段性工作后 | `qiushi-skill:criticism-self-criticism` | 阶段验收、需要审查质量 |
+| 面对长期复杂任务 | `qiushi-skill:protracted-strategy` | 无法速胜、需要分阶段推进 |
+| 多个任务争夺注意力 | `qiushi-skill:concentrate-forces` | 优先级过多、资源紧张 |
+| 需要收集多方意见 | `qiushi-skill:mass-line` | 需要整合多源信息 |
+| 从零起步、资源有限 | `qiushi-skill:spark-prairie-fire` | bootstrap、MVP、小团队起步 |
+| 多个目标需要平衡 | `qiushi-skill:overall-planning` | trade-offs、目标冲突 |
+| 提出方案需要验证 | `qiushi-skill:practice-cognition` | experiment、prototype、validate |
+
+优先原则：先用 `实事求是` 约束判断，再在明确适用时调用下游 skill。不要为了形式而调用，但也不要错过能显著改善判断的场景。
+
+## 其他哲学原则使用指南
+
+以下原则不需要显式调用 skill，但需要在对应场景中主动应用：
+
+### 哲学基座
+
+| 原则 | 应用场景 | 检查点 |
+|------|----------|--------|
+| **第一性原理** | 架构设计、技术选型、问题分析 | 是否从最基本的事实出发，而不是类比？ |
+| **奥卡姆剃刀** | 设计决策、功能规划 | 是否简化到必要程度？如无必要，勿增实体 |
+
+### 方法论
+
+| 原则 | 应用场景 | 检查点 |
+|------|----------|--------|
+| **费曼学习法** | 文档编写、知识传递、解释概念 | 是否用简单语言解释复杂概念？ |
+| **苏格拉底式提问** | 需求分析、决策讨论、引导思考 | 是否通过提问引导思考，而非直接给答案？ |
+
+### 软件工程原则
+
+| 原则 | 应用场景 | 检查点 |
+|------|----------|--------|
+| **YAGNI** | 功能设计、架构设计 | 是否只实现当前需要的功能，不过度设计？ |
+| **DRY** | 代码编写、重构 | 是否消除了重复代码，提取了公共逻辑？ |
+| **KISS** | 设计、实现 | 是否保持了简单，避免了不必要的复杂？ |
+| **SOLID** | 架构设计、代码编写 | 是否遵循了单一职责、开闭原则等？ |
+
+使用方式：在对应场景中主动检查，无需显式调用。
 
 ## 反模式
 
@@ -88,3 +135,14 @@ agentplane <domain> --help
 - `docs/reference/git-conventions.md` — Git 规则
 - `docs/reference/cross-platform.md` — 跨平台规则
 - `docs/reference/testing-architecture.md` — 测试分层
+
+## 四层文档体系
+
+AgentPlane 采用四层文档体系，详见 `docs/reference/documentation-layers.md`：
+
+1. **战略层** (`docs/strategy/`) — 愿景、原则、路线图、决策记录。回答：去哪里？为什么？
+2. **项目层** (`docs/project/`) — 项目章程、角色、沟通、风险。回答：做什么？谁来做？何时做？
+3. **工程层** (`docs/reference/`) — 代码风格、Git 规范、测试、发布。回答：如何做？如何保证质量？
+4. **技术层** (`docs/architecture/`, `docs/runbooks/`) — 架构、规范、运维。回答：具体怎么做？如何维护？
+
+新增文档时，先确定属于哪一层，再放入对应目录。

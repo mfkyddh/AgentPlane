@@ -179,7 +179,7 @@ AgentPlane 不是 Terraform、Kubernetes controller 或 SSH 脚本集合。
 | 需要稳定任务入口和审计证据 | 只想保留一次性 SSH/Docker 命令 |
 | 应用仓库只交付代码和合同 | 应用仓库自带第二套生产控制面 |
 
-详细边界见 [项目定位](docs/reference/project-positioning.md)，演进计划见 [Roadmap](ROADMAP.md)。
+详细边界见 [愿景](docs/strategy/vision.md)，演进计划见 [Roadmap](ROADMAP.md)。
 
 ---
 
@@ -219,4 +219,4 @@ AgentPlane 不是 Terraform、Kubernetes controller 或 SSH 脚本集合。
 
 AgentPlane 的长期目标，是从 AI-assisted 运维控制面，演进为新项目从创建、开发、发布、部署到运维的统一控制面。
 
-更多规划见 [Roadmap](ROADMAP.md) 和 [项目定位](docs/reference/project-positioning.md)。
+更多规划见 [Roadmap](ROADMAP.md) 和 [愿景](docs/strategy/vision.md)。
