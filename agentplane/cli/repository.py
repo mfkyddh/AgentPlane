@@ -8,6 +8,7 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+from agentplane.domain.repository.doc_layer import run_doc_layer_check
 from agentplane.domain.repository.docs_sanity import run_docs_sanity
 from agentplane.domain.repository.privacy_scan import scan_repository_for_private_material
 from agentplane.domain.repository.secret_scan import scan_repository_for_secrets
@@ -46,6 +47,9 @@ def add_repository_parser(subparsers: argparse._SubParsersAction[argparse.Argume
 
     privacy_scan = repo_subparsers.add_parser("privacy-scan", help="扫描 Git 可见文件中的私有环境信息")
     privacy_scan.add_argument("--repo-root", type=Path, default=Path.cwd())
+
+    doc_layer = repo_subparsers.add_parser("doc-layer", help="检查文档是否在正确的四层目录并有层级标注")
+    doc_layer.add_argument("--repo-root", type=Path, default=Path.cwd())
 
     release = repo_subparsers.add_parser("release-check", help="运行发布前检查")
     release.add_argument("--repo-root", type=Path, default=Path.cwd())
@@ -272,6 +276,22 @@ def run_docs_sanity_command(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def run_doc_layer_command(args: argparse.Namespace) -> dict[str, Any]:
+    repo_root = args.repo_root.resolve()
+    issues = run_doc_layer_check(repo_root)
+    errors = [i for i in issues if i.severity == "error"]
+    warnings = [i for i in issues if i.severity == "warning"]
+    return {
+        "command": "repo",
+        "action": "doc-layer",
+        "repo_root": str(repo_root),
+        "ok": not errors,
+        "issues": [issue.to_dict() for issue in issues],
+        "warnings_count": len(warnings),
+        "errors_count": len(errors),
+    }
+
+
 def run_secret_scan(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = args.repo_root.resolve()
     allowlist = args.allowlist.resolve() if args.allowlist else None
@@ -371,6 +391,8 @@ def handle_repository_command(args: argparse.Namespace) -> dict[str, Any]:
         return run_status_command(args)
     if args.repo_action == "docs-sanity":
         return run_docs_sanity_command(args)
+    if args.repo_action == "doc-layer":
+        return run_doc_layer_command(args)
     if args.repo_action == "secret-scan":
         return run_secret_scan(args)
     if args.repo_action == "privacy-scan":
