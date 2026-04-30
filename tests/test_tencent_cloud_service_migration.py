@@ -26,6 +26,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+SKILL_PATH = REPO_ROOT / ".agents" / "skills" / "tencent-cloud-service-migration" / "SKILL.md"
+_skill_available = SKILL_PATH.exists()
+
 pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
@@ -434,6 +437,7 @@ class TestSourceHostPreservation(unittest.TestCase):
 # ======================================================================
 
 
+@unittest.skipUnless(_skill_available, "SKILL.md not available")
 class TestDockerImageTransferFallback(unittest.TestCase):
     """When destination can't pull images, use docker save | docker load."""
 
@@ -461,6 +465,7 @@ class TestDockerImageTransferFallback(unittest.TestCase):
 # ======================================================================
 
 
+@unittest.skipUnless(_skill_available, "SKILL.md not available")
 class TestVerificationChecklist(unittest.TestCase):
     """Test the verification patterns described in the skill."""
 
@@ -608,6 +613,7 @@ class TestServiceDomainForMigration(unittest.TestCase):
 # ======================================================================
 
 
+@unittest.skipUnless(_skill_available, "SKILL.md not available")
 class TestNginxUIMigrationPatterns(unittest.TestCase):
     """Test nginx-ui migration patterns described in the skill."""
 
@@ -640,6 +646,7 @@ class TestNginxUIMigrationPatterns(unittest.TestCase):
 # ======================================================================
 
 
+@unittest.skipUnless(_skill_available, "SKILL.md not available")
 class TestCloudflareTokenVerification(unittest.TestCase):
     """Test Cloudflare token verification patterns from the skill."""
 
