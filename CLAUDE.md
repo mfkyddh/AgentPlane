@@ -64,6 +64,15 @@ agentplane <domain> --help
 - **Windows**: 用 `pwsh`，不用 `cmd`。Linux 操作用 `wsl.exe -e <program>`。远程 Linux 用 `agentplane infra remote bash`。
 - **跨平台源码**: Windows 和 WSL 共用一个 checkout 和一个 `.venv`。
 
+## 编码行为准则
+
+基于 [Karpathy Guidelines](https://x.com/karpathy/status/2015883857489522876)，减少常见 LLM 编码错误：
+
+1. **先思考再编码** — 明确假设，不确定就问；有多种解释时都列出来，不要默默选择
+2. **简洁优先** — 最少代码解决问题；不加未要求的功能、抽象、配置项；200 行能 50 行搞定就重写
+3. **精准改动** — 只改必须改的；不顺手"改进"相邻代码；匹配现有风格；只清理自己制造的无用代码
+4. **目标驱动** — 定义可验证的成功标准；多步任务写出计划并逐步验证
+
 ## 反模式
 
 - 不要把 `scripts/` 当一级入口——用 `agentplane ...`。
