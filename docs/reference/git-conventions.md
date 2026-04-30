@@ -243,10 +243,10 @@ refactor(domain): rename host to infra
 uv run python -m agentplane.domain.repository.commit_message --message "docs(git): add commit policy enforcement"
 ```
 
-如果希望 Git 在本地提交时自动拦截不合规标题，可启用仓库内 hook：
+提交消息验证通过 pre-commit 的 `commit-msg` hook 自动执行。安装方式：
 
 ```bash
-git config core.hooksPath .githooks
+pre-commit install --hook-type commit-msg
 ```
 
 CI 会检查 PR 范围内的新增提交标题；直接 push 到 `main` 时只检查 HEAD，避免早期历史提交标题阻塞主线。当前默认流程仍应走短生命周期分支和 PR。

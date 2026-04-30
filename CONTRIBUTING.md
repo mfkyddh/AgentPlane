@@ -83,8 +83,54 @@ For docs or contract changes, also run the relevant focused tests under `tests/`
 
 Full Git policy: [docs/reference/git-conventions.md](docs/reference/git-conventions.md).
 
-To enable the local commit message check:
+---
 
-```bash
-git config core.hooksPath .githooks
-```
+## Security Policy
+
+### Supported Versions
+
+Security fixes target the current `main` branch until formal releases are introduced.
+
+### Reporting A Vulnerability
+
+Please avoid publishing sensitive details before maintainers have a chance to investigate. Open a private security advisory when the hosting platform supports it, or contact the maintainers through the repository's published contact channel.
+
+Never include real credentials, private keys, production hostnames, or live target inventory in a public report. Use redacted examples and attach exact reproduction steps.
+
+### Secret Handling
+
+AgentPlane treats `secrets/` as local-only material. Public examples belong under `templates/`; tests should generate temporary secrets instead of committing real values.
+
+---
+
+## Support
+
+Use GitHub issues for reproducible bugs, documentation gaps, and feature requests.
+
+For questions, include:
+
+- Operating system and shell.
+- `agentplane --help` result if CLI startup is involved.
+- The exact command you ran.
+- Redacted logs or JSON output.
+- Whether the issue requires live WSL, Docker, SSH, or a remote provider.
+
+Do not post real secrets, PEM files, provider tokens, or production credentials.
+
+---
+
+## Code Of Conduct
+
+### Our Standard
+
+This project expects respectful, constructive collaboration. Be direct about technical problems, but keep discussion focused on the work and its impact.
+
+### Unacceptable Behavior
+
+- Harassment, threats, or personal attacks.
+- Publishing private information without explicit permission.
+- Repeatedly derailing technical discussion after maintainers have redirected it.
+
+### Enforcement
+
+Maintainers may edit, hide, or remove comments and may restrict participation when behavior makes collaboration unsafe or unproductive.

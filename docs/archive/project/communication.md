@@ -259,4 +259,4 @@ layer: project
 - [项目章程](charter.md) — 项目目标和范围
 - [角色与职责](roles.md) — 角色定义和权限
 - [贡献指南](../../CONTRIBUTING.md) — 如何贡献
-- [行为准则](../../CODE_OF_CONDUCT.md) — 社区行为准则
+- [行为准则](../../CONTRIBUTING.md#code-of-conduct) — 社区行为准则

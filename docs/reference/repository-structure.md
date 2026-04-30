@@ -22,7 +22,7 @@ layer: engineering
 | `inventory/` | 非敏感状态台账和逻辑真源 | 只保存逻辑路径与观察摘要，不写宿主物理路径或 secrets |
 | `templates/` | 非敏感模板 | 只放 `.example`、示例配置和模板说明 |
 | `.agents/` | Agent skill 真源与 marketplace 元数据 | 跨 Agent 通用 skill 目录；skill 内容必须路由回正式 CLI |
-| `.github/`、`.githooks/` | CI 与 Git hook | Hook 和 CI 只能调用模块化命令或正式 CLI |
+| `.github/` | CI 与 Issue 模板 | CI 只能调用模块化命令或正式 CLI |
 
 ## 📄 顶层文件合同
 
@@ -30,8 +30,7 @@ layer: engineering
 | --- | --- |
 | `README.md` | 项目入口、快速开始和高层导航 |
 | `AGENTS.md` | AI 助手执行规则摘要 |
-| `CONTRIBUTING.md`、`SECURITY.md`、`SUPPORT.md`、`CODE_OF_CONDUCT.md`、`LICENSE` | 开源协作、治理和许可证材料 |
-| `ROADMAP.md` | 项目成熟度、阶段目标和非目标 |
+| `CONTRIBUTING.md`、`LICENSE` | 开源协作、治理（含安全策略、行为准则、支持）和许可证 |
 | `CHANGELOG.md` | 面向人的版本变更摘要 |
 | `pyproject.toml`、`uv.lock` | Python 包、工具链和锁定依赖 |
 
@@ -42,11 +41,9 @@ layer: engineering
 | 路径 | 类型 | 处理规则 |
 | --- | --- | --- |
 | `secrets/` | 真实 secrets | 保留本地；禁止提交；文档只能引用目录语义，不展示真实内容 |
-| `local/` | 本地协作材料 | 保留本地；需要长期化时迁入 `docs/` 或 `inventory/` 后再提交 |
 | `tmp/` | 运行产物、operation ledger、渲染候选文件 | 可按需清理；不能作为真源 |
 | `.venv/` | Python 虚拟环境 | 只保留根目录单份；可重建，不提交 |
 | `.pytest_cache/`、`.ruff_cache/`、`__pycache__/` | 工具缓存 | 可随时清理，不提交 |
-| `.worktrees/` | 本地临时 worktree 容器 | 只作本机工作区，不提交 |
 | `.workbuddy/` | 本地协作工具状态 | 只作本机状态，不提交 |
 
 如果某个本地态目录需要转为长期资产，必须先回答：

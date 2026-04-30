@@ -24,7 +24,6 @@ ALLOWED_TRACKED_TOP_LEVELS = {
     ".agents",
     ".editorconfig",
     ".gitattributes",
-    ".githooks",
     ".github",
     ".gitignore",
     ".pre-commit-config.yaml",
@@ -32,13 +31,9 @@ ALLOWED_TRACKED_TOP_LEVELS = {
     "AGENTS.md",
     "CHANGELOG.md",
     "CLAUDE.md",
-    "CODE_OF_CONDUCT.md",
     "CONTRIBUTING.md",
     "LICENSE",
     "README.md",
-    "ROADMAP.md",
-    "SECURITY.md",
-    "SUPPORT.md",
     "agentplane",
     "docs",
     "infra",
@@ -158,10 +153,7 @@ class OpenSourceReadinessTests(unittest.TestCase):
         expected = (
             "LICENSE",
             "CONTRIBUTING.md",
-            "SECURITY.md",
-            "CODE_OF_CONDUCT.md",
-            "SUPPORT.md",
-            "README.md",
+                                    "README.md",
             ".github/workflows/ci.yml",
         )
         for relative_path in expected:
@@ -364,7 +356,6 @@ class SkillCatalogTests(unittest.TestCase):
 # From: test_docs_no_legacy_terms.py
 # ======================================================================
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
 ACTIVE_TEMPLATE_DOCS = (
     REPO_ROOT / "README.md",
     REPO_ROOT / "AGENTS.md",
@@ -741,8 +732,6 @@ class CleanupTests(unittest.TestCase):
 # From: test_pyproject_config.py
 # ======================================================================
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-
 class PyprojectConfigTests(unittest.TestCase):
     def test_project_declares_build_system_for_local_package(self) -> None:
         payload = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
@@ -753,3 +742,42 @@ class PyprojectConfigTests(unittest.TestCase):
         self.assertEqual("agentplane-cli", payload["project"]["name"])
         self.assertEqual("agentplane.cli.app:main", payload["project"]["scripts"]["agentplane"])
         self.assertEqual(["agentplane"], payload["tool"]["hatch"]["build"]["targets"]["wheel"]["packages"])
+
+
+# ======================================================================
+# Drift prevention: no local REPO_ROOT or run_cli definitions
+# ======================================================================
+
+
+class TestInfrastructureDriftPrevention(unittest.TestCase):
+    """Guard tests that prevent re-introduction of duplicated test helpers."""
+
+    def test_no_local_repo_root_definitions_in_test_files(self) -> None:
+        """Every test file must import REPO_ROOT from tests.support.paths, not define it locally."""
+        test_dir = REPO_ROOT / "tests"
+        violations: list[str] = []
+        for path in sorted(test_dir.rglob("*.py")):
+            if path.name == "paths.py":
+                continue
+            try:
+                text = path.read_text(encoding="utf-8")
+            except UnicodeDecodeError:
+                continue
+            if re.search(r"^REPO_ROOT\s*=\s*Path\(__file__\)", text, re.MULTILINE):
+                violations.append(str(path.relative_to(REPO_ROOT)))
+        self.assertEqual([], violations, msg=f"Local REPO_ROOT definitions found: {violations}")
+
+    def test_no_local_run_cli_definitions_in_test_files(self) -> None:
+        """Every test file must import run_agentplane_cli from tests.support.cli, not define run_cli locally."""
+        test_dir = REPO_ROOT / "tests"
+        violations: list[str] = []
+        for path in sorted(test_dir.rglob("*.py")):
+            if path.parent.name == "support" and path.name in {"cli.py", "app_delivery_cli.py", "service_cli.py"}:
+                continue
+            try:
+                text = path.read_text(encoding="utf-8")
+            except UnicodeDecodeError:
+                continue
+            if re.search(r"^def run_cli\(", text, re.MULTILINE):
+                violations.append(str(path.relative_to(REPO_ROOT)))
+        self.assertEqual([], violations, msg=f"Local run_cli definitions found: {violations}")

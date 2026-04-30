@@ -245,11 +245,8 @@ AgentPlane 不是 Terraform、Kubernetes controller 或 SSH 脚本集合。
 | 文档 | 说明 |
 |------|------|
 | [LICENSE](LICENSE) | MIT 开源许可证 |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | 如何参与开发 |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | 如何参与开发、安全策略、行为准则、获取帮助 |
 | [Git 规范](docs/reference/git-conventions.md) | 分支、提交、PR 与 main 合并规则 |
-| [SECURITY.md](SECURITY.md) | 安全策略 |
-| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | 行为准则 |
-| [SUPPORT.md](SUPPORT.md) | 获取帮助 |
 | [路线图](docs/strategy/roadmap.md) | 项目成熟度与路线图 |
 | [CHANGELOG.md](CHANGELOG.md) | 版本变更摘要 |
 
