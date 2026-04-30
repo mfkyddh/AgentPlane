@@ -1,7 +1,7 @@
 """Tests for tencent-cloud-service-migration skill building blocks.
 
 The skill itself is a procedural SKILL.md that guides an AI agent through
-cross-host service migration on Tencent Cloud.  These tests verify the
+cross-host service migration on a cloud provider.  These tests verify the
 underlying code components the skill relies on:
 
 - ``deploy_data_services_to_host.sh`` host alias validation

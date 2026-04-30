@@ -95,7 +95,7 @@ agentplane infra remote bash wsl --repo-root . -- docker logs --tail 50 sub2api-
 | --- | --- | --- | --- |
 | sub2api | wsl | `http://127.0.0.1:18080/health` | `agentplane service verify` |
 | sub2api | prod0-main (origin) | `http://127.0.0.1:18080/health` | `agentplane service verify` |
-| sub2api | prod0-main (public) | `https://token.zzzai.cloud:8443/health` | `agentplane service public-endpoint verify` |
+| sub2api | prod0-main (public) | `https://service.example.com:8443/health` | `agentplane service public-endpoint verify` |
 
 ### 手动探针验证
 
@@ -104,7 +104,7 @@ agentplane infra remote bash wsl --repo-root . -- docker logs --tail 50 sub2api-
 curl -sf http://127.0.0.1:18080/health && echo "OK" || echo "FAIL"
 
 # 公网探针
-curl -sf https://token.zzzai.cloud:8443/health && echo "OK" || echo "FAIL"
+curl -sf https://service.example.com:8443/health && echo "OK" || echo "FAIL"
 
 # 远端探针
 agentplane infra remote bash prod0-main --repo-root . -- 'curl -sf http://127.0.0.1:18080/health'
