@@ -56,6 +56,8 @@ audience: both
 
 ## 工程规范
 
+### 代码与流程
+
 | 文档 | 说明 |
 |------|------|
 | [代码风格](reference/code-style.md) | 代码和文档风格基线 |
@@ -63,16 +65,36 @@ audience: both
 | [测试架构](reference/testing-architecture.md) | 测试分层和 marker 规范 |
 | [测试规范](reference/testing-conventions.md) | marker、并行、文件组织、本地工作流 |
 | [发布流程](reference/release-process.md) | 发布和健康检查 |
+
+### 仓库与文档
+
+| 文档 | 说明 |
+|------|------|
 | [仓库结构](reference/repository-structure.md) | 顶层目录和新文件放置规则 |
 | [文档治理](reference/documentation-governance.md) | frontmatter、emoji、链接和门禁 |
 | [四层文档体系](reference/documentation-layers.md) | 文档分层、审查节奏 |
+| [术语表](reference/glossary.md) | 核心术语统一定义 |
+
+### 平台与基础设施
+
+| 文档 | 说明 |
+|------|------|
+| [技术栈约束](reference/tech-stack.md) | Python、uv、Ruff 等技术选型 |
 | [跨平台规范](reference/cross-platform.md) | Windows / WSL / Linux 规则 |
 | [容器规范](reference/container-conventions.md) | Docker Compose、容器命名、打包规范 |
 | [命名注册表](reference/control-plane-naming-registry.md) | app_id、容器名、路径策略 |
-| [开源准备度](reference/open-source-readiness.md) | 开源前检查清单、公开边界 |
+
+### 安全与开源
+
+| 文档 | 说明 |
+|------|------|
 | [威胁模型](reference/threat-model.md) | 安全威胁分析 |
-| [术语表](reference/glossary.md) | 核心术语统一定义 |
-| [技术栈约束](reference/tech-stack.md) | Python、uv、Ruff 等技术选型 |
+| [开源准备度](reference/open-source-readiness.md) | 开源前检查清单、公开边界 |
+
+### 应用交付
+
+| 文档 | 说明 |
+|------|------|
 | [App Runtime 拆分](reference/app-runtime-decomposition.md) | App runtime 拆分路线 |
 | [公开 Schema](reference/schemas/README.md) | 公开合同 schema 索引 |
 
