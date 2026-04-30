@@ -1,0 +1,240 @@
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-04-30
+superseded_by: null
+audience: human
+---
+
+# 🧭 AgentPlane 入门指南
+
+结论：AgentPlane 是一套让 AI 安全接管基础设施的"遥控器"系统。你下指令，AI 先匹配 Skill，再通过 `agentplane ...` 执行，全程有计划、有验证、有记录。
+
+---
+
+## 😰 你是否遇到过这些情况？
+
+让 AI 帮你运维服务器，结果：
+
+```bash
+# AI 直接执行原始命令
+ssh prod "docker restart myapp"
+```
+
+- **SSH 连不上？** 失败后才知
+- **容器起不来？** 错误淹没在输出中
+- **服务真的好了吗？** 没有验证
+- **谁执行的？什么时候？** 查不到
+- **想回滚？** 没有任何记录
+
+这就是让一个没有安全护栏的机器人直接操作生产线。
+
+---
+
+## ✅ AgentPlane 怎么解决？
+
+所有操作通过 `agentplane ...` 标准化入口执行，每个入口自动完成：
+
+```
+检查依赖 → 执行操作 → 验证结果 → 留下记录
+```
+
+同样的需求，不同的体验：
+
+```bash
+$ agentplane service apply --target prod --name myapp --execute
+
+[检查] 主机在线 ✓
+[执行] 重启容器 myapp ✓
+[验证] HTTP 探针 200 OK ✓
+[记录] 操作已保存，可随时回查
+```
+
+**核心理念：配置中心 vs 现场状态**
+
+- **配置中心**：Git 里的文件定义"我们希望系统是什么样"——这是权威定义
+- **现场状态**：服务器上实际运行的容器和服务——这是验证基准
+- AgentPlane 的工作就是**持续对比两者**，发现不一致时及时报告
+
+> 💡 为什么不用现场状态当权威？因为现场状态今天对、明天可能就被手动改乱了。Git 里的配置可以回滚到任意历史版本。
+
+---
+
+## 🤖 AI 是怎么工作的？
+
+当你对 AI 说：
+
+> "把 sub2api 部署到 prod0-main，用最新镜像，先预览变更，确认后再执行。"
+
+AI 会执行以下流程：
+
+```
+1. 理解意图 → 2. 匹配 Skill → 3. 制定计划 → 4. 向你确认
+5. 执行操作 → 6. 验证结果 → 7. 留下记录 → 8. 向你汇报
+```
+
+### 第 1 步：理解意图
+
+AI 会把你的自然语言翻译成结构化意图：
+
+| 要素 | 你的输入 | AI 的理解 |
+|------|---------|----------|
+| 目标 | 部署 sub2api | 应用交付操作 |
+| 环境 | prod0-main | 目标主机 |
+| 版本 | 最新镜像 | 使用最新构建的镜像 |
+| 约束 | 先预览再执行 | 必须走 Plan → Apply 两步 |
+
+### 第 2 步：匹配 Skill
+
+AI 会从 `.agents/skills` 中选择能力入口。这个例子会匹配 `app-delivery-ops`，因为它负责应用合同校验、构建、部署、验证、状态刷新和摘要回写。
+
+Skill 会提醒 AI：
+
+- 先校验合同，再构建和部署
+- 部署先 `--dry-run`，确认后才 `--execute`
+- 执行后必须验证并回写非敏感摘要
+- 不要绕到原始 SSH、Docker 或 provider API
+
+### 第 3 步：制定计划
+
+AI 生成具体的执行计划：
+
+```bash
+agentplane app delivery validate-contract --target prod0-main --app sub2api
+agentplane app delivery build-artifact --target prod0-main --app sub2api --image-tag latest
+agentplane app delivery deploy --target prod0-main --app sub2api --dry-run
+```
+
+### 第 4 步：向你确认
+
+AI 会停下来问你：
+
+> "计划如下：先校验交付配置，再构建镜像，最后预览部署。预计变更：更新容器 sub2api-prod，重启 1 个服务。是否继续？"
+
+**这是人类的第一个介入点**。如果你不同意，AI 会重新调整计划。
+
+### 第 5 步：执行操作
+
+你确认后，AI 才会加上 `--execute` 真正执行：
+
+```bash
+agentplane app delivery deploy --target prod0-main --app sub2api --execute
+```
+
+### 第 6 步：验证结果
+
+执行后，AI 必须验证：
+
+```bash
+agentplane app delivery verify --target prod0-main --app sub2api --execute
+```
+
+验证内容包括：容器是否运行、健康检查是否通过、公网入口是否可访问。
+
+### 第 7 步：留下记录
+
+AI 会自动：
+- 把操作记录写入机器证据目录（`tmp/operation-logs/`）
+- 刷新状态记录目录（`inventory/`）
+- 更新相关文档摘要
+
+### 第 8 步：向你汇报
+
+AI 会给你一份人类可读的摘要：
+
+> "已完成 sub2api 到 prod0-main 的部署。验证结果：容器运行正常，HTTP 探针 200 OK，公网入口 https://token.example.net:8443 可访问。操作记录已保存。"
+
+---
+
+## 🎯 核心概念速查
+
+| 概念 | 含义 |
+|------|------|
+| **配置中心** | Git 中的权威状态定义，回答"我们期望系统应该是什么样" |
+| **Skill** | AI Agent 的意图入口，负责把自然语言路由到正式 CLI |
+| **标准化入口** | AI 不直接操作底层资源，而是通过 `agentplane ...` 执行任务 |
+| **执行闭环** | Plan → Apply → Verify → 记录 → 刷新台账 → 同步文档 |
+| **三层状态** | 期望状态（Git）→ 实际状态（现场）→ 观测状态（记录） |
+
+**Skill 路由示例**：
+
+| 你的说法 | AI 选择的 Skill | 正式入口 |
+|----------|-----------------|----------|
+| 部署一个应用 | `app-delivery-ops` | `agentplane app delivery ...` |
+| 检查服务状态 | `agentplane-service-ops` | `agentplane service ...` |
+| 纳管新主机 | `host-onboarding-ops` | `agentplane bootstrap ...` / `agentplane infra ...` |
+| 发布网站入口 | `agentplane-ingress-ops` | `agentplane ingress ...` |
+
+---
+
+## 👥 人类与 AI 的分工
+
+| 责任 | 人类 | AI |
+|------|:---:|:---:|
+| 定目标 | ✅ 描述你要做什么 | ❌ |
+| 定约束 | ✅ 说清边界和风险接受度 | ❌ |
+| 制定计划 | ❌ | ✅ 生成可执行计划 |
+| 选择 Skill | ❌ | ✅ 匹配能力入口和边界 |
+| 确认计划 | ✅ 审核并批准 | ❌ |
+| 执行操作 | ❌ | ✅ 通过 `agentplane ...` 执行 |
+| 验证结果 | ❌ | ✅ 运行验证命令 |
+| 验收 | ✅ 看摘要和证据 | ❌ |
+| 异常处理 | ✅ 关键决策 | ✅ 初步排查和回滚建议 |
+
+**人类什么时候必须介入？**
+
+| 场景 | 为什么需要人工 |
+|------|--------------|
+| 高风险正式切换 | 可能影响生产服务可用性 |
+| 证书、域名、入口变更 | 涉及公网可达性，错误代价高 |
+| 数据迁移或回滚 | 可能导致数据丢失 |
+| 计划输出与预期明显不一致 | AI 可能对现场状态理解有误 |
+| 验证结果与预期冲突 | 需要人工判断是预期错了还是现场错了 |
+
+> ⚠️ **你的权力**：任何时候你都可以说"停"，AI 会立即停止执行。
+
+---
+
+## 🚀 下一步：动手试试
+
+### 体检你的环境
+
+```bash
+# 1. 检查本地环境
+agentplane bootstrap inspect-local --repo-root .
+
+# 2. 运行诊断
+agentplane bootstrap doctor --repo-root .
+
+# 3. 初始化 secrets
+agentplane bootstrap init-secrets --repo-root .
+
+# 4. 验证 secrets
+agentplane bootstrap verify-secrets --repo-root .
+```
+
+### 查看项目状态
+
+```bash
+# 生成状态报告
+agentplane repo status --repo-root . --html tmp/agentplane-status.html
+
+# 运行健康检查
+agentplane repo health-check --repo-root .
+```
+
+### 更多资源
+
+- **想上手部署？** → [应用交付流程](../runbooks/app-project-delivery-workflow.md)
+- **想了解 AI 执行规范？** → [AI 执行闭环](../runbooks/control-plane-agent-execution-flow.md)
+- **想深入架构设计？** → [控制面核心合同](../architecture/control-plane.md)
+- **想知道当前状态？** → [状态与验证](../runbooks/current-state-and-validation.md)
+- **想看术语定义？** → [术语表](../reference/glossary.md)
+
+---
+
+## 🔗 关联文档
+
+- [AGENTS.md](../../AGENTS.md) — AI 的完整工作规范
+- [Skill 盘点](../maintainers/skill-surface-audit.md) — 当前 Skill 能力面
+- [项目定位](../reference/project-positioning.md) — AgentPlane 的边界和适用场景

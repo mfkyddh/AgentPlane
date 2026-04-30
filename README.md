@@ -159,7 +159,7 @@ agentplane repo health-check --repo-root .
 
 > 💡 体检通过后，Agent 就可以接管后续操作了。
 
-📖 **第一次用？** → [5 分钟了解 AgentPlane](docs/getting-started/5-minute-overview.md)
+📖 **第一次用？** → [入门指南](docs/getting-started/getting-started.md)
 🚀 **想动手？** → [部署你的第一个应用](docs/tutorials/deploy-first-app.md)
 🔍 **出错了？** → [排查部署失败](docs/tutorials/troubleshoot-failed-deployment.md)
 
@@ -185,10 +185,9 @@ AgentPlane 不是 Terraform、Kubernetes controller 或 SSH 脚本集合。
 ## 📖 文档导航
 
 **👤 人类入口**：
-[5 分钟速览](docs/getting-started/5-minute-overview.md) ·
-[核心概念](docs/getting-started/core-concepts.md) ·
+[入门指南](docs/getting-started/getting-started.md) ·
 [部署应用](docs/runbooks/app-project-delivery-workflow.md) ·
-[AI 执行流程](docs/getting-started/how-agent-works.md)
+[术语表](docs/reference/glossary.md)
 
 **🤖 AI 入口**：
 [AGENTS.md](AGENTS.md) ·

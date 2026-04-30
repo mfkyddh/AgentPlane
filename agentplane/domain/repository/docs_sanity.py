@@ -234,14 +234,14 @@ def _check_agents_redirect(relative: str, text: str) -> list[DocsSanityIssue]:
     """Check that AGENTS.md has a human redirect notice."""
     if relative != "AGENTS.md":
         return []
-    if "how-agent-works" in text or "人类读者" in text or "人类请" in text:
+    if "getting-started" in text or "how-agent-works" in text or "人类读者" in text or "人类请" in text:
         return []
     return [
         DocsSanityIssue(
             path=relative,
             kind="missing-agents-human-redirect",
             line=1,
-            detail="AGENTS.md must include a human redirect notice pointing to docs/getting-started/how-agent-works.md",
+            detail="AGENTS.md must include a human redirect notice pointing to docs/getting-started/getting-started.md",
             severity="error",
         )
     ]

@@ -20,7 +20,7 @@ audience: both
 | **task-entry** | 面向 Agent 的正式任务入口，不等价于底层对象 CRUD | [控制面合同](../architecture/control-plane.md) |
 | **source of truth** | 某一类事实的正式真源（如 Git 配置、inventory、ledger） | [控制面合同](../architecture/control-plane.md) |
 | **live state** | 通过现场命令、API、文件读取等方式获得的当前真实状态 | [控制面合同](../architecture/control-plane.md) |
-| **配置中心** | Git 中的权威状态定义，回答"我们期望系统应该是什么样" | [核心概念](../getting-started/core-concepts.md) |
+| **配置中心** | Git 中的权威状态定义，回答"我们期望系统应该是什么样" | [入门指南](../getting-started/getting-started.md) |
 
 ## 投影与台账
 
@@ -35,9 +35,9 @@ audience: both
 
 | 术语 | 一句话定义 | 详细说明 |
 |------|-----------|----------|
-| **执行闭环** | Plan → Apply → Verify → 记录 → 刷新台账 → 同步文档 | [核心概念](../getting-started/core-concepts.md) |
-| **Skill** | AI Agent 的意图入口，负责把自然语言路由到正式 CLI | [核心概念](../getting-started/core-concepts.md) |
-| **标准化入口** | AI 不直接操作底层资源，而是通过 `agentplane ...` 执行任务 | [核心概念](../getting-started/core-concepts.md) |
+| **执行闭环** | Plan → Apply → Verify → 记录 → 刷新台账 → 同步文档 | [入门指南](../getting-started/getting-started.md) |
+| **Skill** | AI Agent 的意图入口，负责把自然语言路由到正式 CLI | [入门指南](../getting-started/getting-started.md) |
+| **标准化入口** | AI 不直接操作底层资源，而是通过 `agentplane ...` 执行任务 | [入门指南](../getting-started/getting-started.md) |
 
 ## 底层平台
 
@@ -79,5 +79,5 @@ audience: both
 ## 🔗 关联文档
 
 - [控制面核心合同](../architecture/control-plane.md) — 术语的主要定义来源
-- [核心概念](../getting-started/core-concepts.md) — 面向人类的概念解释
+- [入门指南](../getting-started/getting-started.md) — 面向人类的概念解释
 - [文档治理规范](documentation-governance.md) — 文档分层和链接规则

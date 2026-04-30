@@ -20,8 +20,7 @@ audience: both
 
 | 你想做什么 | 从这里开始 |
 | --- | --- |
-| 第一次了解项目 | [5 分钟速览](getting-started/5-minute-overview.md) ⭐ |
-| 理解核心概念 | [核心概念](getting-started/core-concepts.md) |
+| 第一次了解项目 | [入门指南](getting-started/getting-started.md) ⭐ |
 | 部署第一个应用 | [教程：部署 sub2api](tutorials/deploy-first-app.md) ⭐ |
 
 ### 🔍 常见任务
@@ -38,7 +37,6 @@ audience: both
 
 | 你想做什么 | 从这里开始 |
 | --- | --- |
-| 了解 AI 怎么工作 | [AI 执行流程](getting-started/how-agent-works.md) |
 | 查看当前状态 | [状态与验证](runbooks/current-state-and-validation.md) |
 | 查看长期蓝图 | [AgentPlane 终极蓝图 v4](reference/agentplane-ultimate-blueprint.md) |
 | 继续路线图任务 | [Roadmap Workbook](maintainers/agentplane-roadmap-workbook.md) |
