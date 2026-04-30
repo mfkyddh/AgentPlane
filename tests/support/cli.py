@@ -34,11 +34,16 @@ def run_agentplane_cli(
 ) -> subprocess.CompletedProcess[str]:
     env = None
     if cwd is None:
-        cwd = repo_root_from_args(args)
-        if cwd is not None:
+        parsed = repo_root_from_args(args)
+        if parsed is not None and parsed.is_dir():
+            cwd = parsed
             env = repo_pythonpath_env(env_overrides)
     elif env_overrides:
         env = repo_pythonpath_env(env_overrides)
+    if env_overrides and "FAKE_CMD_LOG" in env_overrides:
+        if env is None:
+            env = os.environ.copy()
+        env.setdefault("AGENTPLANE_DISABLE_WSL_SSH", "1")
     return subprocess.run(
         [sys.executable, "-m", "agentplane.cli", *args],
         cwd=cwd or REPO_ROOT,

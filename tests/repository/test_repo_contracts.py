@@ -12,7 +12,7 @@ from agentplane.domain.app.resource_paths import git_common_root
 
 pytestmark = pytest.mark.e2e
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+from tests.support.paths import REPO_ROOT
 EXPECTED_MANAGED_SERVICES = {
     "sub2api": {
         "wsl": "infra/compose/sub2api/docker-compose.wsl.yml",

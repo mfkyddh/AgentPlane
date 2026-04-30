@@ -52,16 +52,8 @@ from agentplane.domain.app.secrets_lifecycle import (
 
 pytestmark = pytest.mark.e2e
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-
-def run_cli(*args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, "-m", "agentplane.cli", *args],
-        cwd=REPO_ROOT,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
+from tests.support.cli import run_agentplane_cli as run_cli
+from tests.support.paths import REPO_ROOT
 
 class AppLifecycleCliContractsTests(unittest.TestCase):
     def test_onboard_help_exposes_single_formal_entry_contract(self) -> None:

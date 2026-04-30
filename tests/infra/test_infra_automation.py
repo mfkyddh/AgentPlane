@@ -644,7 +644,7 @@ class WslAuditTests(unittest.TestCase):
 # From: test_wsl_first_docs.py
 # ======================================================================
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+from tests.support.paths import REPO_ROOT
 CORE_TEMPLATE_ENTRY_DOCS = (
     REPO_ROOT / "README.md",
     REPO_ROOT / "AGENTS.md",

@@ -19,27 +19,8 @@ from agentplane.runtime.wsl_bridge import inspect_local_host
 
 pytestmark = pytest.mark.e2e
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-
-def run_cli(
-    *args: str,
-    cwd: Path | None = None,
-    env_overrides: dict[str, str] | None = None,
-) -> subprocess.CompletedProcess[str]:
-    env = None
-    if env_overrides:
-        env = os.environ.copy()
-        env.update(env_overrides)
-        if "FAKE_CMD_LOG" in env_overrides:
-            env.setdefault("AGENTPLANE_DISABLE_WSL_SSH", "1")
-    return subprocess.run(
-        [sys.executable, "-m", "agentplane.cli", *args],
-        cwd=cwd or REPO_ROOT,
-        env=env,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
+from tests.support.cli import run_agentplane_cli as run_cli
+from tests.support.paths import REPO_ROOT
 
 def write_fake_command(bin_dir: Path, name: str, body: str) -> None:
     script = bin_dir / name
@@ -462,16 +443,8 @@ class HostCliTests(unittest.TestCase):
 # From: test_local_host_cli.py
 # ======================================================================
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-
 def run_cli_json(*args: str) -> dict:
-    result = subprocess.run(
-        [sys.executable, "-m", "agentplane.cli", *args],
-        cwd=REPO_ROOT,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
+    result = run_cli(*args)
     if result.returncode != 0:
         raise AssertionError(result.stderr)
     return json.loads(result.stdout)
@@ -536,8 +509,6 @@ class LocalHostCliTests(unittest.TestCase):
 # ======================================================================
 # From: test_remote_cli.py
 # ======================================================================
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
 
 def common_repo_root(repo_root: Path) -> Path:
     git_entry = repo_root / ".git"

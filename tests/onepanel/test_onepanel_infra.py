@@ -32,7 +32,8 @@ from agentplane.scripts.onepanel.verification import run_verification_suite
 
 pytestmark = pytest.mark.e2e
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+from tests.support.paths import REPO_ROOT
+
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 ONEPANEL_SCRIPTS = REPO_ROOT / "agentplane" / "scripts" / "onepanel"
@@ -372,10 +373,6 @@ class OnePanelPublicIngressTests(unittest.TestCase):
 # From: test_onepanel_compose_policy.py
 # ======================================================================
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
-
 class ComposePolicyTests(unittest.TestCase):
     def test_openresty_requires_infra_network_mode(self) -> None:
         self.assertTrue(requires_host_network("openresty"))
@@ -449,13 +446,6 @@ services:
 # ======================================================================
 # From: test_onepanel_env_targets.py
 # ======================================================================
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
-ONEPANEL_SCRIPTS = REPO_ROOT / "agentplane" / "scripts" / "onepanel"
-if str(ONEPANEL_SCRIPTS) not in sys.path:
-    sys.path.insert(0, str(ONEPANEL_SCRIPTS))
 
 class OnePanelEnvTargetsTests(unittest.TestCase):
     def _run_cli(self, *args: str) -> subprocess.CompletedProcess[str]:

@@ -11,19 +11,10 @@ from unittest.mock import patch
 import pytest
 from agentplane.cli.inventory import generate_inventory_snapshot
 from agentplane.scripts.onepanel.ledger import _tenant_rows
+from tests.support.cli import run_agentplane_cli as run_cli
+from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
-
-def run_cli(*args: str, cwd: Path) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, "-m", "agentplane.cli", *args],
-        cwd=cwd,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
 
 class InventoryGenerationTests(unittest.TestCase):
     def test_focused_acceptance_commands_are_documented_as_readonly_or_dry_run(self) -> None:

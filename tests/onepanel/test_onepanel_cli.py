@@ -30,16 +30,8 @@ from agentplane.scripts.onepanel.object_api import (
 
 pytestmark = pytest.mark.e2e
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-
-def run_cli(*args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, "-m", "agentplane.cli", *args],
-        cwd=REPO_ROOT,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
+from tests.support.cli import run_agentplane_cli as run_cli
+from tests.support.paths import REPO_ROOT
 
 class FakeExecutor(FakeLikeExecutorProtocol):
     def __init__(self) -> None:
@@ -259,7 +251,6 @@ class OnePanelObjectCliHandlerTests(unittest.TestCase):
 # From: test_onepanel_plugin_and_skills.py
 # ======================================================================
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
 CATALOG_FILE = REPO_ROOT / ".agents" / "skills" / "catalog.yaml"
 REQUIRED_DOMAINS = {"infra", "service", "ingress", "app", "projection", "repo"}
 

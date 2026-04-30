@@ -6,43 +6,13 @@ from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+from tests.support.cli import run_agentplane_cli as run_cli
+from tests.support.paths import REPO_ROOT
+
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from agentplane.cli.app import main as cli_main  # noqa: E402
-
-
-def run_cli(*args: str, cwd: Path | None = None, env_overrides: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
-    env = None
-    if cwd is None:
-        repo_root: Path | None = None
-        for idx, token in enumerate(args):
-            if token == "--repo-root" and idx + 1 < len(args):
-                repo_root = Path(args[idx + 1])
-                break
-            if token.startswith("--repo-root="):
-                repo_root = Path(token.split("=", 1)[1])
-                break
-        if repo_root is not None:
-            cwd = repo_root
-            env = os.environ.copy()
-            repo_path = str(REPO_ROOT)
-            existing = env.get("PYTHONPATH", "")
-            env["PYTHONPATH"] = repo_path if not existing else f"{repo_path}:{existing}"
-    if env_overrides:
-        env = dict(env or os.environ.copy())
-        env.update(env_overrides)
-        if "FAKE_CMD_LOG" in env_overrides:
-            env.setdefault("AGENTPLANE_DISABLE_WSL_SSH", "1")
-    return subprocess.run(
-        [sys.executable, "-m", "agentplane.cli", *args],
-        cwd=cwd or REPO_ROOT,
-        env=env,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
 
 
 def run_cli_inline(*args: str) -> tuple[int, str, str]:

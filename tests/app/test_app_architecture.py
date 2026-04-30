@@ -9,7 +9,7 @@ from agentplane.domain.app.contracts import APP_DELIVERY_CONTRACT_SCHEMA_V2
 
 pytestmark = pytest.mark.e2e
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+from tests.support.paths import REPO_ROOT
 
 def _imports(path: Path) -> list[str]:
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))

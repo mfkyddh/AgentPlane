@@ -9,10 +9,10 @@ import unittest
 from pathlib import Path
 
 import pytest
+from tests.support.cli import run_agentplane_cli as run_cli
+from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
 
 def _listed_help_commands(help_text: str) -> set[str]:
     return set(re.findall(r"(?m)^\s{2,}([a-z][a-z0-9-]*)\b(?:\s{2,}|\s*$)", help_text))
@@ -39,15 +39,6 @@ def _assert_help_commands(
     if absent is not None:
         testcase.assertTrue(absent.isdisjoint(commands), msg=f"unexpected commands: {sorted(absent & commands)}")
     return commands
-
-def run_cli(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, "-m", "agentplane.cli", *args],
-        cwd=cwd or REPO_ROOT,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
 
 class CliEntrypointsTests(unittest.TestCase):
     def test_module_help_lists_required_subcommands_with_app_resource(self) -> None:
@@ -802,8 +793,6 @@ class BootstrapCliTests(unittest.TestCase):
 # ======================================================================
 # From: test_zzz_skills_sync.py
 # ======================================================================
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
 
 def git(command: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
     return subprocess.run(

@@ -12,36 +12,10 @@ from unittest.mock import patch
 
 import pytest
 from tests.support.app_resources import resource_relative, resource_root
+from tests.support.cli import run_agentplane_cli as run_cli
+from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
-
-def run_cli(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
-    env = None
-    if cwd is None:
-        repo_root: Path | None = None
-        for idx, token in enumerate(args):
-            if token == "--repo-root" and idx + 1 < len(args):
-                repo_root = Path(args[idx + 1])
-                break
-            if token.startswith("--repo-root="):
-                repo_root = Path(token.split("=", 1)[1])
-                break
-        if repo_root is not None:
-            cwd = repo_root
-            env = os.environ.copy()
-            repo_path = str(REPO_ROOT)
-            existing = env.get("PYTHONPATH", "")
-            env["PYTHONPATH"] = repo_path if not existing else f"{repo_path}:{existing}"
-    return subprocess.run(
-        [sys.executable, "-m", "agentplane.cli", *args],
-        cwd=cwd or REPO_ROOT,
-        env=env,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
 
 def write_inventory(root: Path) -> None:
     inventory_file = root / "inventory" / "servers" / "prod0-main" / "inventory.json"
@@ -244,8 +218,6 @@ class ProjectionRuntimeEnvCliTests(unittest.TestCase):
 # ======================================================================
 # From: test_projection_validation_cli.py
 # ======================================================================
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
 
 class ProjectionValidationCliTests(unittest.TestCase):
     def test_projection_verification_run_wraps_suite_payload(self) -> None:

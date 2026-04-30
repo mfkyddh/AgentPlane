@@ -19,6 +19,10 @@ class MarkerRule:
 
 MARKER_RULES: tuple[MarkerRule, ...] = (
     MarkerRule(
+        markers=("live_gate",),
+        filenames=frozenset({"test_infra_live_gate.py"}),
+    ),
+    MarkerRule(
         markers=("external_app",),
         filenames=frozenset({"test_sub2api_compose_layout.py"}),
     ),

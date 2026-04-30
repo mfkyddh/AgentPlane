@@ -12,19 +12,10 @@ from pathlib import Path
 import pytest
 from agentplane.cli.secrets import materialize_legacy_host_layout
 from agentplane.runtime.bootstrap import bootstrap_directory_specs, bootstrap_required_truth_specs
+from tests.support.cli import run_agentplane_cli as run_cli
+from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
-
-def run_cli(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, "-m", "agentplane.cli", *args],
-        cwd=cwd or REPO_ROOT,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
 
 def parse_env_text(content: str) -> dict[str, str]:
     values: dict[str, str] = {}

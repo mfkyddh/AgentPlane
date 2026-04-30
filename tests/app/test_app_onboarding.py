@@ -10,10 +10,9 @@ from pathlib import Path
 
 import pytest
 from agentplane.domain.app.resource_paths import app_resource_secret_dir, app_resource_secret_relative
+from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
 
 class AppOnboardingStandardTests(unittest.TestCase):
     def test_reference_docs_for_app_onboarding_governance_exist(self) -> None:
@@ -145,36 +144,7 @@ class AppOnboardingStandardTests(unittest.TestCase):
 # From: test_project_lifecycle_acceptance.py
 # ======================================================================
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-
-def run_cli(*args: str, cwd: Path | None = None, env_overrides: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
-    env = None
-    if cwd is None:
-        repo_root: Path | None = None
-        for idx, token in enumerate(args):
-            if token == "--repo-root" and idx + 1 < len(args):
-                repo_root = Path(args[idx + 1])
-                break
-            if token.startswith("--repo-root="):
-                repo_root = Path(token.split("=", 1)[1])
-                break
-        if repo_root is not None:
-            cwd = repo_root
-            env = os.environ.copy()
-            existing = env.get("PYTHONPATH", "")
-            # Ensure the real AgentPlane source tree is importable even when we run against a temp repo-root fixture.
-            env["PYTHONPATH"] = str(REPO_ROOT) if not existing else f"{REPO_ROOT}:{existing}"
-    if env_overrides:
-        env = dict(env or os.environ.copy())
-        env.update(env_overrides)
-    return subprocess.run(
-        [sys.executable, "-m", "agentplane.cli", *args],
-        cwd=cwd or REPO_ROOT,
-        env=env,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
+from tests.support.cli import run_agentplane_cli as run_cli
 
 def _write_text(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)

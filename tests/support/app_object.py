@@ -7,38 +7,12 @@ import sys
 from pathlib import Path
 
 from agentplane.domain.app.resource_paths import contract_relpath_for_target, resolve_catalog_repo_root
+from tests.support.cli import run_agentplane_cli as run_cli
 from tests.support.paths import REPO_ROOT
 
 
 def expected_real_contract_path(target: str) -> str:
     return str(resolve_catalog_repo_root(REPO_ROOT, repo_name="sub2api") / contract_relpath_for_target(target))
-
-
-def run_cli(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
-    env = None
-    if cwd is None:
-        repo_root: Path | None = None
-        for idx, token in enumerate(args):
-            if token == "--repo-root" and idx + 1 < len(args):
-                repo_root = Path(args[idx + 1])
-                break
-            if token.startswith("--repo-root="):
-                repo_root = Path(token.split("=", 1)[1])
-                break
-        if repo_root is not None:
-            cwd = repo_root
-            env = os.environ.copy()
-            repo_path = str(REPO_ROOT)
-            existing = env.get("PYTHONPATH", "")
-            env["PYTHONPATH"] = repo_path if not existing else f"{repo_path}{os.pathsep}{existing}"
-    return subprocess.run(
-        [sys.executable, "-m", "agentplane.cli", *args],
-        cwd=cwd or REPO_ROOT,
-        env=env,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
 
 
 def write_inventory_with_app(root: Path) -> None:

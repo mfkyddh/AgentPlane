@@ -11,24 +11,10 @@ from pathlib import Path
 import pytest
 from agentplane.cli.audit import audit_filesystem
 from tests.support.app_resources import resource_relative
+from tests.support.cli import run_agentplane_cli as run_cli
+from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
-
-def run_cli(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
-    env = os.environ.copy()
-    existing = env.get("PYTHONPATH", "")
-    repo_path = str(REPO_ROOT)
-    env["PYTHONPATH"] = repo_path if not existing else f"{repo_path}:{existing}"
-    return subprocess.run(
-        [sys.executable, "-m", "agentplane.cli", *args],
-        cwd=cwd or REPO_ROOT,
-        env=env,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
 
 def write_inventory(root: Path, env: str, payload: dict) -> None:
     inventory_file = root / "inventory" / "servers" / env / "inventory.json"

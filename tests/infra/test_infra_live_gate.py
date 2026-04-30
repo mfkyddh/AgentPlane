@@ -14,7 +14,7 @@ from agentplane.runtime.platform import HostPlatform
 
 pytestmark = pytest.mark.integration
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+from tests.support.paths import REPO_ROOT
 
 
 class RecordingRunner:

@@ -6,16 +6,22 @@ They should run in <10ms total and are safe for `-n auto` parallel.
 
 from __future__ import annotations
 
+import json
+import tempfile
+from pathlib import Path
+
 import pytest
 from agentplane.domain.app.artifacts import detect_contract_mode
 from agentplane.domain.app.delivery_handlers import _delayed_cleanup_state, _rollback_state_payload
+from agentplane.domain.app.models import AppCatalogEntry
 from agentplane.domain.app.resource_state import (
     normalize_key_prefix,
     parse_env_text,
     validate_duplicate_ownership,
     validate_duplicate_redis_combination,
 )
-from agentplane.domain.app.truth_lifecycle import validate_app_id
+from agentplane.domain.app.runtime import _secrets_root
+from agentplane.domain.app.truth_lifecycle import offboard_catalog_entry, onboard_catalog_entry, validate_app_id
 
 # ---------------------------------------------------------------------------
 # validate_app_id
@@ -280,3 +286,139 @@ class TestRollbackStatePayload:
         assert result["post_cutover_verification"]["status"] == "planned"
         assert result["rollback_on_failure"]["status"] == "standby"
         assert result["delayed_cleanup"]["status"] == "not-applicable"
+
+
+# ---------------------------------------------------------------------------
+# _secrets_root
+# ---------------------------------------------------------------------------
+
+
+class TestSecretsRoot:
+    @pytest.mark.unit
+    def test_prefers_repo_local_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            secrets_dir = root / "secrets"
+            secrets_dir.mkdir(parents=True, exist_ok=True)
+            assert _secrets_root(root) == secrets_dir
+
+    @pytest.mark.unit
+    def test_falls_back_to_git_common_dir_for_worktree(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_root = Path(tmp)
+            main_root = tmp_root / "main"
+            worktree_root = tmp_root / "worktree"
+            git_worktree_dir = main_root / ".git" / "worktrees" / "demo"
+            main_secrets = main_root / "secrets"
+
+            main_secrets.mkdir(parents=True, exist_ok=True)
+            git_worktree_dir.mkdir(parents=True, exist_ok=True)
+            worktree_root.mkdir(parents=True, exist_ok=True)
+            (worktree_root / ".git").write_text(f"gitdir: {git_worktree_dir}\n", encoding="utf-8")
+
+            assert _secrets_root(worktree_root) == main_secrets
+
+    @pytest.mark.unit
+    def test_prefers_git_common_dir_over_worktree_symlink(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_root = Path(tmp)
+            main_root = tmp_root / "main"
+            worktree_root = tmp_root / "worktree"
+            git_worktree_dir = main_root / ".git" / "worktrees" / "demo"
+            main_secrets = main_root / "secrets"
+
+            main_secrets.mkdir(parents=True, exist_ok=True)
+            git_worktree_dir.mkdir(parents=True, exist_ok=True)
+            worktree_root.mkdir(parents=True, exist_ok=True)
+            (worktree_root / ".git").write_text(f"gitdir: {git_worktree_dir}\n", encoding="utf-8")
+            (worktree_root / "secrets").symlink_to(main_secrets)
+
+            assert _secrets_root(worktree_root) == main_secrets
+
+
+# ---------------------------------------------------------------------------
+# Catalog lifecycle (onboard / offboard)
+# ---------------------------------------------------------------------------
+
+
+def _write_catalog(repo_root: Path, payload: dict) -> None:
+    path = repo_root / "inventory" / "apps" / "catalog.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def _read_catalog(repo_root: Path) -> dict:
+    path = repo_root / "inventory" / "apps" / "catalog.json"
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+class TestCatalogLifecycle:
+    @pytest.mark.unit
+    def test_onboard_adds_entry_and_sorts_by_app_id(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            _write_catalog(
+                repo_root,
+                {
+                    "apps": [
+                        {
+                            "app": "sub2api",
+                            "repo_name": "sub2api",
+                            "repo_root": "/work/sub2api",
+                            "service_key": "sub2api",
+                            "contracts": {"prod0-main": "deploy/agentplane/contract.yaml"},
+                        }
+                    ]
+                },
+            )
+            entry = AppCatalogEntry(
+                app="sampleapi",
+                repo_name="new-api",
+                repo_root=Path("/work/new-api"),
+                service_key="sampleapi",
+                contracts={"prod0-main": "deploy/agentplane/contract.yaml"},
+            )
+            result = onboard_catalog_entry(repo_root, entry, write=True)
+            assert result.changed
+            payload = _read_catalog(repo_root)
+            apps = payload["apps"]
+            assert [item["app"] for item in apps] == ["sampleapi", "sub2api"]
+            assert apps[0]["service_key"] == "sampleapi"
+
+    @pytest.mark.unit
+    def test_onboard_rejects_service_key_alias(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            _write_catalog(repo_root, {"apps": []})
+            entry = AppCatalogEntry(
+                app="sampleapi",
+                repo_name="new-api",
+                repo_root=Path("/work/new-api"),
+                service_key="new-api",
+                contracts={"prod0-main": "deploy/agentplane/contract.yaml"},
+            )
+            with pytest.raises(ValueError):
+                onboard_catalog_entry(repo_root, entry, write=True)
+
+    @pytest.mark.unit
+    def test_offboard_removes_entry(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            _write_catalog(
+                repo_root,
+                {
+                    "apps": [
+                        {
+                            "app": "sampleapi",
+                            "repo_name": "new-api",
+                            "repo_root": "/work/new-api",
+                            "service_key": "sampleapi",
+                            "contracts": {"prod0-main": "deploy/agentplane/contract.yaml"},
+                        }
+                    ]
+                },
+            )
+            result = offboard_catalog_entry(repo_root, app_id="sampleapi", write=True)
+            assert result.changed
+            payload = _read_catalog(repo_root)
+            assert payload["apps"] == []
