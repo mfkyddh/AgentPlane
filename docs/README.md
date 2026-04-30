@@ -8,11 +8,11 @@ audience: both
 
 # AgentPlane 文档地图
 
-结论：按阅读顺序组织的文档导航。第一次阅读走入门路线；执行任务时按 runbook；维护规范时看 reference。
+结论：🧭 按阅读顺序组织的文档导航。第一次阅读走入门路线；执行任务时按 runbook；维护规范时看 reference。
 
 ---
 
-## 入门路线
+## 🧭 1. 入门路线
 
 | 阶段 | 文档 | 说明 |
 |------|------|------|
@@ -23,7 +23,7 @@ audience: both
 
 ---
 
-## 战略与方向
+## 🎯 2. 战略与方向
 
 | 文档 | 说明 |
 |------|------|
@@ -34,7 +34,7 @@ audience: both
 
 ---
 
-## 项目管理
+## 📋 3. 项目管理
 
 | 文档 | 说明 |
 |------|------|
@@ -42,7 +42,7 @@ audience: both
 
 ---
 
-## 架构
+## 🧠 4. 架构
 
 | 文档 | 说明 |
 |------|------|
@@ -54,9 +54,9 @@ audience: both
 
 ---
 
-## 工程规范
+## 🛠️ 5. 工程规范
 
-### 代码与流程
+### 🧪 代码与流程
 
 | 文档 | 说明 |
 |------|------|
@@ -66,7 +66,7 @@ audience: both
 | [测试规范](reference/testing-conventions.md) | marker、并行、文件组织、本地工作流 |
 | [发布流程](reference/release-process.md) | 发布和健康检查 |
 
-### 仓库与文档
+### 📌 仓库与文档
 
 | 文档 | 说明 |
 |------|------|
@@ -75,7 +75,7 @@ audience: both
 | [四层文档体系](reference/documentation-layers.md) | 文档分层、审查节奏 |
 | [术语表](reference/glossary.md) | 核心术语统一定义 |
 
-### 平台与基础设施
+### 🔧 平台与基础设施
 
 | 文档 | 说明 |
 |------|------|
@@ -84,14 +84,14 @@ audience: both
 | [容器规范](reference/container-conventions.md) | Docker Compose、容器命名、打包规范 |
 | [命名注册表](reference/control-plane-naming-registry.md) | app_id、容器名、路径策略 |
 
-### 安全与开源
+### 🔐 安全与开源
 
 | 文档 | 说明 |
 |------|------|
 | [威胁模型](reference/threat-model.md) | 安全威胁分析 |
 | [开源准备度](reference/open-source-readiness.md) | 开源前检查清单、公开边界 |
 
-### 应用交付
+### 🚀 应用交付
 
 | 文档 | 说明 |
 |------|------|
@@ -100,7 +100,7 @@ audience: both
 
 ---
 
-## 运维手册
+## 📦 6. 运维手册
 
 完整列表和按场景分类见 [Runbook 导航](runbooks/README.md)。
 
@@ -114,7 +114,7 @@ audience: both
 
 ---
 
-## 维护者
+## 🤖 7. 维护者
 
 | 文档 | 说明 |
 |------|------|
@@ -123,7 +123,7 @@ audience: both
 
 ---
 
-## 历史与归档
+## 🕰️ 8. 历史与归档
 
 | 文档 | 说明 |
 |------|------|
@@ -132,7 +132,7 @@ audience: both
 
 ---
 
-## 教程
+## 🚀 9. 教程
 
 | 文档 | 说明 |
 |------|------|
@@ -142,7 +142,7 @@ audience: both
 
 ---
 
-## AI 入口
+## 🤖 10. AI 入口
 
 | 文档 | 说明 |
 |------|------|
@@ -153,9 +153,9 @@ audience: both
 
 ---
 
-## 文档门禁
+## ✅ 11. 文档门禁
 
-新增或移动文档后运行：
+> 📌 新增或移动文档后必须运行以下命令，CI 会检查。
 
 ```bash
 uv run python -m agentplane.cli repo docs-sanity --repo-root .
