@@ -931,14 +931,15 @@ class AppObjectLifecycleCatalogTests(unittest.TestCase):
 # ======================================================================
 
 class AppObjectTrackedCatalogTests(unittest.TestCase):
-    def test_real_tracked_catalog_is_empty_after_offboarding_local_app_delivery(self) -> None:
+    def test_real_tracked_catalog_contains_sub2api(self) -> None:
         catalog_file = REPO_ROOT / "inventory" / "apps" / "catalog.json"
 
         payload = json.loads(catalog_file.read_text(encoding="utf-8"))
 
-        self.assertEqual({"apps": []}, payload)
+        apps = [entry["app"] for entry in payload.get("apps", [])]
+        self.assertIn("sub2api", apps)
 
-    def test_real_catalog_search_is_empty_for_prod0_main(self) -> None:
+    def test_real_catalog_search_returns_sub2api_for_prod0_main(self) -> None:
         payload = run_cli(
             "app",
             "object",
@@ -951,9 +952,10 @@ class AppObjectTrackedCatalogTests(unittest.TestCase):
 
         self.assertEqual(0, payload.returncode, msg=payload.stderr)
         payload_json = json.loads(payload.stdout)
-        self.assertEqual([], payload_json["payload"]["items"])
+        apps = [item["app"] for item in payload_json["payload"]["items"]]
+        self.assertIn("sub2api", apps)
 
-    def test_real_catalog_search_is_empty_for_wsl(self) -> None:
+    def test_real_catalog_search_returns_sub2api_for_wsl(self) -> None:
         wsl_payload = run_cli(
             "app",
             "object",
@@ -966,4 +968,5 @@ class AppObjectTrackedCatalogTests(unittest.TestCase):
 
         self.assertEqual(0, wsl_payload.returncode, msg=wsl_payload.stderr)
         wsl_json = json.loads(wsl_payload.stdout)
-        self.assertEqual([], wsl_json["payload"]["items"])
+        apps = [item["app"] for item in wsl_json["payload"]["items"]]
+        self.assertIn("sub2api", apps)

@@ -47,7 +47,7 @@ layer: project
 | 接入第一台服务器 | tutorials/add-new-server.md | 已有 |
 | 部署第一个应用 | tutorials/deploy-first-app.md | 已有 |
 | 故障排查 | tutorials/troubleshoot-failed-deployment.md | 已有 |
-| 协作协议 | reference/human-ai-collaboration.md | 待创建 |
+| 协作协议 | reference/human-ai-collaboration.md | 已有 |
 | API/CLI 参考 | 待评估 | 待评估 |
 | 常见问题 FAQ | 待评估 | 待评估 |
 
@@ -55,11 +55,11 @@ layer: project
 
 | 步骤 | 状态 | 说明 |
 |------|------|------|
-| 选择目标应用 | 待定 | 需要一个人类在用的真实应用 |
-| onboard 应用 | 待定 | 通过 agentplane app onboard |
-| 构建和部署 | 待定 | 通过 app-delivery-ops |
-| 验证和证据 | 待定 | 通过 projection 和 verification |
-| 文档化过程 | 待定 | 记录完整流程和遇到的问题 |
+| 选择目标应用 | 已完成 | sub2api（WSL + prod0-main 双环境） |
+| onboard 应用 | 已完成 | WSL + prod0-main 均已 onboard 进 catalog |
+| 构建和部署 | 已完成 | WSL: compose up; prod0-main: candidate precheck + cutover |
+| 验证和证据 | 已完成 | health check 通过，operation ledger 已记录 |
+| 文档化过程 | 进行中 | 遇到并修复了 catalog repo_root 和 WSL 路径转换问题 |
 
 ---
 
@@ -69,8 +69,8 @@ layer: project
 
 | 任务 | 状态 | 归属 |
 |------|------|------|
-| 创建 backlog.md（本文） | 进行中 | 协作基础设施 |
-| 创建 human-ai-collaboration.md | 待开始 | 协作基础设施 |
+| 创建 backlog.md（本文） | 已完成 | 协作基础设施 |
+| 创建 human-ai-collaboration.md | 已完成 | 协作基础设施 |
 | 更新 CLAUDE.md 注入协作协议 | 待开始 | 协作基础设施 |
 
 ---

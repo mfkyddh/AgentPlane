@@ -336,10 +336,10 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
         repo_skill_text = (REPO_ROOT / ".agents" / "skills" / "agentplane-ingress-ops" / "SKILL.md").read_text(encoding="utf-8")
         catalog_text = CATALOG_FILE.read_text(encoding="utf-8")
 
-        self.assertIn("uv run python -m agentplane.cli ingress search --target <target>", repo_skill_text)
-        self.assertIn("uv run python -m agentplane.cli ingress get --target <target> --alias <alias>", repo_skill_text)
+        self.assertIn("agentplane ingress search --target <target>", repo_skill_text)
+        self.assertIn("agentplane ingress get --target <target> --alias <alias>", repo_skill_text)
         self.assertIn(
-            "uv run python -m agentplane.cli ingress publish plan --target <target> --config-file <config-file> --cloudflare-env-file <cloudflare-env-file> --repo-root <repo-root>",
+            "agentplane ingress publish plan --target <target>",
             repo_skill_text,
         )
         self.assertIn("entrypoint: uv run python -m agentplane.cli ingress", catalog_text)
@@ -348,11 +348,11 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
         repo_skill_text = (REPO_ROOT / ".agents" / "skills" / "agentplane-service-ops" / "SKILL.md").read_text(encoding="utf-8")
         catalog_text = CATALOG_FILE.read_text(encoding="utf-8")
 
-        self.assertIn("uv run python -m agentplane.cli service search --target <target>", repo_skill_text)
-        self.assertIn("uv run python -m agentplane.cli service get --target <target> --name <service>", repo_skill_text)
-        self.assertIn("uv run python -m agentplane.cli service verify --target <target> --name <service>", repo_skill_text)
+        self.assertIn("agentplane service search --target <target>", repo_skill_text)
+        self.assertIn("agentplane service get --target <target> --name <service>", repo_skill_text)
+        self.assertIn("agentplane service verify --target <target> --name <service>", repo_skill_text)
         self.assertIn(
-            "uv run python -m agentplane.cli service plan --target <target> --name <service> --operation restart",
+            "agentplane service plan --target <target> --name <service> --operation restart",
             repo_skill_text,
         )
         self.assertIn("entrypoint: uv run python -m agentplane.cli service", catalog_text)
@@ -409,8 +409,8 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
         repo_skill_text = (REPO_ROOT / ".agents" / "skills" / "agentplane-app-ops" / "SKILL.md").read_text(encoding="utf-8")
         catalog_text = CATALOG_FILE.read_text(encoding="utf-8")
 
-        self.assertIn("uv run python -m agentplane.cli app object search --target <target>", repo_skill_text)
-        self.assertIn("uv run python -m agentplane.cli app object get --target <target> --app <app>", repo_skill_text)
+        self.assertIn("agentplane app object search --target <target>", repo_skill_text)
+        self.assertIn("agentplane app object get --target <target> --app <app>", repo_skill_text)
         self.assertIn("App runtime restart or reconcile is a service task", repo_skill_text)
         self.assertIn(
             "App deploy/build/rollback/doc-sync is a delivery workflow",
@@ -424,10 +424,10 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
         repo_skill_text = (REPO_ROOT / ".agents" / "skills" / "agentplane-app-ops" / "SKILL.md").read_text(encoding="utf-8")
         catalog_text = CATALOG_FILE.read_text(encoding="utf-8")
 
-        self.assertIn("uv run python -m agentplane.cli app resource search --target <target>", repo_skill_text)
-        self.assertIn("uv run python -m agentplane.cli app resource get --target <target> --app <app>", repo_skill_text)
-        self.assertIn("uv run python -m agentplane.cli app resource verify --target <target> --app <app>", repo_skill_text)
-        self.assertIn("uv run python -m agentplane.cli app resource refresh-ledger --target <target>", repo_skill_text)
+        self.assertIn("agentplane app resource search --target <target>", repo_skill_text)
+        self.assertIn("agentplane app resource get --target <target> --app <app>", repo_skill_text)
+        self.assertIn("agentplane app resource verify --target <target> --app <app>", repo_skill_text)
+        self.assertIn("agentplane app resource refresh-ledger --target <target>", repo_skill_text)
         self.assertIn(
             "Use this domain skill when the user asks about app objects, app catalog state, app resource truth",
             repo_skill_text,
@@ -442,12 +442,12 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
         repo_skill_text = (REPO_ROOT / ".agents" / "skills" / "agentplane-projection-ops" / "SKILL.md").read_text(encoding="utf-8")
         catalog_text = CATALOG_FILE.read_text(encoding="utf-8")
 
-        self.assertIn("uv run python -m agentplane.cli projection runtime-env plan --target <target> --app <app>", repo_skill_text)
-        self.assertIn("uv run python -m agentplane.cli projection runtime-env apply --target <target> --app <app>", repo_skill_text)
-        self.assertIn("uv run python -m agentplane.cli projection runtime-env verify --target <target> --app <app>", repo_skill_text)
-        self.assertIn("uv run python -m agentplane.cli projection verification run --target <target> --profile <profile>", repo_skill_text)
-        self.assertIn("uv run python -m agentplane.cli projection fixture plan --target <target> --profile <profile>", repo_skill_text)
-        self.assertIn("uv run python -m agentplane.cli projection ledger refresh --target <target>", repo_skill_text)
+        self.assertIn("agentplane projection runtime-env plan --target <target> --app <app>", repo_skill_text)
+        self.assertIn("agentplane projection runtime-env apply --target <target> --app <app>", repo_skill_text)
+        self.assertIn("agentplane projection runtime-env verify --target <target> --app <app>", repo_skill_text)
+        self.assertIn("agentplane projection verification run --target <target> --profile <profile>", repo_skill_text)
+        self.assertIn("agentplane projection fixture plan --target <target> --profile <profile>", repo_skill_text)
+        self.assertIn("agentplane projection ledger refresh --target <target>", repo_skill_text)
         self.assertIn("entrypoint: uv run python -m agentplane.cli projection", catalog_text)
 
 # ======================================================================

@@ -27,9 +27,11 @@ ALLOWED_TRACKED_TOP_LEVELS = {
     ".githooks",
     ".github",
     ".gitignore",
+    ".pre-commit-config.yaml",
     ".secret-scan-allowlist",
     "AGENTS.md",
     "CHANGELOG.md",
+    "CLAUDE.md",
     "CODE_OF_CONDUCT.md",
     "CONTRIBUTING.md",
     "LICENSE",
@@ -76,7 +78,7 @@ REQUIRED_GITIGNORE_PATTERNS = {
     "node_modules/",
 }
 REQUIRED_LOCAL_STATE_DOC_MARKERS = {
-    "## 本地态合同",
+    "## 🔒 本地态合同",
     "`secrets/`",
     "`local/`",
     "`tmp/`",
@@ -184,7 +186,7 @@ class OpenSourceReadinessTests(unittest.TestCase):
         ):
             with self.subTest(path=relative_path):
                 text = (REPO_ROOT / relative_path).read_text(encoding="utf-8")
-                self.assertIn("single checkout" if "open-source" in relative_path else "Default Gate", text)
+                self.assertIn("single checkout" if "open-source" in relative_path else "默认门禁", text)
 
     def test_architecture_directory_contains_only_active_contract_docs(self) -> None:
         actual = {path.name for path in (REPO_ROOT / "docs" / "architecture").glob("*.md")}
@@ -306,8 +308,8 @@ class OpenSourceReadinessTests(unittest.TestCase):
     def test_release_process_uses_formal_release_check(self) -> None:
         text = (REPO_ROOT / "docs" / "reference" / "release-process.md").read_text(encoding="utf-8")
 
-        self.assertIn("agentplane.cli repo release-check --repo-root .", text)
-        self.assertIn("agentplane.cli repo health-check --repo-root .", text)
+        self.assertIn("repo release-check --repo-root .", text)
+        self.assertIn("repo health-check --repo-root .", text)
 
 class SkillCatalogTests(unittest.TestCase):
     def _catalog_entries(self) -> list[dict[str, str]]:
@@ -386,7 +388,6 @@ ARCHITECTURE_CORE_CONTRACT_LINKS = (
     "[agentplane-app-collaboration.md](agentplane-app-collaboration.md)",
 )
 ARCHITECTURE_TEMPLATE_LINKS = (
-    "[control-plane-path-policy.md](../reference/control-plane-path-policy.md)",
     "[app-repository-standard.md](../reference/app-repository-standard.md)",
 )
 FORBIDDEN_TEMPLATE_DEFAULTS = (
@@ -422,7 +423,7 @@ class DocsNoLegacyTermsTests(unittest.TestCase):
     def test_readme_describes_template_truth_and_runtime_model(self) -> None:
         text = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
 
-        self.assertIn("Agent-first control plane template repository", text)
+        self.assertIn("自动驾驶仪", text)
         # Detailed truth/runtime model lives in execution-flow runbook
         execution_flow = (
             REPO_ROOT / "docs" / "runbooks" / "control-plane-agent-execution-flow.md"
@@ -568,6 +569,7 @@ class TruthPathPolicyTests(unittest.TestCase):
                                 "prod0-main": "apps/sub2api/contracts/prod0-main",
                                 "wsl": "apps/sub2api/contracts/wsl",
                             },
+                            "repo_root": "<app-repo-root>",
                         }
                     ]
                 },

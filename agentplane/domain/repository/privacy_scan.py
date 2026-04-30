@@ -5,6 +5,8 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
+from agentplane.domain.repository.secret_scan import SecretScanAllow, load_secret_scan_allowlist
+
 PRIVATE_PATH_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("private-inventory", re.compile(r"^inventory/servers/")),
     ("private-state-snapshot", re.compile(r"^inventory/state-snapshot\.md$")),
@@ -110,8 +112,11 @@ def _scan_content(repo_root: Path, path: Path) -> list[PrivacyScanIssue]:
     return issues
 
 
-def scan_repository_for_private_material(repo_root: Path) -> list[PrivacyScanIssue]:
+def scan_repository_for_private_material(
+    repo_root: Path, allowlist_path: Path | None = None
+) -> list[PrivacyScanIssue]:
     root = repo_root.resolve()
+    allowlist = load_secret_scan_allowlist(root, allowlist_path)
     issues: list[PrivacyScanIssue] = []
     for path in _git_visible_files(root):
         try:
@@ -120,4 +125,4 @@ def scan_repository_for_private_material(repo_root: Path) -> list[PrivacyScanIss
             continue
         issues.extend(_scan_path(relative))
         issues.extend(_scan_content(root, path))
-    return issues
+    return [issue for issue in issues if not any(a.matches(issue) for a in allowlist)]

@@ -40,6 +40,7 @@ from agentplane.runtime.execution import CommandRunner, ExecutionBindings, Execu
 from agentplane.runtime.host_profile import detect_host_profile
 from agentplane.runtime.operations import append_operation_ledger, next_operation_id
 from agentplane.runtime.redaction import redact_execution_payload
+from agentplane.runtime.wsl_bridge import windows_path_to_wsl_posix
 from agentplane.ssh import SshTarget, resolve_ssh_target
 
 PRODUCTION_APP_TARGETS = PRODUCTION_TARGETS
@@ -868,15 +869,17 @@ def deploy_app(
         if not isinstance(wsl_service, dict):
             raise ValueError(f"rendered compose 缺少 services.{service_name}")
         env_file_path = _service_env_path(repo_root, service_name, target)
-        wsl_service["env_file"] = [str(env_file_path)]
+        wsl_env_file = windows_path_to_wsl_posix(env_file_path) or str(env_file_path)
+        wsl_service["env_file"] = [wsl_env_file]
         rendered_compose = compose_path.parent / f".{compose_path.stem}.{op_id}.rendered.yml"
         rendered_compose.write_text(
             yaml.safe_dump(compose_payload, sort_keys=False, allow_unicode=False),
             encoding="utf-8",
         )
+        wsl_compose_path = windows_path_to_wsl_posix(rendered_compose) or str(rendered_compose)
         step = _execute_step(
-            argv=["docker", "compose", "-f", str(rendered_compose), "up", "-d", "--pull", "never"],
-            display=f"docker compose -f {rendered_compose} up -d --pull never",
+            argv=["docker", "compose", "-f", wsl_compose_path, "up", "-d", "--pull", "never"],
+            display=f"docker compose -f {wsl_compose_path} up -d --pull never",
             cwd=repo_root,
             backend_type=local_backend,
             capabilities=("docker",),

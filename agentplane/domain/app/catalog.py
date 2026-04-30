@@ -40,14 +40,17 @@ def _runtime_repo_root_from_item(
     repo_ref_value: str | None,
     repo_root_value: str | None,
 ) -> Path:
+    if isinstance(repo_root_value, str) and repo_root_value:
+        coerced = _coerce_catalog_repo_root(repo_root_value)
+        if not coerced.is_absolute():
+            return (repo_root / coerced).resolve()
+        return coerced
     if isinstance(repo_ref_value, str) and repo_ref_value:
         canonical_repo_ref = assert_canonical_ref(repo_ref_value)
         expected_repo_ref = canonical_app_repo_ref(app)
         if canonical_repo_ref != expected_repo_ref:
             raise ValueError(f"app catalog repo_ref mismatch: expected {expected_repo_ref}, got {canonical_repo_ref}")
         return resolve_catalog_repo_root(repo_root, repo_name=repo_name)
-    if isinstance(repo_root_value, str) and repo_root_value:
-        return _coerce_catalog_repo_root(repo_root_value)
     raise ValueError(f"app catalog missing repo locator: app={app}")
 
 
@@ -218,8 +221,9 @@ def write_app_catalog(repo_root: Path, entries: list[AppCatalogEntry]) -> Path:
 
     catalog_file = _catalog_file(repo_root)
     catalog_file.parent.mkdir(parents=True, exist_ok=True)
-    items = [
-        {
+    items = []
+    for entry in sorted(entries, key=lambda it: (it.app, it.service_key)):
+        item: dict[str, Any] = {
             "app": entry.app,
             "repo_name": entry.repo_name,
             "repo_ref": canonical_app_repo_ref(entry.app),
@@ -231,8 +235,12 @@ def write_app_catalog(repo_root: Path, entries: list[AppCatalogEntry]) -> Path:
                 for target in sorted(entry.contracts)
             },
         }
-        for entry in sorted(entries, key=lambda it: (it.app, it.service_key))
-    ]
+        try:
+            repo_root_str = str(entry.repo_root.relative_to(repo_root))
+        except ValueError:
+            repo_root_str = str(entry.repo_root)
+        item["repo_root"] = repo_root_str
+        items.append(item)
     payload = {"apps": items}
     catalog_file.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return catalog_file

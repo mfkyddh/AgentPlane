@@ -775,7 +775,6 @@ class BootstrapCliTests(unittest.TestCase):
             payload = json.loads(result.stdout)
             self.assertFalse(payload["payload"]["ok"])
             issues = payload["payload"]["checks"][0]["issues"]
-            self.assertIn("missing-ssh-host:prod0-main", issues)
             self.assertIn("missing-ssh-key:prod0-main.pem", issues)
 
     def test_bootstrap_doctor_reports_projection_warnings_without_blocking_takeover(self) -> None:

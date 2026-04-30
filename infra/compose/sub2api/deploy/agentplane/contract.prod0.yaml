@@ -1,0 +1,64 @@
+schema_version: 2
+app_id: sub2api
+
+artifact:
+  build_command: "echo 'sub2api uses upstream image ghcr.io/wei-shaw/sub2api — no local build step'"
+  output_path: "dist/placeholder"
+  runtime_os: "linux"
+  runtime_arch: "amd64"
+
+packaging:
+  backend: ssh-linux
+  image_name: ghcr.io/wei-shaw/sub2api
+  image_tag_rule: "<upstream>-zzz.<yyyymmdd>.v<n>.g<gitsha>"
+  package_command: "echo 'sub2api uses upstream image — no local package step'"
+
+runtime:
+  kind: compose
+  container_name: sub2api-prod
+  container_port: 8080
+  host_binding: "127.0.0.1:18080"
+  healthcheck:
+    path: /health
+    expected_status: 200
+  env_template: "templates/services/sub2api.prod0.env.example"
+
+infra:
+  depends_on_containers:
+    - postgres18-prod
+    - redis7-prod
+  tenant_resources:
+    postgres:
+      database: sub2api_prod0
+      user: sub2api_prod0
+      secret_file: secrets/hosts/prod0-main/apps/sub2api/resources/postgres.env
+    redis:
+      db: 1
+      key_prefix: "sub2api:"
+      secret_file: secrets/hosts/prod0-main/apps/sub2api/resources/redis.env
+    minio:
+      bucket: prod0-sub2api
+      access_key: sub2api_prod0
+      policy_name: prod0-sub2api-rw
+      policy_scope: bucket-only
+      isolation_level: bucket-scoped-rw
+      secret_file: secrets/hosts/prod0-main/apps/sub2api/resources/minio.env
+
+ingress:
+  mode: public
+  public_sites:
+    - domain: token.zzzai.cloud
+      public_url: "https://token.zzzai.cloud:8443"
+      website_object: sub2api-token
+      alias: sub2api-token
+      status: active
+      control_plane: 1panel
+
+data:
+  mounts:
+    - host_path: /data/sub2api/data
+      container_path: /app/data
+
+rollback:
+  previous_control_plane:
+    kind: none

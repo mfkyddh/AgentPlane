@@ -477,11 +477,18 @@ class Prod0AuditTests(unittest.TestCase):
             "security": {"openresty_public_listen": {"ports": [443]}},
             "services": {
                 "onepanel_openresty": {"network_mode": "infra", "listen_ports": [443]},
+                "sub2api": {
+                    "container_name": "sub2api-prod",
+                    "data_dir": "/data/sub2api/data",
+                    "config_files": ["/data/sub2api/config/sub2api-prod.env"],
+                },
             },
         }
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory(root, "prod0-main", payload)
+            (root / "data" / "sub2api" / "data").mkdir(parents=True, exist_ok=True)
+            (root / "data" / "sub2api" / "config").mkdir(parents=True, exist_ok=True)
 
             result = audit_filesystem(root, "prod0-main")
             self.assertEqual([], result["violations"], msg=json.dumps(result, ensure_ascii=False))

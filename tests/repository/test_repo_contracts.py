@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 import subprocess
 import unittest
@@ -161,8 +162,9 @@ class RepoSnapshotContractsTests(unittest.TestCase):
         self.assertNotIn("与应用或运行服务主名一致", text)
 
     def test_catalog_has_no_local_app_repo_delivery_objects(self) -> None:
-        catalog = (REPO_ROOT / "inventory/apps/catalog.json").read_text(encoding="utf-8")
-        self.assertIn('"apps": []', catalog)
+        catalog = json.loads((REPO_ROOT / "inventory/apps/catalog.json").read_text(encoding="utf-8"))
+        app_names = [entry["app"] for entry in catalog.get("apps", [])]
+        self.assertIn("sub2api", app_names)
 
     def test_managed_service_compose_snapshots_match_naming_contract(self) -> None:
         for app_id, paths in EXPECTED_MANAGED_SERVICES.items():

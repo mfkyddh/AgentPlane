@@ -146,14 +146,14 @@ class ProjectionRuntimeEnvCliTests(unittest.TestCase):
             payload = json.loads(result.stdout)
             self.assertEqual("projection", payload["command"])
             self.assertEqual("runtime-env.plan", payload["action"])
-            self.assertEqual(str(root / "secrets" / "services" / "sub2api.prod2.env"), payload["env_file"])
+            self.assertEqual(str(root / "secrets" / "services" / "sub2api.prod0.env"), payload["env_file"])
             self.assertFalse(payload["written"])
             self.assertIn("DATABASE_USER", payload["managed_keys"])
             self.assertNotIn("rendered_env", payload)
             self.assertNotIn("current_env", payload)
             self.assertNotIn("PGPASSWORD=secret", result.stdout)
             self.assertNotIn("REDIS_PASSWORD=secret", result.stdout)
-            self.assertFalse((root / "secrets" / "services" / "sub2api.prod2.env").exists())
+            self.assertFalse((root / "secrets" / "services" / "sub2api.prod0.env").exists())
 
             revealed = run_cli(
                 "projection",
@@ -206,7 +206,7 @@ class ProjectionRuntimeEnvCliTests(unittest.TestCase):
             write_inventory(root)
             write_registry(root)
             write_resource_secrets(root)
-            env_file = root / "secrets" / "services" / "sub2api.prod2.env"
+            env_file = root / "secrets" / "services" / "sub2api.prod0.env"
             env_file.parent.mkdir(parents=True, exist_ok=True)
             env_file.write_text(
                 "DATABASE_USER=sub2api_prod2\nDATABASE_DBNAME=sub2api_prod2\nREDIS_PASSWORD=secret\nREDIS_DB=9\nJWT_SECRET=keep\n",

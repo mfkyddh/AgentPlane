@@ -185,7 +185,8 @@ def check_skill_surface(repo_root: Path) -> list[SkillIssue]:
                 issues.append(SkillIssue(path=source_path, kind="missing-section", detail=f"missing required section: {section}"))
 
         kind = str(entry.get("kind", ""))
-        if kind == "canonical" and "uv run python -m agentplane.cli" not in text:
+        has_cli_routing = "uv run python -m agentplane.cli" in text or "\nagentplane " in text
+        if kind == "canonical" and not has_cli_routing:
             issues.append(SkillIssue(path=source_path, kind="canonical-without-cli", detail="canonical skill must route through AgentPlane CLI"))
         if kind == "workflow" and "docker compose" in text and "Prefer a formal AgentPlane CLI workflow" not in text:
             issues.append(
