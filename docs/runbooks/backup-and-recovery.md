@@ -61,7 +61,7 @@ layer: technical
 | 对象前缀 | `backups/agentplane/secrets-main/` |
 | 状态文件 | `/data/agentplane/secrets-backup/state.json` |
 
-详细配置见 [WSL Secrets Backup](./wsl-secrets-backup.md)。
+详细配置见 `secrets/` 目录下的备份脚本和 `docs/reference/cross-platform.md`。
 
 ## 🛠️ 备份操作步骤
 
@@ -331,9 +331,8 @@ agentplane infra audit prod0-main --repo-root <repo-root>
 
 ## 🔗 关联文档
 
-- [WSL Secrets Backup](./wsl-secrets-backup.md) — secrets 自动化备份的详细规格
 - [Bootstrap Secrets](./bootstrap-secrets.md) — secrets 初始化与骨架生成
 - [应用交付主流程](./app-project-delivery-workflow.md) — 恢复后重新部署应用
 - [仓库结构规范](../reference/repository-structure.md) — 目录职责与本地态合同
 - [当前状态与验证](./current-state-and-validation.md) — 恢复后如何检查状态
-- [prod0-main Governance](./prod0-main-governance.md) — 生产机治理详情
+- [跨平台规则](../reference/cross-platform.md) — WSL 与 Windows 路径和执行方式

@@ -479,5 +479,5 @@ agentplane service public-endpoint verify --target prod0-main --name sub2api --c
 | [发布与持续健康规范](../reference/release-process.md) | 健康周检和发布流程 |
 | [App Delivery 失败处理](./app-delivery-failure-handling.md) | 部署失败时的排查和回滚 |
 | [WSL Host Governance](./wsl-host-governance.md) | WSL 环境的治理和检查 |
-| [prod0-main Governance](./prod0-main-governance.md) | 生产环境的治理和检查 |
+| [跨平台规则](../reference/cross-platform.md) | 生产环境的路径和执行方式 |
 | [排查失败部署](../tutorials/troubleshoot-failed-deployment.md) | 部署失败排查教程 |
