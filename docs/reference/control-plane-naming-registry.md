@@ -15,7 +15,7 @@ layer: engineering
 
 本表中的“可强制”仅适用于正式 app contract 对象；基础设施服务、第三方官方镜像、历史快照目录不在当前强制范围内。
 
-## 当前可强制合同
+## 📋 当前可强制合同
 
 | 字段 | 硬规则 | 说明 |
 | --- | --- | --- |
@@ -25,20 +25,20 @@ layer: engineering
 | `prod_container` | 必须等于 `<app_id>-prod` | 不是“包含 `-prod`”，是完整等值。 |
 | `dev_container` | 必须等于 `<app_id>-dev` | 不是“包含 `-dev`”，是完整等值。 |
 
-## 当前受强制的正式应用
+## 📋 当前受强制的正式应用
 
 | app_id | compose_dir | image_family | prod_container | dev_container | inventory.service_key |
 | --- | --- | --- | --- | --- | --- |
 | `sub2api` | `infra/compose/sub2api` | `wsl/prod0-main: ghcr.io/wei-shaw/sub2api` | `sub2api-prod` | `sub2api-dev` | `sub2api` |
 
-## 使用要求
+## 📌 使用要求
 
 - 新正式 app object 进入控制面前，必须先在本表新增一行，再允许进入合同校验。
 - 未列入本表的对象，不得按正式 app naming contract 做失败判定。
 
 ---
 
-## 路径策略
+## 🔧 路径策略
 
 控制面 tracked 文件只保存**逻辑路径**（与平台无关的仓库内相对路径）；宿主物理路径只存在于 runtime resolution 和 verification 结果里。
 

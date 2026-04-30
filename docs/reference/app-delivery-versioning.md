@@ -13,7 +13,7 @@ layer: engineering
 
 本文是 `AgentPlane` 管理的 Docker/Compose 应用统一二开版本规范 reference 真源。本文只定义长期稳定的版本号、镜像 tag 与 CLI 生成规则，不展开具体发布步骤或环境切换 runbook。
 
-## 规则
+## 📌 规则
 
 - `FORK_VERSION=zzz.<yyyymmdd>.v<n>.g<gitsha>`
 - `DELIVERY_VERSION=<upstream>+zzz.<yyyymmdd>.v<n>.g<gitsha>`
@@ -26,7 +26,7 @@ layer: engineering
 - `<n>`：同一应用、同一 `<upstream>`、同一天内的二开递增序号
 - `<gitsha>`：发布提交短 SHA，不带额外分隔符，统一前缀为 `g`
 
-## 应用合同
+## 📋 应用合同
 
 `deploy/agentplane/contract.yaml` 中的 `packaging.image_tag_rule` 统一写为：
 
@@ -37,7 +37,7 @@ packaging:
 
 这里表达的是 tag 规则本身，不包含镜像名。实际镜像引用仍为 `<image_name>:<image_tag>`。
 
-## CLI 行为
+## 🛠️ CLI 行为
 
 - `agentplane app delivery build-artifact --dry-run` 会尽量输出推荐的：
   - `fork_version`
@@ -46,13 +46,13 @@ packaging:
 - `agentplane app delivery build-artifact --auto-version` 会使用这套规则自动生成本次构建的 `IMAGE_TAG`
 - 若应用仓库无法提供上游版本或 git short SHA，CLI 不会伪造版本号；自动生成会直接失败
 
-## 序号来源
+## 📖 序号来源
 
 - `v<n>` 的最小可追溯来源是 `AgentPlane/tmp/operation-ledger/*.jsonl`
 - 以同一 `app_id`、同一 `upstream_version`、同一 `build_date` 的既有 `build-artifact` 记录为基线，下一次自动生成时取 `max(n)+1`
 - 无既有记录时，首个序号为 `v1`
 
-## Focused Acceptance（只读与 dry-run）
+## ✅ Focused Acceptance（只读与 dry-run）
 
 本节用于版本规范相关的 focused acceptance 资产约束。验收命令仅允许只读或 dry-run，不在版本规范验证里执行写入型流程。
 

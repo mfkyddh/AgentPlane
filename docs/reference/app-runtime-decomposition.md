@@ -13,14 +13,14 @@ layer: engineering
 
 本文定义 `agentplane/domain/app/runtime.py` 和 `tests/support/app_delivery.py` 的减重路线。目标是降低 AI Agent 修改核心交付链路时的误伤概率。
 
-## 当前问题
+## ⚠️ 当前问题
 
 | 文件 | 问题 | 处理方向 |
 | --- | --- | --- |
 | `agentplane/domain/app/runtime.py` | 聚合了合同解析、版本推荐、构建、装箱、发货、渲染、部署、验证、回滚、inventory、doc-sync | 按交付阶段拆到窄模块 |
 | `tests/support/app_delivery.py` | 同时提供 CLI helper、contract fixture、target fixture、secret fixture、compose fixture、fake command helper | 按 fixture 职责拆到 helper 模块 |
 
-## 目标模块边界
+## 📋 目标模块边界
 
 | 目标模块 | 职责 |
 | --- | --- |
@@ -35,7 +35,7 @@ layer: engineering
 | `tests/support/app_delivery_contracts.py` | 合同 fixture 与 catalog fixture |
 | `tests/support/app_delivery_targets.py` | target-specific inventory、compose、secret fixture |
 
-## 执行规则
+## 📌 执行规则
 
 - 不新增 `runtime.py` 的职责；新行为必须进入目标模块。
 - 修改现有行为时，先补聚焦测试，再移动一个职责块。

@@ -13,7 +13,7 @@ layer: strategy
 
 ---
 
-## 战略文档导航
+## 🧭 战略文档导航
 
 | 文档 | 目的 | 读者 |
 |------|------|------|
@@ -24,7 +24,7 @@ layer: strategy
 
 ---
 
-## 快速了解
+## 🚀 快速了解
 
 - **第一次了解？** → [愿景](vision.md)
 - **想了解哲学原则？** → [原则](principles.md)
@@ -33,7 +33,7 @@ layer: strategy
 
 ---
 
-## 关联文档
+## 🔗 关联文档
 
 - [项目层](../project/README.md) — 项目管理
 - [四层文档体系](../reference/documentation-layers.md) — 文档分层说明

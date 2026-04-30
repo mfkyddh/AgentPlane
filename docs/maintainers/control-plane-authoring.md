@@ -11,7 +11,7 @@ audience: agent
 
 结论：`docs/maintainers/control-plane-authoring.md` 是 `AgentPlane` maintainer authoring 规则的唯一正文真源。控制面的长期架构合同看 [../architecture/control-plane.md](../architecture/control-plane.md)；专题执行步骤继续放在对应 runbook。
 
-## 目标
+## 🎯 目标
 
 本文约束 maintainer 在编写或收敛以下资产时的稳定写法：
 
@@ -22,7 +22,7 @@ audience: agent
 
 本文不承载单次迁移、单次事故或现场执行步骤。
 
-## 真源分层
+## 📊 真源分层
 
 | 主题 | 正文真源 | maintainer 该做什么 |
 | --- | --- | --- |
@@ -32,7 +32,7 @@ audience: agent
 | 专题执行步骤 | `docs/runbooks/*` | 只写正式流程、风险边界、人工接力点，不写第二实现 |
 | 代码、模板、测试 | 仓库实际文件 | 保持与正式合同、示例、索引一致 |
 
-## 治理资产闭环
+## 🔧 治理资产闭环
 
 | 资产 | 角色 | maintainer 约束 |
 | --- | --- | --- |
@@ -43,7 +43,7 @@ audience: agent
 | 测试 | 回归与约束层 | 冻结 CLI 合同、文档入口、skill 引用与历史事故修复 |
 | 发布或收口 | 一次正式变更的对外一致性 | 至少确认代码、文档、模板、skill、测试没有明显漂移 |
 
-## Skill 同步门禁
+## ✅ Skill 同步门禁
 
 AgentPlane 的能力必须以 Skill 形式暴露给 AI Agent。任何改变正式行为的变更，都必须同步检查 `.agents/skills`。
 
@@ -71,7 +71,7 @@ AgentPlane 的能力必须以 Skill 形式暴露给 AI Agent。任何改变正�
 - skill 引导修正
 - 示例补充
 
-## Skill Authoring Contract
+## 📝 Skill Authoring Contract
 
 ### 分层模型
 
@@ -165,7 +165,7 @@ skill 或 reference 在涉及写操作时，必须明确区分：
 
 写法上遵循 [../architecture/control-plane.md](../architecture/control-plane.md) 的真源优先级：`live state > inventory projection > runbook explanation`。
 
-## 文档联动规则
+## 📌 文档联动规则
 
 ### 架构页
 
@@ -201,7 +201,7 @@ runbook 负责专题流程、风险边界、人工接力点与最小验证；需
 
 避免长期存在“文档示例无人验证”的孤立资产。
 
-## 强制规则
+## ⚠️ 强制规则
 
 1. 正式控制面能力优先写成 `agentplane ...`。
 2. skill 不得把兼容脚本包装成正式能力。
@@ -212,7 +212,7 @@ runbook 负责专题流程、风险边界、人工接力点与最小验证；需
 7. 历史事故修复不应只停留在聊天记录或临时 shell 历史中，应尽量转化为可回归资产。
 8. 正式能力对外完成前，必须存在可触发的 skill 或明确的“不需要 Skill”记录。
 
-## 反模式
+## 🚫 反模式
 
 - 每个 skill 都重复 Windows / WSL 入口细节、`repo-root`、验证纪律，导致共享规则漂移。
 - 把专题流程写成第二份 runbook，或者把 runbook 写成第二实现。
@@ -221,7 +221,7 @@ runbook 负责专题流程、风险边界、人工接力点与最小验证；需
 - 让正式示例依赖未被说明的临时上下文。
 - 让事故修复停留在一次性聊天记录里，不形成长期资产。
 
-## 关联文档
+## 🔗 关联文档
 
 - [../architecture/control-plane.md](../architecture/control-plane.md)
 - [../reference/control-plane-naming-registry.md](../reference/control-plane-naming-registry.md)

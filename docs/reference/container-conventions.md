@@ -16,7 +16,7 @@ layer: engineering
 
 ---
 
-## Docker Compose
+## 📋 Docker Compose
 
 | # | 规则 | 级别 | 原因 |
 |---|------|------|------|
@@ -28,7 +28,7 @@ layer: engineering
 
 ---
 
-## 容器命名
+## 📌 容器命名
 
 | # | 规则 | 级别 | 原因 |
 |---|------|------|------|
@@ -39,7 +39,7 @@ layer: engineering
 
 ---
 
-## 网络与数据
+## 📌 网络与数据
 
 | # | 规则 | 级别 | 原因 |
 |---|------|------|------|
@@ -49,7 +49,7 @@ layer: engineering
 
 ---
 
-## Docker 应用打包规范
+## 📋 Docker 应用打包规范
 
 Docker 类应用接入时，采用"宿主机构建 + runtime-only Dockerfile"模式。
 

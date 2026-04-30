@@ -202,7 +202,7 @@ git push --no-verify                   # 跳过 pre-push
 
 ---
 
-## 关联文档
+## 🔗 关联文档
 
 - [测试架构](testing-architecture.md) — 测试分层和 marker 规范
 - [Git 规范](git-conventions.md) — 提交和合并规范

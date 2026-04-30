@@ -432,7 +432,7 @@ agentplane projection fixture plan --target <target> --profile <profile> --repo-
 agentplane projection ledger refresh --target <target> --repo-root <repo-root> --write
 ```
 
-## Related Documents
+## 🔗 Related Documents
 
 - [control-plane-authoring.md](../maintainers/control-plane-authoring.md)
 - [control-plane-naming-registry.md](../reference/control-plane-naming-registry.md)

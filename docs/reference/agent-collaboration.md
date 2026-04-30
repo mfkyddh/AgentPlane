@@ -11,7 +11,7 @@ layer: engineering
 
 结论：本文档定义 AgentPlane 中"主 Agent 派遣子 Agent 执行子任务"的协作模型。首轮只定义规则和边界，不实现运行时机制。多人各自 Agent 或并发 Agent 不在本文档范围内。
 
-## 核心概念
+## 📖 核心概念
 
 | 概念 | 含义 | 职责 |
 | --- | --- | --- |
@@ -20,7 +20,7 @@ layer: engineering
 | 委托边界 | 主 Agent 授权子 Agent 可操作的对象和命令范围 | 权限隔离 |
 | 收口点 | 子 Agent 完成后，主 Agent 验证结果并决定是否回写的决策点 | 人类兜底 |
 
-## 派遣模型
+## 🧠 派遣模型
 
 ### 派遣触发条件
 
@@ -49,7 +49,7 @@ layer: engineering
 }
 ```
 
-## 权限委托边界
+## 📌 权限委托边界
 
 ### 子 Agent 允许的操作
 
@@ -69,7 +69,7 @@ layer: engineering
 2. 必须写操作时，显式列出允许的文件路径，不得通配。
 3. 高风险命令（`deploy`、`rollback`、`fixture apply`）一律不得委托给子 Agent。
 
-## 结果回传规则
+## 📋 结果回传规则
 
 ### 回传内容
 
@@ -93,7 +93,7 @@ layer: engineering
 3. **决定是否回写**：只有验证通过后，主 Agent 才回写 workbook 任务状态
 4. **处理失败**：子 Agent 失败时，主 Agent 必须向人类报告，不得自动重试或绕过
 
-## 禁止行为
+## 🚫 禁止行为
 
 以下行为在任何情况下都禁止：
 
@@ -106,7 +106,7 @@ layer: engineering
 | 5 | 子 Agent 修改 `secrets/` 目录或读取敏感信息 | 安全风险 |
 | 6 | 多个子 Agent 同时写同一文件且无协调 | 意外破坏（T1 威胁） |
 
-## 与威胁模型的关系
+## 🔗 与威胁模型的关系
 
 本文档定义的协作边界，直接缓解威胁模型中的两类威胁：
 
@@ -117,7 +117,7 @@ layer: engineering
 
 T1 意外破坏的缓解（文件锁）在 [concurrency-and-approval.md](concurrency-and-approval.md) 中定义。
 
-## 远期扩展
+## 📊 远期扩展
 
 以下能力首轮只定义概念，不实现：
 
@@ -127,7 +127,7 @@ T1 意外破坏的缓解（文件锁）在 [concurrency-and-approval.md](concurr
 | 嵌套派遣审批 | 主 Agent 申请派遣子 Agent 时需人类审批 | 子任务风险评级为 `high` 时 |
 | 子 Agent 超时回收 | 子 Agent 超过设定时间未回传，主 Agent 自动回收 | 需要生产级稳定性时 |
 
-## 相关文档
+## 🔗 相关文档
 
 - [威胁模型](threat-model.md)
 - [锁规则与审批边界](concurrency-and-approval.md)（待创建）

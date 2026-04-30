@@ -13,14 +13,14 @@ layer: engineering
 
 本文是 `AgentPlane` 的 `1Panel` API reference 真源。本文只定义长期稳定的对象覆盖、错误模型与 CLI/plugin 接口约束，不展开具体操作步骤或 host 级 runbook。
 
-## Baseline
+## 📖 Baseline
 
 - Upstream source mirror: `/root/github/1Panel`
 - Target API baseline: `v2.1.7`
 - AgentPlane runtime principle: `CLI-first`
 - 正式执行入口: `agentplane onepanel ...`
 
-## Supported Targets
+## 📋 Supported Targets
 
 - `wsl`
   - Primary API regression and fixture environment.
@@ -30,7 +30,7 @@ layer: engineering
   - Upgrade-prep audit target.
   - Default posture in this phase is read-only API inspection.
 
-## Object Coverage
+## 📋 Object Coverage
 
 | Object | CLI Scope | Status | Primary Backing |
 | --- | --- | --- | --- |
@@ -44,7 +44,7 @@ layer: engineering
 | Firewall | `onepanel firewall` | supported for base/search/verify + low-risk op plan/apply | `hosts/firewall/base`, `hosts/firewall/search`, `hosts/firewall/operate` |
 | Ledger | `projection ledger refresh` / object `refresh-ledger` | supported | tracked inventory + app resource registry |
 
-## Object / Workflow / Projection Boundary
+## 🔗 Object / Workflow / Projection Boundary
 
 - 对外 `onepanel` 对象域：`panel|firewall|cronjob|task`
 - Website、app、project、container 与 ledger 通过各自 formal domain 或 provider-internal object API 承接，不再作为公开 `onepanel` scope。
@@ -57,7 +57,7 @@ layer: engineering
 - `suite run` 保持只读；机器报告是审计证据，不自动等价于服务故障单。
 - `ledger refresh --write` 负责把对象投影刷新到 tracked ledgers 与 inventory，不要求人手维护。
 
-## API Rules
+## 📌 API Rules
 
 - Skills and plugins must never construct signed 1Panel HTTP requests themselves.
 - Python modules under `agentplane/scripts/onepanel/` are provider substrate, not public script entrypoints. The signed request helper is `signed_request.py` and is invoked only by repository-owned providers.
@@ -68,7 +68,7 @@ layer: engineering
 - `projection verification run` remains read-only. Any WSL fixture mutation must go through `agentplane projection fixture ...`.
 - On production targets, `suite run` may be used as a live API audit even when some selectors intentionally do not resolve to 1Panel-native objects. A persisted failure report is valid audit evidence, not automatically a service-health failure.
 
-## Error Model
+## 📊 Error Model
 
 Current stable CLI error codes include:
 
@@ -80,7 +80,7 @@ Current stable CLI error codes include:
 
 Plugins and automations should branch on `error.code`, not on free-form message text.
 
-## WSL Fixture Expectations
+## 📋 WSL Fixture Expectations
 
 The WSL 1Panel test environment should keep a profile-backed recyclable fixture set for CLI and plugin validation:
 

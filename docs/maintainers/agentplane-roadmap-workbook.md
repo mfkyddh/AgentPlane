@@ -79,7 +79,7 @@ audience: agent
 | P6 | 安全、并发与多 Agent 受控扩展 | `done` | 已由人类确认：纯文档定义、Agent 派遣子任务、三类威胁 | 威胁模型、锁规则、审批边界和子 Agent 协作规则进入正式文档 |
 | P7 | 应用生命周期真实验证 | `done` | 人类确认：在 WSL 上用 sub2api 跑通 onboard → verify → receipt → offboard 完整链路；schema_version: 2 contract + 现有 CLI；只验证一条 app 完整生命周期 | sub2api 进入 catalog、完整链路可重放、产生 Operation Receipt 和 Exception Review、成熟度条件 #3/#5/#6 验证通过 |
 
-## P0 蓝图落库与任务机制建立
+## 🏗️ P0 蓝图落库与任务机制建立
 
 ### 阶段门
 
@@ -98,7 +98,7 @@ audience: agent
 | P0-T3 | 更新 Roadmap 和 docs 地图链接 | `done` | 2026-04-29 | `ROADMAP.md`、`docs/README.md` | 避免 active 文档孤立 |
 | P0-T4 | 运行最小验证并回写本任务书 | `done` | 2026-04-29 | `repo docs-sanity`、`repo skills check`、`repo status` 均通过 | 下次从 P1 阶段门讨论开始 |
 
-## P1 任务书与“继续执行”闭环稳定
+## 🏗️ P1 任务书与”继续执行”闭环稳定
 
 ### 阶段门
 
@@ -138,7 +138,7 @@ Agent 不得自动把已有未提交变更纳入当前任务，也不得自动�
 | P1-T1 | 设计“继续执行”时的固定检查清单 | `done` | 2026-04-29 | 本节“固定恢复检查清单” | 让 Agent 恢复上下文更稳定 |
 | P1-T2 | 决定任务书是否需要 repo status 投影 | `done` | 2026-04-29 | 结论：P1 不做投影，自动化留到 P5 | 保持 P1 为 Markdown-only 协议 |
 
-## P2 操作凭证、例外和复盘模型
+## 🏗️ P2 操作凭证、例外和复盘模型
 
 ### 阶段门
 
@@ -200,7 +200,7 @@ Agent 不得自动把已有未提交变更纳入当前任务，也不得自动�
 | P2-T1 | 定义 Operation Receipt 最小字段 | `done` |
 | P2-T2 | 定义 Exception Review 最小字段 | `done` |
 
-## P3 项目注册表与项目蓝图模型
+## 🏗️ P3 项目注册表与项目蓝图模型
 
 ### 阶段门
 
@@ -241,7 +241,7 @@ Project Registry = 未来可能需要的全部项目资产总表
 | P3-T1 | 区分 project registry 与 app catalog | `done` |
 | P3-T2 | 定义第一个低风险项目蓝图候选 | `done` |
 
-## P4 应用生命周期示范闭环
+## 🏗️ P4 应用生命周期示范闭环
 
 ### 阶段门
 
@@ -287,7 +287,7 @@ P4 本轮只要求完成示范方案设计。验收通过条件：
 | P4-T1 | 选择示范项目和目标环境 | `done` |
 | P4-T2 | 跑通接入、验证、回写、退役口径 | `done` |
 
-## P5 可视化控制面增强
+## 🏗️ P5 可视化控制面增强
 
 ### 阶段门
 
@@ -421,7 +421,7 @@ P5 的可视化投影必须以本文为阶段和任务状态真源。首轮投�
 | P5-T6 | 在静态 HTML 面板中增加 roadmap/risks/next-step 区块 | `done` | 2026-04-29 | `_render_roadmap_section()` / `_render_risks_section()` / `_render_next_step_section()`；e2e 测试通过 | 下一步运行最小验证 |
 | P5-T7 | 运行最小验证并回写本阶段任务状态 | `done` | 2026-04-29 | docs-sanity ok、skills check ok、28+12 单元测试通过、e2e repo status 测试通过 | P5 阶段完成，推进到 P6 |
 
-## P6 安全、并发与多 Agent 受控扩展
+## 🏗️ P6 安全、并发与多 Agent 受控扩展
 
 ### 阶段门
 
@@ -491,7 +491,7 @@ P6 只定义审批门禁的概念模型。建议未来在 CLI 中扩展为：`--
 | P6-T2 | 定义子 Agent 协作边界（派遣模型、权限委托、结果回传、禁止行为） | `done` | 2026-04-29 | `docs/reference/agent-collaboration.md`，docs-sanity ok | 下一步执行 P6-T3 |
 | P6-T3 | 定义锁规则和审批边界（文件级锁规则、审批门禁 vs 阶段门、Agent ID 传递） | `done` | 2026-04-29 | `docs/reference/concurrency-and-approval.md`，docs-sanity ok | 下一步执行 P6-T4 |
 
-## P7 应用生命周期真实验证
+## 🏗️ P7 应用生命周期真实验证
 
 ### 阶段门
 

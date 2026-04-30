@@ -13,7 +13,7 @@ layer: engineering
 
 本文是 Agent-first 控制面模板下的新项目与开源二开项目通用接入标准。应用仓库只负责代码、构建资产、合同与非敏感模板；控制面模板仓库负责 bootstrap、正式执行、验证、回写与对外 runbook。
 
-## 0. 唯一正式入口与生命周期闭环
+## 🛠️ 0. 唯一正式入口与生命周期闭环
 
 本规范只定义标准与边界，不定义具体执行步骤。执行步骤以 active workflow 为准：见 [应用项目接入 AgentPlane 工作流](../runbooks/app-project-delivery-workflow.md)。
 
@@ -39,7 +39,7 @@ layer: engineering
 
 上述“必须完成”的含义是：同一次 lifecycle 变更必须把所有域走完闭环；不允许只改一半。
 
-## 1. Git 远程与版本治理
+## 🔧 1. Git 远程与版本治理
 
 | 项目类型 | 远程规范 | 说明 |
 | --- | --- | --- |
@@ -56,7 +56,7 @@ layer: engineering
   - `DELIVERY_VERSION=<upstream>+zzz.<yyyymmdd>.v<n>.g<gitsha>`
   - `IMAGE_TAG=<upstream>-zzz.<yyyymmdd>.v<n>.g<gitsha>`
 
-## 2. 推荐目录骨架
+## 📦 2. 推荐目录骨架
 
 ```text
 README.md
@@ -86,7 +86,7 @@ tmp/
 - 真实 `.env`、构建产物、`tmp/`、`.worktrees/` 必须进入 `.gitignore`。
 - `deploy/agentplane/contract.yaml` 是应用仓库交给控制面模板仓库的正式交接点。
 
-## 3. Secrets 与模板边界
+## 🔐 3. Secrets 与模板边界
 
 | 内容 | 放在控制面模板仓库 | 放在应用仓库 |
 | --- | --- | --- |
@@ -102,7 +102,7 @@ tmp/
 2. 是否真实敏感
 3. 是逻辑路径还是遗留物理路径
 
-## 4. `AGENTS.md` 与 Codex 环境
+## 🤖 4. `AGENTS.md` 与 Codex 环境
 
 应用仓库根 `AGENTS.md` 只保留 6 段：
 
@@ -113,7 +113,7 @@ tmp/
 5. `Definition Of Done`
 6. `Docs`
 
-## 5. Host Entry / Backend-Aware 规则
+## 📌 5. Host Entry / Backend-Aware 规则
 
 - 默认采用 host-entry-first, backend-aware。
 - 如果控制面和源码都在同一宿主，直接使用宿主原生命令。
@@ -121,7 +121,7 @@ tmp/
 - Windows 上的 Linux-only 动作优先 `wsl.exe -e <program> <args...>`；只有确实需要 shell 特性时才退回 `bash -lc`。
 - 远端 Linux 正式任务统一走 `agentplane ...`，不要在应用仓库里自建远端执行旁路。
 
-## 6. 与控制面模板仓库的职责边界
+## 🔗 6. 与控制面模板仓库的职责边界
 
 应用仓库负责：
 
@@ -149,7 +149,7 @@ tmp/
 - `issue-cert.sh`
 - `sync-inventory.sh`
 
-## 7. 发布与回滚
+## 🛠️ 7. 发布与回滚
 
 正式闭环固定为：
 
@@ -161,7 +161,7 @@ tmp/
 - 回滚态是发布开始前最后一个已知良好、可直接重新接管正式流量的运行态。
 - 新版本验证成功并经过最小观察窗口后，再删除旧容器。
 
-## 8. 合理工作流
+## 🛠️ 8. 合理工作流
 
 1. 建立 `.worktrees/<branch>/` 隔离工作树。
 2. 在应用仓库完成代码、测试、构建资产、合同和模板。
@@ -173,7 +173,7 @@ tmp/
 4. 交给 `AgentPlane` 执行正式部署、验证、回写。
 5. 只有 `verify` 通过后，才刷新 `inventory` 与摘要。
 
-## 9. 第二个应用快速接入硬约束
+## 📋 9. 第二个应用快速接入硬约束
 
 如果目标是让第二个 Docker / Compose 应用按同一 formal 路径快速接入，而不是重复 `Sub2API` 那轮返工，首轮接入就必须同时满足以下约束：
 

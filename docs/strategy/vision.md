@@ -13,7 +13,7 @@ layer: strategy
 
 ---
 
-## 一句话愿景
+## 🎯 一句话愿景
 
 **给 Agent 的产品全生命周期控制面**
 
@@ -25,7 +25,7 @@ layer: strategy
 
 ---
 
-## 解决什么问题
+## 💡 解决什么问题
 
 | 问题 | AgentPlane 的回答 |
 | --- | --- |
@@ -37,7 +37,7 @@ layer: strategy
 
 ---
 
-## 长期目标
+## 🎯 长期目标
 
 **3 年内成为小团队的标准工具，拥有 100+ 用户**
 
@@ -48,7 +48,7 @@ layer: strategy
 
 ---
 
-## 核心价值主张
+## 📌 核心价值主张
 
 **Agent 安全管理产品全生命周期**
 
@@ -60,7 +60,7 @@ layer: strategy
 
 ---
 
-## 目标用户
+## 👤 目标用户
 
 | 用户类型 | 特点 | 需求 |
 |----------|------|------|
@@ -77,7 +77,7 @@ layer: strategy
 
 ---
 
-## 成功标准
+## ✅ 成功标准
 
 **用户满意度**
 
@@ -93,7 +93,7 @@ layer: strategy
 
 ---
 
-## 非目标
+## 🚫 非目标
 
 ### 不替代现有工具
 
@@ -141,7 +141,7 @@ layer: strategy
 
 ---
 
-## 项目定义
+## 📋 项目定义
 
 ### 项目层级
 
@@ -170,13 +170,13 @@ layer: strategy
 
 ---
 
-## 成熟度口径
+## 📊 成熟度口径
 
 当前项目是 alpha。可依赖的是仓库治理、文档治理、离线门禁、CLI-first 约束和 secrets 边界；仍在收敛的是发布自动化、provider 合同、app delivery schema 和 live gate 自动化。
 
 ---
 
-## 约束条件
+## ⚠️ 约束条件
 
 ### 资源约束
 
@@ -206,7 +206,7 @@ layer: strategy
 
 ---
 
-## 假设与依赖
+## 🔗 假设与依赖
 
 ### 假设
 
@@ -227,7 +227,7 @@ layer: strategy
 
 ---
 
-## 干系人与决策权限
+## 👤 干系人与决策权限
 
 | 干系人 | 角色 | 期望 |
 |--------|------|------|
@@ -243,7 +243,7 @@ layer: strategy
 
 ---
 
-## 决策理由
+## 💡 决策理由
 
 **为什么选择"给 Agent 的产品全生命周期控制面"这个定位？**
 
@@ -262,7 +262,7 @@ layer: strategy
 
 ---
 
-## 正式入口
+## 🛠️ 正式入口
 
 ```bash
 agentplane --help
@@ -270,7 +270,7 @@ agentplane repo health-check --repo-root .
 agentplane repo release-check --repo-root .
 ```
 
-## 最小验证
+## ✅ 最小验证
 
 ```bash
 uv run python -m agentplane.cli repo health-check --repo-root .
@@ -278,7 +278,7 @@ uv run python -m agentplane.cli repo health-check --repo-root .
 
 ---
 
-## 关联文档
+## 🔗 关联文档
 
 - [战略总览](README.md) — 战略文档导航
 - [哲学原则](principles.md) — 哲学和工程原则

@@ -13,7 +13,7 @@ layer: engineering
 
 ---
 
-## 控制面核心
+## 📖 控制面核心
 
 | 术语 | 一句话定义 | 详细说明 |
 |------|-----------|----------|
@@ -23,7 +23,7 @@ layer: engineering
 | **live state** | 通过现场命令、API、文件读取等方式获得的当前真实状态 | [控制面合同](../architecture/control-plane.md) |
 | **配置中心** | Git 中的权威状态定义，回答"我们期望系统应该是什么样" | [入门指南](../getting-started/getting-started.md) |
 
-## 投影与台账
+## 📊 投影与台账
 
 | 术语 | 一句话定义 | 类比 | 详细说明 |
 |------|-----------|------|----------|
@@ -34,7 +34,7 @@ layer: engineering
 
 **核心区别**：Inventory 是"声明"（来自 Git），Ledger 是"证据"（来自现场验证）。两者分开存储，是为了发现"声明"和"实际"的不一致。
 
-## 执行流程
+## 🛠️ 执行流程
 
 | 术语 | 一句话定义 | 详细说明 |
 |------|-----------|----------|
@@ -42,7 +42,7 @@ layer: engineering
 | **Skill** | AI Agent 的意图入口，负责把自然语言路由到正式 CLI | [入门指南](../getting-started/getting-started.md) |
 | **标准化入口** | AI 不直接操作底层资源，而是通过 `agentplane ...` 执行任务 | [入门指南](../getting-started/getting-started.md) |
 
-## 底层平台
+## 🧠 底层平台
 
 | 术语 | 一句话定义 | 详细说明 |
 |------|-----------|----------|
@@ -50,7 +50,7 @@ layer: engineering
 | **provider** | 封装外部平台 API 的适配层，让上层代码不用关心底层细节 | [愿景](../strategy/vision.md) |
 | **adapter** | 处理运行时环境差异的适配器（如 docker_runtime、systemd_runtime） | [仓库结构](repository-structure.md) |
 
-## 应用交付
+## 📋 应用交付
 
 | 术语 | 一句话定义 | 详细说明 |
 |------|-----------|----------|
@@ -60,7 +60,7 @@ layer: engineering
 | **Operation Receipt** | 每次正式任务的人类可读摘要 | [Roadmap Workbook](../maintainers/agentplane-roadmap-workbook.md) |
 | **Exception Review** | 失败、紧急绕过、回滚、审批拒绝后的复盘记录 | [Roadmap Workbook](../maintainers/agentplane-roadmap-workbook.md) |
 
-## 安全与协作
+## 🔐 安全与协作
 
 | 术语 | 一句话定义 | 详细说明 |
 |------|-----------|----------|
@@ -71,7 +71,7 @@ layer: engineering
 
 ---
 
-## 如何使用本表
+## 📖 如何使用本表
 
 - **遇到不熟悉的术语**：先查本表，再点击"详细说明"链接深入了解
 - **新增术语**：在对应文档中定义后，同步更新本表

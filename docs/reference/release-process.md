@@ -13,7 +13,7 @@ layer: engineering
 
 本文定义 AgentPlane 长期健康运行所需的发布、验证和维护节奏。当前项目仍处于早期阶段，因此规则以轻量、可执行为主。
 
-## 日常变更 Definition of Done
+## ✅ 日常变更 Definition of Done
 
 普通代码或文档变更完成前至少满足：
 
@@ -46,7 +46,7 @@ uv run python -m agentplane.cli repo health-check --repo-root .
 Secret scan 例外必须写入仓库根目录 `.secret-scan-allowlist`。优先修正文档或测试样例，只有确认为合法样例且无法改写时才加入 allowlist。
 Privacy scan 不设常规 allowlist；命中时优先把真实材料移回 ignored 本地工作区，或改为 `example.net`、`203.0.113.0/24` 等示例值。
 
-## 生产变更闭环
+## 🛠️ 生产变更闭环
 
 影响真实 WSL、Docker、SSH、远端 provider、域名、证书或运行服务的操作，必须走：
 
@@ -62,7 +62,7 @@ plan -> apply -> verify -> ledger -> inventory refresh -> doc-sync
 - ledger 记录必须能回答：谁、何时、对哪个 target、做了什么、证据是什么。
 - 回滚材料要在切换正式流量前准备好。
 
-## 发布流程
+## 🛠️ 发布流程
 
 首次公开 tag 前，使用轻量发布流程：
 
@@ -76,7 +76,7 @@ plan -> apply -> verify -> ledger -> inventory refresh -> doc-sync
 
 正式发布稳定后，再补自动 changelog、制品签名、SBOM 和 provenance。
 
-## 版本协作材料
+## 📦 版本协作材料
 
 | 文件 | 作用 |
 | --- | --- |
@@ -84,7 +84,7 @@ plan -> apply -> verify -> ledger -> inventory refresh -> doc-sync
 | [../../CHANGELOG.md](../../CHANGELOG.md) | 记录面向人的版本变更摘要。 |
 | [../architecture/decisions/README.md](../architecture/decisions/README.md) | 记录会影响长期维护的架构决策。 |
 
-## 健康周检
+## ✅ 健康周检
 
 每周或每个较大迭代后执行一次：
 
@@ -102,7 +102,7 @@ uv run python -m agentplane.cli repo health-check --repo-root .
 - 是否有 secrets、证书、私钥、真实 `.env` 被误加入 Git。
 - 是否有真实 inventory、生产 runbook、目标渲染 compose 或维护者专用 skill 被误加入 Git。
 
-## 核心模块减重策略
+## 🔧 核心模块减重策略
 
 对于 `agentplane/domain/app/runtime.py`、大型测试辅助等高变更文件，采用滚动治理：
 

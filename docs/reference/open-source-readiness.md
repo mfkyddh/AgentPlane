@@ -15,7 +15,7 @@ This repository is being shaped as a one-checkout, cross-platform open source co
 
 Public positioning lives in [vision.md](../strategy/vision.md). Release maturity and staged goals live in [../../ROADMAP.md](../../ROADMAP.md).
 
-## Baseline Requirements
+## 📋 Baseline Requirements
 
 - A single checkout works on macOS, Linux, and Windows.
 - Windows can use WSL as a backend without requiring a second source checkout.
@@ -33,7 +33,7 @@ Public positioning lives in [vision.md](../strategy/vision.md). Release maturity
 - Active docs are checked through `agentplane repo docs-sanity`.
 - Release readiness is checked through `agentplane repo release-check`.
 
-## Remaining Hard-Cut Work
+## 🛠️ Remaining Hard-Cut Work
 
 - Keep provider helpers internal and route public workflows through the formal CLI.
 - Move remaining direct `tests/onepanel` script substrate coverage behind provider-level contracts where practical.
@@ -42,7 +42,7 @@ Public positioning lives in [vision.md](../strategy/vision.md). Release maturity
 
 ---
 
-## 公开边界
+## 🔐 公开边界
 
 ### 可公开
 

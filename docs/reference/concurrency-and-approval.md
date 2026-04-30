@@ -11,7 +11,7 @@ layer: engineering
 
 结论：本文档定义 AgentPlane 的文件级锁规则和审批门禁概念模型。首轮只定义规则，不实现运行时代码。锁机制和审批 CLI 扩展推到后续阶段。
 
-## 文件级锁规则
+## 📌 文件级锁规则
 
 ### 锁粒度
 
@@ -65,7 +65,7 @@ function release_lock(fd, lock_file):
 
 **P6 决策**：首轮只定义规则，不引入 `filelock` 依赖。后续阶段实现时再评估库选择。
 
-## 审批门禁
+## 🔐 审批门禁
 
 ### 审批门禁 vs 阶段门
 
@@ -116,7 +116,7 @@ function release_lock(fd, lock_file):
 | 审批拒绝 | Exception Review | [workbook P2](../maintainers/agentplane-roadmap-workbook.md#exception-review-模板) |
 | 审批超时 | Exception Review | 同上 |
 
-## Agent ID 传递
+## 🤖 Agent ID 传递
 
 ### 目的
 
@@ -159,7 +159,7 @@ function release_lock(fd, lock_file):
 | 后续阶段 | CLI 高风险命令执行时自动注入 `agent_id` |
 | 远期 | `repo status` 展示近期操作归属（基于 Receipt 或 ledger） |
 
-## 与威胁模型的关系
+## 🔗 与威胁模型的关系
 
 本文档定义的规则，直接缓解威胁模型中的两类威胁：
 
@@ -169,14 +169,14 @@ function release_lock(fd, lock_file):
 | T2 越权操作 | 审批门禁概念模型 + 高风险操作分类 | 审批门禁章节 |
 | T3 状态漂移 | Agent ID 传递 + Operation Receipt 扩展 | Agent ID 传递章节 |
 
-## 相关文档
+## 🔗 相关文档
 
 - [威胁模型](threat-model.md)
 - [子 Agent 协作边界](agent-collaboration.md)
 - [阶段工作计划](../maintainers/agentplane-roadmap-workbook.md)
 - [Operation Receipt 模板](../maintainers/agentplane-roadmap-workbook.md#operation-receipt-模板)
 
-## 后续计划
+## 📋 后续计划
 
 | 计划 | 内容 | 阶段 |
 | --- | --- | --- |
