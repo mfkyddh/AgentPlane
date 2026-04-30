@@ -55,9 +55,9 @@ audience: human
 
 **第一次了解战略？** → [愿景](vision.md)
 
-**想了解哲学原则？** → [原则](principles.md)（待创建）
+**想了解哲学原则？** → [原则](principles.md)
 
-**想了解长期路线图？** → [路线图](roadmap.md)（待创建）
+**想了解长期路线图？** → [路线图](roadmap.md)
 
 **想了解关键决策？** → [决策记录](decisions/)
 
