@@ -2,6 +2,10 @@
 
 结论：`docs/history/` 只做历史说明，不重新长出第二套正文；旧阶段计划、设计稿和交接记录已从开源 active tree 移除，历史内容以 Git history 为准。
 
+## Historical Snapshots
+
+- [skill-surface-audit.md](skill-surface-audit.md): Skill 面盘点快照，随 Skill 演化已过时。
+
 ## Stage Plans
 
 - 阶段计划不再作为 active docs 发布，避免旧路径和迁移期入口回流。

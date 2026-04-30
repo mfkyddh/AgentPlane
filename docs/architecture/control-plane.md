@@ -85,7 +85,7 @@ tracked truth 只保存与平台无关的**逻辑路径**，例如 `apps/<app>`�
 
 resolver / backend 可以把逻辑路径解析成当前宿主可访问的 `resolved_path`（物理路径），但 `resolved_path` 不是 tracked truth。`ledger` 可以保存稳定摘要，`verification` 才允许记录现场观察值（含物理路径）。
 
-> 详见 [control-plane-path-policy.md](../reference/control-plane-path-policy.md)
+> 详见 [control-plane-naming-registry.md](../reference/control-plane-naming-registry.md)
 
 ### Automation And Projection Boundary
 
@@ -435,7 +435,7 @@ agentplane projection ledger refresh --target <target> --repo-root <repo-root> -
 ## Related Documents
 
 - [control-plane-authoring.md](../maintainers/control-plane-authoring.md)
-- [control-plane-path-policy.md](../reference/control-plane-path-policy.md)
+- [control-plane-naming-registry.md](../reference/control-plane-naming-registry.md)
 - [control-plane-agent-execution-flow.md](../runbooks/control-plane-agent-execution-flow.md)
 - [linux-governance.md](linux-governance.md)
 - [agentplane-app-collaboration.md](agentplane-app-collaboration.md)

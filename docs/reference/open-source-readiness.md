@@ -39,3 +39,34 @@ Public positioning lives in [vision.md](../strategy/vision.md). Release maturity
 - Move remaining direct `tests/onepanel` script substrate coverage behind provider-level contracts where practical.
 - Run live gate with `--execute` only in an explicitly prepared WSL/SSH/Docker environment.
 - Keep release automation current after the first public tag.
+
+---
+
+## 公开边界
+
+### 可公开
+
+| 类型 | 放置位置 | 要求 |
+| --- | --- | --- |
+| CLI 与通用 domain/runtime 代码 | `agentplane/` | 不写真实域名、公网 IP、safe entrance 或维护者账号信息 |
+| 通用文档 | `docs/architecture/`、`docs/reference/`、`docs/tutorials/`、`docs/runbooks/` | 使用 `<target>`、`example.net`、`203.0.113.0/24` 等示例值 |
+| 非敏感模板 | `templates/` | 文件名用 `.example`，值用 placeholder |
+| 本地开发 compose | `infra/compose/**/docker-compose.wsl.yml` | 只表达可复用本地开发形态 |
+| 离线测试 | `tests/` | 使用 example 域名和 RFC 5737 测试网段 |
+
+### 只留本地
+
+| 类型 | 默认忽略规则 |
+| --- | --- |
+| 真实 host inventory、ledger、probe 输出 | `inventory/servers/`、`inventory/state-snapshot.md` |
+| 生产/个人 runbook | `docs/runbooks/prod*-*.md`、`docs/runbooks/wsl-secrets-backup.md`、`docs/runbooks/wsl-zzz-skills-sync.md` |
+| 目标渲染 compose | `infra/compose/**/docker-compose.prod*.yml` |
+| 维护者专用 skill | `.agents/skills/tencent-*` 等 `.gitignore` 已声明路径 |
+| 一次性主机修复脚本 | `.gitignore` 已声明的 `agentplane/scripts/remote/remote_*prod0*` 等 |
+
+### 禁止进入 Git 可见文件
+
+- 真实公网域名、真实公网 IP、1Panel safe entrance、面板路径。
+- `password_authentication: true`、`permit_root_login: true` 等真实 SSH 暴露状态。
+- 云账号、DNS 账号、证书目录、代理端点、生产 cron 计划等可帮助定位维护者现场的信息。
+- 真实 `.env`、密钥、证书、token、密码。

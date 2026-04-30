@@ -19,7 +19,7 @@ layer: technical
 
 ## Reference
 
-- [control-plane-path-policy.md](../reference/control-plane-path-policy.md)
+- [control-plane-naming-registry.md](../reference/control-plane-naming-registry.md)
 - [repository-structure.md](../reference/repository-structure.md)
 - [documentation-governance.md](../reference/documentation-governance.md)
 - [app-repository-standard.md](../reference/app-repository-standard.md)

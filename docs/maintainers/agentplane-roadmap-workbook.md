@@ -8,7 +8,7 @@ audience: agent
 
 # AgentPlane Roadmap Workbook
 
-结论：本文是 AgentPlane 长期路线图的阶段推进真源。下次人类引用本文并说“继续执行”时，Agent 必须先读取本文、[终极蓝图](../reference/agentplane-ultimate-blueprint.md) 和 [Roadmap](../../ROADMAP.md)，再定位当前阶段和下一项未完成任务。
+结论：本文是 AgentPlane 长期路线图的阶段推进真源。下次人类引用本文并说”继续执行”时，Agent 必须先读取本文和[路线图](../strategy/roadmap.md)，再定位当前阶段和下一项未完成任务。
 
 ## 🎯 用途
 
@@ -25,7 +25,7 @@ audience: agent
 
 当人类引用本文或蓝图并说“继续执行”时，Agent 必须按顺序执行：
 
-1. 读取 [终极蓝图](../reference/agentplane-ultimate-blueprint.md)、本文和 [Roadmap](../../ROADMAP.md)。
+1. 读取[路线图](../strategy/roadmap.md)和本文。
 2. 运行只读状态检查：`agentplane repo status --repo-root .`。
 3. 找到第一个非 `done`、非 `superseded` 的阶段。
 4. 如果该阶段状态是 `planned` 或 `discussion-required`，先和人类讨论实施方向、技术采用、概念边界。
@@ -112,7 +112,7 @@ audience: agent
 
 当人类说“继续执行”时，Agent 必须按此顺序恢复上下文：
 
-1. 读取本文、[终极蓝图](../reference/agentplane-ultimate-blueprint.md) 和 [Roadmap](../../ROADMAP.md)。
+1. 读取[路线图](../strategy/roadmap.md)和本文。
 2. 运行 `agentplane repo status --repo-root .`，确认 docs、privacy、skills 和 catalog 状态。
 3. 运行 `git status --short`，确认是否存在 Git 可见未提交变更。
 4. 如果工作区干净，定位阶段总览中第一个状态不是 `done` 或 `superseded` 的阶段。

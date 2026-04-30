@@ -157,3 +157,52 @@ agentplane test e2e      # 只跑 e2e, -n 4
 | P2 | 提取 delivery handler 纯逻辑为 `unit` 层（示范） | ✅ |
 | P3 | 扩展 `agentplane test` CLI | ✅ |
 | P3 | AGENTS.md 新增 🔴 规则 | ✅ |
+
+---
+
+## 🔧 本地测试工作流
+
+### 快速开始
+
+```bash
+# 安装 pre-commit
+uv pip install pre-commit
+pre-commit install
+pre-commit install --hook-type pre-push
+```
+
+### pre-commit 阶段（commit 前）
+
+| Hook | 工具 | 说明 |
+|------|------|------|
+| `ruff` | Ruff linter | 检查 Python 代码风格和错误 |
+| `ruff-format` | Ruff formatter | 自动格式化代码 |
+| `validate-commit-msg` | agentplane.cli | 验证 commit message 格式 |
+
+### pre-push 阶段（push 前）
+
+| Hook | 命令 | 说明 |
+|------|------|------|
+| `fast-test` | `agentplane.cli test fast` | 运行快速测试门 |
+| `docs-sanity` | `agentplane.cli repo docs-sanity` | 检查文档一致性 |
+| `secret-scan` | `agentplane.cli repo secret-scan` | 扫描敏感信息泄漏 |
+
+### 与 CI 的对齐
+
+本地检查与 CI `fast-gate` 完全对齐。`privacy-scan` 仅在 CI 运行（需要完整 git 历史）。
+
+### 跳过检查（仅限紧急情况）
+
+```bash
+git commit --no-verify -m "message"   # 跳过 pre-commit
+git push --no-verify                   # 跳过 pre-push
+```
+
+使用 `--no-verify` 后必须手动运行 `pre-commit run --all-files` 验证。
+
+---
+
+## 关联文档
+
+- [测试架构](testing-architecture.md) — 测试分层和 marker 规范
+- [Git 规范](git-conventions.md) — 提交和合并规范

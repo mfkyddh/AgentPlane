@@ -224,6 +224,6 @@ runbook 负责专题流程、风险边界、人工接力点与最小验证；需
 ## 关联文档
 
 - [../architecture/control-plane.md](../architecture/control-plane.md)
-- [../reference/control-plane-path-policy.md](../reference/control-plane-path-policy.md)
+- [../reference/control-plane-naming-registry.md](../reference/control-plane-naming-registry.md)
 - [../runbooks/control-plane-domain-onboarding.md](../runbooks/control-plane-domain-onboarding.md)
 - [../runbooks/control-plane-agent-execution-flow.md](../runbooks/control-plane-agent-execution-flow.md)

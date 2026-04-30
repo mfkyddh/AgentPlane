@@ -140,5 +140,4 @@ Agent 在结束时应至少明确：
 
 - [control-plane.md](../architecture/control-plane.md#principles)
 - [control-plane.md](../architecture/control-plane.md#cli-contract)
-- [onepanel-cli-validation-workflow.md](onepanel-cli-validation-workflow.md)
 - [app-project-delivery-workflow.md](app-project-delivery-workflow.md)

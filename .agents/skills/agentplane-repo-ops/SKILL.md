@@ -36,5 +36,5 @@ uv run python -m agentplane.cli test fast --tb=short
 ## Downstream Docs
 
 - `docs/reference/documentation-governance.md`
-- `docs/reference/publication-boundary.md`
+- `docs/reference/open-source-readiness.md`
 - `docs/maintainers/control-plane-authoring.md`

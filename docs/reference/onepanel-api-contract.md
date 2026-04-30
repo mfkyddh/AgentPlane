@@ -90,4 +90,4 @@ The WSL 1Panel test environment should keep a profile-backed recyclable fixture 
 - one isolated test env file
 - one cleanup path that can soft-reset the above safely through `onepanel fixture cleanup`
 
-Active workflow and fixture lifecycle now live in [../runbooks/onepanel-cli-validation-workflow.md](../runbooks/onepanel-cli-validation-workflow.md).
+Active workflow and fixture lifecycle now live in [app-project-delivery-workflow.md](../runbooks/app-project-delivery-workflow.md).

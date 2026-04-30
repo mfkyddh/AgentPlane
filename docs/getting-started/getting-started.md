@@ -301,5 +301,5 @@ agentplane repo health-check --repo-root .
 ## 🔗 关联文档
 
 - [AGENTS.md](../../AGENTS.md) — AI 的完整工作规范
-- [Skill 盘点](../maintainers/skill-surface-audit.md) — 当前 Skill 能力面
+- [Skill 盘点](../history/skill-surface-audit.md) — 历史 Skill 能力面快照
 - [愿景](../strategy/vision.md) — AgentPlane 的边界和适用场景

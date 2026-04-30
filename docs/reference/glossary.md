@@ -56,7 +56,7 @@ layer: engineering
 |------|-----------|----------|
 | **contract.yaml** | 应用仓库必须提供的交付合同，描述非敏感交付面 | [协作规范](../architecture/agentplane-app-collaboration.md) |
 | **app catalog** | 已进入正式 app delivery 执行面的应用索引 | [Roadmap Workbook](../maintainers/agentplane-roadmap-workbook.md) |
-| **blueprint** | 创建或接入同类项目时复用的方法模板 | [终极蓝图](agentplane-ultimate-blueprint.md) |
+| **blueprint** | 创建或接入同类项目时复用的方法模板 | [路线图](../strategy/roadmap.md) |
 | **Operation Receipt** | 每次正式任务的人类可读摘要 | [Roadmap Workbook](../maintainers/agentplane-roadmap-workbook.md) |
 | **Exception Review** | 失败、紧急绕过、回滚、审批拒绝后的复盘记录 | [Roadmap Workbook](../maintainers/agentplane-roadmap-workbook.md) |
 

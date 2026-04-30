@@ -77,10 +77,8 @@ layer: engineering
 **文档位置**：`docs/project/`
 
 **主要文档**：
-- 项目章程 (`charter.md`)
-- 角色与职责 (`roles.md`)
-- 沟通机制 (`communication.md`)
-- 风险管理 (`risk-management.md`)
+- 主线追踪器 (`backlog.md`)
+- 愿景中的约束和干系人 (`../strategy/vision.md`)
 
 **更新频率**：中频（月度/季度）
 
@@ -199,7 +197,7 @@ layer: engineering
 | 场景 | 推荐文档 |
 |------|----------|
 | **了解项目方向** | [愿景](../strategy/vision.md)、[路线图](../strategy/roadmap.md) |
-| **了解项目管理** | [项目章程](../project/charter.md)、[角色与职责](../project/roles.md) |
+| **了解项目管理** | [主线追踪器](../project/backlog.md)、[愿景](../strategy/vision.md) |
 | **参与开发** | [贡献指南](../../CONTRIBUTING.md)、[代码风格](code-style.md) |
 | **使用工具** | [入门指南](../getting-started/getting-started.md)、[教程](../tutorials/) |
 | **了解架构** | [架构概览](../getting-started/architecture-overview.md)、[核心合同](../architecture/control-plane.md) |
@@ -260,10 +258,50 @@ layer: engineering
 
 ---
 
+## 审查节奏
+
+| 层级 | 审查频率 | 审查时机 | 审查者 |
+|------|----------|----------|--------|
+| 战略层 | 季度审查 | 每季度末或重大战略调整时 | 维护者 |
+| 项目层 | 月度审查 | 每月末或项目阶段转换时 | 维护者 |
+| 工程层 | 每次 PR | Pull Request 提交时 | 维护者/贡献者 |
+| 技术层 | 每次发布 | 版本发布前 | 维护者/贡献者 |
+
+### 战略层检查项（季度）
+
+| # | 检查项 | 判定标准 |
+|---|--------|----------|
+| S1 | 愿景是否还正确？ | 愿景仍能回答"我们要去哪里" |
+| S2 | 非目标是否需要调整？ | 非目标列表仍反映当前约束和边界 |
+| S3 | 原则是否被遵循？ | 近期决策和实现与原则一致 |
+| S4 | 路线图是否需要调整？ | 阶段划分、里程碑和优先级仍然合理 |
+| S5 | 决策记录是否完整？ | 所有重大战略决策都有对应的 decision record |
+
+### 工程层检查项（每次 PR）
+
+| # | 检查项 | 判定标准 |
+|---|--------|----------|
+| E1 | 代码风格 | 通过 `ruff check .` 和 `ruff format .` |
+| E2 | 测试充分 | 新增/修改代码有对应测试 |
+| E3 | 文档更新 | 影响用户的变更已更新文档 |
+| E4 | 提交规范 | Commit message 符合 Conventional Commits |
+| E5 | Secret 安全 | 无真实 secret 进入代码或文档 |
+| E6 | 健康检查 | 通过 `agentplane repo health-check` |
+
+### 技术层检查项（每次发布）
+
+| # | 检查项 | 判定标准 |
+|---|--------|----------|
+| T1 | 架构合理 | 变更符合架构合同 |
+| T2 | 安全满足 | 通过威胁模型审查 |
+| T3 | 运维文档 | 发布相关 runbook 已更新 |
+| T4 | 跨平台兼容 | Windows/WSL/Linux 行为一致 |
+
+---
+
 ## 关联文档
 
 - [文档治理规范](documentation-governance.md) — 文档标准和规范
-- [四层体系审查清单](layer-review-checklist.md) — 每层的审查频率和检查点
 - [战略总览](../strategy/README.md) — 战略层导航
 - [项目层](../project/README.md) — 项目层导航
 - [仓库结构](repository-structure.md) — 目录结构规范

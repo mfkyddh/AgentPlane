@@ -46,3 +46,53 @@ layer: engineering
 | 1 | 生产环境中，项目管理的容器和 1Panel 应用容器应接入 tracked truth 中声明的共享网络 | 🔴 | 保证服务间通信 |
 | 2 | 专用网络只能作为附加（additive），不能替代共享网络 | 🟡 | 避免网络隔离导致服务不可达 |
 | 3 | 持久化数据优先放在 `/data/<service>/...` | 🟡 | 统一数据盘路径，便于备份 |
+
+---
+
+## Docker 应用打包规范
+
+Docker 类应用接入时，采用"宿主机构建 + runtime-only Dockerfile"模式。
+
+### 核心原则
+
+1. **宿主机构建**：在 WSL 宿主机完成前端构建、后端编译，产物放到 `dist/oplinux/`
+2. **Runtime-only Dockerfile**：只复制 `dist/oplinux/` 中的产物，不在 Docker 内重新源码编译
+3. **正式交付链路**：`build-artifact → ship-image → render-runtime → plan/apply/verify → inventory/doc-sync`
+
+### 推荐目录结构
+
+```
+deploy/
+  build-runtime-artifacts.sh    # 宿主机构建脚本
+  package-runtime-image.sh      # 打包脚本
+  Dockerfile.runtime            # Runtime-only Dockerfile
+  docker-entrypoint.sh
+  op/
+    contract.yaml               # 应用合同
+dist/
+  oplinux/
+    <app-binary>
+    resources/
+```
+
+### 合同模板要点
+
+```yaml
+schema_version: 2
+app_id: demo
+artifact:
+  build_command: bash deploy/build-runtime-artifacts.sh
+  output_path: dist/oplinux
+packaging:
+  image_name: demo-prod
+  package_command: bash deploy/package-runtime-image.sh
+runtime:
+  kind: compose
+  container_name: demo-prod
+```
+
+### 不要这样做
+
+- 不要把依赖安装和编译全部塞进正式 Docker build 主路径
+- 不要让 runtime Dockerfile 依赖整个源码树
+- 不要在应用仓库里复制一套正式生产控制面脚本

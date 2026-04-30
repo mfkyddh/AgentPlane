@@ -87,4 +87,3 @@ agentplane repo release-check --repo-root .
 1. [wsl-host-governance.md](./wsl-host-governance.md)
 2. 私有生产机 runbook 保留在本地 ignored 工作区，不进入公开仓库。
 3. [app-project-delivery-workflow.md](./app-project-delivery-workflow.md)
-4. [onepanel-cli-validation-workflow.md](./onepanel-cli-validation-workflow.md)

@@ -69,7 +69,7 @@ This runs the same checks as CI (`fast-gate`) locally:
 - **pre-commit**: Ruff lint, commit message validation
 - **pre-push**: Fast tests, docs sanity, secret scan
 
-Detailed guide: [docs/reference/local-testing.md](docs/reference/local-testing.md)
+Detailed guide: [docs/reference/testing-conventions.md](docs/reference/testing-conventions.md)
 
 ## Before Opening A PR
 

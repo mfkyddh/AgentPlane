@@ -24,7 +24,7 @@ layer: technical
 |---------|-------------|
 | [应用交付主流程](./app-project-delivery-workflow.md) | 从约定书校验到部署验证的完整 8 步流程 |
 | [部署失败怎么办](./app-delivery-failure-handling.md) | 部署出错了，按阶段定位原因并回滚 |
-| [Docker 运行时打包模板](./docker-host-runtime-packaging-template.md) | 怎么把应用打包成 Docker 运行时镜像 |
+| [容器规范](../reference/container-conventions.md) | Docker Compose、容器命名、打包规范 |
 
 ## 🔍 我想检查当前状态
 
@@ -57,7 +57,6 @@ layer: technical
 | Runbook | 解决什么问题 |
 |---------|-------------|
 | [接入新管理领域](./control-plane-domain-onboarding.md) | 把新的基础设施领域纳入 AgentPlane 管理 |
-| [1Panel CLI 验证工作流](./onepanel-cli-validation-workflow.md) | 验证 1Panel 管理端的 CLI 可用性 |
 | [PowerShell-WSL 远程 Bash](./powershell-wsl-remote-bash.md) | Windows 宿主通过 PowerShell 调用 WSL bash 的技巧 |
 
 ## 快速命令参考

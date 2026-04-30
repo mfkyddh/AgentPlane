@@ -35,3 +35,31 @@ layer: engineering
 
 - 新正式 app object 进入控制面前，必须先在本表新增一行，再允许进入合同校验。
 - 未列入本表的对象，不得按正式 app naming contract 做失败判定。
+
+---
+
+## 路径策略
+
+控制面 tracked 文件只保存**逻辑路径**（与平台无关的仓库内相对路径）；宿主物理路径只存在于 runtime resolution 和 verification 结果里。
+
+> **逻辑路径 vs 物理路径**：逻辑路径如 `apps/sub2api/contracts/prod0-main`，不含 Windows 盘符、WSL 挂载点或 Linux 绝对前缀。物理路径如 `<repo-root>\apps\...` 或 `/opt/agentplane/apps/...`，是 Resolver 在运行时动态生成的。
+
+### 允许写入真源的路径
+
+- `apps/<app>/contracts/<target>` — 应用交付合同
+- `inventory/servers/<target>/inventory.json` — 目标环境台账
+- 其它不含宿主路径前缀、可被 resolver 解释的仓库内相对路径
+
+### 禁止写入真源的路径
+
+- Windows drive paths，例如 `D:/...`、`C:/...`
+- Linux host-local paths，例如 `/root/...`、`/mnt/...`
+- WSL UNC paths，例如 `\\wsl.localhost\...`
+
+### 边界规则
+
+| 产物 | 能保存什么 | 不能保存什么 |
+|------|-----------|-------------|
+| **truth**（真源） | 逻辑路径 | 物理路径 |
+| **ledger**（台账） | 稳定摘要（逻辑路径） | 物理路径 |
+| **verification**（验证证据） | 逻辑路径 + `resolved_path`（物理路径） + 现场观察值 | — |

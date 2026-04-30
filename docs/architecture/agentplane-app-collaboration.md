@@ -162,7 +162,7 @@ Remove（Offboarding）最小闭环语义：
 
 新 Docker 项目请直接复用：
 
-- [Docker 应用宿主机构建模板](../runbooks/docker-host-runtime-packaging-template.md)
+- [容器规范：Docker 打包规范](../reference/container-conventions.md)
 - [应用项目接入 AgentPlane 工作流](../runbooks/app-project-delivery-workflow.md)
 - [应用交付版本规范](../reference/app-delivery-versioning.md)
 

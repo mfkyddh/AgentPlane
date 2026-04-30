@@ -1,167 +1,137 @@
 ---
 status: active
 owner: AgentPlane maintainers
-last_verified: 2026-04-29
+last_verified: 2026-04-30
 superseded_by: null
 audience: both
 ---
 
 # AgentPlane 文档地图
 
-结论：这里是人类和 AI 的文档导航页。第一次阅读先走 👤 人类入口；执行任务时按 🛠️ runbook；维护规范时看 📚 reference。
+结论：按阅读顺序组织的文档导航。第一次阅读走入门路线；执行任务时按 runbook；维护规范时看 reference。
 
 ---
 
-## 👤 人类入口
+## 入门路线
 
-> 📌 所有 runbook 的完整列表和按场景分类见 [Runbook 导航](runbooks/README.md)。
-
-### 🚀 快速开始
-
-| 你想做什么 | 从这里开始 |
-| --- | --- |
-| 第一次了解项目 | [入门指南](getting-started/getting-started.md) ⭐ |
-| 深入理解架构 | [架构概览](getting-started/architecture-overview.md) ⭐ |
-| 部署第一个应用 | [教程：部署 sub2api](tutorials/deploy-first-app.md) ⭐ |
-| 了解怎么跟 AI 协作 | [人机协作协议](reference/human-ai-collaboration.md) ⭐ |
-
-### 🔍 常见任务
-
-| 你想做什么 | 从这里开始 |
-| --- | --- |
-| 了解完整交付流程 | [应用交付流程](runbooks/app-project-delivery-workflow.md) |
-| 排查部署失败 | [教程：排查失败](tutorials/troubleshoot-failed-deployment.md) ⭐ |
-| 添加新服务器 | [纳入新服务器](tutorials/add-new-server.md) |
-| 管理 WSL 开发环境 | [WSL 治理](runbooks/wsl-host-governance.md) |
-| 初始化 Secrets | [Secrets 引导](runbooks/bootstrap-secrets.md) |
-
-### 📐 深入理解
-
-| 你想做什么 | 从这里开始 |
-| --- | --- |
-| 了解项目战略 | [战略总览](strategy/README.md) ⭐ |
-| 了解项目管理 | [项目层](project/README.md) ⭐ |
-| 了解四层文档体系 | [四层文档体系](reference/documentation-layers.md) ⭐ |
-| 查看当前状态 | [状态与验证](runbooks/current-state-and-validation.md) |
-| 查看长期蓝图 | [AgentPlane 终极蓝图 v4](reference/agentplane-ultimate-blueprint.md) |
-| 继续路线图任务 | [Roadmap Workbook](maintainers/agentplane-roadmap-workbook.md) |
+| 阶段 | 文档 | 说明 |
+|------|------|------|
+| 1 | [入门指南](getting-started/getting-started.md) | 安装、体检、第一次使用 |
+| 2 | [架构概览](getting-started/architecture-overview.md) | 一句话理解 + 投影模型 |
+| 3 | [部署第一个应用](tutorials/deploy-first-app.md) | 动手教程 |
+| 4 | [人机协作协议](reference/human-ai-collaboration.md) | 怎么跟 AI 协作 |
 
 ---
 
-## 🤖 AI 入口：按执行域
+## 战略与方向
 
-| 域 | 架构合同 | 执行规范 | 命名注册 |
-| --- | --- | --- | --- |
-| `infra` | [control-plane.md](architecture/control-plane.md) | [execution-flow.md](runbooks/control-plane-agent-execution-flow.md) | [naming-registry.md](reference/control-plane-naming-registry.md) |
-| `service` | [control-plane.md](architecture/control-plane.md) | [execution-flow.md](runbooks/control-plane-agent-execution-flow.md) | [naming-registry.md](reference/control-plane-naming-registry.md) |
-| `ingress` | [control-plane.md](architecture/control-plane.md) | [execution-flow.md](runbooks/control-plane-agent-execution-flow.md) | [naming-registry.md](reference/control-plane-naming-registry.md) |
-| `app` | [control-plane.md](architecture/control-plane.md) | [app-delivery-workflow.md](runbooks/app-project-delivery-workflow.md) | [naming-registry.md](reference/control-plane-naming-registry.md) |
-| `projection` | [control-plane.md](architecture/control-plane.md) | [execution-flow.md](runbooks/control-plane-agent-execution-flow.md) | [naming-registry.md](reference/control-plane-naming-registry.md) |
-
-AI 工作规范：[AGENTS.md](../AGENTS.md)；Skill 面盘点：[skill-surface-audit.md](maintainers/skill-surface-audit.md)
+| 文档 | 说明 |
+|------|------|
+| [愿景](strategy/vision.md) | 是什么、解决什么、不做什么、约束、干系人 |
+| [原则](strategy/principles.md) | 哲学基座、方法论、工程原则 |
+| [路线图](strategy/roadmap.md) | 三阶段推进、里程碑、长期机制 |
+| [决策记录](strategy/decisions/) | 为什么这样做 |
 
 ---
 
-## 📚 完整索引（按类别）
-
-### 🎯 战略层
+## 项目管理
 
 | 文档 | 说明 |
-| --- | --- |
-| [strategy/README.md](strategy/README.md) | 战略文档导航 |
-| [strategy/vision.md](strategy/vision.md) | 项目愿景、定位、非目标和工具边界 |
-| [strategy/principles.md](strategy/principles.md) | 哲学原则与工程原则 |
-| [strategy/roadmap.md](strategy/roadmap.md) | 三阶段路线图 |
-| [strategy/decisions/](strategy/decisions/) | 战略决策记录 |
-
-### 📋 项目层
-
-| 文档 | 说明 |
-| --- | --- |
-| [project/README.md](project/README.md) | 项目层导航 |
-| [project/backlog.md](project/backlog.md) | 主线追踪器：任务进度、分支任务、backlog |
-| [project/charter.md](project/charter.md) | 项目章程：目标、范围、约束、假设 |
-| [project/roles.md](project/roles.md) | 角色与职责：维护者、贡献者、用户、AI Agent |
-| [project/communication.md](project/communication.md) | 沟通机制：决策流程、反馈渠道、状态报告 |
-| [project/risk-management.md](project/risk-management.md) | 风险管理：识别、评估、应对、监控 |
-
-### 🧠 架构合同
-
-| 文档 | 说明 |
-| --- | --- |
-| [architecture/README.md](architecture/README.md) | 架构目录索引 |
-| [architecture/control-plane.md](architecture/control-plane.md) | 控制面、task-entry、配置中心核心合同 |
-| [architecture/linux-governance.md](architecture/linux-governance.md) | Linux / WSL backend 长期治理 |
-| [architecture/agentplane-app-collaboration.md](architecture/agentplane-app-collaboration.md) | 控制面仓库与应用仓库边界 |
-| [architecture/decisions/README.md](architecture/decisions/README.md) | 长期架构决策记录 |
-
-### 📚 Reference
-
-| 文档 | 说明 |
-| --- | --- |
-| [reference/glossary.md](reference/glossary.md) | 核心术语统一定义 |
-| [reference/human-ai-collaboration.md](reference/human-ai-collaboration.md) | 人机协作协议：主线机制、会话流程、需求收敛 |
-| [reference/documentation-governance.md](reference/documentation-governance.md) | 文档分层、emoji、链接和门禁规范 |
-| [reference/layer-review-checklist.md](reference/layer-review-checklist.md) | 四层体系审查清单与检查点 |
-| [reference/agentplane-ultimate-blueprint.md](reference/agentplane-ultimate-blueprint.md) | 长期战略蓝图、阶段路线和核心机制 |
-| [strategy/vision.md](strategy/vision.md) | 项目愿景、定位、非目标和工具边界 |
-| [reference/repository-structure.md](reference/repository-structure.md) | 顶层目录和新文件放置规则 |
-| [reference/code-style.md](reference/code-style.md) | 代码和文档风格基线 |
-| [reference/tech-stack.md](reference/tech-stack.md) | 技术栈约束 |
-| [reference/cross-platform.md](reference/cross-platform.md) | Windows / WSL / Linux 跨平台规则 |
-| [reference/git-conventions.md](reference/git-conventions.md) | Git 与 commit message 规范 |
-| [reference/release-process.md](reference/release-process.md) | 发布和健康检查流程 |
-| [reference/testing-architecture.md](reference/testing-architecture.md) | 默认测试与 live gate 分层 |
-| [reference/testing-conventions.md](reference/testing-conventions.md) | 测试 marker、并行和文件组织规则 |
-| [reference/container-conventions.md](reference/container-conventions.md) | Docker Compose 与容器约束 |
-| [reference/app-repository-standard.md](reference/app-repository-standard.md) | 应用仓库接入标准 |
-| [reference/app-delivery-versioning.md](reference/app-delivery-versioning.md) | 应用版本与镜像 tag 规范 |
-| [reference/app-runtime-decomposition.md](reference/app-runtime-decomposition.md) | App runtime 拆分路线 |
-| [reference/onepanel-api-contract.md](reference/onepanel-api-contract.md) | 1Panel API 与 provider 合同 |
-| [reference/control-plane-path-policy.md](reference/control-plane-path-policy.md) | 逻辑路径与物理路径规则 |
-| [reference/control-plane-naming-registry.md](reference/control-plane-naming-registry.md) | 控制面命名注册表 |
-| [reference/open-source-readiness.md](reference/open-source-readiness.md) | 开源准备度基线 |
-| [reference/publication-boundary.md](reference/publication-boundary.md) | 公开仓库与本地私有材料边界 |
-| [reference/schemas/README.md](reference/schemas/README.md) | 公开合同 schema 索引 |
-
-### 🛠️ Runbooks
-
-| 文档 | 说明 |
-| --- | --- |
-| [runbooks/control-plane-agent-execution-flow.md](runbooks/control-plane-agent-execution-flow.md) | Agent 执行闭环 |
-| [runbooks/control-plane-domain-onboarding.md](runbooks/control-plane-domain-onboarding.md) | 新控制面领域接入 |
-| [runbooks/bootstrap-secrets.md](runbooks/bootstrap-secrets.md) | secrets 初始化 |
-| [runbooks/live-integration-gate.md](runbooks/live-integration-gate.md) | 真实环境验证门禁 |
-| [runbooks/app-project-delivery-workflow.md](runbooks/app-project-delivery-workflow.md) | 应用接入与交付主路径 |
-| [runbooks/app-delivery-failure-handling.md](runbooks/app-delivery-failure-handling.md) | 应用交付失败处理 |
-| [runbooks/docker-host-runtime-packaging-template.md](runbooks/docker-host-runtime-packaging-template.md) | Docker host runtime 打包模板 |
-| [runbooks/onepanel-cli-validation-workflow.md](runbooks/onepanel-cli-validation-workflow.md) | 1Panel CLI 验证流程 |
-| [runbooks/powershell-wsl-remote-bash.md](runbooks/powershell-wsl-remote-bash.md) | PowerShell 到 WSL/remote bash 路由 |
-| [runbooks/wsl-host-governance.md](runbooks/wsl-host-governance.md) | WSL 主机治理 |
-| [runbooks/current-state-and-validation.md](runbooks/current-state-and-validation.md) | 当前状态和验证快照 |
-| [runbooks/monitoring-and-alerting.md](runbooks/monitoring-and-alerting.md) | 监控目标、健康检查、容器监控、告警规则和工具集成 |
-| [runbooks/upgrade-and-migration.md](runbooks/upgrade-and-migration.md) | 升级与迁移指南 |
-| [runbooks/backup-and-recovery.md](runbooks/backup-and-recovery.md) | 备份与恢复操作手册 |
-
-### 🧑‍🔧 Maintainers
-
-| 文档 | 说明 |
-| --- | --- |
-| [maintainers/control-plane-authoring.md](maintainers/control-plane-authoring.md) | control plane authoring 规则 |
-| [maintainers/agentplane-roadmap-workbook.md](maintainers/agentplane-roadmap-workbook.md) | 长期阶段推进、任务状态和继续执行协议 |
-| [maintainers/layer-health-report.md](maintainers/layer-health-report.md) | 四层体系健康度指标与报告机制 |
-| [maintainers/skill-surface-audit.md](maintainers/skill-surface-audit.md) | 当前 Skill 面盘点与重构建议 |
-
-### 🕰️ History And Archive
-
-| 文档 | 说明 |
-| --- | --- |
-| [history/index.md](history/index.md) | 历史材料索引 |
-| [archive/README.md](archive/README.md) | 退役材料索引 |
+|------|------|
+| [主线追踪器](project/backlog.md) | 当前任务进度、分支任务 |
 
 ---
 
-## ✅ 文档门禁
+## 架构
+
+| 文档 | 说明 |
+|------|------|
+| [控制面合同](architecture/control-plane.md) | 核心架构：task-entry、配置中心 |
+| [协作边界](architecture/agentplane-app-collaboration.md) | 控制面与应用仓库的边界 |
+| [Linux 治理](architecture/linux-governance.md) | Linux / WSL backend 治理 |
+| [架构决策](architecture/decisions/) | 长期架构决策记录 |
+| [架构目录索引](architecture/README.md) | 架构文档导航 |
+
+---
+
+## 工程规范
+
+| 文档 | 说明 |
+|------|------|
+| [代码风格](reference/code-style.md) | 代码和文档风格基线 |
+| [Git 规范](reference/git-conventions.md) | 提交、分支、合并规则 |
+| [测试架构](reference/testing-architecture.md) | 测试分层和 marker 规范 |
+| [测试规范](reference/testing-conventions.md) | marker、并行、文件组织、本地工作流 |
+| [发布流程](reference/release-process.md) | 发布和健康检查 |
+| [仓库结构](reference/repository-structure.md) | 顶层目录和新文件放置规则 |
+| [文档治理](reference/documentation-governance.md) | frontmatter、emoji、链接和门禁 |
+| [四层文档体系](reference/documentation-layers.md) | 文档分层、审查节奏 |
+| [跨平台规范](reference/cross-platform.md) | Windows / WSL / Linux 规则 |
+| [容器规范](reference/container-conventions.md) | Docker Compose、容器命名、打包规范 |
+| [命名注册表](reference/control-plane-naming-registry.md) | app_id、容器名、路径策略 |
+| [开源准备度](reference/open-source-readiness.md) | 开源前检查清单、公开边界 |
+| [威胁模型](reference/threat-model.md) | 安全威胁分析 |
+| [术语表](reference/glossary.md) | 核心术语统一定义 |
+| [技术栈约束](reference/tech-stack.md) | Python、uv、Ruff 等技术选型 |
+| [App Runtime 拆分](reference/app-runtime-decomposition.md) | App runtime 拆分路线 |
+| [公开 Schema](reference/schemas/README.md) | 公开合同 schema 索引 |
+
+---
+
+## 运维手册
+
+完整列表和按场景分类见 [Runbook 导航](runbooks/README.md)。
+
+| 文档 | 说明 |
+|------|------|
+| [应用交付流程](runbooks/app-project-delivery-workflow.md) | 应用接入与交付主路径 |
+| [Agent 执行闭环](runbooks/control-plane-agent-execution-flow.md) | 执行 → 验证 → 记录 |
+| [Secrets 引导](runbooks/bootstrap-secrets.md) | secrets 初始化 |
+| [WSL 治理](runbooks/wsl-host-governance.md) | WSL 主机治理 |
+| [当前状态](runbooks/current-state-and-validation.md) | 状态和验证快照 |
+
+---
+
+## 维护者
+
+| 文档 | 说明 |
+|------|------|
+| [Control Plane Authoring](maintainers/control-plane-authoring.md) | 控制面编写规则 |
+| [Roadmap Workbook](maintainers/agentplane-roadmap-workbook.md) | 阶段推进、任务状态追踪 |
+
+---
+
+## 历史与归档
+
+| 文档 | 说明 |
+|------|------|
+| [历史材料](history/index.md) | 退出主线的审计材料 |
+| [归档文档](archive/README.md) | 退役文档、旧 runbook |
+
+---
+
+## 教程
+
+| 文档 | 说明 |
+|------|------|
+| [部署第一个应用](tutorials/deploy-first-app.md) | 从零部署 sub2api |
+| [排查部署失败](tutorials/troubleshoot-failed-deployment.md) | 常见错误和排查思路 |
+| [添加新服务器](tutorials/add-new-server.md) | 纳管新服务器 |
+
+---
+
+## AI 入口
+
+| 文档 | 说明 |
+|------|------|
+| [AGENTS.md](../AGENTS.md) | AI 工作规范 |
+| [控制面合同](architecture/control-plane.md) | 正式执行合同 |
+| [Agent 执行闭环](runbooks/control-plane-agent-execution-flow.md) | 执行流程 |
+| [命名注册表](reference/control-plane-naming-registry.md) | 对象命名规则 |
+
+---
+
+## 文档门禁
 
 新增或移动文档后运行：
 
@@ -171,8 +141,3 @@ uv run python -m agentplane.cli repo skills check --repo-root .
 uv run python -m agentplane.cli repo status --repo-root . --html tmp/agentplane-status.html
 uv run python -m agentplane.cli repo privacy-scan --repo-root .
 ```
-
-`docs-sanity` 会检查 active 文档断链、旧入口引用、孤立文档、frontmatter 完整性、人类文档术语和长度。
-`skills check` 会检查公开 Skill catalog、frontmatter、必备章节和正式 CLI 路由。
-`status --html` 会生成本地静态控制面状态面板，默认写到 ignored 的 `tmp/`。
-`privacy-scan` 会检查 Git 可见文件中是否误入真实控制面状态或维护者现场信息。
