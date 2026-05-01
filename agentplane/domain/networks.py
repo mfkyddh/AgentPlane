@@ -343,6 +343,92 @@ def audit_firewall_rules(
     return {"ok": ok, "checks": drift_checks, "firewall_base": firewall_base, "live_rules": live_rules}
 
 
+def plan_firewall_operation(
+    repo_root: Path,
+    target: str,
+    operation: str,
+    *,
+    executor: object | None = None,
+    env_file: str | None = None,
+    with_docker_restart: bool = False,
+) -> dict[str, Any]:
+    from agentplane.providers.onepanel_objects import (
+        load_firewall_base,
+        onepanel_target_executor,
+        plan_firewall_operation as plan_firewall_op,
+    )
+
+    if target not in SUPPORTED_NETWORK_TARGETS:
+        raise ValueError(f"unsupported network target: {target}")
+
+    supported_operations = ("start", "stop", "restart", "disableBanPing", "enableBanPing")
+    if operation not in supported_operations:
+        raise ValueError(f"unsupported firewall operation: {operation}")
+
+    resolved_executor = executor or onepanel_target_executor(target, env_file)
+    firewall_base = load_firewall_base(resolved_executor, name="port")
+
+    plan = plan_firewall_op(operation=operation, with_docker_restart=with_docker_restart)
+
+    return {
+        "ok": True,
+        "target": target,
+        "operation": operation,
+        "firewall": firewall_base,
+        "plan": {
+            "object": plan.object_name,
+            "mode": plan.mode,
+            "path": plan.path,
+            "body": plan.body,
+        },
+    }
+
+
+def apply_firewall_operation(
+    repo_root: Path,
+    target: str,
+    operation: str,
+    *,
+    execute: bool,
+    executor: object | None = None,
+    env_file: str | None = None,
+    with_docker_restart: bool = False,
+) -> dict[str, Any]:
+    from agentplane.providers.onepanel_objects import load_firewall_base, onepanel_target_executor
+
+    if not execute:
+        raise ValueError("firewall apply requires --execute")
+
+    plan = plan_firewall_operation(
+        repo_root,
+        target,
+        operation,
+        executor=executor,
+        env_file=env_file,
+        with_docker_restart=with_docker_restart,
+    )
+
+    resolved_executor = executor or onepanel_target_executor(target, env_file)
+    plan_body = plan["plan"]
+
+    result = resolved_executor.api_request("POST", plan_body["path"], plan_body["body"])
+
+    verified_base = load_firewall_base(resolved_executor, name="port")
+    verified = {
+        "ok": True,
+        "firewall": verified_base,
+    }
+
+    return {
+        "ok": True,
+        "target": target,
+        "operation": operation,
+        "result": result,
+        "verified": verified,
+        "firewall": plan["firewall"],
+    }
+
+
 def ensure_managed_bridge_networks(repo_root: Path, target: str) -> dict[str, Any]:
     _, inventory = _load_inventory(repo_root, target)
     declarations = _normalized_managed_bridge_networks(inventory)

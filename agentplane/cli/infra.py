@@ -6,6 +6,7 @@ from typing import Any
 
 from agentplane.cli.audit import audit_filesystem
 from agentplane.cli.cleanup import SUPPORTED_CLEANUP_TARGETS, apply_cleanup_plan, build_cleanup_plan
+from agentplane.cli.operations import append_operation_ledger, next_operation_id
 from agentplane.cli.infra_automation import (
     SUPPORTED_AUTOMATION_OPERATIONS,
     SUPPORTED_AUTOMATION_TARGETS,
@@ -19,9 +20,11 @@ from agentplane.cli.inventory import generate_inventory_snapshot
 from agentplane.cli.local_infra import add_local_infra_parser, handle_local_infra_command
 from agentplane.cli.networks import (
     SUPPORTED_NETWORK_TARGETS,
+    apply_firewall_operation,
     audit_firewall_rules,
     audit_managed_bridge_networks,
     ensure_managed_bridge_networks,
+    plan_firewall_operation,
 )
 from agentplane.cli.preflight import execute_remote_preflight
 from agentplane.cli.remote import execute_remote_bash
@@ -189,6 +192,27 @@ def add_infra_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     )
     firewall_audit_parser.add_argument("--repo-root", default=".", help="仓库根目录")
     firewall_audit_parser.add_argument("--env-file", help="覆盖 1Panel API env 文件")
+
+    firewall_parser = network_subparsers.add_parser("firewall", help="防火墙操作")
+    firewall_subparsers = firewall_parser.add_subparsers(dest="infra_firewall_action", required=True)
+    for action in ("plan", "apply"):
+        sub = firewall_subparsers.add_parser(action, help=f"{action} firewall operation")
+        sub.add_argument(
+            "target",
+            choices=SUPPORTED_NETWORK_TARGETS,
+            help=_target_help(scope="target-specific: network", targets=SUPPORTED_NETWORK_TARGETS),
+        )
+        sub.add_argument(
+            "--operation",
+            required=True,
+            choices=("start", "stop", "restart", "disableBanPing", "enableBanPing"),
+            help="防火墙操作",
+        )
+        sub.add_argument("--repo-root", default=".", help="仓库根目录")
+        sub.add_argument("--env-file", help="覆盖 1Panel API env 文件")
+        sub.add_argument("--with-docker-restart", action="store_true", help="是否联动重启 Docker")
+        if action == "apply":
+            sub.add_argument("--execute", action="store_true", help="执行计划")
 
     remote_parser = infra_subparsers.add_parser("remote", help="基础设施远端执行入口")
     remote_subparsers = remote_parser.add_subparsers(dest="infra_remote_action", required=True)
@@ -424,6 +448,41 @@ def handle_infra_command(args: argparse.Namespace) -> dict[str, Any]:
                 repo_root, args.target, env_file=getattr(args, "env_file", None)
             ),
         }
+
+    if args.infra_action == "network" and args.infra_network_action == "firewall" and args.infra_firewall_action == "plan":
+        return _wrap(
+            action="network.firewall.plan",
+            target=args.target,
+            payload=plan_firewall_operation(
+                repo_root,
+                args.target,
+                args.operation,
+                env_file=getattr(args, "env_file", None),
+                with_docker_restart=bool(getattr(args, "with_docker_restart", False)),
+            ),
+        )
+
+    if args.infra_action == "network" and args.infra_network_action == "firewall" and args.infra_firewall_action == "apply":
+        result = apply_firewall_operation(
+            repo_root,
+            args.target,
+            args.operation,
+            execute=bool(args.execute),
+            env_file=getattr(args, "env_file", None),
+            with_docker_restart=bool(getattr(args, "with_docker_restart", False)),
+        )
+        op_id = next_operation_id("firewall")
+        append_operation_ledger(
+            repo_root,
+            command="infra",
+            action="network.firewall.apply",
+            target=args.target,
+            op_id=op_id,
+            dry_run=not bool(args.execute),
+            result="executed" if result.get("ok") else "failed",
+            details={"operation": args.operation},
+        )
+        return _wrap(action="network.firewall.apply", target=args.target, payload=result)
 
     if args.infra_action == "remote" and args.infra_remote_action == "preflight":
         report = execute_remote_preflight(repo_root, args.target)

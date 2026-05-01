@@ -81,7 +81,7 @@ layer: project
 
 | ID | 任务 | 状态 | 服务主线条件 | 说明 |
 |----|------|------|--------------|------|
-| B1 | 1Panel 最新适配与扩展功能规划 | 进行中 | 条件二、Beta M5 Provider 合同 | 已建立 [1Panel 更新适配与扩展规划](onepanel-adaptation-expansion-plan.md)，M1 Provider 更新门禁已完成：route fingerprint、route diff 影响矩阵、object API contract fixture、health-check opt-in 集成；M2 只读能力扩展已完成：`service verify` compose identity label、`ingress verify` SSL 证书详情与 OpenResty 状态、`infra automation verify` cronjob 执行记录、`infra network firewall-audit` 防火墙规则漂移。 |
+| B1 | 1Panel 最新适配与扩展功能规划 | 进行中 | 条件二、Beta M5 Provider 合同 | 已建立 [1Panel 更新适配与扩展规划](onepanel-adaptation-expansion-plan.md)，M1 Provider 更新门禁已完成：route fingerprint、route diff 影响矩阵、object API contract fixture、health-check opt-in 集成；M2 只读能力扩展已完成：`service verify` compose identity label、`ingress verify` SSL 证书详情与 OpenResty 状态、`infra automation verify` cronjob 执行记录、`infra network firewall-audit` 防火墙规则漂移；M3 可变更能力扩展已完成：`infra network firewall plan/apply`、`infra automation plan/apply`、`ingress plan/apply`，所有 apply 后触发 verify 并记录 operation ledger。 |
 
 ---
 

@@ -219,9 +219,10 @@ layer: project
 
 ### M3：可变更能力扩展
 
-- 为防火墙、定时任务、ingress reconcile 提供 plan/apply。
-- 每个 apply 都记录 operation ledger。
-- 每个 apply 后必须触发 verify。
+- 已为防火墙提供正式 plan/apply 入口：`infra network firewall plan/apply`。支持 start、stop、restart、disableBanPing、enableBanPing 操作，apply 后触发 verify 并记录 operation ledger。
+- 定时任务 plan/apply 已在 `infra automation plan/apply` 中实现，支持 reconcile、run、trigger 操作。
+- ingress reconcile plan/apply 已在 `ingress plan/apply` 中实现，支持创建缺失网站，apply 后触发 verify。
+- 所有 apply 操作均记录 operation ledger。
 
 ### M4：App resource 与 1Panel 应用纳管
 
