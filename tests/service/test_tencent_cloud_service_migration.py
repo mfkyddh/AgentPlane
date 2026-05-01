@@ -46,6 +46,7 @@ def _run_script(script: Path, *args: str, stdin: str | None = None) -> subproces
     from agentplane.runtime.wsl_bridge import windows_path_to_wsl_posix
 
     bash = shutil.which("bash")
+    # Try WSL path first; fall back to forward-slash Windows path for Git Bash.
     script_str = windows_path_to_wsl_posix(script) or str(script).replace("\\", "/")
     args_str = " ".join(f'"{a}"' for a in args)
     cmd = f'bash "{script_str}" {args_str}'
@@ -57,6 +58,24 @@ def _run_script(script: Path, *args: str, stdin: str | None = None) -> subproces
         check=False,
         cwd=str(REPO_ROOT),
     )
+
+
+def _bash_can_reach_script(script: Path) -> bool:
+    """Check whether bash can actually access the script file."""
+    import shutil
+
+    from agentplane.runtime.wsl_bridge import windows_path_to_wsl_posix
+
+    bash = shutil.which("bash")
+    if not bash:
+        return False
+    script_str = windows_path_to_wsl_posix(script) or str(script).replace("\\", "/")
+    result = subprocess.run(
+        [bash, "-c", f'test -f "{script_str}"'],
+        capture_output=True,
+        check=False,
+    )
+    return result.returncode == 0
 
 
 def _write_inventory(root: Path, target: str = "prod0-main") -> None:
@@ -133,6 +152,10 @@ def _write_migration_artifacts(root: Path, target_alias: str = "prod0") -> None:
 # ======================================================================
 
 
+@unittest.skipUnless(
+    _bash_can_reach_script(DEPLOY_DATA_SERVICES_SCRIPT),
+    "bash cannot reach deploy_data_services_to_host.sh (needs WSL or native Linux)",
+)
 class TestDeployDataServicesHostValidation(unittest.TestCase):
     """The deploy script must reject unsupported host aliases and accept known ones."""
 
@@ -224,6 +247,10 @@ class TestDeployDataServicesRequiredFiles(unittest.TestCase):
 # ======================================================================
 
 
+@unittest.skipUnless(
+    _bash_can_reach_script(REMOTE_DEPLOY_DATA_SERVICES_SCRIPT),
+    "bash cannot reach remote_deploy_data_services.sh (needs WSL or native Linux)",
+)
 class TestRemoteDeployTargetAliasMapping(unittest.TestCase):
     """The remote script maps target aliases to compose files."""
 

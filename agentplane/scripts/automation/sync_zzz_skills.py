@@ -88,8 +88,14 @@ def _ensure_origin_not_ahead(target_repo: Path, branch: str) -> str | None:
     if fetched.returncode != 0:
         return fetched.stderr.strip() or fetched.stdout.strip() or f"failed to fetch {remote_name}"
 
-    local_head = _git_output(["rev-parse", branch], cwd=target_repo)
-    remote_head = _git_output(["rev-parse", remote_name], cwd=target_repo)
+    try:
+        local_head = _git_output(["rev-parse", branch], cwd=target_repo)
+    except RuntimeError as exc:
+        return f"cannot resolve local branch {branch}: {exc}"
+    try:
+        remote_head = _git_output(["rev-parse", remote_name], cwd=target_repo)
+    except RuntimeError as exc:
+        return f"cannot resolve remote {remote_name}: {exc}"
     if local_head != remote_head:
         return f"local {branch} is not aligned with {remote_name}"
     return None

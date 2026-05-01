@@ -60,7 +60,7 @@ class ZzzSkillsSyncTests(unittest.TestCase):
 
             payload = run_sync(source_root=source_root, target_repo=target_repo)
 
-            self.assertEqual("ok_no_changes", payload["status"])
+            self.assertEqual("ok_no_changes", payload["status"], msg=f"reason: {payload.get('reason', 'n/a')}")
             self.assertEqual(["zzz-alpha"], payload["skills"])
 
     def test_sync_removes_stale_zzz_directories(self) -> None:
@@ -87,7 +87,7 @@ class ZzzSkillsSyncTests(unittest.TestCase):
 
             payload = run_sync(source_root=source_root, target_repo=target_repo)
 
-            self.assertEqual("ok_pushed", payload["status"])
+            self.assertEqual("ok_pushed", payload["status"], msg=f"reason: {payload.get('reason', 'n/a')}")
             self.assertFalse(stale_dir.exists())
             self.assertTrue((target_repo / "zzz-alpha" / "SKILL.md").exists())
 
