@@ -38,6 +38,5 @@ agentplane test fast --tb=short
 
 ## Downstream Docs
 
-- `docs/reference/documentation-governance.md`
 - `docs/reference/open-source-readiness.md`
 - `docs/maintainers/control-plane-authoring.md`

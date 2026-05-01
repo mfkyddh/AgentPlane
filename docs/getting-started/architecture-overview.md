@@ -10,6 +10,8 @@ audience: human
 
 结论：AgentPlane 的核心是"三层投影"体系——从 Git 配置和现场状态派生出机器可消费的只读视图，支撑对账、审计和回写。理解投影模型，就理解了 AgentPlane 的设计哲学。
 
+> 本文涉及内部架构概念（Inventory、Ledger、Projection 等）。统一术语定义见 [核心术语表](../reference/glossary.md)。
+
 ---
 
 ## 🎯 一句话理解 AgentPlane

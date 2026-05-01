@@ -24,7 +24,7 @@ audience: human
 检查依赖 → 执行操作 → 验证结果 → 留下记录
 ```
 
-核心理念：**配置中心**（Git 中的权威定义）vs **现场状态**（服务器实际运行）。AgentPlane 持续对比两者，发现不一致时及时报告。
+核心理念：Git 中的配置定义"系统应该是什么样"，服务器实际运行状态是"系统实际是什么样"。AgentPlane 持续对比两者，发现不一致时及时报告。
 
 ---
 
@@ -46,7 +46,7 @@ audience: human
 | **确认计划** | 审核计划，同意或调整 | **人类** |
 | 执行操作 | 加 `--execute` 真正执行 | AI |
 | 验证结果 | 运行验证命令，检查容器、健康检查、公网入口 | AI |
-| 留下记录 | 写入操作日志、刷新台账、更新文档 | AI |
+| 留下记录 | 写入操作日志、刷新记录、更新文档 | AI |
 | 向你汇报 | 给你人类可读的摘要 | AI |
 
 > 📌 **人类在两个点必须介入**：确认计划（第 4 步）和验收结果（第 8 步）。其他步骤 AI 自主完成。
@@ -57,10 +57,11 @@ audience: human
 
 | 概念 | 含义 |
 |------|------|
-| **配置中心** | Git 中的权威状态定义，回答"我们期望系统应该是什么样" |
 | **Skill** | AI Agent 的意图入口，把自然语言路由到正式 CLI |
-| **执行闭环** | Plan → Apply → Verify → 记录 → 刷新台账 → 同步文档 |
-| **三层投影** | Inventory（声明）→ Ledger（证据）→ Summary（摘要） |
+| **执行闭环** | 计划 → 执行 → 验证 → 记录 |
+| **CLI** | `agentplane ...`，AgentPlane 的正式执行入口 |
+
+> 更多术语定义见 [核心术语表](../reference/glossary.md)。
 
 **Skill 路由示例**：
 
@@ -92,16 +93,13 @@ audience: human
 
 **你用自然语言表达意图，AI 自主推进全部实施工作。** 你不需要记命令、写代码或管 git。
 
-项目有一条**主线**（当前阶段必须完成的三件事）。你提的需求，AI 自动判断归属：
-
 | 你说 | AI 会做 |
 |------|--------|
-| "继续推进主线" | 从上次停下的地方继续 |
-| "帮我部署这个应用" | 匹配 Skill，执行部署 |
-| "我有个新想法" | 评估归属，安排执行或记录到 backlog |
-| "停" | 立即停止 |
+| "帮我部署这个应用" | 匹配 Skill，制定计划，执行部署 |
+| "这个 bug 怎么回事" | 调查原因，修复，验证 |
+| "停" | 立即停止所有操作 |
 
-AI 使用 `docs/project/backlog.md` 追踪主线进度，每次会话开始会告诉你当前位置。详细规则见 [人机协作协议](../reference/human-ai-collaboration.md)。
+详细协作规则见 [AGENTS.md](../../AGENTS.md)。
 
 ---
 
@@ -137,7 +135,7 @@ agentplane repo health-check --repo-root .
 
 - **想上手部署？** → [应用交付流程](../runbooks/app-project-delivery-workflow.md)
 - **想了解 AI 执行规范？** → [AI 执行闭环](../runbooks/control-plane-agent-execution-flow.md)
-- **想深入架构设计？** → [控制面核心合同](../architecture/control-plane.md)
+- **想深入架构设计？** → [架构概览](architecture-overview.md)
 - **想知道当前状态？** → [状态与验证](../runbooks/current-state-and-validation.md)
 - **想看术语定义？** → [术语表](../reference/glossary.md)
 

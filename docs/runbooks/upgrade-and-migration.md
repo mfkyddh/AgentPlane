@@ -367,7 +367,6 @@ agentplane runtime backend verify --repo-root .
 | --- | --- |
 | [release-process.md](../reference/release-process.md) | 发布流程和健康检查规范 |
 | [repository-structure.md](../reference/repository-structure.md) | 仓库结构和文件放置规则 |
-| [documentation-governance.md](../reference/documentation-governance.md) | 文档治理规范 |
 | [bootstrap-secrets.md](bootstrap-secrets.md) | 首次安装引导 |
 | [current-state-and-validation.md](current-state-and-validation.md) | 当前状态和验证快照 |
 | [CHANGELOG.md](../../CHANGELOG.md) | 版本变更日志 |

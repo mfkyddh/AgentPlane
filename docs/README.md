@@ -19,7 +19,7 @@ audience: both
 | 1 | [入门指南](getting-started/getting-started.md) | 安装、体检、第一次使用 |
 | 2 | [架构概览](getting-started/architecture-overview.md) | 一句话理解 + 投影模型 |
 | 3 | [部署第一个应用](tutorials/deploy-first-app.md) | 动手教程 |
-| 4 | [人机协作协议](reference/human-ai-collaboration.md) | 怎么跟 AI 协作 |
+| 4 | [AGENTS.md](../AGENTS.md) | AI 工作规范 |
 
 ---
 
@@ -27,9 +27,9 @@ audience: both
 
 | 文档 | 说明 |
 |------|------|
-| [愿景](strategy/vision.md) | 是什么、解决什么、不做什么、约束、干系人 |
+| [愿景](strategy/vision.md) | 是什么、解决什么、不做什么 |
 | [原则](strategy/principles.md) | 哲学基座、方法论、工程原则 |
-| [路线图](strategy/roadmap.md) | 三阶段推进、里程碑、长期机制 |
+| [路线图](strategy/roadmap.md) | 三阶段推进、里程碑 |
 | [决策记录](strategy/decisions/) | 为什么这样做 |
 
 ---
@@ -72,8 +72,6 @@ audience: both
 | 文档 | 说明 |
 |------|------|
 | [仓库结构](reference/repository-structure.md) | 顶层目录和新文件放置规则 |
-| [文档治理](reference/documentation-governance.md) | frontmatter、emoji、链接和门禁 |
-| [四层文档体系](reference/documentation-layers.md) | 文档分层、审查节奏 |
 | [术语表](reference/glossary.md) | 核心术语统一定义 |
 
 ### 🔧 平台与基础设施
@@ -120,7 +118,7 @@ audience: both
 | 文档 | 说明 |
 |------|------|
 | [Control Plane Authoring](maintainers/control-plane-authoring.md) | 控制面编写规则 |
-| [Roadmap Workbook](maintainers/agentplane-roadmap-workbook.md) | 阶段推进、任务状态追踪 |
+| [Roadmap Workbook（归档）](archive/maintainers/agentplane-roadmap-workbook.md) | 阶段推进模板参考 |
 
 ---
 

@@ -112,8 +112,8 @@ function release_lock(fd, lock_file):
 
 | 场景 | 必须产物 | 模板位置 |
 | --- | --- | --- |
-| 审批通过并执行 | Operation Receipt | [workbook P2](../maintainers/agentplane-roadmap-workbook.md#operation-receipt-模板) |
-| 审批拒绝 | Exception Review | [workbook P2](../maintainers/agentplane-roadmap-workbook.md#exception-review-模板) |
+| 审批通过并执行 | Operation Receipt | [workbook P2](../archive/maintainers/agentplane-roadmap-workbook.md#operation-receipt-模板) |
+| 审批拒绝 | Exception Review | [workbook P2](../archive/maintainers/agentplane-roadmap-workbook.md#exception-review-模板) |
 | 审批超时 | Exception Review | 同上 |
 
 ## 🤖 Agent ID 传递
@@ -172,9 +172,8 @@ function release_lock(fd, lock_file):
 ## 🔗 相关文档
 
 - [威胁模型](threat-model.md)
-- [子 Agent 协作边界](agent-collaboration.md)
-- [阶段工作计划](../maintainers/agentplane-roadmap-workbook.md)
-- [Operation Receipt 模板](../maintainers/agentplane-roadmap-workbook.md#operation-receipt-模板)
+- [阶段工作计划（归档）](../archive/maintainers/agentplane-roadmap-workbook.md)
+- [Operation Receipt 模板（归档）](../archive/maintainers/agentplane-roadmap-workbook.md#operation-receipt-模板)
 
 ## 📋 后续计划
 

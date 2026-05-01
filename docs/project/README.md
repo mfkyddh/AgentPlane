@@ -24,8 +24,8 @@ layer: project
 
 ## 🔗 与其他层的关系
 
-- **战略层**：[愿景](../strategy/vision.md) 定义目标和约束，[路线图](../strategy/roadmap.md) 定义阶段
-- **工程层**：[参考文档](../reference/) 定义流程和标准
+- [愿景](../strategy/vision.md) 定义目标和约束，[路线图](../strategy/roadmap.md) 定义阶段
+- [参考文档](../reference/) 定义流程和标准
 
 ---
 
@@ -33,4 +33,4 @@ layer: project
 
 - [战略总览](../strategy/README.md) — 战略层导航
 - [愿景](../strategy/vision.md) — 项目目标、范围、约束、干系人
-- [四层文档体系](../reference/documentation-layers.md) — 文档分层说明
+- [文档地图](../README.md) — 文档导航

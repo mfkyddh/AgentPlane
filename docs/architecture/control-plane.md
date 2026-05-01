@@ -28,6 +28,8 @@ layer: technical
 
 ## 📖 核心术语
 
+以下术语在本文中有具体技术含义。统一术语模型和中英文对照见 [核心术语表](../reference/glossary.md)。
+
 | 术语 | 含义 |
 | --- | --- |
 | `source of truth` | 某一类事实的正式真源 |

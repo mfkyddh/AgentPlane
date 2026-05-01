@@ -5,7 +5,7 @@
 
 ## 协作协议
 
-本项目采用"人类表达意图，AI 自主推进"的协作模式。详见 `docs/reference/human-ai-collaboration.md`。
+**人类表达意图，AI 自主推进，所有工作回归主线。**
 
 **会话开始**：读取 `docs/project/backlog.md`，确认主线进度，向人类报告当前位置。
 
@@ -44,14 +44,9 @@
 - **测试**: 新测试必须标记 `unit`/`integration`/`e2e`。默认排除 `live_gate`、`integration_wsl` 等
 - **跨平台源码**: Windows 和 WSL 共用一个 checkout 和一个 `.venv`
 
-## 四层文档体系
+## 文档约定
 
-详见 `docs/reference/documentation-layers.md`：
-
-1. **战略层** (`docs/strategy/`) — 愿景、原则、路线图。回答：去哪里？为什么？
-2. **项目层** (`docs/project/`) — 项目章程、角色、风险。回答：做什么？谁来做？
-3. **工程层** (`docs/reference/`) — 代码风格、Git、测试、发布。回答：如何做？
-4. **技术层** (`docs/architecture/`, `docs/runbooks/`) — 架构、运维。回答：具体怎么做？
+两层原则：`docs/` 给人看，`AGENTS.md` 给 AI 看。活跃文档需要 YAML frontmatter（`status`、`owner`、`last_verified`、`audience`）且必须被索引链接。
 
 ## 求是 Skills 使用原则
 
@@ -84,9 +79,7 @@
 - **KISS** — 保持简单
 - **SOLID** — 遵循职责单一、开闭原则等
 
-## 文档索引
-
-活跃文档需要 YAML frontmatter（`status`、`owner`、`last_verified`、`audience`）且必须被索引链接。关键文档：
+## 关键文档
 
 | 文档 | 用途 |
 |------|------|

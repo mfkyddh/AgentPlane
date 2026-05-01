@@ -9,13 +9,15 @@ layer: project
 
 # AgentPlane 主线追踪器
 
-结论：本文是 AgentPlane 唯一的任务真相源。所有工作必须归属于主线条件、分支任务或 backlog 三者之一。AI 每次会话开始时读取本文，结束时更新本文。
+结论：本文是 AgentPlane 唯一的任务真相源。所有工作必须归属于主线条件、分支任务或 backlog 三者之一。AI 每次会话开始时读取本文，结束时更新本文。本文只负责任务推进，不定义产品/项目模型（模型定义见 [术语表](../reference/glossary.md)）。
 
 ---
 
-## 🎯 主线：当前阶段必须完成的三件事
+## 🎯 主线：让 AI 能通过 Skill 完成首次运行闭环
 
-当前阶段的唯一目标是满足以下三个条件。所有工作都应直接或间接服务于这三个条件。
+当前阶段的唯一目标：**开源用户单 checkout 后，能让 AI 通过 Skill 完成首次运行闭环。** 所有工作都应直接或间接服务于这个目标。
+
+以下三个条件是这个目标的验收口径：
 
 ### 条件一：核心 Skill 测试覆盖
 
@@ -47,7 +49,7 @@ layer: project
 | 接入第一台服务器 | tutorials/add-new-server.md | 已有 |
 | 部署第一个应用 | tutorials/deploy-first-app.md | 已有 |
 | 故障排查 | tutorials/troubleshoot-failed-deployment.md | 已有 |
-| 协作协议 | reference/human-ai-collaboration.md | 已有 |
+| 协作协议 | AGENTS.md | 已有 |
 | API/CLI 参考 | 待评估 | 待评估 |
 | 常见问题 FAQ | 待评估 | 待评估 |
 
@@ -60,18 +62,6 @@ layer: project
 | 构建和部署 | 已完成 | WSL: compose up; prod0-main: candidate precheck + cutover |
 | 验证和证据 | 已完成 | health check 通过，operation ledger 已记录 |
 | 文档化过程 | 进行中 | 遇到并修复了 catalog repo_root 和 WSL 路径转换问题 |
-
----
-
-## 🛠️ 协作操作系统建设
-
-在推进主线的同时，需要建立协作基础设施。这些任务本身服务于主线——没有协作协议，AI 无法高效推进主线。
-
-| 任务 | 状态 | 归属 |
-|------|------|------|
-| 创建 backlog.md（本文） | 已完成 | 协作基础设施 |
-| 创建 human-ai-collaboration.md | 已完成 | 协作基础设施 |
-| 更新 CLAUDE.md 注入协作协议 | 待开始 | 协作基础设施 |
 
 ---
 
@@ -112,7 +102,7 @@ layer: project
 
 ### 判断标准
 
-- **主线**：不做这个，当前阶段目标就无法达成
+- **主线**：不做这个，"首次运行闭环"目标就无法达成
 - **分支**：做了有帮助，但不是当前阶段的必要条件
 - **backlog**：有价值，但当前阶段不需要
 
@@ -121,5 +111,4 @@ layer: project
 ## 关联文档
 
 - [路线图](../strategy/roadmap.md) — 三阶段路线
-- [协作协议](../reference/human-ai-collaboration.md) — 人机协作详细规则
 - [愿景](../strategy/vision.md) — 项目愿景和目标用户

@@ -134,39 +134,13 @@ AI 会自动：
 
 AgentPlane 采用**"你表达意图，AI 自主推进"**的协作模式。你不需要关心文件路径、命令语法或 git 操作——只需要用自然语言告诉 AI 你想做什么。
 
-### 主线机制
-
-项目有一条**主线**（当前阶段必须完成的三件事），所有工作都围绕主线推进。当你提出新需求时，AI 会自动判断：
-
-| 你的需求 | AI 的处理 |
-|---------|----------|
-| 直接服务主线 | 立即执行 |
-| 间接相关 | 创建分支任务，完成后回归主线 |
-| 完全无关 | 记录到 backlog，询问是否现在做 |
-
-**你不需要记住主线在哪里**——AI 每次会话开始时会告诉你当前进度，做完事情后会更新进度。
-
-### 会话流程
-
-```
-你说需求 → AI 判断归属 → AI 制定计划 → 你确认 → AI 执行 → AI 验证 → AI 报告
-```
-
-- **会话开始**：AI 读取主线进度，告诉你"上次我们在 XX，继续还是有新需求？"
-- **会话中**：你随时可以说新想法，AI 会合理安排
-- **会话结束**：AI 更新进度记录，下次会话无缝接续
-
-### 你能做什么
-
 | 你说 | AI 会做 |
 |------|--------|
 | "帮我部署这个应用" | 匹配 Skill，制定计划，执行部署 |
 | "这个 bug 怎么回事" | 调查原因，修复，验证 |
-| "继续推进主线" | 从上次停下的地方继续 |
-| "先不管主线，我有个想法" | 记录想法，判断归属，安排执行 |
 | "停" | 立即停止所有操作 |
 
-详细协作规则见 [人机协作协议](docs/reference/human-ai-collaboration.md)。
+详细协作规则见 [AGENTS.md](AGENTS.md)。
 
 ---
 
@@ -210,7 +184,7 @@ agentplane repo health-check --repo-root .
 
 AgentPlane 不是 Terraform、Kubernetes controller 或 SSH 脚本集合。
 
-**它更像一个给 AI Agent 使用的轻量控制面**：把正式操作收口到 `agentplane ...`，再把计划、执行、验证、证据、台账和文档回写串成闭环。
+**它更像一个给 AI Agent 使用的轻量控制面**：把正式操作收口到 `agentplane ...`，再把计划、执行、验证和记录串成闭环。
 
 | 适合 | 不适合 |
 |------|--------|
@@ -234,7 +208,7 @@ AgentPlane 不是 Terraform、Kubernetes controller 或 SSH 脚本集合。
 
 **🤖 AI 入口**：
 [AGENTS.md](AGENTS.md) ·
-[Roadmap Workbook](docs/maintainers/agentplane-roadmap-workbook.md) ·
+[Roadmap Workbook（归档）](docs/archive/maintainers/agentplane-roadmap-workbook.md) ·
 [control-plane.md](docs/architecture/control-plane.md) ·
 [execution-flow.md](docs/runbooks/control-plane-agent-execution-flow.md)
 

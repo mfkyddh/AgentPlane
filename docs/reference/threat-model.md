@@ -104,7 +104,7 @@ Agent 执行了人类未显式授权的高风险动作。包括：未经审批�
 
 ### P6 要补的
 
-1. **Agent ID 传递规则**（详见 [agent-collaboration.md](agent-collaboration.md)）：主/子 Agent 身份标识、操作归属、Receipt 中 `agent_id` 字段定义
+1. **Agent ID 传递规则**：主/子 Agent 身份标识、操作归属、Receipt 中 `agent_id` 字段定义
 2. **状态刷新强制规则**：高风险操作前必须重新读取 inventory / ledger 真源，不得使用缓存
 3. **继续执行协议增强**：`git status --short` 检查 + `repo status` 检查作为恢复的强制第一步（已在 P1，P6 明确写入威胁缓解）
 
