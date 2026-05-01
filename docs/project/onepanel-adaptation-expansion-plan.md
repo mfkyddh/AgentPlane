@@ -204,7 +204,8 @@ layer: project
 
 ### M1：Provider 更新门禁
 
-- 生成 1Panel route fingerprint。
+- 已实现首个 route fingerprint 命令：`agentplane repo provider onepanel route-fingerprint --source-root <1panel-source-root> --repo-root <repo-root>`。
+- 支持 `--baseline` 与 `--fail-on-drift`，可作为后续更新漂移门禁。
 - 建立 route diff -> AgentPlane domain impact matrix。
 - 为 `object_api.py` 现有关键 helper 增加 contract fixture。
 - 将更新检查纳入 `repo health-check` 或维护者命令。
@@ -270,4 +271,3 @@ layer: project
 2. 再实现 M2 的四个只读面：容器运行态、网站 HTTPS、防火墙漂移、定时任务健康。
 3. 等只读 evidence 稳定后，再开放 M3 的 plan/apply。
 4. 数据库和 1Panel app install 放到 M4，避免过早扩大写面。
-

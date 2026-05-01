@@ -10,6 +10,12 @@ from typing import Any
 
 from agentplane.domain.repository.doc_layer import run_doc_layer_check
 from agentplane.domain.repository.docs_sanity import run_docs_sanity
+from agentplane.domain.repository.onepanel_provider import (
+    build_onepanel_route_fingerprint,
+    compare_route_fingerprints,
+    load_route_fingerprint,
+    write_route_fingerprint,
+)
 from agentplane.domain.repository.privacy_scan import scan_repository_for_private_material
 from agentplane.domain.repository.secret_scan import scan_repository_for_secrets
 from agentplane.domain.repository.skills import (
@@ -53,6 +59,20 @@ def add_repository_parser(subparsers: argparse._SubParsersAction[argparse.Argume
 
     release = repo_subparsers.add_parser("release-check", help="运行发布前检查")
     release.add_argument("--repo-root", type=Path, default=Path.cwd())
+
+    provider = repo_subparsers.add_parser("provider", help="Provider 更新适配门禁")
+    provider_subparsers = provider.add_subparsers(dest="repo_provider_action", required=True)
+    onepanel = provider_subparsers.add_parser("onepanel", help="1Panel provider 更新检查")
+    onepanel_subparsers = onepanel.add_subparsers(dest="repo_provider_onepanel_action", required=True)
+    route_fingerprint = onepanel_subparsers.add_parser(
+        "route-fingerprint",
+        help="从本地 1Panel 源码生成 API route fingerprint",
+    )
+    route_fingerprint.add_argument("--repo-root", type=Path, default=Path.cwd())
+    route_fingerprint.add_argument("--source-root", type=Path, required=True, help="本地 1Panel 源码根目录")
+    route_fingerprint.add_argument("--baseline", type=Path, help="上一版 route fingerprint JSON")
+    route_fingerprint.add_argument("--output", type=Path, help="写出当前 route fingerprint JSON")
+    route_fingerprint.add_argument("--fail-on-drift", action="store_true", help="存在 route drift 时返回失败")
 
     skills = repo_subparsers.add_parser("skills", help="Skill 能力面治理")
     skills_subparsers = skills.add_subparsers(dest="repo_skills_action", required=True)
@@ -343,6 +363,35 @@ def run_release_check(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def run_provider_command(args: argparse.Namespace) -> dict[str, Any]:
+    repo_root = args.repo_root.resolve()
+    if args.repo_provider_action == "onepanel" and args.repo_provider_onepanel_action == "route-fingerprint":
+        payload = build_onepanel_route_fingerprint(args.source_root)
+        output = args.output.resolve() if args.output else None
+        if output is not None:
+            write_route_fingerprint(payload, output)
+
+        drift = None
+        ok = True
+        baseline = args.baseline.resolve() if args.baseline else None
+        if baseline is not None:
+            drift = compare_route_fingerprints(payload, load_route_fingerprint(baseline))
+            if args.fail_on_drift and drift["changed"]:
+                ok = False
+
+        return {
+            "command": "repo",
+            "action": "provider.onepanel.route-fingerprint",
+            "repo_root": str(repo_root),
+            "ok": ok,
+            "output": str(output) if output is not None else None,
+            "baseline": str(baseline) if baseline is not None else None,
+            "drift": drift,
+            "payload": payload,
+        }
+    raise ValueError(f"unsupported repo provider action: {args.repo_provider_action}")
+
+
 def run_skills_command(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = args.repo_root.resolve()
     if args.repo_skills_action == "check":
@@ -401,6 +450,8 @@ def handle_repository_command(args: argparse.Namespace) -> dict[str, Any]:
         return run_privacy_scan(args)
     if args.repo_action == "release-check":
         return run_release_check(args)
+    if args.repo_action == "provider":
+        return run_provider_command(args)
     if args.repo_action == "skills":
         return run_skills_command(args)
     raise ValueError(f"unsupported repo action: {args.repo_action}")

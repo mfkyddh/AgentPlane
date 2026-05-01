@@ -19,6 +19,7 @@ agentplane repo skills check --repo-root <repo-root>
 agentplane repo skills list --repo-root <repo-root>
 agentplane repo skills export --repo-root <repo-root>
 agentplane repo skills sync --repo-root <repo-root>
+agentplane repo provider onepanel route-fingerprint --source-root <1panel-source-root> --repo-root <repo-root>
 agentplane repo status --repo-root <repo-root>
 agentplane repo status --repo-root <repo-root> --html tmp/agentplane-status.html
 agentplane repo health-check --repo-root <repo-root>

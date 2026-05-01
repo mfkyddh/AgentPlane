@@ -43,6 +43,40 @@ def _assert_help_commands(
     return commands
 
 
+def _write_fake_onepanel_router(source_root: Path, *, include_extra_route: bool = False) -> None:
+    router_root = source_root / "agent" / "router"
+    router_root.mkdir(parents=True, exist_ok=True)
+    extra_route = '\n\t\tbaRouter.POST("/inspect", baseApi.Inspect)' if include_extra_route else ""
+    (router_root / "ro_container.go").write_text(
+        f"""package router
+
+func (s *ContainerRouter) InitRouter(Router *gin.RouterGroup) {{
+\tbaRouter := Router.Group("containers")
+\tbaseApi := v2.ApiGroupApp.BaseApi
+\t{{
+\t\tbaRouter.POST("/search", baseApi.SearchContainer)
+\t\tbaRouter.GET("/status", baseApi.LoadContainerStatus){extra_route}
+\t}}
+}}
+""",
+        encoding="utf-8",
+    )
+    (router_root / "ro_website.go").write_text(
+        """package router
+
+func (a *WebsiteRouter) InitRouter(Router *gin.RouterGroup) {
+\twebsiteRouter := Router.Group("websites")
+\tbaseApi := v2.ApiGroupApp.BaseApi
+\t{
+\t\twebsiteRouter.POST("", baseApi.CreateWebsite)
+\t\twebsiteRouter.GET("/:id", baseApi.GetWebsite)
+\t}
+}
+""",
+        encoding="utf-8",
+    )
+
+
 class CliEntrypointsTests(unittest.TestCase):
     def test_module_help_lists_required_subcommands_with_app_resource(self) -> None:
         result = run_cli("--help")
@@ -218,6 +252,7 @@ class CliEntrypointsTests(unittest.TestCase):
                 "secret-scan",
                 "privacy-scan",
                 "release-check",
+                "provider",
                 "skills",
             },
         )
@@ -307,6 +342,81 @@ class CliEntrypointsTests(unittest.TestCase):
         self.assertIn("AgentPlane Status", html_text)
         self.assertIn("Public Skills", html_text)
         self.assertIn("Targets", html_text)
+
+    def test_repo_provider_onepanel_route_fingerprint_reports_routes(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="agentplane-onepanel-source-") as tmp:
+            source_root = Path(tmp) / "1Panel"
+            output = Path(tmp) / "fingerprint.json"
+            _write_fake_onepanel_router(source_root)
+
+            result = run_cli(
+                "repo",
+                "provider",
+                "onepanel",
+                "route-fingerprint",
+                "--source-root",
+                str(source_root),
+                "--output",
+                str(output),
+                "--repo-root",
+                str(REPO_ROOT),
+            )
+
+            self.assertEqual(result.returncode, 0, msg=result.stderr)
+            payload = json.loads(result.stdout)
+            written = json.loads(output.read_text(encoding="utf-8"))
+
+        self.assertTrue(payload["ok"])
+        self.assertEqual("provider.onepanel.route-fingerprint", payload["action"])
+        self.assertEqual("onepanel", payload["payload"]["provider"])
+        self.assertEqual(4, payload["payload"]["route_count"])
+        self.assertEqual(payload["payload"]["fingerprint"], written["fingerprint"])
+        routes = {(item["method"], item["path"], item["handler"]) for item in payload["payload"]["routes"]}
+        self.assertIn(("POST", "/containers/search", "baseApi.SearchContainer"), routes)
+        self.assertIn(("POST", "/websites", "baseApi.CreateWebsite"), routes)
+        self.assertIn(("GET", "/websites/:id", "baseApi.GetWebsite"), routes)
+
+    def test_repo_provider_onepanel_route_fingerprint_can_fail_on_drift(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="agentplane-onepanel-drift-") as tmp:
+            source_root = Path(tmp) / "1Panel"
+            baseline = Path(tmp) / "baseline.json"
+            _write_fake_onepanel_router(source_root)
+
+            baseline_result = run_cli(
+                "repo",
+                "provider",
+                "onepanel",
+                "route-fingerprint",
+                "--source-root",
+                str(source_root),
+                "--output",
+                str(baseline),
+                "--repo-root",
+                str(REPO_ROOT),
+            )
+            self.assertEqual(baseline_result.returncode, 0, msg=baseline_result.stderr)
+
+            _write_fake_onepanel_router(source_root, include_extra_route=True)
+            drift_result = run_cli(
+                "repo",
+                "provider",
+                "onepanel",
+                "route-fingerprint",
+                "--source-root",
+                str(source_root),
+                "--baseline",
+                str(baseline),
+                "--fail-on-drift",
+                "--repo-root",
+                str(REPO_ROOT),
+            )
+
+        self.assertEqual(drift_result.returncode, 1, msg=drift_result.stderr)
+        payload = json.loads(drift_result.stdout)
+        self.assertFalse(payload["ok"])
+        self.assertTrue(payload["drift"]["changed"])
+        self.assertEqual(1, payload["drift"]["counts"]["added"])
+        self.assertEqual("/containers/inspect", payload["drift"]["added"][0]["path"])
 
     def test_repo_skills_check_validates_public_skill_surface(self) -> None:
         result = run_cli("repo", "skills", "check", "--repo-root", str(REPO_ROOT))
