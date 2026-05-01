@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
 
-from agentplane.providers.onepanel_objects import load_cronjob, onepanel_target_executor, search_cronjobs
+from agentplane.providers.onepanel_objects import load_cronjob, onepanel_target_executor, search_cronjob_records, search_cronjobs
 from agentplane.scripts.automation.backup_secrets_r2 import DEFAULT_ENV_FILE, load_config, run_backup
 from agentplane.scripts.automation.sync_zzz_skills import run_sync
 
@@ -291,13 +291,13 @@ def verify_infra_automation(
         "controller": str(automation.get("controller", "")) == "1panel-cronjob",
     }
     if not checks["controller"]:
-        return {"ok": False, "automation": normalized, "checks": checks, "live": None}
+        return {"ok": False, "automation": normalized, "checks": checks, "live": None, "records": None}
 
     resolved_executor = executor or _executor_for_target(target, env_file)
     live = _search_live_cronjob(resolved_executor, name)
     checks["exists"] = live is not None
     if live is None:
-        return {"ok": False, "automation": normalized, "checks": checks, "live": None}
+        return {"ok": False, "automation": normalized, "checks": checks, "live": None, "records": None}
 
     desired = _desired_cronjob_payload(
         repo_root,
@@ -308,8 +308,28 @@ def verify_infra_automation(
     checks["spec_match"] = live.get("spec") == desired["spec"]
     checks["script_match"] = live.get("script") == desired["script"]
     checks["enabled"] = str(live.get("status", "")) == "Enable"
+
+    records: dict[str, Any] | None = None
+    cronjob_id = int(live.get("id") or 0)
+    if cronjob_id > 0:
+        try:
+            records = search_cronjob_records(resolved_executor, cronjob_id=cronjob_id, page_size=5)
+            items = records.get("items")
+            if isinstance(items, list) and items:
+                last_record = items[0]
+                last_status = str(last_record.get("status", ""))
+                checks["last_execution_success"] = last_status == "success"
+                checks["last_execution_time"] = last_record.get("startTime")
+            else:
+                checks["last_execution_success"] = None
+                checks["last_execution_time"] = None
+        except Exception:
+            records = None
+            checks["last_execution_success"] = None
+            checks["last_execution_time"] = None
+
     ok = bool(checks["supported"] and checks["spec_match"] and checks["script_match"] and checks["enabled"])
-    return {"ok": ok, "automation": normalized, "checks": checks, "live": live}
+    return {"ok": ok, "automation": normalized, "checks": checks, "live": live, "records": records}
 
 
 def plan_infra_automation(

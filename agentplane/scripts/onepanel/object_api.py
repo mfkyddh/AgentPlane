@@ -56,6 +56,20 @@ def get_ingress(executor: FakeLikeExecutorProtocol, *, website_id: int) -> dict[
     return {"ingress": website, "https": https}
 
 
+def get_website_ssl(executor: FakeLikeExecutorProtocol, *, ssl_id: int) -> dict[str, Any]:
+    result = executor.api_request("GET", f"/api/v2/websites/ssl/{ssl_id}")
+    if not isinstance(result, dict):
+        raise ValueError("website SSL detail must be an object")
+    return result
+
+
+def get_openresty_status(executor: FakeLikeExecutorProtocol) -> dict[str, Any]:
+    result = executor.api_request("GET", "/api/v2/apps/installed/info/3")
+    if not isinstance(result, dict):
+        raise ValueError("openresty status must be an object")
+    return result
+
+
 def search_cronjobs(
     executor: FakeLikeExecutorProtocol,
     *,
@@ -174,6 +188,27 @@ def search_tasks(
     )
     if not isinstance(result, dict):
         raise ValueError("task search must be an object")
+    return result
+
+
+def search_cronjob_records(
+    executor: FakeLikeExecutorProtocol,
+    *,
+    cronjob_id: int,
+    page: int = 1,
+    page_size: int = 5,
+) -> dict[str, Any]:
+    result = executor.api_request(
+        "POST",
+        "/api/v2/cronjobs/search/records",
+        {
+            "page": page,
+            "pageSize": page_size,
+            "cronjobID": cronjob_id,
+        },
+    )
+    if not isinstance(result, dict):
+        raise ValueError("cronjob records search must be an object")
     return result
 
 

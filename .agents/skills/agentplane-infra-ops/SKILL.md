@@ -18,6 +18,7 @@ agentplane infra inventory <target> --repo-root <repo-root>
 agentplane infra audit <target> --repo-root <repo-root>
 agentplane infra network audit <target> --repo-root <repo-root>
 agentplane infra network ensure <target> --repo-root <repo-root>
+agentplane infra network firewall-audit <target> --repo-root <repo-root>
 agentplane infra remote bash <target> -- whoami
 agentplane infra automation search <target> --repo-root <repo-root>
 agentplane infra automation get <target> --name <automation-name> --repo-root <repo-root>

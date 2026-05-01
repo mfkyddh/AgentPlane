@@ -8,6 +8,8 @@ from typing import Any, Protocol
 from agentplane.providers.onepanel_ledgers import refresh_onepanel_ledgers
 from agentplane.providers.onepanel_objects import (
     get_ingress,
+    get_openresty_status,
+    get_website_ssl,
     onepanel_target_executor,
     plan_website_create,
     search_ingresses,
@@ -29,6 +31,12 @@ class ProviderGateway(Protocol):
 
     def get_onepanel_website(self, executor: object, *, website_id: int) -> dict[str, Any]:
         """Fetch a provider website by id."""
+
+    def get_onepanel_website_ssl(self, executor: object, *, ssl_id: int) -> dict[str, Any]:
+        """Fetch a provider website SSL certificate detail by id."""
+
+    def get_onepanel_openresty_status(self, executor: object) -> dict[str, Any]:
+        """Fetch OpenResty installed app status."""
 
     def plan_onepanel_website_create(self, *, alias: str, domain: str, proxy: str, remark: str, ipv6: bool) -> object:
         """Build the provider request object for website creation."""
@@ -70,6 +78,12 @@ class OnePanelProviderGateway:
 
     def get_onepanel_website(self, executor: object, *, website_id: int) -> dict[str, Any]:
         return get_ingress(executor, website_id=website_id)
+
+    def get_onepanel_website_ssl(self, executor: object, *, ssl_id: int) -> dict[str, Any]:
+        return get_website_ssl(executor, ssl_id=ssl_id)
+
+    def get_onepanel_openresty_status(self, executor: object) -> dict[str, Any]:
+        return get_openresty_status(executor)
 
     def plan_onepanel_website_create(self, *, alias: str, domain: str, proxy: str, remark: str, ipv6: bool) -> object:
         return plan_website_create(alias=alias, domain=domain, proxy=proxy, remark=remark, ipv6=ipv6)

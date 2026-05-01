@@ -49,10 +49,19 @@ def write_inventory(root: Path) -> None:
 
 
 class FakeWebsiteExecutor:
-    def __init__(self, *, existing: dict[str, object] | None, https: dict[str, object] | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        existing: dict[str, object] | None,
+        https: dict[str, object] | None = None,
+        ssl_detail: dict[str, object] | None = None,
+        openresty_status: dict[str, object] | None = None,
+    ) -> None:
         self.requests: list[tuple[str, str, dict[str, object] | None]] = []
         self._existing = existing
         self._https = https or {}
+        self._ssl_detail = ssl_detail or {"id": 3, "status": "ready", "primaryDomain": "token.example.org"}
+        self._openresty_status = openresty_status or {"id": 3, "name": "openresty", "status": "Running"}
         self._created = False
 
     def api_request(self, method: str, path: str, body: dict[str, object] | None = None) -> object:
@@ -93,6 +102,10 @@ class FakeWebsiteExecutor:
             }
         if path == "/api/v2/websites/9/https":
             return {"enable": True, "httpsPort": "443", "SSL": {"id": 3}}
+        if path.startswith("/api/v2/websites/ssl/"):
+            return dict(self._ssl_detail)
+        if path == "/api/v2/apps/installed/info/3":
+            return dict(self._openresty_status)
         if path == "/api/v2/websites":
             self._created = True
             return {"id": 9}
@@ -187,6 +200,8 @@ class WebsiteCliTests(unittest.TestCase):
                     "status": "Running",
                 },
                 https={"enable": False, "httpsPort": "", "SSL": {"id": 99}},
+                ssl_detail={"id": 99, "status": "ready", "primaryDomain": "token.example.org"},
+                openresty_status={"id": 3, "name": "openresty", "status": "Running"},
             )
 
             with patch("agentplane.domain.ingress.handlers._executor_for_target", return_value=executor):
@@ -196,6 +211,8 @@ class WebsiteCliTests(unittest.TestCase):
             self.assertTrue(payload["checks"]["alias"]["ok"])
             self.assertFalse(payload["checks"]["proxy"]["ok"])
             self.assertFalse(payload["checks"]["https"]["ok"])
+            self.assertTrue(payload["checks"]["ssl_status"]["ok"])
+            self.assertTrue(payload["checks"]["openresty"]["ok"])
             self.assertEqual(["proxy", "https", "ssl_id"], payload["failures"])
 
     def test_ingress_plan_reconcile_builds_create_step_for_missing_site(self) -> None:

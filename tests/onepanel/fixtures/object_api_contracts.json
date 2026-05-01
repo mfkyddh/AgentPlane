@@ -28,6 +28,19 @@
       "sslID": 8,
       "type": "existed"
     },
+    "GET /api/v2/websites/ssl/8": {
+      "id": 8,
+      "primaryDomain": "token.example.test",
+      "status": "ready",
+      "type": "existed"
+    },
+    "GET /api/v2/apps/installed/info/3": {
+      "id": 3,
+      "name": "openresty",
+      "appKey": "openresty",
+      "status": "Running",
+      "version": "1.27.1"
+    },
     "POST /api/v2/containers/search": {
       "items": [
         {
@@ -78,6 +91,18 @@
       "status": "Enable",
       "type": "shell",
       "spec": "17 3 * * *"
+    },
+    "POST /api/v2/cronjobs/search/records": {
+      "items": [
+        {
+          "id": 101,
+          "cronjobID": 2,
+          "status": "success",
+          "startTime": "2026-05-01T03:17:00Z",
+          "endTime": "2026-05-01T03:17:05Z"
+        }
+      ],
+      "total": 1
     },
     "POST /api/v2/hosts/firewall/base": {
       "name": "ufw",

@@ -26,6 +26,14 @@ def get_ingress(*args: Any, **kwargs: Any) -> Any:
     return object_api.get_ingress(*args, **kwargs)
 
 
+def get_website_ssl(*args: Any, **kwargs: Any) -> Any:
+    return object_api.get_website_ssl(*args, **kwargs)
+
+
+def get_openresty_status(*args: Any, **kwargs: Any) -> Any:
+    return object_api.get_openresty_status(*args, **kwargs)
+
+
 def get_panel_summary(*args: Any, **kwargs: Any) -> Any:
     return object_api.get_panel_summary(*args, **kwargs)
 
@@ -84,3 +92,7 @@ def search_installed_apps(*args: Any, **kwargs: Any) -> Any:
 
 def search_tasks(*args: Any, **kwargs: Any) -> Any:
     return object_api.search_tasks(*args, **kwargs)
+
+
+def search_cronjob_records(*args: Any, **kwargs: Any) -> Any:
+    return object_api.search_cronjob_records(*args, **kwargs)

@@ -276,6 +276,73 @@ def audit_managed_bridge_networks(repo_root: Path, target: str) -> dict[str, Any
     return {"ok": all(not item["problems"] for item in networks), "networks": networks}
 
 
+def audit_firewall_rules(
+    repo_root: Path,
+    target: str,
+    *,
+    executor: object | None = None,
+    env_file: str | None = None,
+) -> dict[str, Any]:
+    from agentplane.providers.onepanel_objects import load_firewall_base, onepanel_target_executor, search_firewall_rules
+
+    if target not in SUPPORTED_NETWORK_TARGETS:
+        raise ValueError(f"unsupported network target: {target}")
+
+    resolved_executor = executor or onepanel_target_executor(target, env_file)
+
+    firewall_base = load_firewall_base(resolved_executor, name="port")
+    firewall_active = bool(firewall_base.get("isActive"))
+    firewall_name = str(firewall_base.get("name", ""))
+
+    declared_rules: list[dict[str, Any]] = []
+    inventory_file = repo_root / "inventory" / "servers" / target / "inventory.json"
+    if inventory_file.is_file():
+        payload = json.loads(inventory_file.read_text(encoding="utf-8"))
+        if isinstance(payload, dict):
+            security = payload.get("security")
+            if isinstance(security, dict):
+                firewall = security.get("firewall")
+                if isinstance(firewall, dict):
+                    rules = firewall.get("rules")
+                    if isinstance(rules, list):
+                        declared_rules = [r for r in rules if isinstance(r, dict)]
+
+    live_rules_payload = search_firewall_rules(resolved_executor, rule_type="port", page_size=100)
+    live_rules = live_rules_payload.get("items") if isinstance(live_rules_payload, dict) else []
+    if not isinstance(live_rules, list):
+        live_rules = []
+
+    declared_ports = {str(r.get("port", "")): r for r in declared_rules if r.get("port")}
+    live_ports = {str(r.get("port", "")): r for r in live_rules if r.get("port")}
+
+    missing_in_live = []
+    for port, rule in declared_ports.items():
+        if port not in live_ports:
+            missing_in_live.append({"port": port, "description": rule.get("description", "")})
+
+    undeclared_in_live = []
+    for port, rule in live_ports.items():
+        if port not in declared_ports:
+            undeclared_in_live.append({
+                "port": port,
+                "protocol": rule.get("protocol", ""),
+                "strategy": rule.get("strategy", ""),
+                "description": rule.get("description", ""),
+            })
+
+    drift_checks = {
+        "firewall_active": firewall_active,
+        "firewall_name": firewall_name,
+        "declared_rules_count": len(declared_rules),
+        "live_rules_count": len(live_rules),
+        "missing_in_live": missing_in_live,
+        "undeclared_in_live": undeclared_in_live,
+    }
+
+    ok = firewall_active and not missing_in_live
+    return {"ok": ok, "checks": drift_checks, "firewall_base": firewall_base, "live_rules": live_rules}
+
+
 def ensure_managed_bridge_networks(repo_root: Path, target: str) -> dict[str, Any]:
     _, inventory = _load_inventory(repo_root, target)
     declarations = _normalized_managed_bridge_networks(inventory)

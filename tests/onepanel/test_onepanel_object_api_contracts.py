@@ -14,11 +14,14 @@ from agentplane.scripts.onepanel.object_api import (
     get_container,
     get_ingress,
     get_installed_app,
+    get_openresty_status,
     get_panel_summary,
     get_task_count,
+    get_website_ssl,
     load_cronjob,
     load_firewall_base,
     search_containers,
+    search_cronjob_records,
     search_cronjobs,
     search_firewall_rules,
     search_ingresses,
@@ -59,11 +62,14 @@ class OnePanelObjectApiContractTests(unittest.TestCase):
         panel = get_panel_summary(executor)
         ingresses = search_ingresses(executor, name="token")
         ingress = get_ingress(executor, website_id=4)
+        ssl_detail = get_website_ssl(executor, ssl_id=8)
+        openresty_status = get_openresty_status(executor)
         containers = search_containers(executor, name="sub2api-prod", state="running")
         container = get_container(executor, name="sub2api-prod")
         project = get_compose_project(executor, name="sub2api-prod")
         cronjobs = search_cronjobs(executor, info="backup-secrets")
         cronjob = load_cronjob(executor, cronjob_id=2)
+        cronjob_records = search_cronjob_records(executor, cronjob_id=2)
         firewall = load_firewall_base(executor, name="port")
         firewall_rules = search_firewall_rules(executor, rule_type="port", info="24443")
         apps = search_installed_apps(executor, name="openresty")
@@ -76,11 +82,14 @@ class OnePanelObjectApiContractTests(unittest.TestCase):
         self.assertEqual("v2.1.7", panel["systemVersion"])
         self.assertEqual("token", ingresses["items"][0]["alias"])
         self.assertTrue(ingress["https"]["enable"])
+        self.assertEqual("ready", ssl_detail["status"])
+        self.assertEqual("Running", openresty_status["status"])
         self.assertEqual("running", containers["items"][0]["state"])
         self.assertEqual("sub2api-prod", container["name"])
         self.assertEqual("sub2api-prod", project["name"])
         self.assertEqual("backup-secrets", cronjobs["items"][0]["name"])
         self.assertEqual("Enable", cronjob["status"])
+        self.assertEqual("success", cronjob_records["items"][0]["status"])
         self.assertTrue(firewall["isActive"])
         self.assertEqual("24443", firewall_rules["items"][0]["port"])
         self.assertEqual("openresty", apps["items"][0]["appKey"])

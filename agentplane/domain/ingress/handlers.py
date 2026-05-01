@@ -38,7 +38,8 @@ def get_ingress(repo_root: Path, target: str, alias: str) -> dict[str, Any]:
 def verify_ingress(repo_root: Path, target: str, alias: str) -> dict[str, Any]:
     definition = resolve_ingress(Path(repo_root).resolve(), target, alias)
     ingress = summarize_ingress(definition)
-    live = _find_live_ingress(_executor_for_target(target), alias)
+    executor = _executor_for_target(target)
+    live = _find_live_ingress(executor, alias)
     if live is None:
         return {
             "ok": False,
@@ -82,6 +83,34 @@ def verify_ingress(repo_root: Path, target: str, alias: str) -> dict[str, Any]:
             "actual": live_ingress.get("status"),
             "expected": definition.status,
         }
+
+    ssl_detail: dict[str, Any] | None = None
+    if actual_ssl.get("id"):
+        try:
+            provider = default_provider_gateway()
+            ssl_detail = provider.get_onepanel_website_ssl(executor, ssl_id=int(actual_ssl["id"]))
+            ssl_status = ssl_detail.get("status", "")
+            checks["ssl_status"] = {
+                "ok": ssl_status == "ready",
+                "actual": ssl_status,
+                "expected": "ready",
+            }
+        except Exception:
+            ssl_detail = None
+
+    openresty_status: dict[str, Any] | None = None
+    try:
+        provider = default_provider_gateway()
+        openresty_status = provider.get_onepanel_openresty_status(executor)
+        openresty_running = openresty_status.get("status") == "Running"
+        checks["openresty"] = {
+            "ok": openresty_running,
+            "actual": openresty_status.get("status"),
+            "expected": "Running",
+        }
+    except Exception:
+        openresty_status = None
+
     failures = [name for name, item in checks.items() if not bool(item.get("ok"))]
     return {
         "ok": not failures,
@@ -90,6 +119,8 @@ def verify_ingress(repo_root: Path, target: str, alias: str) -> dict[str, Any]:
         "checks": checks,
         "failures": failures,
         "evidence": [{"kind": "declared", "value": ingress}, {"kind": "live", "value": live}],
+        "ssl_detail": ssl_detail,
+        "openresty_status": openresty_status,
     }
 
 

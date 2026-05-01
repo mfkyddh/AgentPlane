@@ -19,6 +19,7 @@ from agentplane.cli.inventory import generate_inventory_snapshot
 from agentplane.cli.local_infra import add_local_infra_parser, handle_local_infra_command
 from agentplane.cli.networks import (
     SUPPORTED_NETWORK_TARGETS,
+    audit_firewall_rules,
     audit_managed_bridge_networks,
     ensure_managed_bridge_networks,
 )
@@ -180,6 +181,14 @@ def add_infra_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         help=_target_help(scope="target-specific: network", targets=SUPPORTED_NETWORK_TARGETS),
     )
     network_ensure_parser.add_argument("--repo-root", default=".", help="仓库根目录")
+    firewall_audit_parser = network_subparsers.add_parser("firewall-audit", help="审计 1Panel 防火墙规则")
+    firewall_audit_parser.add_argument(
+        "target",
+        choices=SUPPORTED_NETWORK_TARGETS,
+        help=_target_help(scope="target-specific: network", targets=SUPPORTED_NETWORK_TARGETS),
+    )
+    firewall_audit_parser.add_argument("--repo-root", default=".", help="仓库根目录")
+    firewall_audit_parser.add_argument("--env-file", help="覆盖 1Panel API env 文件")
 
     remote_parser = infra_subparsers.add_parser("remote", help="基础设施远端执行入口")
     remote_subparsers = remote_parser.add_subparsers(dest="infra_remote_action", required=True)
@@ -404,6 +413,16 @@ def handle_infra_command(args: argparse.Namespace) -> dict[str, Any]:
             "action": "network.ensure",
             "target": args.target,
             "payload": ensure_managed_bridge_networks(repo_root, args.target),
+        }
+
+    if args.infra_action == "network" and args.infra_network_action == "firewall-audit":
+        return {
+            "command": "infra",
+            "action": "network.firewall-audit",
+            "target": args.target,
+            "payload": audit_firewall_rules(
+                repo_root, args.target, env_file=getattr(args, "env_file", None)
+            ),
         }
 
     if args.infra_action == "remote" and args.infra_remote_action == "preflight":
