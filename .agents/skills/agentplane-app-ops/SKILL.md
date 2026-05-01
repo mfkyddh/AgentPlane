@@ -24,6 +24,12 @@ agentplane app resource refresh-ledger --target <target> --repo-root <repo-root>
 agentplane infra secrets sync-layout <target> --repo-root <repo-root> --write
 ```
 
+## Capability Details
+
+- `discover` queries 1Panel installed apps, compares with catalog, classifies as managed (already in catalog) or unmanaged (not yet onboarded). Supports `--name` filter and `--include-managed`.
+- `resource verify` checks: registry owner, secret file existence, inventory projection consistency. Optionally (when 1Panel API is reachable) cross-references declared databases against live provider state.
+- `resource get` aggregates: declared payload, inventory projection, secret file statuses.
+
 ## Rules
 
 - App resource secrets truth starts under `secrets/hosts/<target>/apps/<app>/resources/`.

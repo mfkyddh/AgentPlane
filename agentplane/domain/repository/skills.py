@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -9,6 +10,19 @@ from typing import Any
 import yaml
 
 REQUIRED_SKILL_SECTIONS = ("## Overview", "## Commands", "## Rules", "## Downstream Docs")
+
+# Known CLI command prefixes that are valid formal surfaces
+VALID_CLI_PREFIXES = (
+    "agentplane infra",
+    "agentplane service",
+    "agentplane ingress",
+    "agentplane app",
+    "agentplane projection",
+    "agentplane repo",
+    "agentplane bootstrap",
+    "agentplane test",
+    "agentplane onepanel",
+)
 
 
 @dataclass(frozen=True)
@@ -102,6 +116,58 @@ def write_skill_export(repo_root: Path, output: Path) -> Path:
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return output
+
+
+def _extract_commands_from_skill(text: str) -> list[str]:
+    """Extract CLI commands from the ## Commands section of a skill file."""
+    commands: list[str] = []
+    in_commands_section = False
+    in_code_block = False
+
+    for line in text.splitlines():
+        if line.strip() == "## Commands":
+            in_commands_section = True
+            continue
+        if in_commands_section and line.startswith("## "):
+            break
+        if in_commands_section and line.strip() == "```bash":
+            in_code_block = True
+            continue
+        if in_commands_section and in_code_block and line.strip() == "```":
+            in_code_block = False
+            continue
+        if in_commands_section and in_code_block:
+            cmd = line.strip()
+            if cmd and not cmd.startswith("#"):
+                # Take only the command part (before any comment)
+                cmd = cmd.split("#")[0].strip()
+                if cmd:
+                    commands.append(cmd)
+
+    return commands
+
+
+def _validate_cli_commands(commands: list[str], skill_path: str) -> list[SkillIssue]:
+    """Validate that commands in skill follow valid CLI structure."""
+    issues: list[SkillIssue] = []
+
+    for cmd in commands:
+        # Skip commands that are not agentplane commands
+        if not cmd.startswith("agentplane "):
+            continue
+
+        # Check if command starts with a valid prefix
+        has_valid_prefix = any(cmd.startswith(prefix) for prefix in VALID_CLI_PREFIXES)
+        if not has_valid_prefix:
+            issues.append(
+                SkillIssue(
+                    path=skill_path,
+                    kind="invalid-cli-command",
+                    detail=f"command does not match any valid CLI prefix: {cmd}",
+                )
+            )
+
+    return issues
 
 
 def check_skill_surface(repo_root: Path) -> list[SkillIssue]:
@@ -222,6 +288,20 @@ def check_skill_surface(repo_root: Path) -> list[SkillIssue]:
                     detail="workflow skills using raw shell or compose must explain the formal CLI boundary",
                 )
             )
+
+        # Validate CLI commands in skill
+        commands = _extract_commands_from_skill(text)
+        if kind == "canonical" and not commands:
+            issues.append(
+                SkillIssue(
+                    path=source_path,
+                    kind="empty-commands-section",
+                    detail="canonical skill must list at least one CLI command in ## Commands section",
+                )
+            )
+        command_issues = _validate_cli_commands(commands, source_path)
+        issues.extend(command_issues)
+
     return issues
 
 

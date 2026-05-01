@@ -81,7 +81,7 @@ layer: project
 
 | ID | 任务 | 状态 | 服务主线条件 | 说明 |
 |----|------|------|--------------|------|
-| B1 | 1Panel 最新适配与扩展功能规划 | 进行中 | 条件二、Beta M5 Provider 合同 | 已建立 [1Panel 更新适配与扩展规划](onepanel-adaptation-expansion-plan.md)，M1 Provider 更新门禁已完成：route fingerprint、route diff 影响矩阵、object API contract fixture、health-check opt-in 集成；M2 只读能力扩展已完成：`service verify` compose identity label、`ingress verify` SSL 证书详情与 OpenResty 状态、`infra automation verify` cronjob 执行记录、`infra network firewall-audit` 防火墙规则漂移；M3 可变更能力扩展已完成：`infra network firewall plan/apply`、`infra automation plan/apply`、`ingress plan/apply`，所有 apply 后触发 verify 并记录 operation ledger；M4 App resource 与 1Panel 应用纳管进行中：`app object discover` 已完成（发现未纳管 1Panel 已安装应用），`app resource verify` 已扩展 live provider 数据库证据（可选，provider 不可达时跳过），ProviderGateway 新增 installed apps 和 databases 搜索能力。 |
+| B1 | 1Panel 最新适配与扩展功能规划 | 进行中 | 条件二、Beta M5 Provider 合同 | 已建立 [1Panel 更新适配与扩展规划](onepanel-adaptation-expansion-plan.md)，M1 Provider 更新门禁已完成：route fingerprint、route diff 影响矩阵、object API contract fixture、health-check opt-in 集成；M2 只读能力扩展已完成：`service verify` compose identity label、`ingress verify` SSL 证书详情与 OpenResty 状态、`infra automation verify` cronjob 执行记录、`infra network firewall-audit` 防火墙规则漂移；M3 可变更能力扩展已完成：`infra network firewall plan/apply`、`infra automation plan/apply`、`ingress plan/apply`，所有 apply 后触发 verify 并记录 operation ledger；M4 App resource 与 1Panel 应用纳管已完成：`app object discover` 发现未纳管 1Panel 已安装应用，`app resource verify` 已扩展 live provider 数据库证据（可选，provider 不可达时跳过），ProviderGateway 新增 installed apps 和 databases 搜索能力；M5 观测与告警已完成：`infra health` 命令输出结构化健康摘要，新增 dashboard/alert/monitor API helpers 和 ProviderGateway 方法。 |
 
 ---
 

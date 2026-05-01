@@ -19,6 +19,11 @@ agentplane service plan --target <target> --name <service> --operation restart -
 agentplane service apply --target <target> --name <service> --operation restart --repo-root <repo-root> --execute
 ```
 
+## Capability Details
+
+- `verify` checks: container state, image reference, network binding, compose project name, compose config file path (via Docker inspect labels).
+- When inventory declares `project_name`, `compose_file`, or `config_files`, `verify` cross-checks against Docker compose labels to detect drift.
+
 ## Rules
 
 - Inspect with `search`, `get`, or `verify` before mutation.

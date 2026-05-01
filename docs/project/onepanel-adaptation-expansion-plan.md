@@ -232,9 +232,11 @@ layer: project
 
 ### M5：观测与告警
 
-- 将 dashboard、alert、monitor 信息作为 evidence 接入。
-- 不直接复刻监控 UI。
-- 优先输出适合 Agent 判断的结构化健康摘要。
+- 已实现 `infra health` 命令：查询 1Panel dashboard/monitor/alert 证据，输出结构化健康摘要。
+- 新增 API helpers：`get_dashboard_current`、`get_dashboard_base`、`get_dashboard_top_cpu`、`get_dashboard_top_mem`、`search_alerts`、`search_alert_logs`、`get_monitor_setting`。
+- ProviderGateway 新增 7 个方法：`get_onepanel_dashboard_current`、`get_onepanel_dashboard_base`、`get_onepanel_dashboard_top_cpu`、`get_onepanel_dashboard_top_mem`、`search_onepanel_alerts`、`search_onepanel_alert_logs`、`get_onepanel_monitor_setting`。
+- 健康摘要包含：CPU/内存/磁盘/网络使用率及严重级别、负载、Top 进程、告警状态、监控设置、资源计数。
+- 整体状态判定：healthy/warning/critical，基于资源使用率和告警状态。
 
 ---
 

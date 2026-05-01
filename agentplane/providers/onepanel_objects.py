@@ -104,3 +104,31 @@ def search_cronjob_records(*args: Any, **kwargs: Any) -> Any:
 
 def search_databases(*args: Any, **kwargs: Any) -> Any:
     return object_api.search_databases(*args, **kwargs)
+
+
+def get_dashboard_current(*args: Any, **kwargs: Any) -> Any:
+    return object_api.get_dashboard_current(*args, **kwargs)
+
+
+def get_dashboard_base(*args: Any, **kwargs: Any) -> Any:
+    return object_api.get_dashboard_base(*args, **kwargs)
+
+
+def get_dashboard_top_cpu(*args: Any, **kwargs: Any) -> Any:
+    return object_api.get_dashboard_top_cpu(*args, **kwargs)
+
+
+def get_dashboard_top_mem(*args: Any, **kwargs: Any) -> Any:
+    return object_api.get_dashboard_top_mem(*args, **kwargs)
+
+
+def search_alerts(*args: Any, **kwargs: Any) -> Any:
+    return object_api.search_alerts(*args, **kwargs)
+
+
+def search_alert_logs(*args: Any, **kwargs: Any) -> Any:
+    return object_api.search_alert_logs(*args, **kwargs)
+
+
+def get_monitor_setting(*args: Any, **kwargs: Any) -> Any:
+    return object_api.get_monitor_setting(*args, **kwargs)

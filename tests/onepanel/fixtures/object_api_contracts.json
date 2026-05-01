@@ -186,6 +186,133 @@
         }
       ],
       "total": 1
+    },
+    "GET /api/v2/dashboard/current/all/all": {
+      "uptime": 864000,
+      "timeSinceUptime": "10 days",
+      "procs": 128,
+      "load1": 1.25,
+      "load5": 0.98,
+      "load15": 0.87,
+      "loadUsagePercent": 12.5,
+      "cpuUsedPercent": 23.45,
+      "cpuUsed": 1.88,
+      "cpuTotal": 8,
+      "memoryTotal": 17179869184,
+      "memoryUsed": 8589934592,
+      "memoryAvailable": 8589934592,
+      "memoryUsedPercent": 50.0,
+      "diskData": [
+        {
+          "path": "/",
+          "type": "ext4",
+          "device": "/dev/sda1",
+          "total": 107374182400,
+          "free": 53687091200,
+          "used": 53687091200,
+          "usedPercent": 50.0
+        }
+      ],
+      "netBytesSent": 1073741824,
+      "netBytesRecv": 2147483648,
+      "topCPUItems": [
+        {
+          "name": "python3",
+          "pid": 1234,
+          "percent": 15.2,
+          "memory": 104857600,
+          "cmd": "python3 app.py",
+          "user": "root"
+        }
+      ],
+      "topMemItems": [
+        {
+          "name": "postgres",
+          "pid": 5678,
+          "percent": 8.5,
+          "memory": 536870912,
+          "cmd": "postgres -D /data",
+          "user": "postgres"
+        }
+      ],
+      "shotTime": "2026-05-01T12:00:00Z"
+    },
+    "GET /api/v2/dashboard/base/all/all": {
+      "hostname": "prod0-main",
+      "os": "ubuntu",
+      "platform": "ubuntu",
+      "platformFamily": "debian",
+      "platformVersion": "22.04",
+      "prettyDistro": "Ubuntu 22.04.3 LTS",
+      "kernelArch": "x86_64",
+      "kernelVersion": "5.15.0-91-generic",
+      "cpuCores": 4,
+      "cpuLogicalCores": 8,
+      "cpuModelName": "Intel(R) Xeon(R) CPU E5-2680 v4",
+      "websiteNumber": 3,
+      "databaseNumber": 2,
+      "cronjobNumber": 5,
+      "appInstalledNumber": 4,
+      "currentInfo": {
+        "uptime": 864000,
+        "cpuUsedPercent": 23.45,
+        "memoryUsedPercent": 50.0,
+        "load1": 1.25,
+        "load5": 0.98,
+        "load15": 0.87
+      }
+    },
+    "GET /api/v2/dashboard/current/top/cpu": [
+      {
+        "name": "python3",
+        "pid": 1234,
+        "percent": 15.2,
+        "memory": 104857600,
+        "cmd": "python3 app.py",
+        "user": "root"
+      }
+    ],
+    "GET /api/v2/dashboard/current/top/mem": [
+      {
+        "name": "postgres",
+        "pid": 5678,
+        "percent": 8.5,
+        "memory": 536870912,
+        "cmd": "postgres -D /data",
+        "user": "postgres"
+      }
+    ],
+    "POST /api/v2/alerts/search": {
+      "items": [
+        {
+          "id": 1,
+          "type": "disk",
+          "title": "Disk usage alert",
+          "status": "enable",
+          "method": "email",
+          "createdAt": "2026-04-28T10:00:00Z"
+        }
+      ],
+      "total": 1
+    },
+    "POST /api/v2/alerts/logs/search": {
+      "items": [
+        {
+          "id": 101,
+          "type": "disk",
+          "status": "firing",
+          "message": "Disk / usage exceeded 80%",
+          "createdAt": "2026-05-01T06:30:00Z"
+        }
+      ],
+      "total": 1
+    },
+    "GET /api/v2/hosts/monitor/setting": {
+      "monitorStatus": "enable",
+      "monitorStoreDays": "7",
+      "monitorInterval": "5",
+      "defaultNetwork": "all",
+      "defaultIO": "all"
     }
   }
 }

@@ -47,6 +47,9 @@ jobs:
       - name: Run documentation sanity gate
         run: uv run python -m agentplane.cli repo docs-sanity --repo-root .
 
+      - name: Run skills sync check
+        run: uv run python -m agentplane.cli repo skills check --repo-root .
+
       - name: Run secret scan
         run: uv run python -m agentplane.cli repo secret-scan --repo-root .
 

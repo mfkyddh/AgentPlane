@@ -36,6 +36,7 @@ from agentplane.domain.infra.live_gate import (
     plan_live_gate,
     run_live_gate,
 )
+from agentplane.domain.infra.health import check_infra_health
 from agentplane.domain.targets import SUPPORTED_INFRA_TARGETS
 from agentplane.runtime.wsl_bridge import normalize_repo_root_for_current_host
 
@@ -43,6 +44,7 @@ FORMAL_INFRA_TARGETS = ("wsl", "prod0-main")
 
 INFRA_ACTION_SCOPE_HELP = (
     "基座治理: inventory / audit / live-gate\n"
+    "健康检查: health\n"
     "执行通道: remote bash\n"
     "安全配置: secrets init-data-services | sync-layout\n"
     "网络治理: network audit | ensure\n"
@@ -167,6 +169,18 @@ def add_infra_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         parser.add_argument("--env-file", help="覆盖 1Panel API env 文件")
         if action == "apply":
             parser.add_argument("--execute", action="store_true", help="执行计划")
+
+    health_parser = infra_subparsers.add_parser(
+        "health",
+        help="基础设施健康检查（结构化健康摘要）",
+        description="查询 1Panel dashboard/monitor/alert 证据，输出结构化健康摘要",
+    )
+    health_parser.add_argument(
+        "target",
+        choices=FORMAL_INFRA_TARGETS,
+        help=_target_help(scope="正式目标", targets=FORMAL_INFRA_TARGETS),
+    )
+    health_parser.add_argument("--repo-root", default=".", help="仓库根目录")
 
     network_parser = infra_subparsers.add_parser("network", help="治理受管 Docker bridge 网络")
     network_subparsers = network_parser.add_subparsers(dest="infra_network_action", required=True)
@@ -421,6 +435,13 @@ def handle_infra_command(args: argparse.Namespace) -> dict[str, Any]:
                 execute=bool(args.execute),
                 env_file=getattr(args, "env_file", None),
             ),
+        )
+
+    if args.infra_action == "health":
+        return _wrap(
+            action="health",
+            target=args.target,
+            payload=check_infra_health(args.target),
         )
 
     if args.infra_action == "network" and args.infra_network_action == "audit":

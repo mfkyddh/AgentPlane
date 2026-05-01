@@ -296,6 +296,101 @@ def search_databases(
     return result
 
 
+def get_dashboard_current(
+    executor: FakeLikeExecutorProtocol,
+    *,
+    io_option: str = "all",
+    net_option: str = "all",
+) -> dict[str, Any]:
+    """Fetch current dashboard metrics (CPU, memory, load, disk, network)."""
+    result = executor.api_request("GET", f"/api/v2/dashboard/current/{io_option}/{net_option}")
+    if not isinstance(result, dict):
+        raise ValueError("dashboard current must be an object")
+    return result
+
+
+def get_dashboard_base(
+    executor: FakeLikeExecutorProtocol,
+    *,
+    io_option: str = "all",
+    net_option: str = "all",
+) -> dict[str, Any]:
+    """Fetch dashboard base info (hostname, OS, CPU model, resource counts)."""
+    result = executor.api_request("GET", f"/api/v2/dashboard/base/{io_option}/{net_option}")
+    if not isinstance(result, dict):
+        raise ValueError("dashboard base must be an object")
+    return result
+
+
+def get_dashboard_top_cpu(executor: FakeLikeExecutorProtocol) -> list[dict[str, Any]]:
+    """Fetch top CPU-consuming processes."""
+    result = executor.api_request("GET", "/api/v2/dashboard/current/top/cpu")
+    if not isinstance(result, list):
+        raise ValueError("dashboard top cpu must be a list")
+    return result
+
+
+def get_dashboard_top_mem(executor: FakeLikeExecutorProtocol) -> list[dict[str, Any]]:
+    """Fetch top memory-consuming processes."""
+    result = executor.api_request("GET", "/api/v2/dashboard/current/top/mem")
+    if not isinstance(result, list):
+        raise ValueError("dashboard top mem must be a list")
+    return result
+
+
+def search_alerts(
+    executor: FakeLikeExecutorProtocol,
+    *,
+    alert_type: str = "",
+    status: str = "",
+    page: int = 1,
+    page_size: int = 20,
+) -> dict[str, Any]:
+    """Search alert rules with optional filters."""
+    body: dict[str, Any] = {
+        "page": page,
+        "pageSize": page_size,
+        "orderBy": "created_at",
+        "order": "descending",
+    }
+    if alert_type:
+        body["type"] = alert_type
+    if status:
+        body["status"] = status
+    result = executor.api_request("POST", "/api/v2/alerts/search", body)
+    if not isinstance(result, dict):
+        raise ValueError("alert search must be an object")
+    return result
+
+
+def search_alert_logs(
+    executor: FakeLikeExecutorProtocol,
+    *,
+    status: str = "",
+    page: int = 1,
+    page_size: int = 20,
+) -> dict[str, Any]:
+    """Search alert logs with optional status filter."""
+    body: dict[str, Any] = {
+        "page": page,
+        "pageSize": page_size,
+    }
+    if status:
+        body["status"] = status
+    result = executor.api_request("POST", "/api/v2/alerts/logs/search", body)
+    if not isinstance(result, dict):
+        raise ValueError("alert log search must be an object")
+    return result
+
+
+def get_monitor_setting(executor: FakeLikeExecutorProtocol) -> dict[str, Any]:
+    """Fetch monitor collection settings (status, interval, store days)."""
+    result = executor.api_request("GET", "/api/v2/hosts/monitor/setting")
+    if not isinstance(result, dict):
+        raise ValueError("monitor setting must be an object")
+    return result
+
+
 def _coerce_app_param(value: str) -> Any:
     if value.isdigit():
         return int(value)

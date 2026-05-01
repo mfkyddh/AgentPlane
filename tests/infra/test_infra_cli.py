@@ -85,6 +85,7 @@ class HostCliTests(unittest.TestCase):
         self.assertIn("automation", result.stdout)
         self.assertIn("remote", result.stdout)
         self.assertIn("secrets", result.stdout)
+        self.assertIn("health", result.stdout)
         self.assertNotIn("secrets-layout", result.stdout)
 
     def test_legacy_top_level_host_entrypoints_are_rejected(self) -> None:
@@ -448,6 +449,125 @@ class HostCliTests(unittest.TestCase):
             self.assertEqual("network.ensure", payload["action"])
             self.assertEqual("prod0-main", payload["target"])
             self.assertTrue(payload["payload"]["ok"])
+
+    def test_infra_health_wraps_structured_health_summary(self) -> None:
+        from agentplane.cli.infra import handle_infra_command
+
+        fake_dashboard_current = {
+            "uptime": 864000,
+            "cpuUsedPercent": 23.45,
+            "memoryUsedPercent": 50.0,
+            "load1": 1.25,
+            "load5": 0.98,
+            "load15": 0.87,
+            "loadUsagePercent": 12.5,
+            "memoryTotal": 17179869184,
+            "memoryUsed": 8589934592,
+            "memoryAvailable": 8589934592,
+            "diskData": [
+                {"path": "/", "device": "/dev/sda1", "total": 107374182400, "free": 53687091200, "usedPercent": 50.0}
+            ],
+            "netBytesSent": 1073741824,
+            "netBytesRecv": 2147483648,
+            "procs": 128,
+        }
+        fake_dashboard_base = {
+            "hostname": "prod0-main",
+            "os": "ubuntu",
+            "prettyDistro": "Ubuntu 22.04.3 LTS",
+            "kernelVersion": "5.15.0-91-generic",
+            "cpuLogicalCores": 8,
+            "cpuCores": 4,
+            "cpuModelName": "Intel Xeon",
+            "websiteNumber": 3,
+            "databaseNumber": 2,
+            "cronjobNumber": 5,
+            "appInstalledNumber": 4,
+        }
+        fake_executor = object()
+        fake_gateway = SimpleNamespace(
+            onepanel_target_executor=lambda target: fake_executor,
+            get_onepanel_dashboard_current=lambda executor: fake_dashboard_current,
+            get_onepanel_dashboard_base=lambda executor: fake_dashboard_base,
+            get_onepanel_dashboard_top_cpu=lambda executor: [],
+            get_onepanel_dashboard_top_mem=lambda executor: [],
+            search_onepanel_alerts=lambda executor, alert_type="", status="": {"items": [], "total": 0},
+            search_onepanel_alert_logs=lambda executor, status="": {"items": [], "total": 0},
+            get_onepanel_monitor_setting=lambda executor: {"monitorStatus": "enable"},
+        )
+
+        args = SimpleNamespace(
+            infra_action="health",
+            target="prod0-main",
+            repo_root=".",
+        )
+        with patch("agentplane.domain.infra.health.default_provider_gateway", return_value=fake_gateway):
+            payload = handle_infra_command(args)
+
+        self.assertEqual({"command", "action", "target", "payload"}, set(payload))
+        self.assertEqual("infra", payload["command"])
+        self.assertEqual("health", payload["action"])
+        self.assertEqual("prod0-main", payload["target"])
+        self.assertEqual("healthy", payload["payload"]["status"])
+        self.assertEqual("prod0-main", payload["payload"]["hostname"])
+        self.assertEqual(23.45, payload["payload"]["cpu"]["used_percent"])
+        self.assertEqual(50.0, payload["payload"]["memory"]["used_percent"])
+        self.assertEqual(8, payload["payload"]["cpu"]["cores"])
+
+    def test_infra_health_reports_warning_on_high_cpu(self) -> None:
+        from agentplane.cli.infra import handle_infra_command
+
+        fake_dashboard_current = {
+            "uptime": 864000,
+            "cpuUsedPercent": 85.0,
+            "memoryUsedPercent": 50.0,
+            "load1": 1.25,
+            "load5": 0.98,
+            "load15": 0.87,
+            "loadUsagePercent": 12.5,
+            "memoryTotal": 17179869184,
+            "memoryUsed": 8589934592,
+            "memoryAvailable": 8589934592,
+            "diskData": [],
+            "netBytesSent": 0,
+            "netBytesRecv": 0,
+            "procs": 128,
+        }
+        fake_dashboard_base = {
+            "hostname": "prod0-main",
+            "os": "ubuntu",
+            "prettyDistro": "Ubuntu 22.04.3 LTS",
+            "kernelVersion": "5.15.0-91-generic",
+            "cpuLogicalCores": 8,
+            "cpuCores": 4,
+            "cpuModelName": "Intel Xeon",
+            "websiteNumber": 3,
+            "databaseNumber": 2,
+            "cronjobNumber": 5,
+            "appInstalledNumber": 4,
+        }
+        fake_executor = object()
+        fake_gateway = SimpleNamespace(
+            onepanel_target_executor=lambda target: fake_executor,
+            get_onepanel_dashboard_current=lambda executor: fake_dashboard_current,
+            get_onepanel_dashboard_base=lambda executor: fake_dashboard_base,
+            get_onepanel_dashboard_top_cpu=lambda executor: [],
+            get_onepanel_dashboard_top_mem=lambda executor: [],
+            search_onepanel_alerts=lambda executor, alert_type="", status="": {"items": [], "total": 0},
+            search_onepanel_alert_logs=lambda executor, status="": {"items": [], "total": 0},
+            get_onepanel_monitor_setting=lambda executor: {"monitorStatus": "enable"},
+        )
+
+        args = SimpleNamespace(
+            infra_action="health",
+            target="prod0-main",
+            repo_root=".",
+        )
+        with patch("agentplane.domain.infra.health.default_provider_gateway", return_value=fake_gateway):
+            payload = handle_infra_command(args)
+
+        self.assertEqual("warning", payload["payload"]["status"])
+        self.assertEqual("warning", payload["payload"]["cpu"]["severity"])
 
 
 # ======================================================================

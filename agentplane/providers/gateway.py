@@ -7,12 +7,19 @@ from typing import Any, Protocol
 
 from agentplane.providers.onepanel_ledgers import refresh_onepanel_ledgers
 from agentplane.providers.onepanel_objects import (
+    get_dashboard_base,
+    get_dashboard_current,
+    get_dashboard_top_cpu,
+    get_dashboard_top_mem,
     get_ingress,
     get_installed_app,
+    get_monitor_setting,
     get_openresty_status,
     get_website_ssl,
     onepanel_target_executor,
     plan_website_create,
+    search_alert_logs,
+    search_alerts,
     search_databases,
     search_ingresses,
     search_installed_apps,
@@ -49,6 +56,27 @@ class ProviderGateway(Protocol):
 
     def search_onepanel_databases(self, executor: object, *, db_type: str = "mysql") -> dict[str, Any]:
         """Search provider databases by type."""
+
+    def get_onepanel_dashboard_current(self, executor: object) -> dict[str, Any]:
+        """Fetch current dashboard metrics (CPU, memory, load, disk, network)."""
+
+    def get_onepanel_dashboard_base(self, executor: object) -> dict[str, Any]:
+        """Fetch dashboard base info (hostname, OS, CPU model, resource counts)."""
+
+    def get_onepanel_dashboard_top_cpu(self, executor: object) -> list[dict[str, Any]]:
+        """Fetch top CPU-consuming processes."""
+
+    def get_onepanel_dashboard_top_mem(self, executor: object) -> list[dict[str, Any]]:
+        """Fetch top memory-consuming processes."""
+
+    def search_onepanel_alerts(self, executor: object, *, alert_type: str = "", status: str = "") -> dict[str, Any]:
+        """Search alert rules with optional filters."""
+
+    def search_onepanel_alert_logs(self, executor: object, *, status: str = "") -> dict[str, Any]:
+        """Search alert logs with optional status filter."""
+
+    def get_onepanel_monitor_setting(self, executor: object) -> dict[str, Any]:
+        """Fetch monitor collection settings."""
 
     def plan_onepanel_website_create(self, *, alias: str, domain: str, proxy: str, remark: str, ipv6: bool) -> object:
         """Build the provider request object for website creation."""
@@ -105,6 +133,27 @@ class OnePanelProviderGateway:
 
     def search_onepanel_databases(self, executor: object, *, db_type: str = "mysql") -> dict[str, Any]:
         return search_databases(executor, db_type=db_type)
+
+    def get_onepanel_dashboard_current(self, executor: object) -> dict[str, Any]:
+        return get_dashboard_current(executor)
+
+    def get_onepanel_dashboard_base(self, executor: object) -> dict[str, Any]:
+        return get_dashboard_base(executor)
+
+    def get_onepanel_dashboard_top_cpu(self, executor: object) -> list[dict[str, Any]]:
+        return get_dashboard_top_cpu(executor)
+
+    def get_onepanel_dashboard_top_mem(self, executor: object) -> list[dict[str, Any]]:
+        return get_dashboard_top_mem(executor)
+
+    def search_onepanel_alerts(self, executor: object, *, alert_type: str = "", status: str = "") -> dict[str, Any]:
+        return search_alerts(executor, alert_type=alert_type, status=status)
+
+    def search_onepanel_alert_logs(self, executor: object, *, status: str = "") -> dict[str, Any]:
+        return search_alert_logs(executor, status=status)
+
+    def get_onepanel_monitor_setting(self, executor: object) -> dict[str, Any]:
+        return get_monitor_setting(executor)
 
     def plan_onepanel_website_create(self, *, alias: str, domain: str, proxy: str, remark: str, ipv6: bool) -> object:
         return plan_website_create(alias=alias, domain=domain, proxy=proxy, remark=remark, ipv6=ipv6)

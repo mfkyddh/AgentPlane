@@ -12,14 +12,21 @@ from agentplane.scripts.onepanel.object_api import (
     get_app_catalog_detail,
     get_compose_project,
     get_container,
+    get_dashboard_base,
+    get_dashboard_current,
+    get_dashboard_top_cpu,
+    get_dashboard_top_mem,
     get_ingress,
     get_installed_app,
+    get_monitor_setting,
     get_openresty_status,
     get_panel_summary,
     get_task_count,
     get_website_ssl,
     load_cronjob,
     load_firewall_base,
+    search_alert_logs,
+    search_alerts,
     search_containers,
     search_cronjob_records,
     search_cronjobs,
@@ -80,6 +87,13 @@ class OnePanelObjectApiContractTests(unittest.TestCase):
         databases = search_databases(executor, db_type="mysql")
         tasks = search_tasks(executor, task_type="cronjob", status="success")
         task_count = get_task_count(executor)
+        dashboard_current = get_dashboard_current(executor)
+        dashboard_base = get_dashboard_base(executor)
+        top_cpu = get_dashboard_top_cpu(executor)
+        top_mem = get_dashboard_top_mem(executor)
+        alerts = search_alerts(executor, alert_type="disk")
+        alert_logs = search_alert_logs(executor, status="firing")
+        monitor_setting = get_monitor_setting(executor)
 
         self.assertEqual("v2.1.7", panel["systemVersion"])
         self.assertEqual("token", ingresses["items"][0]["alias"])
@@ -101,6 +115,15 @@ class OnePanelObjectApiContractTests(unittest.TestCase):
         self.assertEqual("sub2api_prod0", databases["items"][0]["name"])
         self.assertEqual("success", tasks["items"][0]["status"])
         self.assertEqual({"executing": 0}, task_count)
+        self.assertEqual(23.45, dashboard_current["cpuUsedPercent"])
+        self.assertEqual(50.0, dashboard_current["memoryUsedPercent"])
+        self.assertEqual("prod0-main", dashboard_base["hostname"])
+        self.assertEqual(4, dashboard_base["cpuCores"])
+        self.assertEqual("python3", top_cpu[0]["name"])
+        self.assertEqual("postgres", top_mem[0]["name"])
+        self.assertEqual("Disk usage alert", alerts["items"][0]["title"])
+        self.assertEqual("firing", alert_logs["items"][0]["status"])
+        self.assertEqual("enable", monitor_setting["monitorStatus"])
 
         self.assertEqual(set(executor.responses), executor.called_keys)
 

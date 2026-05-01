@@ -16,11 +16,18 @@ agentplane ingress search --target <target> --repo-root <repo-root>
 agentplane ingress get --target <target> --alias <alias> --repo-root <repo-root>
 agentplane ingress verify --target <target> --alias <alias> --repo-root <repo-root>
 agentplane ingress plan --target <target> --alias <alias> --operation reconcile --repo-root <repo-root>
+agentplane ingress apply --target <target> --alias <alias> --operation reconcile --repo-root <repo-root> --execute
 agentplane ingress publish plan --target <target> --config-file <config-file> --cloudflare-env-file <cloudflare-env-file> --repo-root <repo-root>
 agentplane ingress publish apply --target <target> --config-file <config-file> --cloudflare-env-file <cloudflare-env-file> --repo-root <repo-root> --execute
 agentplane ingress publish verify --target <target> --config-file <config-file> --cloudflare-env-file <cloudflare-env-file> --repo-root <repo-root>
 agentplane ingress refresh-ledger --target <target> --repo-root <repo-root> --write
 ```
+
+## Capability Details
+
+- `verify` checks: website status, domain binding, HTTPS enablement, SSL certificate detail (status, expiry), OpenResty running state.
+- `plan reconcile` creates a plan for missing websites; `apply reconcile` executes the plan.
+- After `apply`, `verify` is automatically triggered and operation is recorded to ledger.
 
 ## Rules
 

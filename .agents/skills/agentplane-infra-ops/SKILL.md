@@ -14,6 +14,7 @@ This skill absorbs the public parts of the previous host, panel, firewall, and c
 ## Commands
 
 ```bash
+agentplane infra health <target> --repo-root <repo-root>
 agentplane infra inventory <target> --repo-root <repo-root>
 agentplane infra audit <target> --repo-root <repo-root>
 agentplane infra network audit <target> --repo-root <repo-root>
@@ -33,6 +34,13 @@ agentplane onepanel --env <target> panel get
 agentplane onepanel --env <target> firewall verify --tab port --expected-active true --json
 agentplane onepanel --env <target> cronjob search --info <keyword>
 ```
+
+## Capability Details
+
+- `health` outputs structured health summary: CPU/memory/disk/network usage with severity, load, top processes, alert status, monitor settings, resource counts.
+- `automation verify` checks: cronjob existence, status, and recent execution records (last run status and time).
+- `firewall-audit` checks: firewall activation state, declared rules vs actual rules drift.
+- `firewall plan/apply` supports: start, stop, restart, disableBanPing, enableBanPing. After apply, verify is triggered and operation is recorded to ledger.
 
 ## Rules
 
