@@ -375,6 +375,13 @@ class CliEntrypointsTests(unittest.TestCase):
         self.assertIn(("POST", "/containers/search", "baseApi.SearchContainer"), routes)
         self.assertIn(("POST", "/websites", "baseApi.CreateWebsite"), routes)
         self.assertIn(("GET", "/websites/:id", "baseApi.GetWebsite"), routes)
+        surface_counts = {item["surface"]: item["routes"] for item in payload["payload"]["impact_summary"]["surfaces"]}
+        self.assertEqual(2, surface_counts["ingress"])
+        self.assertEqual(2, surface_counts["service"])
+        self.assertEqual(2, surface_counts["app.delivery"])
+        container_route = next(item for item in payload["payload"]["routes"] if item["path"] == "/containers/search")
+        self.assertEqual("P0", container_route["impact"]["priority"])
+        self.assertEqual(["app.delivery", "service"], container_route["impact"]["surfaces"])
 
     def test_repo_provider_onepanel_route_fingerprint_can_fail_on_drift(self) -> None:
         with tempfile.TemporaryDirectory(prefix="agentplane-onepanel-drift-") as tmp:
@@ -417,6 +424,10 @@ class CliEntrypointsTests(unittest.TestCase):
         self.assertTrue(payload["drift"]["changed"])
         self.assertEqual(1, payload["drift"]["counts"]["added"])
         self.assertEqual("/containers/inspect", payload["drift"]["added"][0]["path"])
+        self.assertEqual("P0", payload["drift"]["impact"]["highest_priority"])
+        drift_surfaces = {item["surface"]: item["routes"] for item in payload["drift"]["impact"]["surfaces"]}
+        self.assertEqual(1, drift_surfaces["service"])
+        self.assertEqual(1, drift_surfaces["app.delivery"])
 
     def test_repo_skills_check_validates_public_skill_surface(self) -> None:
         result = run_cli("repo", "skills", "check", "--repo-root", str(REPO_ROOT))
