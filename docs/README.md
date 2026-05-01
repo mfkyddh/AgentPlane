@@ -39,6 +39,7 @@ audience: both
 | 文档 | 说明 |
 |------|------|
 | [主线追踪器](project/backlog.md) | 当前任务进度、分支任务 |
+| [1Panel 更新适配与扩展规划](project/onepanel-adaptation-expansion-plan.md) | provider 更新同步机制与扩展优先级 |
 
 ---
 

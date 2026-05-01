@@ -18,6 +18,7 @@ layer: project
 | 文档 | 说明 |
 |------|------|
 | [主线追踪器](backlog.md) | 当前任务进度、分支任务、backlog |
+| [1Panel 更新适配与扩展规划](onepanel-adaptation-expansion-plan.md) | 1Panel provider 更新同步机制与功能扩展优先级 |
 
 ---
 
