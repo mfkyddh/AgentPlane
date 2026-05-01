@@ -207,7 +207,7 @@ layer: project
 - 已实现首个 route fingerprint 命令：`agentplane repo provider onepanel route-fingerprint --source-root <1panel-source-root> --repo-root <repo-root>`。
 - 支持 `--baseline` 与 `--fail-on-drift`，可作为后续更新漂移门禁。
 - 已建立 route diff -> AgentPlane surface impact matrix：输出 `impact_matrix`、`impact_summary`，drift 结果输出 `impact` 摘要。
-- 为 `object_api.py` 现有关键 helper 增加 contract fixture。
+- 已为 `object_api.py` 现有关键 read helper 增加 contract fixture，覆盖 panel、ingress、container、project、cronjob、firewall、app、task response shape。
 - 将更新检查纳入 `repo health-check` 或维护者命令。
 
 ### M2：只读能力扩展

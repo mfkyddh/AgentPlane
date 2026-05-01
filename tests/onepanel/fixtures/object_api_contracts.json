@@ -1,0 +1,154 @@
+{
+  "responses": {
+    "POST /api/v2/core/settings/search": {
+      "systemVersion": "v2.1.7",
+      "bindDomain": "panel.example.test",
+      "theme": "auto"
+    },
+    "POST /api/v2/websites/search": {
+      "items": [
+        {
+          "id": 4,
+          "alias": "token",
+          "primaryDomain": "token.example.test",
+          "status": "Running"
+        }
+      ],
+      "total": 1
+    },
+    "GET /api/v2/websites/4": {
+      "id": 4,
+      "alias": "token",
+      "primaryDomain": "token.example.test",
+      "proxy": "http://127.0.0.1:18080",
+      "type": "proxy"
+    },
+    "GET /api/v2/websites/4/https": {
+      "enable": true,
+      "sslID": 8,
+      "type": "existed"
+    },
+    "POST /api/v2/containers/search": {
+      "items": [
+        {
+          "name": "sub2api-prod",
+          "state": "running",
+          "imageName": "ghcr.io/example/sub2api:2026.04"
+        }
+      ],
+      "total": 1
+    },
+    "POST /api/v2/containers/info": {
+      "name": "sub2api-prod",
+      "state": "running",
+      "imageName": "ghcr.io/example/sub2api:2026.04",
+      "ports": [
+        {
+          "containerPort": "8080",
+          "hostPort": "18080",
+          "hostIP": "127.0.0.1"
+        }
+      ]
+    },
+    "POST /api/v2/containers/compose/search": {
+      "items": [
+        {
+          "name": "sub2api-prod",
+          "status": "running",
+          "runningCount": 1,
+          "path": "/data/1panel/docker/compose/sub2api-prod/docker-compose.yml"
+        }
+      ],
+      "total": 1
+    },
+    "POST /api/v2/cronjobs/search": {
+      "items": [
+        {
+          "id": 2,
+          "name": "backup-secrets",
+          "status": "Enable",
+          "type": "shell"
+        }
+      ],
+      "total": 1
+    },
+    "POST /api/v2/cronjobs/load/info": {
+      "id": 2,
+      "name": "backup-secrets",
+      "status": "Enable",
+      "type": "shell",
+      "spec": "17 3 * * *"
+    },
+    "POST /api/v2/hosts/firewall/base": {
+      "name": "ufw",
+      "isExist": true,
+      "isActive": true,
+      "isInit": false,
+      "isBind": false,
+      "version": "0.36.2"
+    },
+    "POST /api/v2/hosts/firewall/search": {
+      "items": [
+        {
+          "port": "24443",
+          "protocol": "tcp",
+          "strategy": "accept",
+          "description": "relay"
+        }
+      ],
+      "total": 1
+    },
+    "POST /api/v2/apps/installed/search": {
+      "items": [
+        {
+          "id": 3,
+          "name": "openresty",
+          "appKey": "openresty",
+          "status": "Running"
+        }
+      ],
+      "total": 1
+    },
+    "GET /api/v2/apps/installed/info/3": {
+      "id": 3,
+      "name": "openresty",
+      "appKey": "openresty",
+      "status": "Running",
+      "version": "1.27.1"
+    },
+    "GET /api/v2/apps/openresty": {
+      "key": "openresty",
+      "name": "OpenResty",
+      "type": "website"
+    },
+    "GET /api/v2/apps/detail/91/1.27.1/website": {
+      "id": 91,
+      "version": "1.27.1",
+      "type": "website",
+      "dockerCompose": "services:\\n  openresty:\\n    image: openresty:fixture\\n",
+      "params": {
+        "formFields": [
+          {
+            "envKey": "PANEL_APP_PORT_HTTP",
+            "default": 80
+          },
+          {
+            "envKey": "PANEL_APP_PORT_HTTPS",
+            "default": 443
+          }
+        ]
+      }
+    },
+    "POST /api/v2/logs/tasks/search": {
+      "items": [
+        {
+          "id": 10,
+          "type": "cronjob",
+          "status": "success"
+        }
+      ],
+      "total": 1
+    },
+    "GET /api/v2/logs/tasks/executing/count": 0
+  }
+}

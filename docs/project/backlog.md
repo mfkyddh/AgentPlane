@@ -81,7 +81,7 @@ layer: project
 
 | ID | 任务 | 状态 | 服务主线条件 | 说明 |
 |----|------|------|--------------|------|
-| B1 | 1Panel 最新适配与扩展功能规划 | 进行中 | 条件二、Beta M5 Provider 合同 | 已建立 [1Panel 更新适配与扩展规划](onepanel-adaptation-expansion-plan.md)，并实现 M1 的 route fingerprint 与 route diff 影响矩阵；继续补 object API contract fixture 与 health-check 集成。 |
+| B1 | 1Panel 最新适配与扩展功能规划 | 进行中 | 条件二、Beta M5 Provider 合同 | 已建立 [1Panel 更新适配与扩展规划](onepanel-adaptation-expansion-plan.md)，并实现 M1 的 route fingerprint、route diff 影响矩阵与 object API contract fixture；继续补 health-check 集成。 |
 
 ---
 
