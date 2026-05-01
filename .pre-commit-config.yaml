@@ -17,21 +17,8 @@ repos:
       # Commit message validation (runs during commit-msg stage)
       - id: validate-commit-msg
         name: "Validate commit message"
-        entry: python -c "
-          import sys
-          from pathlib import Path
-          msg = Path(sys.argv[1]).read_text().strip()
-          import subprocess
-          result = subprocess.run(
-              ['uv', 'run', 'python', '-m', 'agentplane.domain.repository.commit_message', '--message', msg],
-              capture_output=True,
-              text=True
-          )
-          if result.returncode != 0:
-              print(result.stdout)
-              print(result.stderr)
-          sys.exit(result.returncode)
-        "
+        entry: >-
+          python -c "import sys, subprocess; from pathlib import Path; msg = Path(sys.argv[1]).read_text().strip(); result = subprocess.run(['uv', 'run', 'python', '-m', 'agentplane.domain.repository.commit_message', '--message', msg], capture_output=True, text=True); print(result.stdout, end=''); print(result.stderr, end='', file=sys.stderr); sys.exit(result.returncode)"
         language: system
         stages: [commit-msg]
 
