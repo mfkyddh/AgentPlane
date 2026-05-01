@@ -25,6 +25,8 @@ def init_git_repo(path: Path) -> None:
     if result.returncode != 0:
         git(["init"], cwd=path)
         git(["checkout", "-b", "main"], cwd=path)
+    git(["config", "user.email", "test@example.com"], cwd=path)
+    git(["config", "user.name", "Test"], cwd=path)
     git(["commit", "--allow-empty", "-m", "chore: init"], cwd=path)
 
 
