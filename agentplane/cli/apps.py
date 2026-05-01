@@ -76,6 +76,12 @@ def add_app_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParse
     object_refresh.add_argument("--repo-root", default=".", help="AgentPlane 仓库根目录")
     object_refresh.add_argument("--write", action="store_true", help="写回台账文件")
 
+    object_discover = object_subparsers.add_parser("discover", help="发现 1Panel 已安装应用")
+    object_discover.add_argument("--target", required=True, choices=SUPPORTED_APP_TARGETS, help="目标环境")
+    object_discover.add_argument("--name", default="", help="按名称过滤已安装应用")
+    object_discover.add_argument("--include-managed", action="store_true", help="输出中包含已纳管应用")
+    object_discover.add_argument("--repo-root", default=".", help="AgentPlane 仓库根目录")
+
     resource_parser = app_subparsers.add_parser("resource", help="应用关联资源对象")
     resource_subparsers = resource_parser.add_subparsers(dest="app_resource_action", required=True)
 
@@ -224,7 +230,13 @@ def _ensure_formal_delivery_action_contract(args: argparse.Namespace) -> None:
 def handle_app_command(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = _normalize_repo_root(getattr(args, "repo_root", "."))
     if args.app_surface == "object":
-        from agentplane.domain.app.object_handlers import get_app, refresh_app_ledger, search_apps, verify_app_object
+        from agentplane.domain.app.object_handlers import (
+            discover_installed_apps,
+            get_app,
+            refresh_app_ledger,
+            search_apps,
+            verify_app_object,
+        )
 
         if args.app_object_action == "search":
             if getattr(args, "app_repo_root", None) and not getattr(args, "app", None):
@@ -264,6 +276,18 @@ def handle_app_command(args: argparse.Namespace) -> dict[str, Any]:
                 "action": "object.refresh-ledger",
                 "target": args.target,
                 "payload": refresh_app_ledger(repo_root, args.target, write=bool(args.write)),
+            }
+        if args.app_object_action == "discover":
+            return {
+                "command": "app",
+                "action": "object.discover",
+                "target": args.target,
+                "payload": discover_installed_apps(
+                    repo_root,
+                    args.target,
+                    name=getattr(args, "name", ""),
+                    include_managed=bool(getattr(args, "include_managed", False)),
+                ),
             }
         raise ValueError(f"Unsupported app object action: {args.app_object_action}")
 

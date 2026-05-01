@@ -90,6 +90,10 @@ def search_installed_apps(*args: Any, **kwargs: Any) -> Any:
     return object_api.search_installed_apps(*args, **kwargs)
 
 
+def get_installed_app(*args: Any, **kwargs: Any) -> Any:
+    return object_api.get_installed_app(*args, **kwargs)
+
+
 def search_tasks(*args: Any, **kwargs: Any) -> Any:
     return object_api.search_tasks(*args, **kwargs)
 

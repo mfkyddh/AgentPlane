@@ -8,6 +8,7 @@ from agentplane.domain.app.catalog import load_app_catalog, resolve_app_contract
 from agentplane.domain.app.models import AppObject
 from agentplane.domain.app.resource_paths import canonical_contract_ref
 from agentplane.domain.app.runtime_helpers import render_domain_path
+from agentplane.providers.gateway import default_provider_gateway
 from agentplane.runtime.observation import build_verification_payload
 
 
@@ -289,3 +290,67 @@ def refresh_app_ledger(repo_root: Path, target: str, write: bool) -> dict[str, A
         "markdown_file": str(markdown_file),
         "inventory_pointer": inventory_pointer,
     }
+
+
+def _executor_for_target(target: str) -> object:
+    return default_provider_gateway().onepanel_target_executor(target)
+
+
+def discover_installed_apps(
+    repo_root: Path,
+    target: str,
+    *,
+    name: str = "",
+    include_managed: bool = False,
+) -> dict[str, Any]:
+    """Discover 1Panel installed apps and classify them as managed or unmanaged."""
+    executor = _executor_for_target(target)
+    provider = default_provider_gateway()
+    live_payload = provider.search_onepanel_installed_apps(executor, name=name)
+    live_items = live_payload.get("items") if isinstance(live_payload, dict) else []
+    if not isinstance(live_items, list):
+        live_items = []
+
+    try:
+        catalog_entries = load_app_catalog(repo_root)
+    except FileNotFoundError:
+        catalog_entries = []
+
+    catalog_service_keys: set[str] = set()
+    catalog_app_keys: set[str] = set()
+    for entry in catalog_entries:
+        catalog_service_keys.add(entry.service_key)
+        catalog_app_keys.add(entry.app)
+
+    managed: list[dict[str, Any]] = []
+    unmanaged: list[dict[str, Any]] = []
+
+    for item in live_items:
+        if not isinstance(item, dict):
+            continue
+        app_key = str(item.get("appKey", ""))
+        install_name = str(item.get("name", ""))
+        install_id = item.get("id")
+        entry = {
+            "install_id": install_id,
+            "name": install_name,
+            "app_key": app_key,
+            "status": item.get("status", ""),
+            "version": item.get("version", ""),
+        }
+        is_managed = app_key in catalog_app_keys or install_name in catalog_service_keys
+        if is_managed:
+            managed.append(entry)
+        else:
+            unmanaged.append(entry)
+
+    result: dict[str, Any] = {
+        "target": target,
+        "total_installed": len(live_items),
+        "managed_count": len(managed),
+        "unmanaged_count": len(unmanaged),
+        "unmanaged": unmanaged,
+    }
+    if include_managed:
+        result["managed"] = managed
+    return result

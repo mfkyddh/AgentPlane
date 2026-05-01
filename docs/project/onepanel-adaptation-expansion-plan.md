@@ -226,8 +226,8 @@ layer: project
 
 ### M4：App resource 与 1Panel 应用纳管
 
-- 将数据库、Redis、MinIO 等常见资源纳入 `app resource`。
-- 对已安装 1Panel app 做只读 catalog mapping。
+- 已实现 `app object discover` 命令：通过 1Panel `apps/installed/search` API 发现已安装应用，与 AgentPlane catalog 对比，分类为 managed（已纳管）和 unmanaged（未纳管）。支持 `--name` 过滤和 `--include-managed` 输出已纳管应用。ProviderGateway 新增 `search_onepanel_installed_apps` 和 `get_onepanel_installed_app` 方法。
+- 将数据库、Redis、MinIO 等常见资源纳入 `app resource`（需要 1Panel 数据库 API 信息，暂缓）。
 - 只在合同成熟后开放 app install/update plan。
 
 ### M5：观测与告警

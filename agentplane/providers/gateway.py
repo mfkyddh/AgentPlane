@@ -8,11 +8,13 @@ from typing import Any, Protocol
 from agentplane.providers.onepanel_ledgers import refresh_onepanel_ledgers
 from agentplane.providers.onepanel_objects import (
     get_ingress,
+    get_installed_app,
     get_openresty_status,
     get_website_ssl,
     onepanel_target_executor,
     plan_website_create,
     search_ingresses,
+    search_installed_apps,
 )
 
 
@@ -37,6 +39,12 @@ class ProviderGateway(Protocol):
 
     def get_onepanel_openresty_status(self, executor: object) -> dict[str, Any]:
         """Fetch OpenResty installed app status."""
+
+    def search_onepanel_installed_apps(self, executor: object, *, name: str = "") -> dict[str, Any]:
+        """Search provider installed apps by name."""
+
+    def get_onepanel_installed_app(self, executor: object, *, install_id: int) -> dict[str, Any]:
+        """Fetch a provider installed app detail by id."""
 
     def plan_onepanel_website_create(self, *, alias: str, domain: str, proxy: str, remark: str, ipv6: bool) -> object:
         """Build the provider request object for website creation."""
@@ -84,6 +92,12 @@ class OnePanelProviderGateway:
 
     def get_onepanel_openresty_status(self, executor: object) -> dict[str, Any]:
         return get_openresty_status(executor)
+
+    def search_onepanel_installed_apps(self, executor: object, *, name: str = "") -> dict[str, Any]:
+        return search_installed_apps(executor, name=name)
+
+    def get_onepanel_installed_app(self, executor: object, *, install_id: int) -> dict[str, Any]:
+        return get_installed_app(executor, install_id=install_id)
 
     def plan_onepanel_website_create(self, *, alias: str, domain: str, proxy: str, remark: str, ipv6: bool) -> object:
         return plan_website_create(alias=alias, domain=domain, proxy=proxy, remark=remark, ipv6=ipv6)
