@@ -84,6 +84,57 @@ def get_app_resource(repo_root: Path, target: str, app: str) -> dict[str, Any]:
     }
 
 
+def _live_database_evidence(repo_root: Path, target: str, definition: AppResourceDefinition) -> dict[str, Any] | None:
+    """Query 1Panel for live database state and cross-reference with declared resources."""
+    if not definition.resource_kinds:
+        return None
+    try:
+        provider = default_provider_gateway()
+        executor = provider.onepanel_target_executor(target)
+    except Exception:
+        return None
+
+    live_databases: dict[str, list[dict[str, Any]]] = {}
+    provider_available = True
+    for kind in definition.resource_kinds:
+        db_type = kind if kind in {"mysql", "postgresql", "redis", "mariadb"} else "mysql"
+        if kind == "postgres":
+            db_type = "postgresql"
+        try:
+            payload = provider.search_onepanel_databases(executor, db_type=db_type)
+            items = payload.get("items") if isinstance(payload, dict) else None
+            live_databases[kind] = items if isinstance(items, list) else []
+        except Exception:
+            provider_available = False
+            live_databases[kind] = []
+
+    if not provider_available:
+        return None
+
+    declared_resources = definition.resources
+    cross_references: list[dict[str, Any]] = []
+    for kind in definition.resource_kinds:
+        declared = declared_resources.get(kind, {})
+        if not isinstance(declared, dict):
+            continue
+        declared_name = declared.get("database") or declared.get("bucket") or declared.get("key_prefix", "")
+        live_items = live_databases.get(kind, [])
+        found = any(
+            isinstance(item, dict) and item.get("name") == declared_name for item in live_items
+        ) if declared_name else False
+        cross_references.append({
+            "kind": kind,
+            "declared_name": declared_name,
+            "found_in_provider": found,
+            "live_count": len(live_items),
+        })
+
+    return {
+        "databases": live_databases,
+        "cross_references": cross_references,
+    }
+
+
 def verify_app_resource(repo_root: Path, target: str, app: str) -> dict[str, Any]:
     repo_root = Path(repo_root).resolve()
     definition, raw_entry = resolve_app_resource(repo_root, target, app)
@@ -105,6 +156,16 @@ def verify_app_resource(repo_root: Path, target: str, app: str) -> dict[str, Any
         projection_check["skipped"] = True
         projection_check["reason"] = "secret_files_invalid"
 
+    live_evidence = _live_database_evidence(repo_root, target, definition)
+    live_check: dict[str, Any] | None = None
+    if live_evidence is not None:
+        cross_refs = live_evidence.get("cross_references", [])
+        all_found = all(ref.get("found_in_provider", False) for ref in cross_refs if ref.get("declared_name"))
+        live_check = {
+            "ok": all_found,
+            "cross_references": cross_refs,
+        }
+
     checks: dict[str, dict[str, Any]] = {
         "registry_owner": {
             "ok": definition.owner_app == definition.app,
@@ -114,14 +175,20 @@ def verify_app_resource(repo_root: Path, target: str, app: str) -> dict[str, Any
         "secret_files": {"ok": not secret_findings, "findings": secret_findings},
         "inventory_projection": projection_check,
     }
+    if live_check is not None:
+        checks["live_provider"] = live_check
     failures = [
         name for name in ("registry_owner", "secret_files", "inventory_projection") if not bool(checks[name].get("ok"))
     ]
+    if live_check is not None and not live_check.get("ok"):
+        failures.append("live_provider")
     verification_fields = {
         "declared": declared_payload,
         "projection": projection,
         "secret_files": secret_statuses,
     }
+    if live_evidence is not None:
+        verification_fields["live_provider"] = live_evidence
     payload = build_verification_payload(
         canonical_ref=_canonical_ref(target, app),
         ledger_fields=_summary(definition),
@@ -132,11 +199,14 @@ def verify_app_resource(repo_root: Path, target: str, app: str) -> dict[str, Any
         ok=not failures,
     )
     payload["resource"] = _summary(definition)
-    payload["evidence"] = [
+    evidence_list = [
         {"kind": "declared", "value": declared_payload},
         {"kind": "projection", "value": projection},
         {"kind": "secret_files", "value": secret_statuses},
     ]
+    if live_evidence is not None:
+        evidence_list.append({"kind": "live_provider", "value": live_evidence})
+    payload["evidence"] = evidence_list
     return payload
 
 

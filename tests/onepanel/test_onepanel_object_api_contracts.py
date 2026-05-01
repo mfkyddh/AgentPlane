@@ -23,6 +23,7 @@ from agentplane.scripts.onepanel.object_api import (
     search_containers,
     search_cronjob_records,
     search_cronjobs,
+    search_databases,
     search_firewall_rules,
     search_ingresses,
     search_installed_apps,
@@ -76,6 +77,7 @@ class OnePanelObjectApiContractTests(unittest.TestCase):
         installed_app = get_installed_app(executor, install_id=3)
         app_catalog = get_app_catalog(executor, app_key="openresty")
         app_detail = get_app_catalog_detail(executor, app_id=91, version="1.27.1", app_type="website")
+        databases = search_databases(executor, db_type="mysql")
         tasks = search_tasks(executor, task_type="cronjob", status="success")
         task_count = get_task_count(executor)
 
@@ -96,6 +98,7 @@ class OnePanelObjectApiContractTests(unittest.TestCase):
         self.assertEqual("Running", installed_app["status"])
         self.assertEqual("OpenResty", app_catalog["name"])
         self.assertIn("dockerCompose", app_detail)
+        self.assertEqual("sub2api_prod0", databases["items"][0]["name"])
         self.assertEqual("success", tasks["items"][0]["status"])
         self.assertEqual({"executing": 0}, task_count)
 

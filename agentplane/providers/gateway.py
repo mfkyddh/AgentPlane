@@ -13,6 +13,7 @@ from agentplane.providers.onepanel_objects import (
     get_website_ssl,
     onepanel_target_executor,
     plan_website_create,
+    search_databases,
     search_ingresses,
     search_installed_apps,
 )
@@ -45,6 +46,9 @@ class ProviderGateway(Protocol):
 
     def get_onepanel_installed_app(self, executor: object, *, install_id: int) -> dict[str, Any]:
         """Fetch a provider installed app detail by id."""
+
+    def search_onepanel_databases(self, executor: object, *, db_type: str = "mysql") -> dict[str, Any]:
+        """Search provider databases by type."""
 
     def plan_onepanel_website_create(self, *, alias: str, domain: str, proxy: str, remark: str, ipv6: bool) -> object:
         """Build the provider request object for website creation."""
@@ -98,6 +102,9 @@ class OnePanelProviderGateway:
 
     def get_onepanel_installed_app(self, executor: object, *, install_id: int) -> dict[str, Any]:
         return get_installed_app(executor, install_id=install_id)
+
+    def search_onepanel_databases(self, executor: object, *, db_type: str = "mysql") -> dict[str, Any]:
+        return search_databases(executor, db_type=db_type)
 
     def plan_onepanel_website_create(self, *, alias: str, domain: str, proxy: str, remark: str, ipv6: bool) -> object:
         return plan_website_create(alias=alias, domain=domain, proxy=proxy, remark=remark, ipv6=ipv6)

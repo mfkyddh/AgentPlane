@@ -100,3 +100,7 @@ def search_tasks(*args: Any, **kwargs: Any) -> Any:
 
 def search_cronjob_records(*args: Any, **kwargs: Any) -> Any:
     return object_api.search_cronjob_records(*args, **kwargs)
+
+
+def search_databases(*args: Any, **kwargs: Any) -> Any:
+    return object_api.search_databases(*args, **kwargs)

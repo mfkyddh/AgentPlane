@@ -271,6 +271,31 @@ def get_app_catalog_detail(
     return result
 
 
+def search_databases(
+    executor: FakeLikeExecutorProtocol,
+    *,
+    database: str = " ",
+    db_type: str = "mysql",
+    page: int = 1,
+    page_size: int = 20,
+) -> dict[str, Any]:
+    result = executor.api_request(
+        "POST",
+        "/api/v2/databases/search",
+        {
+            "page": page,
+            "pageSize": page_size,
+            "database": database,
+            "orderBy": "name",
+            "order": "ascending",
+            "type": db_type,
+        },
+    )
+    if not isinstance(result, dict):
+        raise ValueError("database search must be an object")
+    return result
+
+
 def _coerce_app_param(value: str) -> Any:
     if value.isdigit():
         return int(value)
