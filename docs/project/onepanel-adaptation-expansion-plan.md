@@ -212,7 +212,7 @@ layer: project
 
 ### M2：只读能力扩展
 
-- 扩展 `service verify` 对容器和 compose live 证据的覆盖。
+- 已开始扩展 `service verify` 对容器和 compose live 证据的覆盖：当 inventory 声明 `project_name`、`compose_file` 或 `config_files` 时，校验 Docker inspect 中的 compose project/config file labels，覆盖普通 compose 与 1Panel compose 运行态漂移。
 - 扩展 `ingress verify` 对网站、域名、HTTPS、OpenResty reload 状态的覆盖。
 - 扩展 `infra automation verify` 对 cronjob 最近执行记录的覆盖。
 - 扩展 `infra network audit` 对 1Panel firewall rule 的只读对账。

@@ -71,7 +71,7 @@ class ServiceCliTests(unittest.TestCase):
                 "postgres",
                 "--repo-root",
                 str(root),
-                env_overrides={"PATH": f"{bin_dir}:{os.environ['PATH']}", "FAKE_CMD_LOG": str(log_file)},
+                env_overrides={"PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}", "FAKE_CMD_LOG": str(log_file)},
             )
 
             self.assertEqual(result.returncode, 0, msg=result.stderr)
@@ -100,7 +100,7 @@ class ServiceCliTests(unittest.TestCase):
                 "sampleapi",
                 "--repo-root",
                 str(root),
-                env_overrides={"PATH": f"{bin_dir}:{os.environ['PATH']}", "FAKE_CMD_LOG": str(log_file)},
+                env_overrides={"PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}", "FAKE_CMD_LOG": str(log_file)},
             )
 
             self.assertEqual(result.returncode, 0, msg=result.stderr)
@@ -108,6 +108,55 @@ class ServiceCliTests(unittest.TestCase):
             self.assertEqual("sampleapi", payload["payload"]["service"]["name"])
             self.assertEqual("compose", payload["payload"]["service"]["control_plane"])
             self.assertEqual(["restart", "reconcile"], payload["payload"]["service"]["supported_operations"])
+
+    def test_service_verify_checks_compose_identity_labels(self) -> None:
+        definition = ServiceDefinition(
+            name="sampleapi",
+            runtime_kind="docker",
+            control_plane="compose",
+            supported_operations=("restart", "reconcile"),
+            supported_targets=("prod0-main",),
+        )
+        inspect_payload = {
+            "Name": "sampleapi-prod",
+            "Config": {
+                "Image": "ghcr.io/example/sampleapi:2026.04",
+                "Labels": {
+                    "com.docker.compose.project": "sampleapi",
+                    "com.docker.compose.project.config_files": (
+                        "/opt/agentplane/infra/compose/sampleapi/docker-compose.prod0.yml"
+                    ),
+                },
+            },
+            "State": {"Status": "running", "Running": True},
+            "HostConfig": {"NetworkMode": "bridge"},
+        }
+        probe = {
+            "argv": ["ssh", "prod0-main", "docker inspect sampleapi-prod"],
+            "display": "ssh prod0-main docker inspect sampleapi-prod",
+            "returncode": 0,
+            "stdout": json.dumps(inspect_payload),
+            "stderr": "",
+            "ok": True,
+        }
+
+        with patch("agentplane.adapters.service.docker_runtime.run_shell_command", return_value=probe):
+            payload = docker_runtime.verify_container_service(
+                Path("."),
+                "prod0-main",
+                definition,
+                {
+                    "container_name": "sampleapi-prod",
+                    "project_name": "sampleapi",
+                    "compose_file": "/opt/agentplane/infra/compose/sampleapi/docker-compose.prod0.yml",
+                    "image": "ghcr.io/example/sampleapi:2026.04",
+                },
+            )
+
+        self.assertTrue(payload["ok"])
+        self.assertTrue(payload["checks"]["compose_project"]["ok"])
+        self.assertEqual("sampleapi", payload["checks"]["compose_project"]["actual"])
+        self.assertTrue(payload["checks"]["compose_config_files"]["ok"])
 
     def test_service_plan_reconcile_syncs_tracked_compose_asset(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -207,7 +256,7 @@ class ServiceCliTests(unittest.TestCase):
                 "relay-trojan-host",
                 "--repo-root",
                 str(root),
-                env_overrides={"PATH": f"{bin_dir}:{os.environ['PATH']}", "FAKE_CMD_LOG": str(log_file)},
+                env_overrides={"PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}", "FAKE_CMD_LOG": str(log_file)},
             )
 
             self.assertEqual(result.returncode, 0, msg=result.stderr)
@@ -329,6 +378,54 @@ class ServiceCliTests(unittest.TestCase):
             self.assertEqual("legacy_runtime", payload["payload"]["service"]["name"])
             self.assertEqual("onepanel-app", payload["payload"]["service"]["control_plane"])
             self.assertEqual(["restart"], payload["payload"]["service"]["supported_operations"])
+
+    def test_service_verify_checks_onepanel_compose_identity_labels(self) -> None:
+        definition = ServiceDefinition(
+            name="legacy_project",
+            runtime_kind="docker",
+            control_plane="onepanel-compose",
+            supported_operations=("restart",),
+            supported_targets=("prod0-main",),
+        )
+        inspect_payload = {
+            "Name": "legacy-project-prod",
+            "Config": {
+                "Image": "ghcr.io/example/legacy-project:1.0",
+                "Labels": {
+                    "com.docker.compose.project": "legacy-project-prod",
+                    "com.docker.compose.project.config_files": (
+                        "/data/1panel/docker/compose/legacy-project-prod/docker-compose.yml"
+                    ),
+                },
+            },
+            "State": {"Status": "running", "Running": True},
+            "HostConfig": {"NetworkMode": "bridge"},
+        }
+        probe = {
+            "argv": ["ssh", "prod0-main", "docker inspect legacy-project-prod"],
+            "display": "ssh prod0-main docker inspect legacy-project-prod",
+            "returncode": 0,
+            "stdout": json.dumps(inspect_payload),
+            "stderr": "",
+            "ok": True,
+        }
+
+        with patch("agentplane.adapters.service.docker_runtime.run_shell_command", return_value=probe):
+            payload = docker_runtime.verify_container_service(
+                Path("."),
+                "prod0-main",
+                definition,
+                {
+                    "container_name": "legacy-project-prod",
+                    "project_name": "legacy-project-prod",
+                    "compose_file": "/data/1panel/docker/compose/legacy-project-prod/docker-compose.yml",
+                    "image": "ghcr.io/example/legacy-project:1.0",
+                },
+            )
+
+        self.assertTrue(payload["ok"])
+        self.assertTrue(payload["checks"]["compose_project"]["ok"])
+        self.assertTrue(payload["checks"]["compose_config_files"]["ok"])
 
     def test_service_verify_checks_live_state_for_container_service(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

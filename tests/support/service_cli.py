@@ -43,18 +43,19 @@ emit_container() {
   local image="$2"
   local running="$3"
   local network_mode="${4:-bridge}"
-  local extra="${5:-}"
+  local labels="${5:-{}}"
+  local extra="${6:-}"
   cat <<JSON
-{"Name":"${name}","Config":{"Image":"${image}"},"State":{"Status":"${running}","Running":true},"HostConfig":{"NetworkMode":"${network_mode}"}${extra}}
+{"Name":"${name}","Config":{"Image":"${image}","Labels":${labels}},"State":{"Status":"${running}","Running":true},"HostConfig":{"NetworkMode":"${network_mode}"}${extra}}
 JSON
 }
 
 if [[ "$cmd" == *"docker inspect postgres18-prod --format"* ]]; then
-  emit_container "postgres18-prod" "postgres:18.3" "running" "bridge" ',"NetworkSettings":{"Ports":{"5432/tcp":[{"HostIp":"0.0.0.0","HostPort":"5432"}]}}'
+  emit_container "postgres18-prod" "postgres:18.3" "running" "bridge" '{}' ',"NetworkSettings":{"Ports":{"5432/tcp":[{"HostIp":"0.0.0.0","HostPort":"5432"}]}}'
   exit 0
 fi
 if [[ "$cmd" == *"docker inspect redis7-prod --format"* ]]; then
-  emit_container "redis7-prod" "redis:7.4.7" "running" "bridge" ',"NetworkSettings":{"Ports":{"6379/tcp":[{"HostIp":"0.0.0.0","HostPort":"6379"}]}}'
+  emit_container "redis7-prod" "redis:7.4.7" "running" "bridge" '{}' ',"NetworkSettings":{"Ports":{"6379/tcp":[{"HostIp":"0.0.0.0","HostPort":"6379"}]}}'
   exit 0
 fi
 if [[ "$cmd" == *"docker inspect minio-prod --format"* ]]; then
@@ -66,11 +67,11 @@ if [[ "$cmd" == *"docker inspect 1panel-openresty-prod --format"* ]]; then
   exit 0
 fi
 if [[ "$cmd" == *"docker inspect sampleapi-prod --format"* ]]; then
-  emit_container "sampleapi-prod" "ghcr.io/example/sampleapi:2026.04" "running" "bridge" ',"NetworkSettings":{"Ports":{"3000/tcp":[{"HostIp":"127.0.0.1","HostPort":"3000"}]}}'
+  emit_container "sampleapi-prod" "ghcr.io/example/sampleapi:2026.04" "running" "bridge" '{"com.docker.compose.project":"sampleapi","com.docker.compose.project.config_files":"/opt/agentplane/infra/compose/sampleapi/docker-compose.prod0.yml"}' ',"NetworkSettings":{"Ports":{"3000/tcp":[{"HostIp":"127.0.0.1","HostPort":"3000"}]}}'
   exit 0
 fi
 if [[ "$cmd" == *"docker inspect relay-trojan-prod --format"* ]]; then
-  emit_container "relay-trojan-prod" "ghcr.io/xtls/xray-core:25.3.6" "running" "bridge" ',"NetworkSettings":{"Ports":{"24443/tcp":[{"HostIp":"0.0.0.0","HostPort":"24443"}]}}'
+  emit_container "relay-trojan-prod" "ghcr.io/xtls/xray-core:25.3.6" "running" "bridge" '{}' ',"NetworkSettings":{"Ports":{"24443/tcp":[{"HostIp":"0.0.0.0","HostPort":"24443"}]}}'
   exit 0
 fi
 if [[ "$cmd" == *"docker inspect relay-trojan-host-prod --format"* ]]; then
@@ -82,7 +83,7 @@ if [[ "$cmd" == *"docker inspect legacy-runtime-prod --format"* ]]; then
   exit 0
 fi
 if [[ "$cmd" == *"docker inspect legacy-project-prod --format"* ]]; then
-  emit_container "legacy-project-prod" "ghcr.io/example/legacy-project:1.0" "running"
+  emit_container "legacy-project-prod" "ghcr.io/example/legacy-project:1.0" "running" "bridge" '{"com.docker.compose.project":"legacy-project-prod","com.docker.compose.project.config_files":"/data/1panel/docker/compose/legacy-project-prod/docker-compose.yml"}'
   exit 0
 fi
 if [[ "$cmd" == *"systemctl is-active mihomo"* ]]; then
@@ -180,6 +181,8 @@ def write_inventory(root: Path) -> None:
                     "sampleapi": {
                         "control_plane": "compose",
                         "container_name": "sampleapi-prod",
+                        "project_name": "sampleapi",
+                        "compose_file": "/opt/agentplane/infra/compose/sampleapi/docker-compose.prod0.yml",
                         "image": "ghcr.io/example/sampleapi:2026.04",
                         "status": "running",
                         "host_binding": "127.0.0.1:3000",
@@ -234,6 +237,8 @@ def write_inventory(root: Path) -> None:
                     "legacy_project": {
                         "control_plane": "onepanel-compose",
                         "container_name": "legacy-project-prod",
+                        "project_name": "legacy-project-prod",
+                        "compose_file": "/data/1panel/docker/compose/legacy-project-prod/docker-compose.yml",
                         "image": "ghcr.io/example/legacy-project:1.0",
                         "status": "running",
                     },

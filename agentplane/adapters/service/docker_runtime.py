@@ -9,12 +9,36 @@ from agentplane.adapters.service.common import copy_file_spec, remote_repo_root,
 from agentplane.domain.service.models import ServiceDefinition
 from agentplane.runtime.redaction import redact_execution_payload
 
+COMPOSE_CONFIG_FILES_LABEL = "com.docker.compose.project.config_files"
+COMPOSE_PROJECT_LABEL = "com.docker.compose.project"
+
 
 def _container_name(definition: ServiceDefinition, declared: dict[str, Any] | None) -> str:
     key = str(definition.metadata.get("container_name_key", "container_name"))
     if declared and isinstance(declared.get(key), str):
         return str(declared[key])
     raise ValueError(f"{definition.name} 缺少 container_name")
+
+
+def _compose_label_paths(value: Any) -> set[str]:
+    if not isinstance(value, str):
+        return set()
+    return {item.strip() for item in value.split(",") if item.strip()}
+
+
+def _declared_compose_config_files(declared: dict[str, Any] | None) -> set[str]:
+    if not isinstance(declared, dict):
+        return set()
+    expected: set[str] = set()
+    compose_file = declared.get("compose_file")
+    if isinstance(compose_file, str) and compose_file.strip():
+        expected.add(compose_file.strip())
+    config_files = declared.get("config_files")
+    if isinstance(config_files, list):
+        for item in config_files:
+            if isinstance(item, str) and item.strip():
+                expected.add(item.strip())
+    return expected
 
 
 def inspect_container(
@@ -49,6 +73,9 @@ def verify_container_service(
     live = inspected.get("live", {})
     state = live.get("State", {}) if isinstance(live, dict) else {}
     config = live.get("Config", {}) if isinstance(live, dict) else {}
+    labels = config.get("Labels") if isinstance(config, dict) else {}
+    if not isinstance(labels, dict):
+        labels = {}
     host_config = live.get("HostConfig", {}) if isinstance(live, dict) else {}
     checks: dict[str, dict[str, object]] = {}
 
@@ -67,6 +94,26 @@ def verify_container_service(
             "ok": actual_network_mode == expected_network_mode,
             "actual": actual_network_mode,
             "expected": expected_network_mode,
+        }
+
+    expected_project_name = declared.get("project_name") if isinstance(declared, dict) else None
+    if isinstance(expected_project_name, str) and expected_project_name.strip():
+        actual_project_name = labels.get(COMPOSE_PROJECT_LABEL)
+        checks["compose_project"] = {
+            "ok": actual_project_name == expected_project_name.strip(),
+            "actual": actual_project_name,
+            "expected": expected_project_name.strip(),
+        }
+
+    expected_config_files = _declared_compose_config_files(declared)
+    if expected_config_files:
+        actual_config_files = _compose_label_paths(labels.get(COMPOSE_CONFIG_FILES_LABEL))
+        missing = sorted(expected_config_files - actual_config_files)
+        checks["compose_config_files"] = {
+            "ok": not missing,
+            "actual": sorted(actual_config_files),
+            "expected": sorted(expected_config_files),
+            "missing": missing,
         }
 
     host_network_mode = host_config.get("NetworkMode") == "infra"

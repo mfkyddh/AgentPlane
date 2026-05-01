@@ -22,6 +22,7 @@ agentplane service apply --target <target> --name <service> --operation restart 
 ## Rules
 
 - Inspect with `search`, `get`, or `verify` before mutation.
+- Treat `verify` as live runtime drift evidence for container state, image, network binding, and compose identity labels when declared.
 - Use `plan` before `apply` for any formal restart or reconcile.
 - Do not expose provider/debug commands as the first answer to the user.
 - After service state changes, refresh inventory or ledger only through the formal projection skills.
