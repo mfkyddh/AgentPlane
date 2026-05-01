@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import subprocess
 import sys
@@ -39,6 +40,13 @@ def add_repository_parser(subparsers: argparse._SubParsersAction[argparse.Argume
     health.add_argument("--skip-secrets", action="store_true")
     health.add_argument("--skip-cli-help", action="store_true")
     health.add_argument("--skip-docs", action="store_true")
+    health.add_argument(
+        "--onepanel-source-root", type=Path, help="可选：本地 1Panel 源码根目录，用于 provider 更新门禁"
+    )
+    health.add_argument("--onepanel-baseline", type=Path, help="可选：上一版 1Panel route fingerprint JSON")
+    health.add_argument(
+        "--fail-on-onepanel-drift", action="store_true", help="可选：存在 1Panel route drift 时健康检查失败"
+    )
 
     status = repo_subparsers.add_parser("status", help="生成当前控制面状态摘要")
     status.add_argument("--repo-root", type=Path, default=Path.cwd())
@@ -219,6 +227,46 @@ def _skills_check(repo_root: Path) -> dict[str, Any]:
     }
 
 
+def _onepanel_route_fingerprint_check(
+    *,
+    source_root: Path,
+    baseline: Path | None = None,
+    fail_on_drift: bool = False,
+) -> dict[str, Any]:
+    try:
+        payload = build_onepanel_route_fingerprint(source_root)
+        drift = None
+        ok = True
+        resolved_baseline = baseline.resolve() if baseline is not None else None
+        if resolved_baseline is not None:
+            drift = compare_route_fingerprints(payload, load_route_fingerprint(resolved_baseline))
+            if fail_on_drift and drift["changed"]:
+                ok = False
+        return {
+            "name": "onepanel-route-fingerprint",
+            "ok": ok,
+            "source_root": payload["source_root"],
+            "baseline": str(resolved_baseline) if resolved_baseline is not None else None,
+            "fingerprint": payload["fingerprint"],
+            "route_count": payload["route_count"],
+            "group_count": payload["group_count"],
+            "git": payload["git"],
+            "impact_summary": payload["impact_summary"],
+            "drift": drift,
+        }
+    except (OSError, ValueError, RuntimeError, json.JSONDecodeError) as exc:
+        return {
+            "name": "onepanel-route-fingerprint",
+            "ok": False,
+            "source_root": str(source_root),
+            "baseline": str(baseline) if baseline is not None else None,
+            "error": {
+                "type": type(exc).__name__,
+                "message": str(exc),
+            },
+        }
+
+
 def _git_clean_check(repo_root: Path) -> dict[str, Any]:
     result = subprocess.run(
         ["git", "status", "--short"],
@@ -241,6 +289,8 @@ def _git_clean_check(repo_root: Path) -> dict[str, Any]:
 
 def run_health_check(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = args.repo_root.resolve()
+    if args.onepanel_baseline and not args.onepanel_source_root:
+        raise ValueError("--onepanel-baseline requires --onepanel-source-root")
     checks: list[dict[str, Any]] = []
 
     if not args.skip_ruff:
@@ -258,6 +308,15 @@ def run_health_check(args: argparse.Namespace) -> dict[str, Any]:
 
     if not args.skip_docs:
         checks.append(_docs_sanity_check(repo_root))
+
+    if args.onepanel_source_root is not None:
+        checks.append(
+            _onepanel_route_fingerprint_check(
+                source_root=args.onepanel_source_root,
+                baseline=args.onepanel_baseline,
+                fail_on_drift=args.fail_on_onepanel_drift,
+            )
+        )
 
     checks.append(_skills_check(repo_root))
 

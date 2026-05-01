@@ -24,6 +24,7 @@ agentplane repo provider onepanel route-fingerprint --source-root <1panel-source
 agentplane repo status --repo-root <repo-root>
 agentplane repo status --repo-root <repo-root> --html tmp/agentplane-status.html
 agentplane repo health-check --repo-root <repo-root>
+agentplane repo health-check --repo-root <repo-root> --onepanel-source-root <1panel-source-root> --onepanel-baseline tmp/onepanel-routes.json --fail-on-onepanel-drift
 agentplane repo release-check --repo-root <repo-root>
 agentplane test fast --tb=short
 ```

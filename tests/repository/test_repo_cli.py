@@ -429,6 +429,78 @@ class CliEntrypointsTests(unittest.TestCase):
         self.assertEqual(1, drift_surfaces["service"])
         self.assertEqual(1, drift_surfaces["app.delivery"])
 
+    def test_repo_health_check_can_include_onepanel_provider_gate(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="agentplane-onepanel-health-") as tmp:
+            source_root = Path(tmp) / "1Panel"
+            _write_fake_onepanel_router(source_root)
+
+            result = run_cli(
+                "repo",
+                "health-check",
+                "--repo-root",
+                str(REPO_ROOT),
+                "--skip-ruff",
+                "--skip-tests",
+                "--skip-secrets",
+                "--skip-cli-help",
+                "--skip-docs",
+                "--onepanel-source-root",
+                str(source_root),
+            )
+
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        payload = json.loads(result.stdout)
+        checks = {item["name"]: item for item in payload["checks"]}
+        self.assertTrue(checks["onepanel-route-fingerprint"]["ok"])
+        self.assertEqual(4, checks["onepanel-route-fingerprint"]["route_count"])
+        self.assertEqual("P0", checks["onepanel-route-fingerprint"]["impact_summary"]["highest_priority"])
+        self.assertIn("skills-check", checks)
+
+    def test_repo_health_check_can_fail_on_onepanel_drift(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="agentplane-onepanel-health-drift-") as tmp:
+            source_root = Path(tmp) / "1Panel"
+            baseline = Path(tmp) / "baseline.json"
+            _write_fake_onepanel_router(source_root)
+            baseline_result = run_cli(
+                "repo",
+                "provider",
+                "onepanel",
+                "route-fingerprint",
+                "--source-root",
+                str(source_root),
+                "--output",
+                str(baseline),
+                "--repo-root",
+                str(REPO_ROOT),
+            )
+            self.assertEqual(baseline_result.returncode, 0, msg=baseline_result.stderr)
+
+            _write_fake_onepanel_router(source_root, include_extra_route=True)
+            result = run_cli(
+                "repo",
+                "health-check",
+                "--repo-root",
+                str(REPO_ROOT),
+                "--skip-ruff",
+                "--skip-tests",
+                "--skip-secrets",
+                "--skip-cli-help",
+                "--skip-docs",
+                "--onepanel-source-root",
+                str(source_root),
+                "--onepanel-baseline",
+                str(baseline),
+                "--fail-on-onepanel-drift",
+            )
+
+        self.assertEqual(result.returncode, 1, msg=result.stderr)
+        payload = json.loads(result.stdout)
+        checks = {item["name"]: item for item in payload["checks"]}
+        provider_check = checks["onepanel-route-fingerprint"]
+        self.assertFalse(provider_check["ok"])
+        self.assertTrue(provider_check["drift"]["changed"])
+        self.assertEqual(1, provider_check["drift"]["counts"]["added"])
+
     def test_repo_skills_check_validates_public_skill_surface(self) -> None:
         result = run_cli("repo", "skills", "check", "--repo-root", str(REPO_ROOT))
 

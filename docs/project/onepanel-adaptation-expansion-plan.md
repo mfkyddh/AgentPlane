@@ -208,7 +208,7 @@ layer: project
 - 支持 `--baseline` 与 `--fail-on-drift`，可作为后续更新漂移门禁。
 - 已建立 route diff -> AgentPlane surface impact matrix：输出 `impact_matrix`、`impact_summary`，drift 结果输出 `impact` 摘要。
 - 已为 `object_api.py` 现有关键 read helper 增加 contract fixture，覆盖 panel、ingress、container、project、cronjob、firewall、app、task response shape。
-- 将更新检查纳入 `repo health-check` 或维护者命令。
+- 已将更新检查以 opt-in 形式纳入 `repo health-check`：传入 `--onepanel-source-root` 后执行 provider route fingerprint 检查，配合 `--onepanel-baseline --fail-on-onepanel-drift` 可作为漂移门禁。
 
 ### M2：只读能力扩展
 
