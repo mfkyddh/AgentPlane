@@ -82,9 +82,7 @@ class WslLifecyclePolicy:
     @classmethod
     def _ensure_wsl_target(cls, target: str) -> None:
         if target != WSL_ONLY_TARGET:
-            raise ValueError(
-                f"WSL lifecycle policy only applies to the '{WSL_ONLY_TARGET}' target, got {target!r}"
-            )
+            raise ValueError(f"WSL lifecycle policy only applies to the '{WSL_ONLY_TARGET}' target, got {target!r}")
         if target in FORBIDDEN_PRODUCTION_TARGETS:
             raise ValueError(f"target {target!r} is reserved for production hosts")
 

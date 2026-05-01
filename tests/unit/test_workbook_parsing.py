@@ -11,7 +11,6 @@ import tempfile
 from pathlib import Path
 
 import pytest
-
 from agentplane.domain.repository.status import (
     _parse_phase_overview,
     _parse_phase_section_tasks,
@@ -137,6 +136,7 @@ def _write_workbook(content: str) -> Path:
 
 # -- _parse_phase_overview ---------------------------------------------------
 
+
 class TestParsePhaseOverview:
     def test_extracts_phases_from_overview_table(self) -> None:
         phases = _parse_phase_overview(SAMPLE_WORKBOOK)
@@ -157,6 +157,7 @@ class TestParsePhaseOverview:
 
 # -- _parse_phase_section_tasks ----------------------------------------------
 
+
 class TestParsePhaseSectionTasks:
     def test_collects_tasks_from_multiple_tables(self) -> None:
         tasks = _parse_phase_section_tasks(SAMPLE_WORKBOOK, "P1")
@@ -176,6 +177,7 @@ class TestParsePhaseSectionTasks:
 
 # -- _parse_resume_entry -----------------------------------------------------
 
+
 class TestParseResumeEntry:
     def test_extracts_resume_entry_content(self) -> None:
         entry = _parse_resume_entry(SAMPLE_WORKBOOK)
@@ -189,6 +191,7 @@ class TestParseResumeEntry:
 
 # -- _parse_workbook_last_verified -------------------------------------------
 
+
 class TestParseWorkbookLastVerified:
     def test_extracts_last_verified_from_frontmatter(self) -> None:
         assert _parse_workbook_last_verified(SAMPLE_WORKBOOK) == "2026-04-29"
@@ -198,6 +201,7 @@ class TestParseWorkbookLastVerified:
 
 
 # -- _workbook_status (integration) ------------------------------------------
+
 
 class TestWorkbookStatus:
     def test_returns_ok_with_current_phase_and_next_task(self) -> None:
@@ -258,9 +262,7 @@ P1 待讨论。
         assert "not found" in result["error"].lower()
 
     def test_returns_error_when_no_phase_table(self) -> None:
-        result = _workbook_status(
-            _write_workbook("---\nstatus: active\n---\n\n# No phases here\n")
-        )
+        result = _workbook_status(_write_workbook("---\nstatus: active\n---\n\n# No phases here\n"))
         assert result["ok"] is False
         assert "no phase overview" in result["error"].lower()
 

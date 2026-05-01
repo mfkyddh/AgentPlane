@@ -198,7 +198,9 @@ def plan_app_resource_registry_onboard(
     return next_registry, {"action": "upsert", "registry_key": key, "replaced": exists}
 
 
-def plan_app_resource_registry_offboard(registry: dict[str, Any], *, app_id: str) -> tuple[dict[str, Any], dict[str, Any]]:
+def plan_app_resource_registry_offboard(
+    registry: dict[str, Any], *, app_id: str
+) -> tuple[dict[str, Any], dict[str, Any]]:
     """Return (next_registry, evidence) for removing an app's resource entry (and aliases)."""
 
     if not isinstance(registry, dict):
@@ -309,4 +311,3 @@ def scan_offboarding_orphans(repo_root: Path, *, app_id: str) -> dict[str, Any]:
         )
 
     return results
-

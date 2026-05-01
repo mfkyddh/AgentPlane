@@ -57,7 +57,9 @@ def _shared_runtime_redis_env(repo_root: Path, target: str, redis_env: dict[str,
     return projected
 
 
-def _merge_sub2api_env(current: dict[str, str], pg_env: dict[str, str], redis_env: dict[str, str]) -> tuple[dict[str, str], set[str]]:
+def _merge_sub2api_env(
+    current: dict[str, str], pg_env: dict[str, str], redis_env: dict[str, str]
+) -> tuple[dict[str, str], set[str]]:
     managed = {
         "DATABASE_HOST": pg_env.get("PGHOST", ""),
         "DATABASE_PORT": pg_env.get("PGPORT", ""),
@@ -133,15 +135,11 @@ def formal_registry_entry_errors(
             for field in fields:
                 value = spec.get(field)
                 if value is None or value == "":
-                    issues.append(
-                        f"{APP_RESOURCES_REGISTRY_ENTRY_LABEL} summary field {kind}.{field} missing"
-                    )
+                    issues.append(f"{APP_RESOURCES_REGISTRY_ENTRY_LABEL} summary field {kind}.{field} missing")
             if kind == "redis":
                 redis_db = spec.get("db")
                 expected_db = redis_contract.get("db")
-                if expected_db is not None and (
-                    not is_canonical_redis_db(redis_db) or redis_db != expected_db
-                ):
+                if expected_db is not None and (not is_canonical_redis_db(redis_db) or redis_db != expected_db):
                     issues.append(f"redis.db={redis_db!r} expected {expected_db!r}")
 
                 key_prefix = spec.get("key_prefix")
@@ -168,7 +166,9 @@ def formal_registry_entry_errors(
     ]
 
 
-def render_env_validation_errors(repo_root: Path, target: str, app_id: str, entry: dict[str, Any]) -> list[dict[str, Any]]:
+def render_env_validation_errors(
+    repo_root: Path, target: str, app_id: str, entry: dict[str, Any]
+) -> list[dict[str, Any]]:
     formal_errors = formal_registry_entry_errors(
         target,
         app_id,
@@ -267,11 +267,17 @@ def _public_projection_payload(payload: dict[str, Any], *, reveal_secrets: bool 
     return public
 
 
-def plan_runtime_env_projection(repo_root: Path, target: str, app_id: str, *, reveal_secrets: bool = False) -> dict[str, Any]:
-    return _public_projection_payload(_projection_state(repo_root.resolve(), target, app_id), reveal_secrets=reveal_secrets)
+def plan_runtime_env_projection(
+    repo_root: Path, target: str, app_id: str, *, reveal_secrets: bool = False
+) -> dict[str, Any]:
+    return _public_projection_payload(
+        _projection_state(repo_root.resolve(), target, app_id), reveal_secrets=reveal_secrets
+    )
 
 
-def apply_runtime_env_projection(repo_root: Path, target: str, app_id: str, *, reveal_secrets: bool = False) -> dict[str, Any]:
+def apply_runtime_env_projection(
+    repo_root: Path, target: str, app_id: str, *, reveal_secrets: bool = False
+) -> dict[str, Any]:
     repo_root = repo_root.resolve()
     payload = _projection_state(repo_root, target, app_id)
     if not payload.get("ok"):
@@ -285,7 +291,9 @@ def apply_runtime_env_projection(repo_root: Path, target: str, app_id: str, *, r
     return _public_projection_payload(payload, reveal_secrets=reveal_secrets)
 
 
-def verify_runtime_env_projection(repo_root: Path, target: str, app_id: str, *, reveal_secrets: bool = False) -> dict[str, Any]:
+def verify_runtime_env_projection(
+    repo_root: Path, target: str, app_id: str, *, reveal_secrets: bool = False
+) -> dict[str, Any]:
     repo_root = repo_root.resolve()
     payload = _projection_state(repo_root, target, app_id)
     if not payload.get("ok"):

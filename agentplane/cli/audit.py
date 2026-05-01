@@ -65,6 +65,7 @@ def _violation(
         item["details"] = details
     return item
 
+
 def _as_list(value: Any) -> list[Any]:
     if isinstance(value, list):
         return value
@@ -516,7 +517,11 @@ def _audit_openresty_contract(scope: str, inventory_file: Path, payload: dict[st
     violations: list[dict[str, Any]] = []
     security_ports, service_ports, declared_ports = _openresty_declared_public_ports(payload)
     legacy_ports_found = sorted(port for port in declared_ports if isinstance(port, int) and port in LEGACY_PORTS)
-    if not declared_ports or legacy_ports_found or (security_ports and service_ports and security_ports != service_ports):
+    if (
+        not declared_ports
+        or legacy_ports_found
+        or (security_ports and service_ports and security_ports != service_ports)
+    ):
         violations.append(
             _violation(
                 scope,
@@ -550,7 +555,9 @@ def _audit_openresty_contract(scope: str, inventory_file: Path, payload: dict[st
     return violations
 
 
-def _audit_managed_bridge_network_declarations(scope: str, inventory_file: Path, payload: dict[str, Any]) -> list[dict[str, Any]]:
+def _audit_managed_bridge_network_declarations(
+    scope: str, inventory_file: Path, payload: dict[str, Any]
+) -> list[dict[str, Any]]:
     violations: list[dict[str, Any]] = []
     raw = payload.get("managed_bridge_networks")
     if not isinstance(raw, list) or not raw:
@@ -578,7 +585,11 @@ def _audit_managed_bridge_network_declarations(scope: str, inventory_file: Path,
             continue
 
         required_fields = ("name", "driver", "subnet", "gateway_ip")
-        missing_fields = [field for field in required_fields if not isinstance(item.get(field), str) or not str(item.get(field)).strip()]
+        missing_fields = [
+            field
+            for field in required_fields
+            if not isinstance(item.get(field), str) or not str(item.get(field)).strip()
+        ]
         if missing_fields:
             violations.append(
                 _violation(
@@ -628,7 +639,8 @@ def _audit_managed_bridge_network_declarations(scope: str, inventory_file: Path,
 
         required_for = item.get("required_for", [])
         if required_for is not None and (
-            not isinstance(required_for, list) or any(not isinstance(entry, str) or not entry.strip() for entry in required_for)
+            not isinstance(required_for, list)
+            or any(not isinstance(entry, str) or not entry.strip() for entry in required_for)
         ):
             violations.append(
                 _violation(
@@ -642,7 +654,9 @@ def _audit_managed_bridge_network_declarations(scope: str, inventory_file: Path,
     return violations
 
 
-def _audit_runtime_service_summary_contract(scope: str, inventory_file: Path, payload: dict[str, Any]) -> list[dict[str, Any]]:
+def _audit_runtime_service_summary_contract(
+    scope: str, inventory_file: Path, payload: dict[str, Any]
+) -> list[dict[str, Any]]:
     violations: list[dict[str, Any]] = []
     services = payload.get("services")
     if not isinstance(services, dict):

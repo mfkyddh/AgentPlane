@@ -38,7 +38,9 @@ def _run_backup_secrets(repo_root: Path, automation: dict[str, Any]) -> dict[str
 
 AUTOMATION_DEFINITIONS: dict[str, InfraAutomationDefinition] = {
     "wsl-zzz-skills-sync": InfraAutomationDefinition(name="wsl-zzz-skills-sync", runner=_run_sync_zzz_skills),
-    "wsl-agentplane-secrets-backup": InfraAutomationDefinition(name="wsl-agentplane-secrets-backup", runner=_run_backup_secrets),
+    "wsl-agentplane-secrets-backup": InfraAutomationDefinition(
+        name="wsl-agentplane-secrets-backup", runner=_run_backup_secrets
+    ),
 }
 
 
@@ -349,7 +351,14 @@ def plan_infra_automation(
             "ok": True,
             "operation": operation,
             "automation": normalized,
-            "actions": [{"object": "cronjob", "mode": "handle", "path": "/api/v2/cronjobs/handle", "body": {"id": int(live["id"])}}],
+            "actions": [
+                {
+                    "object": "cronjob",
+                    "mode": "handle",
+                    "path": "/api/v2/cronjobs/handle",
+                    "body": {"id": int(live["id"])},
+                }
+            ],
         }
 
     actions, live = _reconcile_actions(repo_root, automation, resolved_executor)

@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import json
-import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -15,6 +13,7 @@ from tests.support.cli import run_agentplane_cli as run_cli
 from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
+
 
 class InventoryGenerationTests(unittest.TestCase):
     def test_focused_acceptance_commands_are_documented_as_readonly_or_dry_run(self) -> None:
@@ -39,7 +38,9 @@ class InventoryGenerationTests(unittest.TestCase):
         self.assertGreaterEqual(len(payload["payload"]["items"]), 1)
 
     def test_phase4_lane12_projection_ledger_refresh_acceptance_defaults_to_readonly(self) -> None:
-        result = run_cli("projection", "ledger", "refresh", "--target", "wsl", "--repo-root", str(REPO_ROOT), cwd=REPO_ROOT)
+        result = run_cli(
+            "projection", "ledger", "refresh", "--target", "wsl", "--repo-root", str(REPO_ROOT), cwd=REPO_ROOT
+        )
         self.assertEqual(result.returncode, 0, msg=result.stderr)
 
         payload = json.loads(result.stdout)
@@ -51,7 +52,10 @@ class InventoryGenerationTests(unittest.TestCase):
     def test_projection_only_templates_and_pointer_files_reference_canonical_sources(self) -> None:
         projection_only_templates = {
             REPO_ROOT / "templates" / "services" / "minio.env.example": "templates/services/minio/admin.env.example",
-            REPO_ROOT / "templates" / "services" / "postgres.env.example": "templates/services/postgres/admin.env.example",
+            REPO_ROOT
+            / "templates"
+            / "services"
+            / "postgres.env.example": "templates/services/postgres/admin.env.example",
             REPO_ROOT / "templates" / "services" / "redis.conf.example": "templates/services/redis/admin.env.example",
         }
         for path, canonical in projection_only_templates.items():
@@ -61,7 +65,11 @@ class InventoryGenerationTests(unittest.TestCase):
                 self.assertRegex(content, r"(legacy|transitional|projection-only|projection only)")
 
         pointer_files = {
-            REPO_ROOT / "infra" / "compose" / "cliproxyapi" / "config.yaml": "templates/services/cliproxyapi.config.yaml.example",
+            REPO_ROOT
+            / "infra"
+            / "compose"
+            / "cliproxyapi"
+            / "config.yaml": "templates/services/cliproxyapi.config.yaml.example",
             REPO_ROOT / "infra" / "compose" / "redis" / "redis.conf": "templates/services/redis.conf.example",
         }
         for path, canonical in pointer_files.items():
@@ -118,9 +126,12 @@ class InventoryGenerationTests(unittest.TestCase):
                 },
             ]
 
-            with patch("agentplane.cli.inventory._wsl_backend_type", return_value="linux-native"), patch(
-                "agentplane.cli.inventory._docker_container_rows",
-                return_value=rows,
+            with (
+                patch("agentplane.cli.inventory._wsl_backend_type", return_value="linux-native"),
+                patch(
+                    "agentplane.cli.inventory._docker_container_rows",
+                    return_value=rows,
+                ),
             ):
                 payload = generate_inventory_snapshot(root, "wsl")["payload"]
 
@@ -206,9 +217,11 @@ class InventoryGenerationTests(unittest.TestCase):
             self.assertEqual("prod0-main", payload.get("target"))
             self.assertIsInstance(payload["payload"], dict)
 
+
 # ======================================================================
 # From: test_observation_contracts.py
 # ======================================================================
+
 
 def write_app_object_fixture(root: Path) -> Path:
     target = "prod0-main"
@@ -223,9 +236,7 @@ def write_app_object_fixture(root: Path) -> Path:
                         "public_url": "https://token.example.net:8443",
                     }
                 },
-                "object_ledgers": {
-                    "ledgers": {"apps": f"inventory/servers/{target}/ledgers/apps.json"}
-                },
+                "object_ledgers": {"ledgers": {"apps": f"inventory/servers/{target}/ledgers/apps.json"}},
             },
             ensure_ascii=False,
             indent=2,
@@ -269,6 +280,7 @@ def write_app_object_fixture(root: Path) -> Path:
     summary_file.parent.mkdir(parents=True, exist_ok=True)
     summary_file.write_text("# summary\n", encoding="utf-8")
     return contract_file.resolve()
+
 
 class ObservationContractTests(unittest.TestCase):
     def test_verification_payload_keeps_resolved_path_out_of_ledger_fields(self) -> None:

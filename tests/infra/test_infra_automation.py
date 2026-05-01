@@ -21,8 +21,10 @@ from agentplane.cli.preflight import (
 )
 from agentplane.runtime.host_profile import HostProfile
 from agentplane.ssh import SshTarget, resolve_ssh_config_path, resolve_ssh_target
+from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
+
 
 class FakeExecutor:
     def __init__(self, cronjobs: list[dict[str, object]] | None = None) -> None:
@@ -74,6 +76,7 @@ class FakeExecutor:
             return {"id": cronjob_id}
         raise AssertionError(f"unexpected path: {path}")
 
+
 def write_inventory(root: Path) -> None:
     inventory_file = root / "inventory" / "servers" / "wsl" / "inventory.json"
     inventory_file.parent.mkdir(parents=True, exist_ok=True)
@@ -106,6 +109,7 @@ def write_inventory(root: Path) -> None:
         ),
         encoding="utf-8",
     )
+
 
 class InfraAutomationTests(unittest.TestCase):
     def test_search_rejects_unknown_target(self) -> None:
@@ -144,7 +148,10 @@ class InfraAutomationTests(unittest.TestCase):
 
             self.assertTrue(payload["ok"])
             self.assertEqual("create", payload["actions"][0]["mode"])
-            self.assertIn("infra automation apply wsl --name wsl-zzz-skills-sync --operation run --execute", payload["actions"][0]["body"]["script"])
+            self.assertIn(
+                "infra automation apply wsl --name wsl-zzz-skills-sync --operation run --execute",
+                payload["actions"][0]["body"]["script"],
+            )
 
     def test_verify_detects_legacy_cronjob_script_drift(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -223,7 +230,11 @@ class InfraAutomationTests(unittest.TestCase):
             original = infra_automation.AUTOMATION_DEFINITIONS["wsl-zzz-skills-sync"]
             infra_automation.AUTOMATION_DEFINITIONS["wsl-zzz-skills-sync"] = infra_automation.InfraAutomationDefinition(
                 name="wsl-zzz-skills-sync",
-                runner=lambda repo_root, automation: {"status": "ok_no_changes", "repo_root": str(repo_root), "name": automation["name"]},
+                runner=lambda repo_root, automation: {
+                    "status": "ok_no_changes",
+                    "repo_root": str(repo_root),
+                    "name": automation["name"],
+                },
             )
             try:
                 payload = infra_automation.apply_infra_automation(
@@ -256,9 +267,11 @@ class InfraAutomationTests(unittest.TestCase):
             self.assertFalse(payload["ok"])
             self.assertEqual("cronjob missing", payload["reason"])
 
+
 # ======================================================================
 # From: test_preflight.py
 # ======================================================================
+
 
 class TestCheckWslAvailable:
     @patch("agentplane.cli.preflight.subprocess.run")
@@ -284,6 +297,7 @@ class TestCheckWslAvailable:
         assert check.status == "failed"
         assert "wsl.exe not found" in check.message
 
+
 class TestCheckSshConfigExists:
     def test_config_exists(self, tmp_path: pytest.TempPathFactory) -> None:
         config = tmp_path / "ssh" / "config"
@@ -299,6 +313,7 @@ class TestCheckSshConfigExists:
         ssh_target.config_path = tmp_path / "missing"
         check = _check_ssh_config_exists(ssh_target)
         assert check.status == "failed"
+
 
 class TestCheckSshKeyPermissions:
     def test_key_with_good_permissions(self, tmp_path: pytest.TempPathFactory) -> None:
@@ -339,6 +354,7 @@ class TestCheckSshKeyPermissions:
         check = _check_ssh_key_permissions(ssh_target)
         assert check.status == "failed"
 
+
 class TestCheckSshReachable:
     @patch("agentplane.cli.preflight.subprocess.run")
     def test_ssh_ok(self, mock_run: MagicMock) -> None:
@@ -375,6 +391,7 @@ class TestCheckSshReachable:
         assert check.status == "failed"
         assert "network failure" in check.message.lower()
 
+
 class TestExecuteRemotePreflight:
     @patch("agentplane.cli.preflight.detect_host_profile")
     @patch("agentplane.cli.preflight.TargetResolver")
@@ -392,7 +409,9 @@ class TestExecuteRemotePreflight:
     @patch("agentplane.cli.preflight.detect_host_profile")
     @patch("agentplane.cli.preflight.TargetResolver")
     @patch("agentplane.cli.preflight.resolve_ssh_target")
-    def test_remote_preflight(self, mock_resolve_ssh: MagicMock, mock_resolver_cls: MagicMock, mock_detect: MagicMock) -> None:
+    def test_remote_preflight(
+        self, mock_resolve_ssh: MagicMock, mock_resolver_cls: MagicMock, mock_detect: MagicMock
+    ) -> None:
         mock_detect.return_value = MagicMock()
         mock_resolver = MagicMock()
         mock_resolver.resolve.return_value = MagicMock(is_local=False, ssh_alias="prod0-main")
@@ -401,9 +420,15 @@ class TestExecuteRemotePreflight:
         ssh_target.config_path.exists.return_value = True
         mock_resolve_ssh.return_value = ssh_target
 
-        with patch("agentplane.cli.preflight._check_ssh_config_exists", return_value=PreflightCheck("config", "ok", "ok")):
-            with patch("agentplane.cli.preflight._check_ssh_key_permissions", return_value=PreflightCheck("key", "ok", "ok")):
-                with patch("agentplane.cli.preflight._check_ssh_reachable", return_value=PreflightCheck("ssh", "ok", "ok")):
+        with patch(
+            "agentplane.cli.preflight._check_ssh_config_exists", return_value=PreflightCheck("config", "ok", "ok")
+        ):
+            with patch(
+                "agentplane.cli.preflight._check_ssh_key_permissions", return_value=PreflightCheck("key", "ok", "ok")
+            ):
+                with patch(
+                    "agentplane.cli.preflight._check_ssh_reachable", return_value=PreflightCheck("ssh", "ok", "ok")
+                ):
                     report = execute_remote_preflight("/fake/repo", "prod0-main")
         assert report.overall == "ok"
 
@@ -420,9 +445,11 @@ class TestExecuteRemotePreflight:
         assert payload["overall"] == "warning"
         assert len(payload["checks"]) == 2
 
+
 # ======================================================================
 # From: test_ssh_targets.py
 # ======================================================================
+
 
 class SshTargetTests(unittest.TestCase):
     def test_root_direct_target_renders_root_destination_without_sudo(self) -> None:
@@ -570,9 +597,11 @@ class SshTargetTests(unittest.TestCase):
             self.assertEqual(main_root / "secrets" / "ssh" / "config", target.config_path)
             self.assertEqual("root@prod0-main", target.connection_target)
 
+
 # ======================================================================
 # From: test_wsl_audit.py
 # ======================================================================
+
 
 class WslAuditTests(unittest.TestCase):
     def test_windows_host_uses_backend_exec_for_wsl_path_checks(self) -> None:
@@ -644,7 +673,6 @@ class WslAuditTests(unittest.TestCase):
 # From: test_wsl_first_docs.py
 # ======================================================================
 
-from tests.support.paths import REPO_ROOT
 CORE_TEMPLATE_ENTRY_DOCS = (
     REPO_ROOT / "README.md",
     REPO_ROOT / "AGENTS.md",
@@ -660,6 +688,7 @@ FORBIDDEN_WSL_FIRST_TERMS = (
     "WSL-first",
     "默认工作流仍然是先进入 WSL",
 )
+
 
 class WslFirstDocsTests(unittest.TestCase):
     def test_core_template_docs_standardize_on_pwsh_not_legacy_powershell(self) -> None:
@@ -679,9 +708,7 @@ class WslFirstDocsTests(unittest.TestCase):
         self.assertIn("远程 Linux 走 `agentplane infra remote bash`", text)
 
     def test_linux_governance_declares_backend_role_not_wsl_first_entry(self) -> None:
-        text = (REPO_ROOT / "docs" / "architecture" / "linux-governance.md").read_text(
-            encoding="utf-8"
-        )
+        text = (REPO_ROOT / "docs" / "architecture" / "linux-governance.md").read_text(encoding="utf-8")
 
         self.assertIn("本页只定义 Linux / WSL backend 约束，不改变宿主入口选择。", text)
         self.assertIn("host-entry-first, backend-aware", text)
@@ -692,9 +719,9 @@ class WslFirstDocsTests(unittest.TestCase):
     def test_readme_and_flow_promote_backend_split_instead_of_wsl_first(self) -> None:
         # README is a thin entry; backend-aware routing details live in AGENTS.md + cross-platform.md
         agents_text = (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")
-        flow_text = (
-            REPO_ROOT / "docs" / "runbooks" / "control-plane-agent-execution-flow.md"
-        ).read_text(encoding="utf-8")
+        flow_text = (REPO_ROOT / "docs" / "runbooks" / "control-plane-agent-execution-flow.md").read_text(
+            encoding="utf-8"
+        )
 
         self.assertIn("`pwsh`", agents_text)
         self.assertIn("`pwsh`", flow_text)

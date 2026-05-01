@@ -130,7 +130,9 @@ def _target_status(target_dir: Path) -> dict[str, Any]:
 
     compose_services = inventory_payload.get("compose_services") if isinstance(inventory_payload, dict) else []
     docker_containers = inventory_payload.get("docker_containers") if isinstance(inventory_payload, dict) else []
-    unmanaged_containers = inventory_payload.get("unmanaged_docker_containers") if isinstance(inventory_payload, dict) else []
+    unmanaged_containers = (
+        inventory_payload.get("unmanaged_docker_containers") if isinstance(inventory_payload, dict) else []
+    )
 
     return {
         "target": target_dir.name,
@@ -238,11 +240,13 @@ def _parse_phase_overview(text: str) -> list[dict[str, str]]:
         if first.startswith("---"):
             continue
         if len(cells) >= 3:
-            phases.append({
-                "id": _strip_backtick(first),
-                "name": cells[1].strip(),
-                "status": _strip_backtick(cells[2]),
-            })
+            phases.append(
+                {
+                    "id": _strip_backtick(first),
+                    "name": cells[1].strip(),
+                    "status": _strip_backtick(cells[2]),
+                }
+            )
     return phases
 
 
@@ -294,11 +298,13 @@ def _parse_phase_section_tasks(text: str, phase_id: str) -> list[dict[str, str]]
         if first.startswith("---"):
             continue
         if len(cells) >= 3:
-            tasks.append({
-                "id": _strip_backtick(first),
-                "title": cells[1].strip(),
-                "status": _strip_backtick(cells[2]),
-            })
+            tasks.append(
+                {
+                    "id": _strip_backtick(first),
+                    "title": cells[1].strip(),
+                    "status": _strip_backtick(cells[2]),
+                }
+            )
     return tasks
 
 
@@ -428,21 +434,25 @@ def _derive_risks(
     # blocked_phase
     current_phase = roadmap.get("current_phase")
     if current_phase and current_phase["status"] == "blocked":
-        risks.append({
-            "kind": "blocked_phase",
-            "severity": "high",
-            "message": f"{current_phase['id']} ({current_phase['name']}) is blocked.",
-            "source_ref": current_phase["id"],
-        })
+        risks.append(
+            {
+                "kind": "blocked_phase",
+                "severity": "high",
+                "message": f"{current_phase['id']} ({current_phase['name']}) is blocked.",
+                "source_ref": current_phase["id"],
+            }
+        )
 
     # discussion_required (only for current phase)
     if current_phase and current_phase["status"] in ("planned", "discussion-required"):
-        risks.append({
-            "kind": "discussion_required",
-            "severity": "high",
-            "message": f"{current_phase['id']} ({current_phase['name']}) requires discussion before proceeding.",
-            "source_ref": current_phase["id"],
-        })
+        risks.append(
+            {
+                "kind": "discussion_required",
+                "severity": "high",
+                "message": f"{current_phase['id']} ({current_phase['name']}) requires discussion before proceeding.",
+                "source_ref": current_phase["id"],
+            }
+        )
 
     # failed_check
     failed_checks: list[str] = []
@@ -450,23 +460,27 @@ def _derive_risks(
         if not data.get("ok", True):
             failed_checks.append(area)
     if failed_checks:
-        risks.append({
-            "kind": "failed_check",
-            "severity": "high",
-            "message": f"Checks failed: {', '.join(failed_checks)}.",
-            "source_ref": ", ".join(failed_checks),
-        })
+        risks.append(
+            {
+                "kind": "failed_check",
+                "severity": "high",
+                "message": f"Checks failed: {', '.join(failed_checks)}.",
+                "source_ref": ", ".join(failed_checks),
+            }
+        )
 
     # blocked_task (from workbook tasks)
     if roadmap.get("ok") and current_phase and current_phase["status"] in ("approved", "active"):
         next_task = roadmap.get("next_task")
         if next_task and next_task["status"] == "blocked":
-            risks.append({
-                "kind": "blocked_task",
-                "severity": "medium",
-                "message": f"Task {next_task['id']} is blocked.",
-                "source_ref": next_task["id"],
-            })
+            risks.append(
+                {
+                    "kind": "blocked_task",
+                    "severity": "medium",
+                    "message": f"Task {next_task['id']} is blocked.",
+                    "source_ref": next_task["id"],
+                }
+            )
 
     # missing_inventory
     missing: list[str] = []
@@ -476,12 +490,14 @@ def _derive_risks(
         elif not target.get("readme_exists"):
             missing.append(target["target"])
     if missing:
-        risks.append({
-            "kind": "missing_inventory",
-            "severity": "medium",
-            "message": f"Targets missing inventory or README: {', '.join(missing)}.",
-            "source_ref": ", ".join(missing),
-        })
+        risks.append(
+            {
+                "kind": "missing_inventory",
+                "severity": "medium",
+                "message": f"Targets missing inventory or README: {', '.join(missing)}.",
+                "source_ref": ", ".join(missing),
+            }
+        )
 
     # stale_data
     now = datetime.now(timezone.utc)
@@ -498,12 +514,14 @@ def _derive_risks(
             except (ValueError, TypeError):
                 pass
     if stale:
-        risks.append({
-            "kind": "stale_data",
-            "severity": "low",
-            "message": f"Stale ledgers (> {_STALE_THRESHOLD_DAYS} days): {', '.join(stale)}.",
-            "source_ref": ", ".join(stale),
-        })
+        risks.append(
+            {
+                "kind": "stale_data",
+                "severity": "low",
+                "message": f"Stale ledgers (> {_STALE_THRESHOLD_DAYS} days): {', '.join(stale)}.",
+                "source_ref": ", ".join(stale),
+            }
+        )
 
     return risks
 
@@ -613,12 +631,14 @@ def build_repo_status(repo_root: Path) -> dict[str, Any]:
     # Derive risks and next step
     risks = _derive_risks(payload["roadmap"], payload["checks"], payload["targets"])
     if _check_dirty_worktree(root):
-        risks.append({
-            "kind": "dirty_worktree",
-            "severity": "medium",
-            "message": "Uncommitted changes in the working tree.",
-            "source_ref": "git",
-        })
+        risks.append(
+            {
+                "kind": "dirty_worktree",
+                "severity": "medium",
+                "message": "Uncommitted changes in the working tree.",
+                "source_ref": "git",
+            }
+        )
     # Sort risks by severity (high > medium > low)
     severity_order = {"high": 0, "medium": 1, "low": 2}
     risks.sort(key=lambda r: severity_order.get(r["severity"], 3))
@@ -669,12 +689,7 @@ def _render_roadmap_section(roadmap: dict[str, Any]) -> str:
 
     current_phase = roadmap.get("current_phase")
     if current_phase is None:
-        return (
-            '<section class="panel">'
-            "<h2>Roadmap</h2>"
-            '<p style="color:var(--ok)">All phases complete.</p>'
-            "</section>"
-        )
+        return '<section class="panel"><h2>Roadmap</h2><p style="color:var(--ok)">All phases complete.</p></section>'
 
     phase_status = current_phase["status"]
     next_task = roadmap.get("next_task")
@@ -683,7 +698,7 @@ def _render_roadmap_section(roadmap: dict[str, Any]) -> str:
     next_task_html = ""
     if next_task:
         next_task_html = (
-            f'<tr><td>Next Task</td>'
+            f"<tr><td>Next Task</td>"
             f"<td><code>{html.escape(next_task['id'])}</code> {html.escape(next_task['title'])}</td>"
             f'<td><span class="badge {html.escape(next_task["status"])}">{html.escape(next_task["status"])}</span></td></tr>'
         )
@@ -694,7 +709,7 @@ def _render_roadmap_section(roadmap: dict[str, Any]) -> str:
         "<table>"
         "<thead><tr><th>Field</th><th>Value</th><th>Status</th></tr></thead>"
         "<tbody>"
-        f'<tr><td>Current Phase</td>'
+        f"<tr><td>Current Phase</td>"
         f"<td><strong>{html.escape(current_phase['id'])}</strong> {html.escape(current_phase['name'])}</td>"
         f'<td><span class="badge {html.escape(phase_status)}">{html.escape(phase_status)}</span></td></tr>'
         f'<tr><td>Gate</td><td colspan="2">{html.escape(current_phase["gate"])}</td></tr>'
@@ -709,21 +724,16 @@ def _render_roadmap_section(roadmap: dict[str, Any]) -> str:
 def _render_risks_section(risks: list[dict[str, str]]) -> str:
     """Render the risks section for the HTML dashboard."""
     if not risks:
-        return (
-            '<section class="panel">'
-            "<h2>Risks</h2>"
-            '<p style="color:var(--ok)">No risks detected.</p>'
-            "</section>"
-        )
+        return '<section class="panel"><h2>Risks</h2><p style="color:var(--ok)">No risks detected.</p></section>'
 
     rows: list[str] = []
     for risk in risks:
         rows.append(
             f"<tr>"
             f'<td><span class="badge {html.escape(risk["severity"])}">{html.escape(risk["severity"])}</span></td>'
-            f'<td>{html.escape(risk["kind"])}</td>'
-            f'<td>{html.escape(risk["message"])}</td>'
-            f'<td><code>{html.escape(risk["source_ref"])}</code></td>'
+            f"<td>{html.escape(risk['kind'])}</td>"
+            f"<td>{html.escape(risk['message'])}</td>"
+            f"<td><code>{html.escape(risk['source_ref'])}</code></td>"
             f"</tr>"
         )
 
@@ -751,7 +761,7 @@ def _render_next_step_section(next_step: dict[str, str]) -> str:
         '<div class="next-step">'
         f"<h2>Next Step: {step_type}</h2>"
         f"<p>{description}</p>"
-        f'<p><small>Ref: <code>{target_ref}</code></small></p>'
+        f"<p><small>Ref: <code>{target_ref}</code></small></p>"
         "</div>"
     )
 
@@ -851,9 +861,9 @@ def render_status_html(payload: dict[str, Any]) -> str:
       <table>
         <thead><tr><th>Area</th><th>Status</th><th>Details</th></tr></thead>
         <tbody>
-          <tr><td>Docs</td><td>{'ok' if checks['docs']['ok'] else 'review'}</td><td>{checks['docs']['errors']} errors, {checks['docs']['warnings']} warnings</td></tr>
-          <tr><td>Secrets & Privacy</td><td>{'ok' if checks['boundaries']['ok'] else 'review'}</td><td>{checks['boundaries']['secret_issues']} secret issues, {checks['boundaries']['privacy_issues']} privacy issues</td></tr>
-          <tr><td>Skills</td><td>{'ok' if checks['skills']['ok'] else 'review'}</td><td>{checks['skills']['count']} public skills</td></tr>
+          <tr><td>Docs</td><td>{"ok" if checks["docs"]["ok"] else "review"}</td><td>{checks["docs"]["errors"]} errors, {checks["docs"]["warnings"]} warnings</td></tr>
+          <tr><td>Secrets & Privacy</td><td>{"ok" if checks["boundaries"]["ok"] else "review"}</td><td>{checks["boundaries"]["secret_issues"]} secret issues, {checks["boundaries"]["privacy_issues"]} privacy issues</td></tr>
+          <tr><td>Skills</td><td>{"ok" if checks["skills"]["ok"] else "review"}</td><td>{checks["skills"]["count"]} public skills</td></tr>
         </tbody>
       </table>
     </section>
@@ -875,7 +885,7 @@ def render_status_html(payload: dict[str, Any]) -> str:
     </section>
     <section class="panel">
       <h2>Source</h2>
-      <p>Generated at <code>{html.escape(payload['generated_at'])}</code> from <code>{html.escape(payload['repo_root'])}</code>.</p>
+      <p>Generated at <code>{html.escape(payload["generated_at"])}</code> from <code>{html.escape(payload["repo_root"])}</code>.</p>
     </section>
   </main>
 </body>

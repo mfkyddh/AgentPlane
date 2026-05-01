@@ -11,6 +11,7 @@ from agentplane.providers.gateway import default_provider_gateway
 def _executor_for_target(target: str) -> object:
     return default_provider_gateway().onepanel_target_executor(target)
 
+
 def _find_live_ingress(executor: object, alias: str) -> dict[str, Any] | None:
     provider = default_provider_gateway()
     payload = provider.search_onepanel_websites(executor, name=alias)
@@ -52,13 +53,21 @@ def verify_ingress(repo_root: Path, target: str, alias: str) -> dict[str, Any]:
     live_https = live.get("https", {})
     actual_ssl = live_https.get("SSL", {}) if isinstance(live_https, dict) else {}
     checks: dict[str, dict[str, Any]] = {
-        "alias": {"ok": live_ingress.get("alias") == definition.alias, "actual": live_ingress.get("alias"), "expected": definition.alias},
+        "alias": {
+            "ok": live_ingress.get("alias") == definition.alias,
+            "actual": live_ingress.get("alias"),
+            "expected": definition.alias,
+        },
         "domain": {
             "ok": live_ingress.get("primaryDomain") == definition.primary_domain,
             "actual": live_ingress.get("primaryDomain"),
             "expected": definition.primary_domain,
         },
-        "proxy": {"ok": live_ingress.get("proxy") == definition.proxy, "actual": live_ingress.get("proxy"), "expected": definition.proxy},
+        "proxy": {
+            "ok": live_ingress.get("proxy") == definition.proxy,
+            "actual": live_ingress.get("proxy"),
+            "expected": definition.proxy,
+        },
         "https": {"ok": bool(live_https.get("enable")), "actual": bool(live_https.get("enable")), "expected": True},
     }
     if definition.ssl_id is not None:
@@ -132,7 +141,9 @@ def plan_ingress_operation(repo_root: Path, target: str, alias: str, operation: 
     }
 
 
-def apply_ingress_operation(repo_root: Path, target: str, alias: str, operation: str, *, execute: bool) -> dict[str, Any]:
+def apply_ingress_operation(
+    repo_root: Path, target: str, alias: str, operation: str, *, execute: bool
+) -> dict[str, Any]:
     if not execute:
         raise ValueError("ingress apply requires --execute")
 

@@ -44,6 +44,7 @@ from tests.support.app_resources import resource_relative, resource_root
 
 pytestmark = pytest.mark.e2e
 
+
 class TestAppDeliveryBuildCliTests(unittest.TestCase):
     def test_build_artifact_executes_script_build_command_with_image_tag(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -61,7 +62,7 @@ class TestAppDeliveryBuildCliTests(unittest.TestCase):
                         "#!/usr/bin/env bash",
                         "set -euo pipefail",
                         f'mkdir -p "{output_dir}"',
-                        f'printf \'{{\"image_tag\":\"%s\",\"output_path\":\"%s\"}}\' \"$IMAGE_TAG\" \"$ARTIFACT_OUTPUT_PATH\" > "{output_file}"',
+                        f'printf \'{{"image_tag":"%s","output_path":"%s"}}\' "$IMAGE_TAG" "$ARTIFACT_OUTPUT_PATH" > "{output_file}"',
                     ]
                 )
                 + "\n",
@@ -150,7 +151,7 @@ class TestAppDeliveryBuildCliTests(unittest.TestCase):
                         "#!/usr/bin/env bash",
                         "set -euo pipefail",
                         'mkdir -p "$ARTIFACT_OUTPUT_PATH"',
-                        f'printf \"%s\" \"$IMAGE_TAG\" > \"{output_file}\"',
+                        f'printf "%s" "$IMAGE_TAG" > "{output_file}"',
                     ]
                 )
                 + "\n",
@@ -197,7 +198,7 @@ class TestAppDeliveryBuildCliTests(unittest.TestCase):
                         "#!/usr/bin/env bash",
                         "set -euo pipefail",
                         'mkdir -p "$ARTIFACT_OUTPUT_PATH"',
-                        f'printf \'{{\"image_tag\":\"%s\",\"fork_version\":\"%s\",\"delivery_version\":\"%s\"}}\' "$IMAGE_TAG" "${{FORK_VERSION:-}}" "${{DELIVERY_VERSION:-}}" > "{output_file}"',
+                        f'printf \'{{"image_tag":"%s","fork_version":"%s","delivery_version":"%s"}}\' "$IMAGE_TAG" "${{FORK_VERSION:-}}" "${{DELIVERY_VERSION:-}}" > "{output_file}"',
                     ]
                 )
                 + "\n",
@@ -289,7 +290,7 @@ class TestAppDeliveryBuildCliTests(unittest.TestCase):
                     [
                         "#!/usr/bin/env bash",
                         "set -euo pipefail",
-                        f'printf \'{{\"image_ref\":\"%s\",\"artifact_output_path\":\"%s\"}}\' \"$IMAGE_REF\" \"$ARTIFACT_OUTPUT_PATH\" > "{package_output}"',
+                        f'printf \'{{"image_ref":"%s","artifact_output_path":"%s"}}\' "$IMAGE_REF" "$ARTIFACT_OUTPUT_PATH" > "{package_output}"',
                     ]
                 )
                 + "\n",
@@ -390,7 +391,7 @@ class TestAppDeliveryBuildCliTests(unittest.TestCase):
                         "#!/usr/bin/env bash",
                         "set -euo pipefail",
                         'mkdir -p "$ARTIFACT_OUTPUT_PATH"',
-                        f'printf \"%s\" \"$IMAGE_TAG\" > \"{output_file}\"',
+                        f'printf "%s" "$IMAGE_TAG" > "{output_file}"',
                     ]
                 )
                 + "\n",
@@ -410,9 +411,11 @@ class TestAppDeliveryBuildCliTests(unittest.TestCase):
             self.assertEqual(str(worktree_root.resolve()), payload["cwd"])
             self.assertEqual("worktree-tag", output_file.read_text(encoding="utf-8"))
 
+
 # ======================================================================
 # From: test_app_delivery_deploy_rollback_cli.py
 # ======================================================================
+
 
 class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
     def test_deploy_post_actions_prefers_explicit_app_repo_root_over_catalog_repo_root(self) -> None:
@@ -473,7 +476,9 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             post_actions = payload["post_actions"]["steps"]
             doc_sync_step = next(item for item in post_actions if item["action"] == "app.delivery.doc-sync")
             self.assertIn(str((worktree_root / "docs" / "WORKTREE.md").resolve()), doc_sync_step["payload"]["app_docs"])
-            self.assertNotIn(str((canonical_root / "docs" / "CANONICAL.md").resolve()), doc_sync_step["payload"]["app_docs"])
+            self.assertNotIn(
+                str((canonical_root / "docs" / "CANONICAL.md").resolve()), doc_sync_step["payload"]["app_docs"]
+            )
 
     def test_deploy_dry_run_includes_env_sync(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -499,7 +504,9 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             payload = json.loads(result.stdout)
             self.assertEqual("/data/sub2api/config/sub2api-prod.env", payload["payload"]["remote_env"])
-            self.assertTrue(payload["payload"]["local_env"].replace("\\", "/").endswith("secrets/services/sub2api.prod0.env"))
+            self.assertTrue(
+                payload["payload"]["local_env"].replace("\\", "/").endswith("secrets/services/sub2api.prod0.env")
+            )
             commands = "\n".join(payload["payload"]["commands"])
             self.assertIn("root@prod0-main", commands)
             self.assertNotIn("sudo ", commands)
@@ -561,7 +568,7 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             write_fake_command(
                 bin_dir,
                 "scp",
-                "#!/usr/bin/env bash\nset -euo pipefail\nprintf 'scp %s\\n' \"$*\" >> \"$FAKE_CMD_LOG\"\n",
+                '#!/usr/bin/env bash\nset -euo pipefail\nprintf \'scp %s\\n\' "$*" >> "$FAKE_CMD_LOG"\n',
             )
             write_fake_bridge_network_ssh(bin_dir)
 
@@ -607,7 +614,7 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             write_fake_command(
                 bin_dir,
                 "curl",
-                "#!/usr/bin/env bash\nset -euo pipefail\nprintf 'curl %s\\n' \"$*\" >> \"$FAKE_CMD_LOG\"\n",
+                '#!/usr/bin/env bash\nset -euo pipefail\nprintf \'curl %s\\n\' "$*" >> "$FAKE_CMD_LOG"\n',
             )
 
             result = run_app_delivery_cli(
@@ -688,7 +695,9 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             git_worktree_dir = main_root / ".git" / "worktrees" / "demo"
             (main_root / "secrets" / "services").mkdir(parents=True, exist_ok=True)
             (main_root / "secrets" / "ssh").mkdir(parents=True, exist_ok=True)
-            (main_root / "secrets" / "services" / "sub2api.prod0.env").write_text("SERVER_PORT=8080\n", encoding="utf-8")
+            (main_root / "secrets" / "services" / "sub2api.prod0.env").write_text(
+                "SERVER_PORT=8080\n", encoding="utf-8"
+            )
             git_worktree_dir.mkdir(parents=True, exist_ok=True)
             worktree_root.mkdir(parents=True, exist_ok=True)
             (worktree_root / ".git").write_text(f"gitdir: {git_worktree_dir}\n", encoding="utf-8")
@@ -774,7 +783,10 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             payload = json.loads(result.stdout)
             commands = "\n".join(payload["payload"]["commands"])
-            self.assertIn("uv run python -m agentplane.providers.onepanel_transition --target prod0-main app --operate stop --install-id 3", commands)
+            self.assertIn(
+                "uv run python -m agentplane.providers.onepanel_transition --target prod0-main app --operate stop --install-id 3",
+                commands,
+            )
             self.assertNotIn("systemctl stop", commands)
 
     def test_rollback_dry_run_starts_1panel_app_control_plane_for_sampleapi(self) -> None:
@@ -795,7 +807,10 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             payload = json.loads(result.stdout)
             commands = "\n".join(payload["payload"]["commands"])
-            self.assertIn("uv run python -m agentplane.providers.onepanel_transition --target prod0-main app --operate start --install-id 3", commands)
+            self.assertIn(
+                "uv run python -m agentplane.providers.onepanel_transition --target prod0-main app --operate start --install-id 3",
+                commands,
+            )
             self.assertNotIn("systemctl start", commands)
 
     def test_deploy_dry_run_stops_1panel_compose_control_plane(self) -> None:
@@ -891,12 +906,12 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             write_fake_command(
                 bin_dir,
                 "scp",
-                "#!/usr/bin/env bash\nset -euo pipefail\nprintf 'scp %s\\n' \"$*\" >> \"$FAKE_CMD_LOG\"\n",
+                '#!/usr/bin/env bash\nset -euo pipefail\nprintf \'scp %s\\n\' "$*" >> "$FAKE_CMD_LOG"\n',
             )
             write_fake_command(
                 bin_dir,
                 "uv",
-                "#!/usr/bin/env bash\nset -euo pipefail\nprintf 'uv %s\\n' \"$*\" >> \"$FAKE_CMD_LOG\"\n",
+                '#!/usr/bin/env bash\nset -euo pipefail\nprintf \'uv %s\\n\' "$*" >> "$FAKE_CMD_LOG"\n',
             )
 
             result = run_app_delivery_cli(
@@ -945,12 +960,12 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             write_fake_command(
                 bin_dir,
                 "ssh",
-                "#!/usr/bin/env bash\nset -euo pipefail\nprintf 'ssh %s\\n' \"$*\" >> \"$FAKE_CMD_LOG\"\n",
+                '#!/usr/bin/env bash\nset -euo pipefail\nprintf \'ssh %s\\n\' "$*" >> "$FAKE_CMD_LOG"\n',
             )
             write_fake_command(
                 bin_dir,
                 "uv",
-                "#!/usr/bin/env bash\nset -euo pipefail\nprintf 'uv %s\\n' \"$*\" >> \"$FAKE_CMD_LOG\"\n",
+                '#!/usr/bin/env bash\nset -euo pipefail\nprintf \'uv %s\\n\' "$*" >> "$FAKE_CMD_LOG"\n',
             )
 
             result = run_app_delivery_cli(
@@ -989,7 +1004,7 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             write_fake_command(
                 bin_dir,
                 "ssh",
-                "#!/usr/bin/env bash\nset -euo pipefail\nprintf 'ssh %s\\n' \"$*\" >> \"$FAKE_CMD_LOG\"\n",
+                '#!/usr/bin/env bash\nset -euo pipefail\nprintf \'ssh %s\\n\' "$*" >> "$FAKE_CMD_LOG"\n',
             )
 
             result = run_app_delivery_cli(
@@ -1065,9 +1080,11 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             self.assertEqual([], payload["payload"]["commands"])
             self.assertIn("manual image restore", payload["payload"]["warning"])
 
+
 # ======================================================================
 # From: test_app_delivery_render_verify_cli.py
 # ======================================================================
+
 
 class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
     def test_render_runtime_outputs_sub2api_prod_compose(self) -> None:
@@ -1176,7 +1193,9 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
             payload["data"]["mounts"] = [{"host_path": "/data/sample-register-v2/data", "container_path": "/data"}]
             payload["inventory"]["service_key"] = "sample-register-v2"
             contract_file.write_text(yaml.safe_dump(payload, sort_keys=False, allow_unicode=False), encoding="utf-8")
-            sync_app_catalog_for_contract(root, contract_file=contract_file, app="sample-register-v2", service_key="sample-register-v2")
+            sync_app_catalog_for_contract(
+                root, contract_file=contract_file, app="sample-register-v2", service_key="sample-register-v2"
+            )
             write_internal_worker_compose_template(root)
 
             result = run_app_delivery_cli(
@@ -1247,7 +1266,7 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
             write_fake_command(
                 bin_dir,
                 "curl",
-                "#!/usr/bin/env bash\nset -euo pipefail\nprintf 'curl %s\\n' \"$*\" >> \"$FAKE_CMD_LOG\"\n",
+                '#!/usr/bin/env bash\nset -euo pipefail\nprintf \'curl %s\\n\' "$*" >> "$FAKE_CMD_LOG"\n',
             )
 
             result = run_app_delivery_cli(
@@ -1300,7 +1319,10 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
             write_sampleapi_compose_templates(root)
             service_env = root / "secrets" / "services" / "sampleapi.wsl.env"
             service_env.parent.mkdir(parents=True, exist_ok=True)
-            service_env.write_text("APP_DATABASE_URL=postgresql://sampleapi_wsl:secret@postgres18-dev:5432/sampleapi_wsl\n", encoding="utf-8")
+            service_env.write_text(
+                "APP_DATABASE_URL=postgresql://sampleapi_wsl:secret@postgres18-dev:5432/sampleapi_wsl\n",
+                encoding="utf-8",
+            )
             write_sampleapi_contract(root, target="wsl")
             bin_dir = root / "bin"
             bin_dir.mkdir(parents=True, exist_ok=True)
@@ -1308,7 +1330,7 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
             write_fake_command(
                 bin_dir,
                 "docker",
-                "#!/usr/bin/env bash\nset -euo pipefail\nprintf 'docker %s\\n' \"$*\" >> \"$FAKE_CMD_LOG\"\n",
+                '#!/usr/bin/env bash\nset -euo pipefail\nprintf \'docker %s\\n\' "$*" >> "$FAKE_CMD_LOG"\n',
             )
 
             result = run_app_delivery_cli(
@@ -1355,7 +1377,10 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
             write_sampleapi_compose_templates(root)
             service_env = root / "secrets" / "services" / "sampleapi.wsl.env"
             service_env.parent.mkdir(parents=True, exist_ok=True)
-            service_env.write_text("APP_DATABASE_URL=postgresql://sampleapi_wsl:secret@postgres18-dev:5432/sampleapi_wsl\n", encoding="utf-8")
+            service_env.write_text(
+                "APP_DATABASE_URL=postgresql://sampleapi_wsl:secret@postgres18-dev:5432/sampleapi_wsl\n",
+                encoding="utf-8",
+            )
             contract_file = write_sampleapi_contract(root, target="wsl")
             contract = app_runtime.validate_contract(contract_file, repo_root=root, target="wsl")
 
@@ -1385,10 +1410,13 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
                     return _FakeExecutionResult(plan)
 
             runner = _FakeRunner()
-            with patch(
-                "agentplane.domain.app.runtime.detect_host_profile",
-                return_value=HostProfile(os_name="windows", linux_backend="windows-wsl", supports_docker=True),
-            ), patch("agentplane.domain.app.runtime.build_backend_runner", return_value=runner):
+            with (
+                patch(
+                    "agentplane.domain.app.runtime.detect_host_profile",
+                    return_value=HostProfile(os_name="windows", linux_backend="windows-wsl", supports_docker=True),
+                ),
+                patch("agentplane.domain.app.runtime.build_backend_runner", return_value=runner),
+            ):
                 payload = app_runtime.deploy_app(
                     contract,
                     repo_root=root,
@@ -1432,7 +1460,10 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
             write_sampleapi_compose_templates(worktree_root)
             service_env = outer_root / "secrets" / "services" / "sampleapi.wsl.env"
             service_env.parent.mkdir(parents=True, exist_ok=True)
-            service_env.write_text("APP_DATABASE_URL=postgresql://sampleapi_wsl:secret@postgres18-dev:5432/sampleapi_wsl\n", encoding="utf-8")
+            service_env.write_text(
+                "APP_DATABASE_URL=postgresql://sampleapi_wsl:secret@postgres18-dev:5432/sampleapi_wsl\n",
+                encoding="utf-8",
+            )
             write_sampleapi_contract(worktree_root, target="wsl")
             bin_dir = worktree_root / "bin"
             bin_dir.mkdir(parents=True, exist_ok=True)
@@ -1440,7 +1471,7 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
             write_fake_command(
                 bin_dir,
                 "docker",
-                "#!/usr/bin/env bash\nset -euo pipefail\nprintf 'docker %s\\n' \"$*\" >> \"$FAKE_CMD_LOG\"\n",
+                '#!/usr/bin/env bash\nset -euo pipefail\nprintf \'docker %s\\n\' "$*" >> "$FAKE_CMD_LOG"\n',
             )
 
             result = run_app_delivery_cli(
@@ -1490,7 +1521,7 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
             write_fake_command(
                 bin_dir,
                 "curl",
-                "#!/usr/bin/env bash\nset -euo pipefail\nprintf 'curl %s\\n' \"$*\" >> \"$FAKE_CMD_LOG\"\necho '{\"status\":\"ok\"}'\n",
+                '#!/usr/bin/env bash\nset -euo pipefail\nprintf \'curl %s\\n\' "$*" >> "$FAKE_CMD_LOG"\necho \'{"status":"ok"}\'\n',
             )
 
             result = run_app_delivery_cli(
@@ -1512,9 +1543,11 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
             self.assertEqual(["curl -fsS http://127.0.0.1:3000/api/status"], payload["commands"])
             self.assertIn("curl -fsS http://127.0.0.1:3000/api/status", log_file.read_text(encoding="utf-8"))
 
+
 # ======================================================================
 # From: test_app_delivery_validate_cli.py
 # ======================================================================
+
 
 class TestAppDeliveryValidateCliTests(unittest.TestCase):
     def test_secrets_root_prefers_repo_local_directory(self) -> None:
@@ -1715,7 +1748,9 @@ class TestAppDeliveryValidateCliTests(unittest.TestCase):
             payload["data"]["mounts"] = [{"host_path": "/data/sample-register-v2/data", "container_path": "/data"}]
             payload["inventory"]["service_key"] = "sample-register-v2"
             contract_file.write_text(yaml.safe_dump(payload, sort_keys=False, allow_unicode=False), encoding="utf-8")
-            sync_app_catalog_for_contract(root, contract_file=contract_file, app="sample-register-v2", service_key="sample-register-v2")
+            sync_app_catalog_for_contract(
+                root, contract_file=contract_file, app="sample-register-v2", service_key="sample-register-v2"
+            )
 
             result = run_app_delivery_cli("validate-contract", repo_root=root, app="sample-register-v2")
 
@@ -1923,7 +1958,10 @@ class TestAppDeliveryValidateCliTests(unittest.TestCase):
             payload = json.loads(result.stdout)["payload"]
             self.assertEqual("deploy/worktree.env.example", payload["runtime"]["env_template"])
             self.assertEqual(str(worktree_root.resolve()), payload["_meta"]["app_root"])
-            self.assertEqual(str((worktree_root / "deploy" / "agentplane" / "contract.yaml").resolve()), payload["_meta"]["contract_file"])
+            self.assertEqual(
+                str((worktree_root / "deploy" / "agentplane" / "contract.yaml").resolve()),
+                payload["_meta"]["contract_file"],
+            )
 
     def test_validate_contract_skips_registry_alignment_when_tenant_resources_declares_no_supported_kinds(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -1952,9 +1990,11 @@ class TestAppDeliveryValidateCliTests(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0, msg=result.stderr)
 
+
 # ======================================================================
 # From: test_app_delivery_validate_resources_cli.py
 # ======================================================================
+
 
 class TestAppDeliveryValidateResourcesCliTests(unittest.TestCase):
     def test_validate_contract_tenant_requires_tenant_resources_for_infra_dependencies(self) -> None:
@@ -2144,7 +2184,9 @@ class TestAppDeliveryValidateResourcesCliTests(unittest.TestCase):
                     ids = {item.get("id") for item in items if isinstance(item, dict)}
                     self.assertIn(ERROR_ID_TENANT_SECRET_FILE_SCOPE, ids)
 
-    def test_validate_contract_tenant_requires_minio_tenant_resource_when_contract_declares_minio_dependency(self) -> None:
+    def test_validate_contract_tenant_requires_minio_tenant_resource_when_contract_declares_minio_dependency(
+        self,
+    ) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory(root)
@@ -2197,7 +2239,10 @@ class TestAppDeliveryValidateResourcesCliTests(unittest.TestCase):
             redis.write_text("REDIS_USER=sub2api_prod0\nREDIS_DB=1\nREDIS_KEY_PREFIX=sub2api:\n", encoding="utf-8")
             bad_minio = root / "secrets" / "app-resources" / "prod0-main" / "sampleapi" / "minio.env"
             bad_minio.parent.mkdir(parents=True, exist_ok=True)
-            bad_minio.write_text("S3_BUCKET=prod0-sub2api\nS3_ACCESS_KEY=sub2api_prod0\nS3_SECRET_KEY=sub2api-s3-secret\n", encoding="utf-8")
+            bad_minio.write_text(
+                "S3_BUCKET=prod0-sub2api\nS3_ACCESS_KEY=sub2api_prod0\nS3_SECRET_KEY=sub2api-s3-secret\n",
+                encoding="utf-8",
+            )
             write_contract(
                 root,
                 tenant_resources={
@@ -2243,7 +2288,10 @@ class TestAppDeliveryValidateResourcesCliTests(unittest.TestCase):
             redis.write_text("REDIS_USER=sub2api_prod0\nREDIS_DB=1\nREDIS_KEY_PREFIX=sub2api:\n", encoding="utf-8")
             minio = resource_root(root, "prod0-main", "sub2api") / "minio.env"
             minio.parent.mkdir(parents=True, exist_ok=True)
-            minio.write_text("S3_BUCKET=prod0-sub2api\nS3_ACCESS_KEY=sub2api_prod0\nS3_SECRET_KEY=sub2api-s3-secret\n", encoding="utf-8")
+            minio.write_text(
+                "S3_BUCKET=prod0-sub2api\nS3_ACCESS_KEY=sub2api_prod0\nS3_SECRET_KEY=sub2api-s3-secret\n",
+                encoding="utf-8",
+            )
             write_contract(
                 root,
                 tenant_resources={
@@ -2385,9 +2433,11 @@ class TestAppDeliveryValidateResourcesCliTests(unittest.TestCase):
             self.assertIn(ERROR_ID_TENANT_SECRET_FILE_SCOPE, result.stdout + result.stderr)
             self.assertFalse((root / "tmp" / "operation-ledger").exists())
 
+
 # ======================================================================
 # From: test_app_delivery_doc_sync_cli.py
 # ======================================================================
+
 
 class TestAppDeliveryDocSyncCliTests(unittest.TestCase):
     def test_doc_sync_should_fail_on_registry_truth_drift_before_writing_server_readme(self) -> None:
@@ -2546,7 +2596,9 @@ class TestAppDeliveryDocSyncCliTests(unittest.TestCase):
             self.assertIn("合同文件：`contract.yaml`", app_summary_text)
             self.assertIn("<!-- BEGIN AGENTPLANE_ONEPANEL_LEDGER -->", server_readme_text)
             self.assertIn("--repo-root <repo-root> --write", server_readme_text)
-            server_redis_line = next(line for line in server_readme_text.splitlines() if line.startswith("- app_resource_summary.redis"))
+            server_redis_line = next(
+                line for line in server_readme_text.splitlines() if line.startswith("- app_resource_summary.redis")
+            )
             redis_line = next(line for line in app_summary_text.splitlines() if line.startswith("- `redis`："))
             self.assertIn('"db": 1', server_redis_line)
             self.assertIn('"key_prefix": "sub2api:"', server_redis_line)
@@ -2849,7 +2901,7 @@ class TestAppDeliveryDocSyncCliTests(unittest.TestCase):
             write_fake_command(
                 bin_dir,
                 "scp",
-                "#!/usr/bin/env bash\nset -euo pipefail\nprintf 'scp %s\\n' \"$*\" >> \"$FAKE_CMD_LOG\"\n",
+                '#!/usr/bin/env bash\nset -euo pipefail\nprintf \'scp %s\\n\' "$*" >> "$FAKE_CMD_LOG"\n',
             )
             write_fake_bridge_network_ssh(bin_dir)
 
@@ -2880,7 +2932,9 @@ class TestAppDeliveryDocSyncCliTests(unittest.TestCase):
             evidence = post_actions["evidence"]
             ledger_file = Path(evidence["ledger_file"])
             self.assertTrue(ledger_file.is_file())
-            entries = [json.loads(line) for line in ledger_file.read_text(encoding="utf-8").splitlines() if line.strip()]
+            entries = [
+                json.loads(line) for line in ledger_file.read_text(encoding="utf-8").splitlines() if line.strip()
+            ]
             post_action_entries = [
                 entry
                 for entry in entries
@@ -2891,9 +2945,11 @@ class TestAppDeliveryDocSyncCliTests(unittest.TestCase):
             self.assertEqual(1, len(post_action_entries))
             self.assertEqual(evidence["operation"]["op_id"], post_action_entries[0]["op_id"])
 
+
 # ======================================================================
 # From: test_app_delivery_inventory_cli.py
 # ======================================================================
+
 
 class TestAppDeliveryInventoryCliTests(unittest.TestCase):
     def test_inventory_refresh_writes_app_entry(self) -> None:
@@ -2977,7 +3033,9 @@ class TestAppDeliveryInventoryCliTests(unittest.TestCase):
             self.assertEqual("sampleapi_wsl", app_entry["app_resource_summary"]["postgres"]["database"])
             self.assertEqual("sampleapi:wsl:", app_entry["app_resource_summary"]["redis"]["key_prefix"])
             self.assertNotIn("user", app_entry["app_resource_summary"]["redis"])
-            written_payload = json.loads((root / "inventory" / "servers" / "wsl" / "inventory.json").read_text(encoding="utf-8"))
+            written_payload = json.loads(
+                (root / "inventory" / "servers" / "wsl" / "inventory.json").read_text(encoding="utf-8")
+            )
             self.assertEqual(["zqf_network"], written_payload["services"]["sampleapi"]["docker_networks"])
             self.assertNotIn("user", written_payload["services"]["sampleapi"]["app_resource_summary"]["redis"])
 
@@ -3024,7 +3082,9 @@ class TestAppDeliveryInventoryCliTests(unittest.TestCase):
             payload = json.loads(result.stdout)
             expected = str(outer_root / "secrets" / "services" / "sampleapi.wsl.env")
             self.assertEqual([expected], payload["payload"]["services"]["sampleapi"]["config_files"])
-            written_payload = json.loads((worktree_root / "inventory" / "servers" / "wsl" / "inventory.json").read_text(encoding="utf-8"))
+            written_payload = json.loads(
+                (worktree_root / "inventory" / "servers" / "wsl" / "inventory.json").read_text(encoding="utf-8")
+            )
             self.assertEqual([expected], written_payload["services"]["sampleapi"]["config_files"])
 
     def test_inventory_refresh_keeps_1panel_compose_project_fields(self) -> None:
@@ -3099,7 +3159,9 @@ class TestAppDeliveryInventoryCliTests(unittest.TestCase):
             payload["inventory"]["service_key"] = "sample-register-v2"
             payload["inventory"]["remove_service_keys"] = ["chatgpt-register-wsl"]
             contract_file.write_text(yaml.safe_dump(payload, sort_keys=False, allow_unicode=False), encoding="utf-8")
-            sync_app_catalog_for_contract(root, contract_file=contract_file, app="sample-register-v2", service_key="sample-register-v2")
+            sync_app_catalog_for_contract(
+                root, contract_file=contract_file, app="sample-register-v2", service_key="sample-register-v2"
+            )
             write_internal_worker_compose_template(root)
             inventory_payload = json.loads(inventory_file.read_text(encoding="utf-8"))
             inventory_payload["services"]["chatgpt-register-wsl"] = {
@@ -3120,8 +3182,8 @@ class TestAppDeliveryInventoryCliTests(unittest.TestCase):
             app_entry = json.loads(result.stdout)["payload"]["services"]["sample-register-v2"]
             self.assertEqual("internal://127.0.0.1:18081", app_entry["public_url"])
             self.assertEqual(["sub2api-prod"], app_entry["depends_on_containers"])
-            self.assertEqual(["/opt/agentplane/secrets/services/sample-register-v2.prod0.env"], app_entry["config_files"])
+            self.assertEqual(
+                ["/opt/agentplane/secrets/services/sample-register-v2.prod0.env"], app_entry["config_files"]
+            )
             refreshed_services = json.loads(result.stdout)["payload"]["services"]
             self.assertNotIn("chatgpt-register-wsl", refreshed_services)
-
-

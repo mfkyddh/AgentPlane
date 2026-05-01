@@ -15,7 +15,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Send a signed 1Panel API request.")
     parser.add_argument("method", help="HTTP method, for example GET or POST")
     parser.add_argument("path", help="API path such as /api/v2/core/settings/interface")
-    parser.add_argument("--env-file", default="secrets/services/onepanel-api.env", help="dotenv file with 1Panel settings")
+    parser.add_argument(
+        "--env-file", default="secrets/services/onepanel-api.env", help="dotenv file with 1Panel settings"
+    )
     parser.add_argument("--body-json", help="JSON request body")
     parser.add_argument("--body-file", help="Path to a JSON file used as the request body")
     parser.add_argument("--query-json", help="JSON object merged into the query string")

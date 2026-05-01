@@ -17,7 +17,9 @@ def _container_name(definition: ServiceDefinition, declared: dict[str, Any] | No
     raise ValueError(f"{definition.name} 缺少 container_name")
 
 
-def inspect_container(repo_root: Path, target: str, definition: ServiceDefinition, declared: dict[str, Any] | None) -> dict[str, Any]:
+def inspect_container(
+    repo_root: Path, target: str, definition: ServiceDefinition, declared: dict[str, Any] | None
+) -> dict[str, Any]:
     container_name = _container_name(definition, declared)
     result = run_shell_command(
         repo_root,
@@ -31,11 +33,18 @@ def inspect_container(repo_root: Path, target: str, definition: ServiceDefinitio
     return payload
 
 
-def verify_container_service(repo_root: Path, target: str, definition: ServiceDefinition, declared: dict[str, Any] | None) -> dict[str, Any]:
+def verify_container_service(
+    repo_root: Path, target: str, definition: ServiceDefinition, declared: dict[str, Any] | None
+) -> dict[str, Any]:
     inspected = inspect_container(repo_root, target, definition, declared)
     probe = inspected["probe"]
     if not probe["ok"]:
-        return {"ok": False, "checks": {"container_exists": {"ok": False}}, "evidence": [probe], "failures": ["container_missing"]}
+        return {
+            "ok": False,
+            "checks": {"container_exists": {"ok": False}},
+            "evidence": [probe],
+            "failures": ["container_missing"],
+        }
 
     live = inspected.get("live", {})
     state = live.get("State", {}) if isinstance(live, dict) else {}
@@ -54,7 +63,11 @@ def verify_container_service(repo_root: Path, target: str, definition: ServiceDe
     expected_network_mode = declared.get("network_mode") if isinstance(declared, dict) else None
     if isinstance(expected_network_mode, str):
         actual_network_mode = host_config.get("NetworkMode")
-        checks["network_mode"] = {"ok": actual_network_mode == expected_network_mode, "actual": actual_network_mode, "expected": expected_network_mode}
+        checks["network_mode"] = {
+            "ok": actual_network_mode == expected_network_mode,
+            "actual": actual_network_mode,
+            "expected": expected_network_mode,
+        }
 
     host_network_mode = host_config.get("NetworkMode") == "infra"
     expected_host_binding = declared.get("host_binding") if isinstance(declared, dict) else None
@@ -85,7 +98,9 @@ def verify_container_service(repo_root: Path, target: str, definition: ServiceDe
     return {"ok": not failures, "checks": checks, "evidence": [probe], "failures": failures}
 
 
-def plan_container_operation(repo_root: Path, target: str, definition: ServiceDefinition, declared: dict[str, Any] | None, operation: str) -> list[dict[str, object]]:
+def plan_container_operation(
+    repo_root: Path, target: str, definition: ServiceDefinition, declared: dict[str, Any] | None, operation: str
+) -> list[dict[str, object]]:
     container_name = _container_name(definition, declared)
     commands: list[str]
     if operation == "restart":
@@ -102,14 +117,21 @@ def plan_container_operation(repo_root: Path, target: str, definition: ServiceDe
             commands.append(
                 f"if [ ! -e {shlex.quote(f'{repo_path}/secrets')} ] && [ -d /opt/env_ubuntu/secrets ]; then ln -s /opt/env_ubuntu/secrets {shlex.quote(f'{repo_path}/secrets')}; fi"
             )
-        commands.append(f"cd {shlex.quote(remote_compose_dir)} && docker compose -f {shlex.quote(compose_filename)} up -d")
+        commands.append(
+            f"cd {shlex.quote(remote_compose_dir)} && docker compose -f {shlex.quote(compose_filename)} up -d"
+        )
         specs = [shell_command_spec(repo_root, target, command) for command in commands[:-1]]
         if local_compose_path.is_file():
             specs.append(copy_file_spec(repo_root, target, local_compose_path, remote_compose_path))
         specs.append(shell_command_spec(repo_root, target, commands[-1]))
         return [{"argv": spec.argv, "display": spec.display} for spec in specs]
     elif operation == "reload" and definition.name == "onepanel_openresty":
-        commands = [f"docker exec {shlex.quote(container_name)} nginx -t && docker exec {shlex.quote(container_name)} nginx -s reload"]
+        commands = [
+            f"docker exec {shlex.quote(container_name)} nginx -t && docker exec {shlex.quote(container_name)} nginx -s reload"
+        ]
     else:
         raise ValueError(f"unsupported operation for {definition.name}: {operation}")
-    return [{"argv": spec.argv, "display": spec.display} for spec in [shell_command_spec(repo_root, target, command) for command in commands]]
+    return [
+        {"argv": spec.argv, "display": spec.display}
+        for spec in [shell_command_spec(repo_root, target, command) for command in commands]
+    ]

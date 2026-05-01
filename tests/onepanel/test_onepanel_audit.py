@@ -1,9 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
-import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -12,22 +9,25 @@ import pytest
 from agentplane.cli.audit import audit_filesystem
 from tests.support.app_resources import resource_relative
 from tests.support.cli import run_agentplane_cli as run_cli
-from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
+
 
 def write_inventory(root: Path, env: str, payload: dict) -> None:
     inventory_file = root / "inventory" / "servers" / env / "inventory.json"
     inventory_file.parent.mkdir(parents=True, exist_ok=True)
     inventory_file.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
+
 def write_prod0_inventory(root: Path, payload: dict) -> None:
     write_inventory(root, "prod0-main", payload)
+
 
 def write_app_resource_registry(root: Path, payload: dict) -> None:
     registry_file = root / "inventory" / "servers" / "prod0-main" / "app-resources.json"
     registry_file.parent.mkdir(parents=True, exist_ok=True)
     registry_file.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
 
 def baseline_app_resource_registry() -> dict:
     return {
@@ -92,6 +92,7 @@ def baseline_app_resource_registry() -> dict:
         },
     }
 
+
 def baseline_payload(*, include_app_resource_summary: bool = False) -> dict:
     payload = {
         "managed_bridge_networks": [
@@ -152,6 +153,7 @@ def baseline_payload(*, include_app_resource_summary: bool = False) -> dict:
             }
         }
     return payload
+
 
 class Prod0AuditTests(unittest.TestCase):
     def test_detects_invalid_managed_bridge_network_declaration(self) -> None:

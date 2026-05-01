@@ -74,25 +74,31 @@ class TestRunDocLayerCheck:
     def test_correct_layer_passes(self, tmp_path: Path) -> None:
         docs = tmp_path / "docs" / "strategy"
         docs.mkdir(parents=True)
-        (docs / "vision.md").write_text(textwrap.dedent("""\
+        (docs / "vision.md").write_text(
+            textwrap.dedent("""\
             ---
             status: active
             layer: strategy
             ---
             # Vision
-        """), encoding="utf-8")
+        """),
+            encoding="utf-8",
+        )
         issues = run_doc_layer_check(tmp_path)
         assert issues == []
 
     def test_missing_layer_field_is_error(self, tmp_path: Path) -> None:
         docs = tmp_path / "docs" / "reference"
         docs.mkdir(parents=True)
-        (docs / "code-style.md").write_text(textwrap.dedent("""\
+        (docs / "code-style.md").write_text(
+            textwrap.dedent("""\
             ---
             status: active
             ---
             # Code Style
-        """), encoding="utf-8")
+        """),
+            encoding="utf-8",
+        )
         issues = run_doc_layer_check(tmp_path)
         assert len(issues) == 1
         assert issues[0].kind == "missing-layer-field"
@@ -101,13 +107,16 @@ class TestRunDocLayerCheck:
     def test_layer_mismatch_is_warning(self, tmp_path: Path) -> None:
         docs = tmp_path / "docs" / "reference"
         docs.mkdir(parents=True)
-        (docs / "weird.md").write_text(textwrap.dedent("""\
+        (docs / "weird.md").write_text(
+            textwrap.dedent("""\
             ---
             status: active
             layer: strategy
             ---
             # Weird
-        """), encoding="utf-8")
+        """),
+            encoding="utf-8",
+        )
         issues = run_doc_layer_check(tmp_path)
         assert len(issues) == 1
         assert issues[0].kind == "layer-mismatch"
@@ -116,13 +125,16 @@ class TestRunDocLayerCheck:
     def test_invalid_layer_value_is_error(self, tmp_path: Path) -> None:
         docs = tmp_path / "docs" / "strategy"
         docs.mkdir(parents=True)
-        (docs / "bad.md").write_text(textwrap.dedent("""\
+        (docs / "bad.md").write_text(
+            textwrap.dedent("""\
             ---
             status: active
             layer: unknown
             ---
             # Bad
-        """), encoding="utf-8")
+        """),
+            encoding="utf-8",
+        )
         issues = run_doc_layer_check(tmp_path)
         assert len(issues) == 1
         assert issues[0].kind == "invalid-layer-value"
@@ -141,25 +153,31 @@ class TestRunDocLayerCheck:
     def test_technical_layer_in_runbooks(self, tmp_path: Path) -> None:
         docs = tmp_path / "docs" / "runbooks"
         docs.mkdir(parents=True)
-        (docs / "ops.md").write_text(textwrap.dedent("""\
+        (docs / "ops.md").write_text(
+            textwrap.dedent("""\
             ---
             status: active
             layer: technical
             ---
             # Ops
-        """), encoding="utf-8")
+        """),
+            encoding="utf-8",
+        )
         issues = run_doc_layer_check(tmp_path)
         assert issues == []
 
     def test_technical_layer_in_architecture(self, tmp_path: Path) -> None:
         docs = tmp_path / "docs" / "architecture"
         docs.mkdir(parents=True)
-        (docs / "core.md").write_text(textwrap.dedent("""\
+        (docs / "core.md").write_text(
+            textwrap.dedent("""\
             ---
             status: active
             layer: technical
             ---
             # Core
-        """), encoding="utf-8")
+        """),
+            encoding="utf-8",
+        )
         issues = run_doc_layer_check(tmp_path)
         assert issues == []

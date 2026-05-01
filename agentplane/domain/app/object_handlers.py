@@ -153,9 +153,7 @@ def search_apps(
         except FileNotFoundError:
             catalog_entries = []
         entries = [
-            _object_from_entry(repo_root, target, entry.app)
-            for entry in catalog_entries
-            if entry.contracts.get(target)
+            _object_from_entry(repo_root, target, entry.app) for entry in catalog_entries if entry.contracts.get(target)
         ]
     for entry in entries:
         inventory_entry = _inventory_entry(repo_root, target, entry.service_key)
@@ -187,8 +185,8 @@ def verify_app_object(repo_root: Path, target: str, app: str, app_repo_root: str
     checks["contract_file"] = {
         "ok": contract_exists,
         "canonical_ref": _canonical_ref(obj),
-            "resolved_path": render_domain_path(obj.contract_file),
-            "path": render_domain_path(obj.contract_file),
+        "resolved_path": render_domain_path(obj.contract_file),
+        "path": render_domain_path(obj.contract_file),
     }
     if not contract_exists:
         failures.append("contract_file")
@@ -208,7 +206,9 @@ def verify_app_object(repo_root: Path, target: str, app: str, app_repo_root: str
         if not declared_summary:
             summary_path = docs.get("app_summary_file")
             declared_summary = isinstance(summary_path, str) and bool(summary_path)
-    summary_ok = (not declared_summary) or (bool(summary_files) and all(bool(item.get("exists")) for item in summary_files))
+    summary_ok = (not declared_summary) or (
+        bool(summary_files) and all(bool(item.get("exists")) for item in summary_files)
+    )
     checks["summary_files"] = {"ok": summary_ok, "items": summary_files}
     if not summary_ok:
         failures.append("summary_files")

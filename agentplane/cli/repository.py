@@ -63,7 +63,9 @@ def add_repository_parser(subparsers: argparse._SubParsersAction[argparse.Argume
     skills_subparsers.add_parser("list", parents=[skills_parent], help="列出公开 Skill 能力面")
     export = skills_subparsers.add_parser("export", parents=[skills_parent], help="导出公开 Skill 能力面 JSON")
     export.add_argument("--output", type=Path)
-    skills_subparsers.add_parser("sync", parents=[skills_parent], help="dry-run 报告 Skill catalog 与 tracked Skill 漂移")
+    skills_subparsers.add_parser(
+        "sync", parents=[skills_parent], help="dry-run 报告 Skill catalog 与 tracked Skill 漂移"
+    )
 
 
 def _run_check(name: str, argv: list[str], *, repo_root: Path) -> dict[str, Any]:

@@ -10,23 +10,97 @@ class IntentGuardViolation(ValueError):
 
 
 # Commands that are typically read-only (but may mutate with certain flags).
-_READ_ONLY_COMMANDS = frozenset({
-    "cat", "head", "tail", "less", "more", "grep", "find", "ls", "stat",
-    "file", "id", "whoami", "hostname", "env", "printenv", "pwd", "echo",
-    "which", "whereis", "ps", "top", "htop", "df", "du", "free", "uptime",
-    "uname", "dmesg", "ss", "netstat", "lsof", "ping", "curl", "wget",
-    "tar", "cp", "scp", "rsync", "git", "journalctl", "systemctl", "docker",
-})
+_READ_ONLY_COMMANDS = frozenset(
+    {
+        "cat",
+        "head",
+        "tail",
+        "less",
+        "more",
+        "grep",
+        "find",
+        "ls",
+        "stat",
+        "file",
+        "id",
+        "whoami",
+        "hostname",
+        "env",
+        "printenv",
+        "pwd",
+        "echo",
+        "which",
+        "whereis",
+        "ps",
+        "top",
+        "htop",
+        "df",
+        "du",
+        "free",
+        "uptime",
+        "uname",
+        "dmesg",
+        "ss",
+        "netstat",
+        "lsof",
+        "ping",
+        "curl",
+        "wget",
+        "tar",
+        "cp",
+        "scp",
+        "rsync",
+        "git",
+        "journalctl",
+        "systemctl",
+        "docker",
+    }
+)
 
 # Commands or tokens that strongly indicate a mutation.
-_MUTATION_COMMANDS = frozenset({
-    "rm", "rmdir", "shred", "mkfs", "fdisk", "parted", "dd", "truncate",
-    "fallocate", "chmod", "chown", "chgrp", "setfacl", "mv", "rename",
-    "apt", "apt-get", "yum", "dnf", "pacman", "pip", "npm", "yarn",
-    "gem", "cargo", "make", "cmake", "ninja", "install", "useradd",
-    "usermod", "userdel", "groupadd", "groupmod", "groupdel", "passwd",
-    "ssh-keygen", "mount", "umount",
-})
+_MUTATION_COMMANDS = frozenset(
+    {
+        "rm",
+        "rmdir",
+        "shred",
+        "mkfs",
+        "fdisk",
+        "parted",
+        "dd",
+        "truncate",
+        "fallocate",
+        "chmod",
+        "chown",
+        "chgrp",
+        "setfacl",
+        "mv",
+        "rename",
+        "apt",
+        "apt-get",
+        "yum",
+        "dnf",
+        "pacman",
+        "pip",
+        "npm",
+        "yarn",
+        "gem",
+        "cargo",
+        "make",
+        "cmake",
+        "ninja",
+        "install",
+        "useradd",
+        "usermod",
+        "userdel",
+        "groupadd",
+        "groupmod",
+        "groupdel",
+        "passwd",
+        "ssh-keygen",
+        "mount",
+        "umount",
+    }
+)
 
 # Flags that turn a read-only command into a mutation.
 _MUTATION_FLAGS = frozenset({"-i", "--in-place", "-o", "-O", "-c", "--create"})
@@ -56,10 +130,22 @@ def _is_read_only_docker(argv: tuple[str, ...]) -> bool:
     """docker ps / images / inspect / logs / network ls / volume ls are read-only."""
     if len(argv) < 2:
         return False
-    safe_subcommands = frozenset({
-        "ps", "images", "inspect", "logs", "top", "stats", "port",
-        "diff", "history", "info", "version", "search",
-    })
+    safe_subcommands = frozenset(
+        {
+            "ps",
+            "images",
+            "inspect",
+            "logs",
+            "top",
+            "stats",
+            "port",
+            "diff",
+            "history",
+            "info",
+            "version",
+            "search",
+        }
+    )
     if argv[1] in safe_subcommands:
         return True
     # docker network ls / docker volume ls / docker compose config
@@ -186,6 +272,5 @@ def guard(
 
     if declared == "read-only" and inferred == "mutation":
         raise IntentGuardViolation(
-            "intent mismatch: declared 'read-only' but command is inferred as "
-            "'mutation'. Use --intent=mutation."
+            "intent mismatch: declared 'read-only' but command is inferred as 'mutation'. Use --intent=mutation."
         )

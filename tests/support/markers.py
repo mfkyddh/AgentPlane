@@ -77,4 +77,3 @@ def apply_marker_rules(items: list[pytest.Item]) -> None:
             if rule.matches(item):
                 for marker in rule.markers:
                     item.add_marker(getattr(pytest.mark, marker))
-

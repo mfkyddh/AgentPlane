@@ -154,7 +154,13 @@ def _bool_arg(raw: str) -> bool:
 
 
 def _wrap(args: argparse.Namespace, *, scope: str, action: str, payload: dict[str, Any] | Any) -> dict[str, Any]:
-    return {"command": "onepanel", "env": args.env, "scope": scope, "action": action, "payload": redact_sensitive_value(payload)}
+    return {
+        "command": "onepanel",
+        "env": args.env,
+        "scope": scope,
+        "action": action,
+        "payload": redact_sensitive_value(payload),
+    }
 
 
 def _repo_root_for(args: argparse.Namespace) -> Path:
@@ -312,7 +318,9 @@ def _handle_panel_action(args: argparse.Namespace) -> dict[str, Any]:
         ok = True if not args.key else args.key in summary and summary.get(args.key) not in (None, "")
         return _wrap(args, scope="panel", action=action, payload={"ok": ok, "summary": summary})
     plan = plan_panel_setting_update(key=args.key, value=args.value)
-    payload: dict[str, Any] = {"plan": {"object": plan.object_name, "mode": plan.mode, "path": plan.path, "body": plan.body}}
+    payload: dict[str, Any] = {
+        "plan": {"object": plan.object_name, "mode": plan.mode, "path": plan.path, "body": plan.body}
+    }
     if action == "apply" and args.execute:
         payload["result"] = _executor_for(args).api_request("POST", plan.path, plan.body)
         payload["verified"] = {"ok": True}
@@ -344,7 +352,9 @@ def _handle_firewall_action(args: argparse.Namespace) -> dict[str, Any]:
             ok = ok and str(base.get("name", "")) == str(args.expected_name)
         return _wrap(args, scope="firewall", action=action, payload={"ok": ok, "firewall": base})
     plan = plan_firewall_operation(operation=args.operation, with_docker_restart=bool(args.with_docker_restart))
-    payload: dict[str, Any] = {"plan": {"object": plan.object_name, "mode": plan.mode, "path": plan.path, "body": plan.body}}
+    payload: dict[str, Any] = {
+        "plan": {"object": plan.object_name, "mode": plan.mode, "path": plan.path, "body": plan.body}
+    }
     if action == "apply" and args.execute:
         payload["result"] = executor.api_request("POST", plan.path, plan.body)
         payload["verified"] = {"ok": True, "firewall": load_firewall_base(executor, name="port")}
@@ -368,7 +378,9 @@ def _handle_cronjob_action(args: argparse.Namespace) -> dict[str, Any]:
     if not isinstance(body, dict):
         raise ValueError("--body-json must decode to an object")
     plan = plan_cronjob_operation(mode=args.mode, body=body)
-    payload: dict[str, Any] = {"plan": {"object": plan.object_name, "mode": plan.mode, "path": plan.path, "body": plan.body}}
+    payload: dict[str, Any] = {
+        "plan": {"object": plan.object_name, "mode": plan.mode, "path": plan.path, "body": plan.body}
+    }
     if action == "apply" and args.execute:
         payload["result"] = executor.api_request("POST", plan.path, plan.body)
         payload["verified"] = {"ok": True}
@@ -404,9 +416,7 @@ def onepanel_skeleton(env: str) -> dict[str, Any]:
 def handle_onepanel_command(args: argparse.Namespace) -> dict[str, Any]:
     import sys
 
-    sys.stderr.write(
-        "[warn] onepanel 是 provider 调试入口，正式操作请使用 ingress / service / app / infra 域。\n"
-    )
+    sys.stderr.write("[warn] onepanel 是 provider 调试入口，正式操作请使用 ingress / service / app / infra 域。\n")
     handler = getattr(args, "onepanel_handler", None)
     if callable(handler):
         return _record_operation(args, handler(args))

@@ -37,7 +37,7 @@ def _docker_container_rows() -> list[dict[str, Any]]:
             "docker",
             "ps",
             "--format",
-            "{{.Names}}|{{.Image}}|{{.Ports}}|{{.Status}}|{{.Label \"com.docker.compose.project.config_files\"}}",
+            '{{.Names}}|{{.Image}}|{{.Ports}}|{{.Status}}|{{.Label "com.docker.compose.project.config_files"}}',
         ]
     )
     if result.returncode != 0:
@@ -124,14 +124,13 @@ def _strip_container_labels(row: dict[str, Any]) -> dict[str, str]:
 def _wsl_snapshot(repo_root: Path) -> dict[str, Any]:
     compose_root = repo_root / "infra" / "compose"
     services = sorted(path.name for path in compose_root.iterdir() if path.is_dir()) if compose_root.is_dir() else []
-    managed_compose_files = {
-        str(path)
-        for path in compose_root.glob("*/docker-compose*.yml")
-    }
+    managed_compose_files = {str(path) for path in compose_root.glob("*/docker-compose*.yml")}
     managed_rows: list[dict[str, str]] = []
     unmanaged_rows: list[dict[str, str]] = []
     for row in _docker_container_rows():
-        config_files = _normalize_compose_label_paths(row.get("labels", {}).get("com.docker.compose.project.config_files"))
+        config_files = _normalize_compose_label_paths(
+            row.get("labels", {}).get("com.docker.compose.project.config_files")
+        )
         if config_files & managed_compose_files:
             managed_rows.append(_strip_container_labels(row))
         else:

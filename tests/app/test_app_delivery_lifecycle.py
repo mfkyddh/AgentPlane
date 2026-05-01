@@ -166,14 +166,14 @@ class AppDeliveryLifecycleTests(unittest.TestCase):
             self.assertTrue(apply_payload["ok"])
 
             catalog_text = catalog_file.read_text(encoding="utf-8")
-            self.assertNotIn(f"\"app\": \"{app_id}\"", catalog_text)
+            self.assertNotIn(f'"app": "{app_id}"', catalog_text)
             inventory_text = inventory_file.read_text(encoding="utf-8")
-            self.assertNotIn(f"\"{app_id}\"", inventory_text)
+            self.assertNotIn(f'"{app_id}"', inventory_text)
             self.assertFalse(env_file.exists())
             registry_text = (repo_root / "inventory" / "servers" / "wsl" / "app-resources.json").read_text(
                 encoding="utf-8"
             )
-            self.assertNotIn(f"\"{app_id}\"", registry_text)
+            self.assertNotIn(f'"{app_id}"', registry_text)
             self.assertTrue((repo_root / "inventory" / "servers" / "wsl" / "README.md").is_file())
 
     def test_verify_dry_run_exposes_backend_execution_steps(self) -> None:

@@ -248,10 +248,13 @@ def execute_remote_bash(
 
     if stream:
         import sys
+
         result = runner.execute_stream(
             plan,
             bindings=bindings,
-            on_chunk=lambda chunk: sys.stdout.write(chunk.text) if chunk.stream == "stdout" else sys.stderr.write(chunk.text),
+            on_chunk=lambda chunk: (
+                sys.stdout.write(chunk.text) if chunk.stream == "stdout" else sys.stderr.write(chunk.text)
+            ),
         )
     else:
         result = runner.execute(plan, bindings=bindings)

@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import re
 import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -14,8 +13,10 @@ from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
 
+
 def _listed_help_commands(help_text: str) -> set[str]:
     return set(re.findall(r"(?m)^\s{2,}([a-z][a-z0-9-]*)\b(?:\s{2,}|\s*$)", help_text))
+
 
 def _listed_targets(help_text: str) -> set[str]:
     targets: set[str] = set()
@@ -25,6 +26,7 @@ def _listed_targets(help_text: str) -> set[str]:
             if candidate in {"wsl", "prod0-main", "prod0-main"}:
                 targets.add(candidate)
     return targets
+
 
 def _assert_help_commands(
     testcase: unittest.TestCase,
@@ -39,6 +41,7 @@ def _assert_help_commands(
     if absent is not None:
         testcase.assertTrue(absent.isdisjoint(commands), msg=f"unexpected commands: {sorted(absent & commands)}")
     return commands
+
 
 class CliEntrypointsTests(unittest.TestCase):
     def test_module_help_lists_required_subcommands_with_app_resource(self) -> None:
@@ -152,7 +155,17 @@ class CliEntrypointsTests(unittest.TestCase):
         _assert_help_commands(
             self,
             host_help.stdout,
-            expected={"inventory", "audit", "live-gate", "cleanup", "automation", "network", "remote", "secrets", "local"},
+            expected={
+                "inventory",
+                "audit",
+                "live-gate",
+                "cleanup",
+                "automation",
+                "network",
+                "remote",
+                "secrets",
+                "local",
+            },
             absent={"secrets-layout"},
         )
 
@@ -198,7 +211,15 @@ class CliEntrypointsTests(unittest.TestCase):
         _assert_help_commands(
             self,
             repo_help.stdout,
-            expected={"health-check", "status", "docs-sanity", "secret-scan", "privacy-scan", "release-check", "skills"},
+            expected={
+                "health-check",
+                "status",
+                "docs-sanity",
+                "secret-scan",
+                "privacy-scan",
+                "release-check",
+                "skills",
+            },
         )
 
         repo_skills_help = run_cli("repo", "skills", "--help")
@@ -415,9 +436,11 @@ class CliEntrypointsTests(unittest.TestCase):
         self.assertFalse(payload["payload"]["executed"])
         self.assertEqual("single-checkout", payload["payload"]["required_checkout"])
 
+
 # ======================================================================
 # From: test_repo_health_cli.py
 # ======================================================================
+
 
 class RepoHealthCliTests(unittest.TestCase):
     def test_repo_health_check_can_run_lightweight_checks(self) -> None:
@@ -640,9 +663,11 @@ class RepoHealthCliTests(unittest.TestCase):
         git_check = next(check for check in payload["checks"] if check["name"] == "git-clean")
         self.assertFalse(git_check["ok"])
 
+
 # ======================================================================
 # From: test_bootstrap_cli.py
 # ======================================================================
+
 
 def seed_bootstrap_templates(root: Path) -> None:
     (root / "templates" / "env").mkdir(parents=True, exist_ok=True)
@@ -663,8 +688,7 @@ def seed_bootstrap_templates(root: Path) -> None:
         encoding="utf-8",
     )
     (root / "templates" / "services" / "onepanel-login.env.example").write_text(
-        "ONEPANEL_USERNAME=replace-with-onepanel-username\n"
-        "ONEPANEL_PASSWORD=replace-with-onepanel-password\n",
+        "ONEPANEL_USERNAME=replace-with-onepanel-username\nONEPANEL_PASSWORD=replace-with-onepanel-password\n",
         encoding="utf-8",
     )
     (root / "templates" / "secrets" / "local" / "control-plane" / "README.md").write_text(
@@ -680,6 +704,7 @@ def seed_bootstrap_templates(root: Path) -> None:
             json.dumps({"target": target}, ensure_ascii=False),
             encoding="utf-8",
         )
+
 
 def write_takeover_ready_ssh_contract(root: Path) -> None:
     (root / "secrets" / "ssh" / "keys").mkdir(parents=True, exist_ok=True)
@@ -697,6 +722,7 @@ def write_takeover_ready_ssh_contract(root: Path) -> None:
     )
     (root / "secrets" / "ssh" / "keys" / "prod0-main.pem").write_text("demo-prod0", encoding="utf-8")
     (root / "secrets" / "ssh" / "keys" / "prod0-main.pem").write_text("demo-prod2", encoding="utf-8")
+
 
 class BootstrapCliTests(unittest.TestCase):
     def test_bootstrap_init_secrets_creates_only_takeover_truth_scaffold(self) -> None:
@@ -790,9 +816,11 @@ class BootstrapCliTests(unittest.TestCase):
             self.assertEqual("warning", readiness["projection-compat"]["severity"])
             self.assertEqual("warning", readiness["global-cli-entrypoint"]["severity"])
 
+
 # ======================================================================
 # From: test_zzz_skills_sync.py
 # ======================================================================
+
 
 def git(command: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
@@ -803,6 +831,7 @@ def git(command: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
         check=False,
     )
 
+
 def init_git_repo(path: Path) -> None:
     result = git(["init", "--initial-branch=main"], cwd=path)
     if result.returncode != 0:
@@ -811,6 +840,7 @@ def init_git_repo(path: Path) -> None:
         configured = git(["config", key, value], cwd=path)
         if configured.returncode != 0:
             raise AssertionError(configured.stderr)
+
 
 def init_target_repo(path: Path, remote_path: Path) -> None:
     remote_created = git(["init", "--bare", str(remote_path)], cwd=path.parent)
@@ -831,6 +861,7 @@ def init_target_repo(path: Path, remote_path: Path) -> None:
     pushed = git(["push", "-u", "origin", "main"], cwd=path)
     if pushed.returncode != 0:
         raise AssertionError(pushed.stderr)
+
 
 class ZzzSkillsSyncTests(unittest.TestCase):
     def test_sync_reports_no_changes_when_target_matches_source(self) -> None:

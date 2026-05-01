@@ -139,7 +139,9 @@ def add_infra_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     )
     automation_get_parser.add_argument("--name", required=True, help="自动化任务名称")
     automation_get_parser.add_argument("--repo-root", default=".", help="仓库根目录")
-    automation_verify_parser = automation_subparsers.add_parser("verify", help="核验自动化任务与 1Panel cronjob 是否一致")
+    automation_verify_parser = automation_subparsers.add_parser(
+        "verify", help="核验自动化任务与 1Panel cronjob 是否一致"
+    )
     automation_verify_parser.add_argument(
         "target",
         choices=SUPPORTED_AUTOMATION_TARGETS,
@@ -209,7 +211,9 @@ def add_infra_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
 
     secrets_parser = infra_subparsers.add_parser("secrets", help="基础设施级 secrets 正式入口")
     secrets_subparsers = secrets_parser.add_subparsers(dest="infra_secrets_action", required=True)
-    secrets_init_parser = secrets_subparsers.add_parser("init-data-services", help="初始化 PostgreSQL/Redis/MinIO 管理员凭据")
+    secrets_init_parser = secrets_subparsers.add_parser(
+        "init-data-services", help="初始化 PostgreSQL/Redis/MinIO 管理员凭据"
+    )
     secrets_init_parser.add_argument(
         "target",
         choices=SUPPORTED_INFRA_TARGETS,
@@ -354,7 +358,9 @@ def handle_infra_command(args: argparse.Namespace) -> dict[str, Any]:
         return _wrap(
             action="automation.verify",
             target=args.target,
-            payload=verify_infra_automation(repo_root, args.target, args.name, env_file=getattr(args, "env_file", None)),
+            payload=verify_infra_automation(
+                repo_root, args.target, args.name, env_file=getattr(args, "env_file", None)
+            ),
         )
 
     if args.infra_action == "automation" and args.infra_automation_action == "plan":

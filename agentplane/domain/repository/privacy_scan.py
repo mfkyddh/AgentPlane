@@ -5,7 +5,7 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
-from agentplane.domain.repository.secret_scan import SecretScanAllow, load_secret_scan_allowlist
+from agentplane.domain.repository.secret_scan import load_secret_scan_allowlist
 
 PRIVATE_PATH_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("private-inventory", re.compile(r"^inventory/servers/")),
@@ -15,7 +15,10 @@ PRIVATE_PATH_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("private-compose-target", re.compile(r"^infra/compose/.+/docker-compose\.prod\d+\.ya?ml$")),
     ("private-compose-service", re.compile(r"^infra/compose/(relay-trojan|vmail)/")),
     ("private-skill", re.compile(r"^\.agents/skills/(tencent-|nginxui-letsencrypt|windows-mihomo)")),
-    ("private-host-helper", re.compile(r"^agentplane/(cli/prod0_|scripts/probe/probe_tencent|scripts/remote/remote_.*prod0)")),
+    (
+        "private-host-helper",
+        re.compile(r"^agentplane/(cli/prod0_|scripts/probe/probe_tencent|scripts/remote/remote_.*prod0)"),
+    ),
     ("private-prod-env-example", re.compile(r"^templates/services/.+\.prod\d+\.env\.example$")),
 )
 
@@ -112,9 +115,7 @@ def _scan_content(repo_root: Path, path: Path) -> list[PrivacyScanIssue]:
     return issues
 
 
-def scan_repository_for_private_material(
-    repo_root: Path, allowlist_path: Path | None = None
-) -> list[PrivacyScanIssue]:
+def scan_repository_for_private_material(repo_root: Path, allowlist_path: Path | None = None) -> list[PrivacyScanIssue]:
     root = repo_root.resolve()
     allowlist = load_secret_scan_allowlist(root, allowlist_path)
     issues: list[PrivacyScanIssue] = []

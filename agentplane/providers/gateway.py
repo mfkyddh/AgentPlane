@@ -101,7 +101,9 @@ class OnePanelProviderGateway:
         elif isinstance(app_key, str) and app_key:
             argv.extend(["--name", app_key])
         else:
-            raise ValueError(f"rollback.previous_control_plane.kind=1panel-app 缺少 install_id/app_key: {rollback_entry}")
+            raise ValueError(
+                f"rollback.previous_control_plane.kind=1panel-app 缺少 install_id/app_key: {rollback_entry}"
+            )
         return argv, " ".join(shlex.quote(part) for part in argv)
 
     def onepanel_project_lifecycle_step(

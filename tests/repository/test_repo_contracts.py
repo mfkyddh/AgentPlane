@@ -9,18 +9,20 @@ from pathlib import Path
 import pytest
 import yaml
 from agentplane.domain.app.resource_paths import git_common_root
+from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
 
-from tests.support.paths import REPO_ROOT
 EXPECTED_MANAGED_SERVICES = {
     "sub2api": {
         "wsl": "infra/compose/sub2api/docker-compose.wsl.yml",
     },
 }
 
+
 def load_compose(path: Path) -> dict:
     return yaml.safe_load(path.read_text(encoding="utf-8"))
+
 
 def image_family(image_ref: str) -> str:
     match = re.fullmatch(r"\$\{[^:}]+:-([^}]+)\}", image_ref)
@@ -32,6 +34,7 @@ def image_family(image_ref: str) -> str:
 def tracked_files() -> set[str]:
     result = subprocess.run(["git", "ls-files"], cwd=REPO_ROOT, text=True, capture_output=True, check=True)
     return set(result.stdout.splitlines())
+
 
 class RepoSnapshotContractsTests(unittest.TestCase):
     def test_sub2api_legacy_app_resource_secret_files_are_absent(self) -> None:
@@ -102,7 +105,9 @@ class RepoSnapshotContractsTests(unittest.TestCase):
 
         for relative_path in unexpected_paths:
             with self.subTest(path=relative_path):
-                self.assertFalse((REPO_ROOT / relative_path).exists(), f"unexpected legacy snapshot present: {relative_path}")
+                self.assertFalse(
+                    (REPO_ROOT / relative_path).exists(), f"unexpected legacy snapshot present: {relative_path}"
+                )
 
     def test_remote_script_directory_contract(self) -> None:
         expected_paths = [
@@ -119,11 +124,15 @@ class RepoSnapshotContractsTests(unittest.TestCase):
 
         for relative_path in expected_paths:
             with self.subTest(path=relative_path):
-                self.assertTrue((REPO_ROOT / relative_path).is_file(), f"missing remote script contract: {relative_path}")
+                self.assertTrue(
+                    (REPO_ROOT / relative_path).is_file(), f"missing remote script contract: {relative_path}"
+                )
 
         for relative_path in unexpected_paths:
             with self.subTest(path=relative_path):
-                self.assertFalse((REPO_ROOT / relative_path).exists(), f"unexpected remote script contract present: {relative_path}")
+                self.assertFalse(
+                    (REPO_ROOT / relative_path).exists(), f"unexpected remote script contract present: {relative_path}"
+                )
 
     def test_active_runbooks_use_internal_remote_example_paths(self) -> None:
         active_runbooks = [
@@ -151,8 +160,13 @@ class RepoSnapshotContractsTests(unittest.TestCase):
         self.assertIn("默认正式 app 交付镜像 family 固定为 `<app_id>-prod`", text)
         self.assertIn("必须等于 `<app_id>-prod`", text)
         self.assertIn("必须等于 `<app_id>-dev`", text)
-        self.assertIn("| `sub2api` | `infra/compose/sub2api` | `wsl/prod0-main: ghcr.io/wei-shaw/sub2api` | `sub2api-prod` | `sub2api-dev` | `sub2api` |", text)
-        self.assertNotIn("| `newapi` | `infra/compose/newapi` | `newapi-prod` | `newapi-prod` | `newapi-dev` | `newapi` |", text)
+        self.assertIn(
+            "| `sub2api` | `infra/compose/sub2api` | `wsl/prod0-main: ghcr.io/wei-shaw/sub2api` | `sub2api-prod` | `sub2api-dev` | `sub2api` |",
+            text,
+        )
+        self.assertNotIn(
+            "| `newapi` | `infra/compose/newapi` | `newapi-prod` | `newapi-prod` | `newapi-dev` | `newapi` |", text
+        )
         self.assertNotIn(
             "| `sub2apipay` | `infra/compose/sub2apipay` | `sub2apipay-prod` | `sub2apipay-prod` | `sub2apipay-dev` | `sub2apipay` |",
             text,
@@ -205,4 +219,6 @@ class RepoSnapshotContractsTests(unittest.TestCase):
 
         for relative_path in removed_paths:
             with self.subTest(path=relative_path):
-                self.assertFalse((REPO_ROOT / relative_path).exists(), f"removed entrypoint still present: {relative_path}")
+                self.assertFalse(
+                    (REPO_ROOT / relative_path).exists(), f"removed entrypoint still present: {relative_path}"
+                )

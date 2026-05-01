@@ -92,7 +92,9 @@ def verify_app_resource(repo_root: Path, target: str, app: str) -> dict[str, Any
     declared_payload = _declared_payload(raw_entry)
     secret_statuses = _secret_file_statuses(repo_root, definition)
     secret_findings = validate_secret_files(repo_root, target, app, raw_entry)
-    app_resource_summary_ok = bool(projection.get("found")) and projection.get("app_resource_summary") == expected_summary
+    app_resource_summary_ok = (
+        bool(projection.get("found")) and projection.get("app_resource_summary") == expected_summary
+    )
     projection_check: dict[str, Any] = {
         "ok": app_resource_summary_ok,
         "actual": projection.get("app_resource_summary"),
@@ -104,11 +106,17 @@ def verify_app_resource(repo_root: Path, target: str, app: str) -> dict[str, Any
         projection_check["reason"] = "secret_files_invalid"
 
     checks: dict[str, dict[str, Any]] = {
-        "registry_owner": {"ok": definition.owner_app == definition.app, "actual": definition.owner_app, "expected": definition.app},
+        "registry_owner": {
+            "ok": definition.owner_app == definition.app,
+            "actual": definition.owner_app,
+            "expected": definition.app,
+        },
         "secret_files": {"ok": not secret_findings, "findings": secret_findings},
         "inventory_projection": projection_check,
     }
-    failures = [name for name in ("registry_owner", "secret_files", "inventory_projection") if not bool(checks[name].get("ok"))]
+    failures = [
+        name for name in ("registry_owner", "secret_files", "inventory_projection") if not bool(checks[name].get("ok"))
+    ]
     verification_fields = {
         "declared": declared_payload,
         "projection": projection,

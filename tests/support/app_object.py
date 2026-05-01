@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 import json
-import os
-import subprocess
-import sys
 from pathlib import Path
 
 from agentplane.domain.app.resource_paths import contract_relpath_for_target, resolve_catalog_repo_root
-from tests.support.cli import run_agentplane_cli as run_cli
+from tests.support.cli import run_agentplane_cli
 from tests.support.paths import REPO_ROOT
+
+run_cli = run_agentplane_cli
 
 
 def expected_real_contract_path(target: str) -> str:

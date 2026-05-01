@@ -42,8 +42,10 @@ def _init_secrets(repo_root: Path) -> dict[str, Any]:
         target = item.get("target")
         transform = None
         if isinstance(target, str):
+
             def transform(text, target=target):
                 return text.replace("<target>", target)
+
         files.append(
             copy_template_file(
                 Path(item["template"]),

@@ -10,7 +10,9 @@ def add_local_infra_parser(infra_subparsers: argparse._SubParsersAction[argparse
     local_parser = infra_subparsers.add_parser("local", help="本机控制面与 backend 绑定检查")
     local_subparsers = local_parser.add_subparsers(dest="infra_local_action", required=True)
 
-    inspect_parser = local_subparsers.add_parser("inspect", help="检查本机 infra profile、workspace bindings 与 Linux backend")
+    inspect_parser = local_subparsers.add_parser(
+        "inspect", help="检查本机 infra profile、workspace bindings 与 Linux backend"
+    )
     inspect_parser.add_argument("--repo-root", default=".", help="当前仓库根目录或 Windows 主控制面根目录")
     inspect_parser.add_argument("--windows-root", help="覆盖 Windows 主控制面根目录")
     inspect_parser.add_argument("--legacy-control-root", help="覆盖旧 Linux 控制面根目录")

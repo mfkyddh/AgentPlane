@@ -161,7 +161,10 @@ def _classify_error(returncode: int, stderr: str) -> ExecutionError:
             retryable=False,
             escalation="human",
         )
-    if any(token in stderr_lower for token in ("connection refused", "no route to host", "network is unreachable", "could not resolve hostname")):
+    if any(
+        token in stderr_lower
+        for token in ("connection refused", "no route to host", "network is unreachable", "could not resolve hostname")
+    ):
         return ExecutionError(
             category="network",
             message=f"Network failure (exit {returncode}): {stderr.strip()}",
@@ -225,7 +228,11 @@ class BackendRunner:
 
     def execute(self, plan: ExecutionPlan, *, bindings: ExecutionBindings | None = None) -> ExecutionResult:
         rendered = self.render(plan, bindings=bindings)
-        binary_stdin = rendered.backend_type in {"ssh-linux", "windows-wsl"} and os.name == "nt" and rendered.stdin_text is not None
+        binary_stdin = (
+            rendered.backend_type in {"ssh-linux", "windows-wsl"}
+            and os.name == "nt"
+            and rendered.stdin_text is not None
+        )
         try:
             if binary_stdin:
                 completed = subprocess.run(
@@ -238,8 +245,16 @@ class BackendRunner:
                     check=False,
                     timeout=plan.timeout if plan.timeout > 0 else None,
                 )
-                stdout = completed.stdout.decode("utf-8", errors="replace") if isinstance(completed.stdout, bytes) else completed.stdout
-                stderr = completed.stderr.decode("utf-8", errors="replace") if isinstance(completed.stderr, bytes) else completed.stderr
+                stdout = (
+                    completed.stdout.decode("utf-8", errors="replace")
+                    if isinstance(completed.stdout, bytes)
+                    else completed.stdout
+                )
+                stderr = (
+                    completed.stderr.decode("utf-8", errors="replace")
+                    if isinstance(completed.stderr, bytes)
+                    else completed.stderr
+                )
             else:
                 completed = subprocess.run(
                     list(rendered.argv),
@@ -355,7 +370,11 @@ class BackendRunner:
         on_chunk: Callable[[StreamChunk], None] | None = None,
     ) -> ExecutionResult:
         rendered = self.render(plan, bindings=bindings)
-        binary_stdin = rendered.backend_type in {"ssh-linux", "windows-wsl"} and os.name == "nt" and rendered.stdin_text is not None
+        binary_stdin = (
+            rendered.backend_type in {"ssh-linux", "windows-wsl"}
+            and os.name == "nt"
+            and rendered.stdin_text is not None
+        )
 
         def _reader(pipe: Any, q: queue.Queue[str], name: str) -> None:
             try:

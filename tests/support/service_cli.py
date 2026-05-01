@@ -1,13 +1,13 @@
 import json
-import os
-import subprocess
 import sys
 from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
 
-from tests.support.cli import run_agentplane_cli as run_cli
+from tests.support.cli import run_agentplane_cli
 from tests.support.paths import REPO_ROOT
+
+run_cli = run_agentplane_cli
 
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
@@ -184,47 +184,47 @@ def write_inventory(root: Path) -> None:
                         "status": "running",
                         "host_binding": "127.0.0.1:3000",
                     },
-                "relay-trojan": {
-                    "control_plane": "compose",
-                    "container_name": "relay-trojan-prod",
-                    "image": "ghcr.io/xtls/xray-core:25.3.6",
-                    "status": "running",
-                    "host_binding": "0.0.0.0:24443",
-                    "runtime_root": "/data/relay-trojan",
-                    "public_endpoint": {
-                        "domain": "relay.example.org",
-                        "port": 24443,
-                        "protocol": "trojan",
-                        "transport": "tcp+tls",
-                        "cloudflare_proxy": False,
-                        "dns": {
-                            "provider": "cloudflare",
-                            "zone_name": "example.org",
-                            "record_type": "A",
-                            "record_content": "198.51.100.20",
-                            "proxied": False,
+                    "relay-trojan": {
+                        "control_plane": "compose",
+                        "container_name": "relay-trojan-prod",
+                        "image": "ghcr.io/xtls/xray-core:25.3.6",
+                        "status": "running",
+                        "host_binding": "0.0.0.0:24443",
+                        "runtime_root": "/data/relay-trojan",
+                        "public_endpoint": {
+                            "domain": "relay.example.org",
+                            "port": 24443,
+                            "protocol": "trojan",
+                            "transport": "tcp+tls",
+                            "cloudflare_proxy": False,
+                            "dns": {
+                                "provider": "cloudflare",
+                                "zone_name": "example.org",
+                                "record_type": "A",
+                                "record_content": "198.51.100.20",
+                                "proxied": False,
+                            },
+                            "certificate": {
+                                "fullchain_path": "/data/relay-trojan/certs/fullchain.pem",
+                                "privkey_path": "/data/relay-trojan/certs/privkey.pem",
+                                "renew_script_path": "/usr/local/bin/renew-relay-trojan-cert.sh",
+                                "renew_cron": "17 3 1 * * /usr/local/bin/renew-relay-trojan-cert.sh >> /var/log/relay-trojan-cert-renew.log 2>&1",
+                            },
                         },
-                        "certificate": {
-                            "fullchain_path": "/data/relay-trojan/certs/fullchain.pem",
-                            "privkey_path": "/data/relay-trojan/certs/privkey.pem",
-                            "renew_script_path": "/usr/local/bin/renew-relay-trojan-cert.sh",
-                            "renew_cron": "17 3 1 * * /usr/local/bin/renew-relay-trojan-cert.sh >> /var/log/relay-trojan-cert-renew.log 2>&1",
+                        "client_profile": {
+                            "format": "clash-local-profile",
+                            "node_name": "Prod2|Relay",
+                            "sni": "relay.example.org",
                         },
                     },
-                    "client_profile": {
-                        "format": "clash-local-profile",
-                        "node_name": "Prod2|Relay",
-                        "sni": "relay.example.org",
+                    "relay-trojan-host": {
+                        "control_plane": "compose",
+                        "container_name": "relay-trojan-host-prod",
+                        "image": "ghcr.io/xtls/xray-core:25.3.6",
+                        "status": "running",
+                        "host_binding": "0.0.0.0:24444",
+                        "network_mode": "infra",
                     },
-                },
-                "relay-trojan-host": {
-                    "control_plane": "compose",
-                    "container_name": "relay-trojan-host-prod",
-                    "image": "ghcr.io/xtls/xray-core:25.3.6",
-                    "status": "running",
-                    "host_binding": "0.0.0.0:24444",
-                    "network_mode": "infra",
-                },
                     "legacy_runtime": {
                         "control_plane": "onepanel-app",
                         "container_name": "legacy-runtime-prod",
@@ -281,5 +281,6 @@ class _FakeCloudflareClient:
                 "proxied": proxied,
             },
         }
+
     def verify_account_token(self, account_id: str) -> dict[str, object]:
         return {"id": "token-1", "status": "active"}

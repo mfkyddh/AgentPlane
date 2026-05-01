@@ -21,7 +21,11 @@ from agentplane.runtime.execution import PlannedExecutionStep, shell_join
 from agentplane.runtime.host_profile import detect_host_profile
 from agentplane.runtime.redaction import redact_execution_payload
 
-_OBSERVATION_WINDOW_NOTE = "旧 runtime 作为 rollback state 保留；只有 post-cutover verification 通过且 observation window 结束后才允许清理。"
+_OBSERVATION_WINDOW_NOTE = (
+    "旧 runtime 作为 rollback state 保留；只有 post-cutover verification 通过且 observation window 结束后才允许清理。"
+)
+
+
 def _resolve_contract_file(
     repo_root: Path,
     *,
@@ -157,7 +161,9 @@ def _render_execution_steps(steps: list[PlannedExecutionStep]) -> list[dict[str,
             backend_payload = {
                 "backend_type": step.plan.backend_type,
                 "argv": list(step.plan.argv),
-                "display_command": display_override if isinstance(display_override, str) and display_override else shell_join(step.plan.argv),
+                "display_command": display_override
+                if isinstance(display_override, str) and display_override
+                else shell_join(step.plan.argv),
                 "cwd": None,
                 "env": {},
                 "expects_stdin": bool(step.plan.input_refs),
@@ -229,7 +235,9 @@ def _transition_step_to_execution(
     )
 
 
-def _candidate_precheck_steps(app_cli: Any, repo_root: Path, *, target: str, material: dict[str, Any]) -> dict[str, list[PlannedExecutionStep]]:
+def _candidate_precheck_steps(
+    app_cli: Any, repo_root: Path, *, target: str, material: dict[str, Any]
+) -> dict[str, list[PlannedExecutionStep]]:
     ssh_target = app_cli._target_ssh_target(repo_root, target)
     local_env = Path(material["local_env"])
     remote_tmp_env = f"/tmp/{local_env.name}"
@@ -242,7 +250,9 @@ def _candidate_precheck_steps(app_cli: Any, repo_root: Path, *, target: str, mat
         f"docker compose -p {material['project_name']} -f {material['remote_compose_name']} down || true"
     )
     cleanup_remote_command = f"rm -f {material['remote_compose']} {material['remote_env']}"
-    origin_health_wait = app_cli._origin_health_wait_command(material["contract"], container_name=str(material["container_name"]))
+    origin_health_wait = app_cli._origin_health_wait_command(
+        material["contract"], container_name=str(material["container_name"])
+    )
     prepare = [
         plan_remote_shell_step(
             "candidate.prepare.remote-dirs",
@@ -390,7 +400,9 @@ def _plan_remote_deploy_steps(
             capabilities=("ssh",),
         ),
     ]
-    transition_step = app_cli._control_plane_transition_step(repo_root, target=target, rollback_entry=rollback_entry, operate="stop")
+    transition_step = app_cli._control_plane_transition_step(
+        repo_root, target=target, rollback_entry=rollback_entry, operate="stop"
+    )
     transition_execution = _transition_step_to_execution(
         app_cli,
         repo_root=repo_root,
@@ -509,7 +521,9 @@ def _plan_delivery_rollback_steps(
             capabilities=("ssh", "docker"),
         )
     ]
-    transition_step = app_cli._control_plane_transition_step(repo_root, target=target, rollback_entry=rollback_entry, operate="start")
+    transition_step = app_cli._control_plane_transition_step(
+        repo_root, target=target, rollback_entry=rollback_entry, operate="start"
+    )
     transition_execution = _transition_step_to_execution(
         app_cli,
         repo_root=repo_root,
@@ -564,7 +578,9 @@ def _execute_origin_verify(app_cli: Any, contract: dict[str, Any], *, repo_root:
     }
 
 
-def _plan_production_rollback(app_cli: Any, contract: dict[str, Any], *, repo_root: Path, target: str) -> dict[str, Any]:
+def _plan_production_rollback(
+    app_cli: Any, contract: dict[str, Any], *, repo_root: Path, target: str
+) -> dict[str, Any]:
     steps, rollback_entry = _plan_delivery_rollback_steps(app_cli, contract, repo_root=repo_root, target=target)
     if not steps:
         return {
@@ -679,7 +695,9 @@ def offboard_for_app(
     return {"command": "app", "action": "offboard", "target": target, "payload": payload}
 
 
-def validate_contract_for_app(repo_root: Path, *, target: str, app: str, app_repo_root: str | None = None) -> dict[str, Any]:
+def validate_contract_for_app(
+    repo_root: Path, *, target: str, app: str, app_repo_root: str | None = None
+) -> dict[str, Any]:
     app_cli, contract, _ = _load_validated_contract(repo_root, target=target, app=app, app_repo_root=app_repo_root)
     return {"command": "app", "action": "validate-contract", "valid": True, "payload": contract}
 
@@ -778,7 +796,9 @@ def ship_image_for_app(
     app_repo_root: str | None = None,
 ) -> dict[str, Any]:
     app_cli, contract, _ = _load_validated_contract(repo_root, target=target, app=app, app_repo_root=app_repo_root)
-    payload = app_cli.ship_image(contract, repo_root=repo_root, target=target, image_ref=image_ref, archive_dir=archive_dir, dry_run=dry_run)
+    payload = app_cli.ship_image(
+        contract, repo_root=repo_root, target=target, image_ref=image_ref, archive_dir=archive_dir, dry_run=dry_run
+    )
     return {"command": "app", "action": "ship-image", "target": target, "payload": payload}
 
 
@@ -815,7 +835,9 @@ def deploy_for_app(
     rollback_entry = contract["rollback"]["previous_control_plane"]
 
     if target == "wsl":
-        payload = app_cli.deploy_app(contract, repo_root=repo_root, target=target, image_ref=image_ref, dry_run=dry_run, execute=execute)
+        payload = app_cli.deploy_app(
+            contract, repo_root=repo_root, target=target, image_ref=image_ref, dry_run=dry_run, execute=execute
+        )
         if dry_run:
             execution_steps, _metadata = _plan_wsl_deploy_steps(
                 app_cli,
@@ -881,7 +903,9 @@ def deploy_for_app(
     delayed_cleanup = _delayed_cleanup_state(rollback_entry)
 
     if dry_run:
-        cutover_plan = app_cli.deploy_app(contract, repo_root=repo_root, target=target, image_ref=image_ref, dry_run=True, execute=False)
+        cutover_plan = app_cli.deploy_app(
+            contract, repo_root=repo_root, target=target, image_ref=image_ref, dry_run=True, execute=False
+        )
         cutover_steps, _cutover_metadata = _plan_remote_deploy_steps(
             app_cli,
             contract,
@@ -890,7 +914,9 @@ def deploy_for_app(
             image_ref=image_ref,
         )
         cutover_execution_steps = _render_execution_steps(cutover_steps)
-        verify_plan = _plan_production_verify(app_cli, contract, repo_root=repo_root, target=target, include_public=False)
+        verify_plan = _plan_production_verify(
+            app_cli, contract, repo_root=repo_root, target=target, include_public=False
+        )
         cutover_plan["execution_steps"] = cutover_execution_steps
         cutover_plan["backend_type"] = "ssh-linux"
         cutover_plan["rollback_state"] = _rollback_state_payload(
@@ -924,7 +950,9 @@ def deploy_for_app(
         return {"command": "app", "action": "deploy", "target": target, "payload": cutover_plan}
 
     if not execute:
-        payload = app_cli.deploy_app(contract, repo_root=repo_root, target=target, image_ref=image_ref, dry_run=False, execute=False)
+        payload = app_cli.deploy_app(
+            contract, repo_root=repo_root, target=target, image_ref=image_ref, dry_run=False, execute=False
+        )
         return {"command": "app", "action": "deploy", "target": target, "payload": payload}
 
     app_cli._production_network_preflight(repo_root, target)
@@ -977,12 +1005,16 @@ def deploy_for_app(
         }
         return {"command": "app", "action": "deploy", "target": target, "payload": payload}
 
-    cutover_payload = app_cli.deploy_app(contract, repo_root=repo_root, target=target, image_ref=image_ref, dry_run=False, execute=True)
+    cutover_payload = app_cli.deploy_app(
+        contract, repo_root=repo_root, target=target, image_ref=image_ref, dry_run=False, execute=True
+    )
     cutover_commands = list(cutover_payload.get("commands", []))
     aggregate_commands = [*executed_candidate["commands"], *cutover_commands]
 
     if not cutover_payload.get("ok", False):
-        rollback_payload = app_cli.rollback_app(contract, repo_root=repo_root, target=target, dry_run=False, execute=True)
+        rollback_payload = app_cli.rollback_app(
+            contract, repo_root=repo_root, target=target, dry_run=False, execute=True
+        )
         payload = {
             **cutover_payload,
             "ok": False,
@@ -991,7 +1023,11 @@ def deploy_for_app(
             "rollback_state": _rollback_state_payload(
                 previous_control_plane=rollback_entry,
                 candidate=executed_candidate,
-                cutover={"status": "failed", "commands": cutover_commands, "result": cutover_payload.get("results", [])},
+                cutover={
+                    "status": "failed",
+                    "commands": cutover_commands,
+                    "result": cutover_payload.get("results", []),
+                },
                 post_cutover_verification={"status": "skipped", "commands": []},
                 rollback_on_failure={
                     "status": "executed" if rollback_payload.get("ok", False) else "failed",
@@ -1006,7 +1042,9 @@ def deploy_for_app(
     aggregate_commands.extend(verify_payload.get("commands", []))
 
     if not verify_payload.get("ok", False):
-        rollback_payload = app_cli.rollback_app(contract, repo_root=repo_root, target=target, dry_run=False, execute=True)
+        rollback_payload = app_cli.rollback_app(
+            contract, repo_root=repo_root, target=target, dry_run=False, execute=True
+        )
         payload = {
             **cutover_payload,
             "ok": False,
@@ -1016,7 +1054,11 @@ def deploy_for_app(
             "rollback_state": _rollback_state_payload(
                 previous_control_plane=rollback_entry,
                 candidate=executed_candidate,
-                cutover={"status": "executed", "commands": cutover_commands, "result": cutover_payload.get("results", [])},
+                cutover={
+                    "status": "executed",
+                    "commands": cutover_commands,
+                    "result": cutover_payload.get("results", []),
+                },
                 post_cutover_verification={
                     "status": "failed",
                     "commands": verify_payload.get("commands", []),

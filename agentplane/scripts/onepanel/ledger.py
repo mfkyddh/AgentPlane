@@ -76,7 +76,9 @@ def _cronjob_rows(inventory: dict[str, Any]) -> list[dict[str, Any]]:
     automations = inventory.get("automations")
     if not isinstance(automations, list):
         return []
-    return [item for item in automations if isinstance(item, dict) and "cronjob" in str(item.get("controller", "")).lower()]
+    return [
+        item for item in automations if isinstance(item, dict) and "cronjob" in str(item.get("controller", "")).lower()
+    ]
 
 
 def _automation_rows(inventory: dict[str, Any]) -> list[dict[str, Any]]:
@@ -241,7 +243,14 @@ def _markdown_for(name: str, rows: list[dict[str, Any]]) -> str:
         lines.append("- none")
         return "\n".join(lines) + "\n"
     for row in rows:
-        label = row.get("alias") or row.get("name") or row.get("service_key") or row.get("app_id") or row.get("container_name") or "item"
+        label = (
+            row.get("alias")
+            or row.get("name")
+            or row.get("service_key")
+            or row.get("app_id")
+            or row.get("container_name")
+            or "item"
+        )
         lines.append(f"- `{label}`")
         status = row.get("status")
         if status not in (None, ""):
@@ -256,18 +265,19 @@ def _markdown_for(name: str, rows: list[dict[str, Any]]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def _project_inventory_summary(repo_root: Path, target: str, counts: dict[str, int], latest_operations: dict[str, dict[str, Any]]) -> Path:
+def _project_inventory_summary(
+    repo_root: Path, target: str, counts: dict[str, int], latest_operations: dict[str, dict[str, Any]]
+) -> Path:
     inventory_file = _server_root(repo_root, target) / "inventory.json"
     inventory = _load_json(inventory_file)
-    inventory["object_ledgers"] = scrub_persisted_payload({
-        "generated_at": datetime.now(UTC).isoformat(),
-        "counts": counts,
-        "ledgers": {
-            name: f"inventory/servers/{target}/ledgers/{name}.json"
-            for name in LEDGER_NAMES
-        },
-        "last_operations": latest_operations,
-    })
+    inventory["object_ledgers"] = scrub_persisted_payload(
+        {
+            "generated_at": datetime.now(UTC).isoformat(),
+            "counts": counts,
+            "ledgers": {name: f"inventory/servers/{target}/ledgers/{name}.json" for name in LEDGER_NAMES},
+            "last_operations": latest_operations,
+        }
+    )
     _dump_json(inventory_file, inventory)
     return inventory_file
 
@@ -296,7 +306,9 @@ def _render_readme_projection(target: str, counts: dict[str, int], latest_operat
     return "\n".join(lines) + "\n"
 
 
-def _project_readme(repo_root: Path, target: str, counts: dict[str, int], latest_operations: dict[str, dict[str, Any]]) -> Path:
+def _project_readme(
+    repo_root: Path, target: str, counts: dict[str, int], latest_operations: dict[str, dict[str, Any]]
+) -> Path:
     readme_file = _server_root(repo_root, target) / "README.md"
     section = f"{README_BEGIN}\n{_render_readme_projection(target, counts, latest_operations)}{README_END}\n"
     if readme_file.is_file():

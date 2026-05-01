@@ -1,10 +1,7 @@
-import os
 import subprocess
-import sys
 from pathlib import Path
 
 from tests.support.cli import run_agentplane_cli as run_cli
-from tests.support.paths import REPO_ROOT
 
 
 def run_app_delivery_cli(

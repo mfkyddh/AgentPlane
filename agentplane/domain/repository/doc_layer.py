@@ -6,6 +6,7 @@ Four-layer documentation system:
   engineering -> docs/reference/
   technical  -> docs/architecture/, docs/runbooks/
 """
+
 from __future__ import annotations
 
 import re

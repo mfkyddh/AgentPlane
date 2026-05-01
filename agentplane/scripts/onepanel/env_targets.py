@@ -171,7 +171,9 @@ def get_target(name: str, env_file_override: str | None = None) -> TargetConfig:
         )
     if name == "wsl":
         host_truth_env = workspace.private_root / "hosts" / "wsl" / "onepanel" / "api.env"
-        default_env = host_truth_env if host_truth_env.is_file() else workspace.private_root / "services" / "onepanel-api.wsl.env"
+        default_env = (
+            host_truth_env if host_truth_env.is_file() else workspace.private_root / "services" / "onepanel-api.wsl.env"
+        )
         return TargetConfig(
             name=name,
             mode="local",

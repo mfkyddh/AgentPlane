@@ -88,7 +88,11 @@ def handle_ingress_command(args: argparse.Namespace) -> dict[str, Any]:
     if args.ingress_action == "plan":
         return _wrap("plan", args.target, plan_ingress_operation(repo_root, args.target, args.alias, args.operation))
     if args.ingress_action == "apply":
-        return _wrap("apply", args.target, apply_ingress_operation(repo_root, args.target, args.alias, args.operation, execute=bool(args.execute)))
+        return _wrap(
+            "apply",
+            args.target,
+            apply_ingress_operation(repo_root, args.target, args.alias, args.operation, execute=bool(args.execute)),
+        )
     if args.ingress_action == "publish":
         config_file = _resolve_publish_path(repo_root, args.config_file)
         cloudflare_env_file = _resolve_publish_path(repo_root, args.cloudflare_env_file)
@@ -118,5 +122,7 @@ def handle_ingress_command(args: argparse.Namespace) -> dict[str, Any]:
             payload["follow_through"] = follow_through
             return _wrap("publish.verify", args.target, payload)
     if args.ingress_action == "refresh-ledger":
-        return _wrap("refresh-ledger", args.target, refresh_ingress_ledger(repo_root, args.target, write=bool(args.write)))
+        return _wrap(
+            "refresh-ledger", args.target, refresh_ingress_ledger(repo_root, args.target, write=bool(args.write))
+        )
     raise ValueError(f"Unsupported ingress action: {args.ingress_action}")

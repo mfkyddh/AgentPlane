@@ -265,7 +265,9 @@ def _default_install_params_for_app(app_key: str) -> dict[str, Any]:
     return {}
 
 
-def build_app_install_params(app_key: str, detail: dict[str, Any], raw_items: list[str] | None = None) -> dict[str, Any]:
+def build_app_install_params(
+    app_key: str, detail: dict[str, Any], raw_items: list[str] | None = None
+) -> dict[str, Any]:
     params: dict[str, Any] = {}
     detail_params = detail.get("params")
     if isinstance(detail_params, dict):
@@ -486,7 +488,9 @@ def plan_app_install(
     )
 
 
-def plan_compose_project_operation(*, name: str, operation: str, with_file: bool = False, force: bool = False) -> ObjectPlan:
+def plan_compose_project_operation(
+    *, name: str, operation: str, with_file: bool = False, force: bool = False
+) -> ObjectPlan:
     project_path = f"/data/1panel/docker/compose/{name}/docker-compose.yml"
     return ObjectPlan(
         "project",

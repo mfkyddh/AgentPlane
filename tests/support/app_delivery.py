@@ -671,7 +671,9 @@ def assert_live_db_partition_markers(test_case: unittest.TestCase, text: str) ->
 def init_git_repo(root: Path) -> str:
     subprocess.run(["git", "init"], cwd=root, text=True, check=True, capture_output=True)
     subprocess.run(["git", "config", "user.name", "Codex"], cwd=root, text=True, check=True, capture_output=True)
-    subprocess.run(["git", "config", "user.email", "codex@example.com"], cwd=root, text=True, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "config", "user.email", "codex@example.com"], cwd=root, text=True, check=True, capture_output=True
+    )
     marker = root / ".gitkeep"
     marker.write_text("ok\n", encoding="utf-8")
     subprocess.run(["git", "add", ".gitkeep"], cwd=root, text=True, check=True, capture_output=True)
@@ -748,4 +750,5 @@ exit 0
 """,
     )
 
-__all__ = [name for name in globals() if not name.startswith('__')]
+
+__all__ = [name for name in globals() if not name.startswith("__")]

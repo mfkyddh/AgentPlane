@@ -81,6 +81,7 @@ REQUIRED_LOCAL_STATE_DOC_MARKERS = {
     "`.workbuddy/`",
 }
 
+
 def tracked_files() -> list[str]:
     result = subprocess.run(
         ["git", "ls-files", "--cached", "--others", "--exclude-standard"],
@@ -91,6 +92,7 @@ def tracked_files() -> list[str]:
     )
     return [line for line in result.stdout.splitlines() if line.strip() and (REPO_ROOT / line).exists()]
 
+
 def active_doc_files() -> list[Path]:
     files: list[Path] = []
     for root in ACTIVE_DOC_ROOTS:
@@ -99,6 +101,7 @@ def active_doc_files() -> list[Path]:
         elif root.is_dir():
             files.extend(sorted(root.rglob("*.md")))
     return files
+
 
 class RepositoryStructureTests(unittest.TestCase):
     def test_tracked_top_level_entries_are_declared(self) -> None:
@@ -142,9 +145,11 @@ class RepositoryStructureTests(unittest.TestCase):
             with self.subTest(kind="structure-doc", marker=marker):
                 self.assertIn(marker, structure_doc)
 
+
 # ======================================================================
 # From: test_open_source_readiness.py
 # ======================================================================
+
 
 class OpenSourceReadinessTests(unittest.TestCase):
     def test_root_open_source_governance_files_exist(self) -> None:
@@ -238,9 +243,7 @@ class OpenSourceReadinessTests(unittest.TestCase):
                     self.assertIsNone(forbidden.search(text))
 
     def test_tests_support_layer_owns_shared_helpers(self) -> None:
-        support_files = {
-            path.name for path in (REPO_ROOT / "tests" / "support").glob("*.py")
-        }
+        support_files = {path.name for path in (REPO_ROOT / "tests" / "support").glob("*.py")}
         self.assertTrue(
             {
                 "paths.py",
@@ -301,6 +304,7 @@ class OpenSourceReadinessTests(unittest.TestCase):
         self.assertIn("repo release-check --repo-root .", text)
         self.assertIn("repo health-check --repo-root .", text)
 
+
 class SkillCatalogTests(unittest.TestCase):
     def _catalog_entries(self) -> list[dict[str, str]]:
         text = (REPO_ROOT / ".agents" / "skills" / "catalog.yaml").read_text(encoding="utf-8")
@@ -350,6 +354,7 @@ class SkillCatalogTests(unittest.TestCase):
                 self.assertEqual(entry["name"], frontmatter_name.group(1).strip('"'))
                 self.assertEqual(entry["name"], entry["frontmatter_name"])
 
+
 # ======================================================================
 # From: test_docs_no_legacy_terms.py
 # ======================================================================
@@ -376,9 +381,7 @@ ARCHITECTURE_CORE_CONTRACT_LINKS = (
     "[linux-governance.md](linux-governance.md)",
     "[agentplane-app-collaboration.md](agentplane-app-collaboration.md)",
 )
-ARCHITECTURE_TEMPLATE_LINKS = (
-    "[app-repository-standard.md](../reference/app-repository-standard.md)",
-)
+ARCHITECTURE_TEMPLATE_LINKS = ("[app-repository-standard.md](../reference/app-repository-standard.md)",)
 FORBIDDEN_TEMPLATE_DEFAULTS = (
     "/root/work/AgentPlane",
     "D:\\Projects\\AgentPlane",
@@ -387,12 +390,15 @@ FORBIDDEN_TEMPLATE_DEFAULTS = (
     "separate checkouts",
 )
 
+
 def collect_active_docs() -> str:
     return "\n".join(path.read_text(encoding="utf-8") for path in ACTIVE_TEMPLATE_DOCS)
+
 
 def collect_active_template_surface() -> str:
     files = (*ACTIVE_TEMPLATE_DOCS, *ACTIVE_TEMPLATE_SKILLS)
     return "\n".join(path.read_text(encoding="utf-8") for path in files)
+
 
 class DocsNoLegacyTermsTests(unittest.TestCase):
     def test_template_docs_do_not_reintroduce_author_site_defaults(self) -> None:
@@ -414,16 +420,14 @@ class DocsNoLegacyTermsTests(unittest.TestCase):
 
         self.assertIn("自动驾驶仪", text)
         # Detailed truth/runtime model lives in execution-flow runbook
-        execution_flow = (
-            REPO_ROOT / "docs" / "runbooks" / "control-plane-agent-execution-flow.md"
-        ).read_text(encoding="utf-8")
+        execution_flow = (REPO_ROOT / "docs" / "runbooks" / "control-plane-agent-execution-flow.md").read_text(
+            encoding="utf-8"
+        )
         self.assertIn("Git tracked truth + local secrets", execution_flow)
 
     def test_entry_indexes_link_template_contracts(self) -> None:
         # Core contract links live in docs/architecture/README.md (thin README delegates there)
-        architecture_index_text = (
-            REPO_ROOT / "docs" / "architecture" / "README.md"
-        ).read_text(encoding="utf-8")
+        architecture_index_text = (REPO_ROOT / "docs" / "architecture" / "README.md").read_text(encoding="utf-8")
 
         for link in ARCHITECTURE_CORE_CONTRACT_LINKS:
             with self.subTest(doc="architecture", link=link):
@@ -447,9 +451,7 @@ class DocsNoLegacyTermsTests(unittest.TestCase):
         self.assertNotIn("retained as the WSL/Linux backend path during migration", text)
 
     def test_app_repository_standard_defines_template_boundary(self) -> None:
-        text = (REPO_ROOT / "docs" / "reference" / "app-repository-standard.md").read_text(
-            encoding="utf-8"
-        )
+        text = (REPO_ROOT / "docs" / "reference" / "app-repository-standard.md").read_text(encoding="utf-8")
 
         self.assertIn("应用仓库只负责代码、构建资产、合同与非敏感模板", text)
         self.assertIn("控制面模板仓库负责 bootstrap、正式执行、验证、回写与对外 runbook", text)
@@ -459,12 +461,12 @@ class DocsNoLegacyTermsTests(unittest.TestCase):
         self.assertNotIn("WSL-first", text)
 
     def test_domain_onboarding_and_execution_flow_use_template_placeholders(self) -> None:
-        onboarding_text = (
-            REPO_ROOT / "docs" / "runbooks" / "control-plane-domain-onboarding.md"
-        ).read_text(encoding="utf-8")
-        flow_text = (
-            REPO_ROOT / "docs" / "runbooks" / "control-plane-agent-execution-flow.md"
-        ).read_text(encoding="utf-8")
+        onboarding_text = (REPO_ROOT / "docs" / "runbooks" / "control-plane-domain-onboarding.md").read_text(
+            encoding="utf-8"
+        )
+        flow_text = (REPO_ROOT / "docs" / "runbooks" / "control-plane-agent-execution-flow.md").read_text(
+            encoding="utf-8"
+        )
 
         self.assertIn("bootstrap inspect-local --repo-root <repo-root>", onboarding_text)
         self.assertIn("infra inventory <target> --repo-root <repo-root>", onboarding_text)
@@ -478,15 +480,11 @@ class DocsNoLegacyTermsTests(unittest.TestCase):
         self.assertNotIn("确认当前在 WSL 环境执行", flow_text)
 
     def test_core_contract_docs_use_template_placeholders(self) -> None:
-        control_plane = (REPO_ROOT / "docs" / "architecture" / "control-plane.md").read_text(
+        control_plane = (REPO_ROOT / "docs" / "architecture" / "control-plane.md").read_text(encoding="utf-8")
+        collaboration = (REPO_ROOT / "docs" / "architecture" / "agentplane-app-collaboration.md").read_text(
             encoding="utf-8"
         )
-        collaboration = (
-            REPO_ROOT / "docs" / "architecture" / "agentplane-app-collaboration.md"
-        ).read_text(encoding="utf-8")
-        governance = (REPO_ROOT / "docs" / "architecture" / "linux-governance.md").read_text(
-            encoding="utf-8"
-        )
+        governance = (REPO_ROOT / "docs" / "architecture" / "linux-governance.md").read_text(encoding="utf-8")
 
         self.assertIn("infra inventory <target> --repo-root <repo-root>", control_plane)
         self.assertIn("service search --target <target> --repo-root <repo-root>", control_plane)
@@ -514,9 +512,11 @@ class DocsNoLegacyTermsTests(unittest.TestCase):
             control_plane,
         )
 
+
 # ======================================================================
 # From: test_truth_path_policy.py
 # ======================================================================
+
 
 class TruthPathPolicyTests(unittest.TestCase):
     def test_truth_contract_rejects_windows_drive_paths(self) -> None:
@@ -598,9 +598,11 @@ class TruthPathPolicyTests(unittest.TestCase):
             self.assertEqual(app_root.resolve(), entries[0].repo_root.resolve())
             self.assertEqual("deploy/agentplane/contract.yaml", entries[0].contracts["prod0-main"])
 
+
 # ======================================================================
 # From: test_commit_message_policy.py
 # ======================================================================
+
 
 class CommitMessagePolicyTests(unittest.TestCase):
     def test_accepts_conventional_commit_subject(self) -> None:
@@ -641,7 +643,9 @@ class CommitMessagePolicyTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             subprocess.run(["git", "init"], cwd=root, text=True, capture_output=True, check=True)
-            subprocess.run(["git", "config", "user.name", "Codex"], cwd=root, text=True, capture_output=True, check=True)
+            subprocess.run(
+                ["git", "config", "user.name", "Codex"], cwd=root, text=True, capture_output=True, check=True
+            )
             subprocess.run(
                 ["git", "config", "user.email", "codex@example.com"],
                 cwd=root,
@@ -676,9 +680,11 @@ class CommitMessagePolicyTests(unittest.TestCase):
 
         self.assertEqual(0, result.returncode, msg=result.stderr)
 
+
 # ======================================================================
 # From: test_cleanup.py
 # ======================================================================
+
 
 class CleanupTests(unittest.TestCase):
     def test_cleanup_plan_lists_whitelisted_wsl_artifacts(self) -> None:
@@ -688,7 +694,7 @@ class CleanupTests(unittest.TestCase):
             (root / "tmp").mkdir(parents=True)
             (root / "tests" / "__pycache__").mkdir(parents=True)
             (root / ".worktrees" / "demo" / "tmp").mkdir(parents=True)
-            ((root / ".worktrees" / "demo" / "tmp" / "artifact.tar")).write_text("x", encoding="utf-8")
+            (root / ".worktrees" / "demo" / "tmp" / "artifact.tar").write_text("x", encoding="utf-8")
 
             result = build_cleanup_plan(root, "wsl")
             paths = {item["path"] for item in result["actions"]}
@@ -726,9 +732,11 @@ class CleanupTests(unittest.TestCase):
             self.assertEqual(1, result["skipped_count"])
             self.assertEqual(str(root / ".venv"), result["skipped"][0]["path"])
 
+
 # ======================================================================
 # From: test_pyproject_config.py
 # ======================================================================
+
 
 class PyprojectConfigTests(unittest.TestCase):
     def test_project_declares_build_system_for_local_package(self) -> None:

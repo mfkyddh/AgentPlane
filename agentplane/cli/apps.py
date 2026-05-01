@@ -187,7 +187,9 @@ def add_app_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParse
     onboard.add_argument("--repo-root", default=".", help="AgentPlane 仓库根目录")
     onboard.add_argument("--app-repo-root", help="应用仓库根目录；app 尚未登记到 catalog 时提供")
     onboard.add_argument("--repo-name", help="catalog repo_name；默认取 app-repo-root 目录名")
-    onboard.add_argument("--contract-path", help="合同文件路径；可相对 app-repo-root，默认 deploy/agentplane/contract.yaml")
+    onboard.add_argument(
+        "--contract-path", help="合同文件路径；可相对 app-repo-root，默认 deploy/agentplane/contract.yaml"
+    )
     _add_dry_run_or_write_flags(onboard, required=True)
 
     offboard = delivery_subparsers.add_parser(
@@ -243,17 +245,26 @@ def handle_app_command(args: argparse.Namespace) -> dict[str, Any]:
                 "command": "app",
                 "action": "object.get",
                 "target": args.target,
-                "payload": get_app(repo_root, args.target, args.app, app_repo_root=getattr(args, "app_repo_root", None)),
+                "payload": get_app(
+                    repo_root, args.target, args.app, app_repo_root=getattr(args, "app_repo_root", None)
+                ),
             }
         if args.app_object_action == "verify":
             return {
                 "command": "app",
                 "action": "object.verify",
                 "target": args.target,
-                "payload": verify_app_object(repo_root, args.target, args.app, app_repo_root=getattr(args, "app_repo_root", None)),
+                "payload": verify_app_object(
+                    repo_root, args.target, args.app, app_repo_root=getattr(args, "app_repo_root", None)
+                ),
             }
         if args.app_object_action == "refresh-ledger":
-            return {"command": "app", "action": "object.refresh-ledger", "target": args.target, "payload": refresh_app_ledger(repo_root, args.target, write=bool(args.write))}
+            return {
+                "command": "app",
+                "action": "object.refresh-ledger",
+                "target": args.target,
+                "payload": refresh_app_ledger(repo_root, args.target, write=bool(args.write)),
+            }
         raise ValueError(f"Unsupported app object action: {args.app_object_action}")
 
     if args.app_surface == "resource":
@@ -265,11 +276,26 @@ def handle_app_command(args: argparse.Namespace) -> dict[str, Any]:
         )
 
         if args.app_resource_action == "search":
-            return {"command": "app", "action": "resource.search", "target": args.target, "payload": search_app_resources(repo_root, args.target)}
+            return {
+                "command": "app",
+                "action": "resource.search",
+                "target": args.target,
+                "payload": search_app_resources(repo_root, args.target),
+            }
         if args.app_resource_action == "get":
-            return {"command": "app", "action": "resource.get", "target": args.target, "payload": get_app_resource(repo_root, args.target, args.app)}
+            return {
+                "command": "app",
+                "action": "resource.get",
+                "target": args.target,
+                "payload": get_app_resource(repo_root, args.target, args.app),
+            }
         if args.app_resource_action == "verify":
-            return {"command": "app", "action": "resource.verify", "target": args.target, "payload": verify_app_resource(repo_root, args.target, args.app)}
+            return {
+                "command": "app",
+                "action": "resource.verify",
+                "target": args.target,
+                "payload": verify_app_resource(repo_root, args.target, args.app),
+            }
         if args.app_resource_action == "refresh-ledger":
             return {
                 "command": "app",

@@ -12,12 +12,13 @@ import pytest
 import yaml
 from agentplane.domain.service.materialize import render_clash_local_profile
 from agentplane.scripts.internal import ensure_cloudflare_dns_record  # type: ignore  # noqa: E402
+from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
 
-from tests.support.paths import REPO_ROOT
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
+
 
 class _FakeCloudflareClient:
     def __init__(self, token: str) -> None:
@@ -54,6 +55,7 @@ class _FakeCloudflareClient:
             },
         }
 
+
 class RelayTrojanDnsCliTests(unittest.TestCase):
     def test_cli_supports_prod2_relay_contract(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -61,7 +63,10 @@ class RelayTrojanDnsCliTests(unittest.TestCase):
             env_file.write_text("export CLOUDFLARE_API_TOKEN=test-token\n", encoding="utf-8")
             stdout = StringIO()
 
-            with patch.object(ensure_cloudflare_dns_record, "CloudflareClient", _FakeCloudflareClient), patch("sys.stdout", stdout):
+            with (
+                patch.object(ensure_cloudflare_dns_record, "CloudflareClient", _FakeCloudflareClient),
+                patch("sys.stdout", stdout),
+            ):
                 exit_code = ensure_cloudflare_dns_record.main(
                     [
                         "--cloudflare-env-file",
@@ -91,7 +96,10 @@ class RelayTrojanDnsCliTests(unittest.TestCase):
             env_file.write_text("CLOUDFLARE_API_TOKEN=another-token\n", encoding="utf-8")
             stdout = StringIO()
 
-            with patch.object(ensure_cloudflare_dns_record, "CloudflareClient", _FakeCloudflareClient), patch("sys.stdout", stdout):
+            with (
+                patch.object(ensure_cloudflare_dns_record, "CloudflareClient", _FakeCloudflareClient),
+                patch("sys.stdout", stdout),
+            ):
                 exit_code = ensure_cloudflare_dns_record.main(
                     [
                         "--cloudflare-env-file",
@@ -118,17 +126,33 @@ class RelayTrojanDnsCliTests(unittest.TestCase):
         self.assertTrue(payload["proxied"])
         self.assertEqual("unchanged", payload["action"])
 
+
 # ======================================================================
 # From: test_relay_trojan_profile_renderer.py
 # ======================================================================
+
 
 class RelayTrojanProfileRendererTests(unittest.TestCase):
     def test_render_profile_keeps_effective_rules_and_rewrites_proxy_sets(self) -> None:
         source = {
             "mode": "rule",
             "proxies": [
-                {"name": "旧节点A", "type": "ss", "server": "a.example.com", "port": 443, "cipher": "aes-128-gcm", "password": "x"},
-                {"name": "旧节点B", "type": "ss", "server": "b.example.com", "port": 443, "cipher": "aes-128-gcm", "password": "y"},
+                {
+                    "name": "旧节点A",
+                    "type": "ss",
+                    "server": "a.example.com",
+                    "port": 443,
+                    "cipher": "aes-128-gcm",
+                    "password": "x",
+                },
+                {
+                    "name": "旧节点B",
+                    "type": "ss",
+                    "server": "b.example.com",
+                    "port": 443,
+                    "cipher": "aes-128-gcm",
+                    "password": "y",
+                },
             ],
             "proxy-groups": [
                 {"name": "国外流量", "type": "select", "proxies": ["旧节点A", "旧节点B", "直接连接"]},
@@ -179,6 +203,7 @@ class RelayTrojanProfileRendererTests(unittest.TestCase):
             ],
             rendered["rules"],
         )
+
 
 # ======================================================================
 # From: test_sub2api_compose_layout.py

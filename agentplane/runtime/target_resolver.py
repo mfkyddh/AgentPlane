@@ -58,11 +58,7 @@ class TargetResolver:
         inventory_root = Path(repo_root) / "inventory" / "servers"
         if not inventory_root.is_dir():
             return static
-        discovered = [
-            p.name
-            for p in inventory_root.iterdir()
-            if p.is_dir() and not p.name.startswith(".")
-        ]
+        discovered = [p.name for p in inventory_root.iterdir() if p.is_dir() and not p.name.startswith(".")]
         combined = list(dict.fromkeys([*static, *sorted(discovered)]))
         return combined
 

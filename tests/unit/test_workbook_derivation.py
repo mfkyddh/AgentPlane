@@ -7,7 +7,6 @@ synthetic roadmap data structures.
 from __future__ import annotations
 
 import pytest
-
 from agentplane.domain.repository.status import (
     _derive_next_step,
     _derive_risks,
@@ -19,6 +18,7 @@ pytestmark = pytest.mark.unit
 # ---------------------------------------------------------------------------
 # Tests: _derive_risks
 # ---------------------------------------------------------------------------
+
 
 class TestDeriveRisks:
     def test_detects_blocked_phase(self) -> None:
@@ -92,6 +92,7 @@ class TestDeriveRisks:
 # ---------------------------------------------------------------------------
 # Tests: _derive_next_step
 # ---------------------------------------------------------------------------
+
 
 class TestDeriveNextStep:
     def test_fix_issue_takes_priority(self) -> None:

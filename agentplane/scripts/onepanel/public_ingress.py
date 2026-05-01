@@ -120,7 +120,9 @@ class OnePanelExecutor:
                 check=False,
             )
             if result.returncode != 0:
-                raise RuntimeError(result.stdout.strip() or result.stderr.strip() or f"1Panel request failed: {method} {path}")
+                raise RuntimeError(
+                    result.stdout.strip() or result.stderr.strip() or f"1Panel request failed: {method} {path}"
+                )
             response = json.loads(result.stdout)
         body_payload = response.get("body")
         if response.get("status", 500) >= 400 or not isinstance(body_payload, dict) or body_payload.get("code") != 200:
@@ -229,7 +231,10 @@ class PublicIngressManager:
     def find_dns_account(self) -> dict[str, Any] | None:
         items = self._page_items("/api/v2/websites/dns/search", {"page": 1, "pageSize": 100})
         for item in items:
-            if item.get("name") == self.config.dns_account_name and item.get("type") == self.config.dns_account_provider:
+            if (
+                item.get("name") == self.config.dns_account_name
+                and item.get("type") == self.config.dns_account_provider
+            ):
                 return item
         return None
 
@@ -336,7 +341,14 @@ class PublicIngressManager:
     def _search_ingresses(self) -> list[dict[str, Any]]:
         return self._page_items(
             "/api/v2/websites/search",
-            {"page": 1, "pageSize": 100, "name": "", "websiteGroupId": 0, "orderBy": "created_at", "order": "descending"},
+            {
+                "page": 1,
+                "pageSize": 100,
+                "name": "",
+                "websiteGroupId": 0,
+                "orderBy": "created_at",
+                "order": "descending",
+            },
         )
 
     def find_website(self) -> dict[str, Any] | None:
@@ -405,7 +417,9 @@ class PublicIngressManager:
         dns_account = self.find_dns_account()
         ssl = self.find_ssl()
         website = self.find_website()
-        https = self.panel.request("GET", f"/api/v2/websites/{int(website['id'])}/https") if website is not None else None
+        https = (
+            self.panel.request("GET", f"/api/v2/websites/{int(website['id'])}/https") if website is not None else None
+        )
         https_port = str(self.config.https_ports[0]) if self.config.https_ports else ""
         actual_ssl = https.get("SSL", {}) if isinstance(https, dict) else {}
 
@@ -461,7 +475,9 @@ class PublicIngressManager:
                 "expected": https_port,
             },
             "https_ssl_id": {
-                "ok": isinstance(ssl, dict) and isinstance(https, dict) and int(actual_ssl.get("id", 0)) == int(ssl.get("id", 0)),
+                "ok": isinstance(ssl, dict)
+                and isinstance(https, dict)
+                and int(actual_ssl.get("id", 0)) == int(ssl.get("id", 0)),
                 "actual": actual_ssl.get("id") if isinstance(actual_ssl, dict) else None,
                 "expected": ssl.get("id") if isinstance(ssl, dict) else None,
             },
@@ -485,7 +501,9 @@ class PublicIngressManager:
         }
 
 
-def _build_manager(env: str, config_file: Path, cloudflare_env_file: Path, *, env_file: str | None = None) -> tuple[PublicIngressConfig, dict[str, str], CloudflareClient, PublicIngressManager]:
+def _build_manager(
+    env: str, config_file: Path, cloudflare_env_file: Path, *, env_file: str | None = None
+) -> tuple[PublicIngressConfig, dict[str, str], CloudflareClient, PublicIngressManager]:
     ingress_config = PublicIngressConfig.from_env_file(config_file)
     cloudflare_env = load_shell_env_file(cloudflare_env_file)
     panel = OnePanelExecutor(get_target(env, env_file), env_file_override=env_file)
@@ -494,7 +512,9 @@ def _build_manager(env: str, config_file: Path, cloudflare_env_file: Path, *, en
     return ingress_config, cloudflare_env, cloudflare, manager
 
 
-def plan_public_ingress(env: str, config_file: Path, cloudflare_env_file: Path, *, env_file: str | None = None) -> dict[str, Any]:
+def plan_public_ingress(
+    env: str, config_file: Path, cloudflare_env_file: Path, *, env_file: str | None = None
+) -> dict[str, Any]:
     ingress_config, cloudflare_env, _cloudflare, _manager = _build_manager(
         env,
         config_file,
@@ -520,7 +540,12 @@ def plan_public_ingress(env: str, config_file: Path, cloudflare_env_file: Path, 
                 "record_content": ingress_config.record_content,
                 "proxied": ingress_config.record_proxied,
             },
-            {"kind": "onepanel_acme", "action": "ensure", "email": ingress_config.acme_email, "type": ingress_config.acme_type},
+            {
+                "kind": "onepanel_acme",
+                "action": "ensure",
+                "email": ingress_config.acme_email,
+                "type": ingress_config.acme_type,
+            },
             {
                 "kind": "onepanel_dns_account",
                 "action": "ensure",
@@ -539,7 +564,9 @@ def plan_public_ingress(env: str, config_file: Path, cloudflare_env_file: Path, 
     }
 
 
-def verify_public_ingress(env: str, config_file: Path, cloudflare_env_file: Path, *, env_file: str | None = None) -> dict[str, Any]:
+def verify_public_ingress(
+    env: str, config_file: Path, cloudflare_env_file: Path, *, env_file: str | None = None
+) -> dict[str, Any]:
     ingress_config, cloudflare_env, cloudflare, manager = _build_manager(
         env,
         config_file,
@@ -557,7 +584,9 @@ def verify_public_ingress(env: str, config_file: Path, cloudflare_env_file: Path
     }
 
 
-def ensure_public_ingress(env: str, config_file: Path, cloudflare_env_file: Path, *, env_file: str | None = None) -> dict[str, Any]:
+def ensure_public_ingress(
+    env: str, config_file: Path, cloudflare_env_file: Path, *, env_file: str | None = None
+) -> dict[str, Any]:
     ingress_config, cloudflare_env, cloudflare, manager = _build_manager(
         env,
         config_file,

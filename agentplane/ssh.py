@@ -64,7 +64,14 @@ class SshTarget:
         return self.wrap_argv(effective)
 
     def ssh_args_for_bash_stdin(self, argv: list[str] | None = None) -> list[str]:
-        return ["ssh", self._tty_flag(), "-F", str(self.config_path), self.connection_target, self.wrap_bash_stdin(argv)]
+        return [
+            "ssh",
+            self._tty_flag(),
+            "-F",
+            str(self.config_path),
+            self.connection_target,
+            self.wrap_bash_stdin(argv),
+        ]
 
     def local_ssh_args_for_bash_stdin(self, argv: list[str] | None = None) -> list[str]:
         return _local_backend_argv(self.ssh_args_for_bash_stdin(argv))

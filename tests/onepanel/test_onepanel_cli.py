@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import subprocess
-import sys
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -27,11 +26,11 @@ from agentplane.scripts.onepanel.object_api import (
     search_cronjobs,
     search_firewall_rules,
 )
+from tests.support.cli import run_agentplane_cli as run_cli
+from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
 
-from tests.support.cli import run_agentplane_cli as run_cli
-from tests.support.paths import REPO_ROOT
 
 class FakeExecutor(FakeLikeExecutorProtocol):
     def __init__(self) -> None:
@@ -67,6 +66,7 @@ class FakeExecutor(FakeLikeExecutorProtocol):
         if path == "/api/v2/logs/tasks/search":
             return {"items": [{"id": 1, "status": "success", "type": "cronjob"}], "total": 1}
         raise AssertionError(f"Unexpected request: {method} {path} {body}")
+
 
 class OnePanelObjectApiTests(unittest.TestCase):
     def test_get_panel_summary_uses_v2_settings_endpoint(self) -> None:
@@ -129,6 +129,7 @@ class OnePanelObjectApiTests(unittest.TestCase):
 
         self.assertEqual("/api/v2/hosts/firewall/operate", plan.path)
         self.assertEqual({"operation": "stop", "withDockerRestart": False}, plan.body)
+
 
 class OnePanelObjectCliHandlerTests(unittest.TestCase):
     def test_panel_verify_redacts_sensitive_settings(self) -> None:
@@ -247,12 +248,14 @@ class OnePanelObjectCliHandlerTests(unittest.TestCase):
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn("invalid choice", result.stderr)
 
+
 # ======================================================================
 # From: test_onepanel_plugin_and_skills.py
 # ======================================================================
 
 CATALOG_FILE = REPO_ROOT / ".agents" / "skills" / "catalog.yaml"
 REQUIRED_DOMAINS = {"infra", "service", "ingress", "app", "projection", "repo"}
+
 
 class OnePanelPluginAndSkillsTests(unittest.TestCase):
     def _tracked_skill_paths(self) -> list[Path]:
@@ -324,7 +327,9 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
                 self.assertNotIn("POST /api/v2/", text)
 
     def test_ingress_skill_routes_to_formal_ingress_cli(self) -> None:
-        repo_skill_text = (REPO_ROOT / ".agents" / "skills" / "agentplane-ingress-ops" / "SKILL.md").read_text(encoding="utf-8")
+        repo_skill_text = (REPO_ROOT / ".agents" / "skills" / "agentplane-ingress-ops" / "SKILL.md").read_text(
+            encoding="utf-8"
+        )
         catalog_text = CATALOG_FILE.read_text(encoding="utf-8")
 
         self.assertIn("agentplane ingress search --target <target>", repo_skill_text)
@@ -336,7 +341,9 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
         self.assertIn("entrypoint: uv run python -m agentplane.cli ingress", catalog_text)
 
     def test_service_skill_routes_to_formal_service_cli(self) -> None:
-        repo_skill_text = (REPO_ROOT / ".agents" / "skills" / "agentplane-service-ops" / "SKILL.md").read_text(encoding="utf-8")
+        repo_skill_text = (REPO_ROOT / ".agents" / "skills" / "agentplane-service-ops" / "SKILL.md").read_text(
+            encoding="utf-8"
+        )
         catalog_text = CATALOG_FILE.read_text(encoding="utf-8")
 
         self.assertIn("agentplane service search --target <target>", repo_skill_text)
@@ -397,7 +404,9 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
         self.assertNotIn("wsl-zzz-skills-sync", text)
 
     def test_app_skill_routes_catalog_to_app_and_runtime_to_service(self) -> None:
-        repo_skill_text = (REPO_ROOT / ".agents" / "skills" / "agentplane-app-ops" / "SKILL.md").read_text(encoding="utf-8")
+        repo_skill_text = (REPO_ROOT / ".agents" / "skills" / "agentplane-app-ops" / "SKILL.md").read_text(
+            encoding="utf-8"
+        )
         catalog_text = CATALOG_FILE.read_text(encoding="utf-8")
 
         self.assertIn("agentplane app object search --target <target>", repo_skill_text)
@@ -412,7 +421,9 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
         self.assertIn("entrypoint: uv run python -m agentplane.cli", catalog_text)
 
     def test_tenant_skill_routes_to_formal_app_resource_cli(self) -> None:
-        repo_skill_text = (REPO_ROOT / ".agents" / "skills" / "agentplane-app-ops" / "SKILL.md").read_text(encoding="utf-8")
+        repo_skill_text = (REPO_ROOT / ".agents" / "skills" / "agentplane-app-ops" / "SKILL.md").read_text(
+            encoding="utf-8"
+        )
         catalog_text = CATALOG_FILE.read_text(encoding="utf-8")
 
         self.assertIn("agentplane app resource search --target <target>", repo_skill_text)
@@ -430,7 +441,9 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
         self.assertIn("entrypoint: uv run python -m agentplane.cli app", catalog_text)
 
     def test_projection_skill_routes_to_formal_projection_cli(self) -> None:
-        repo_skill_text = (REPO_ROOT / ".agents" / "skills" / "agentplane-projection-ops" / "SKILL.md").read_text(encoding="utf-8")
+        repo_skill_text = (REPO_ROOT / ".agents" / "skills" / "agentplane-projection-ops" / "SKILL.md").read_text(
+            encoding="utf-8"
+        )
         catalog_text = CATALOG_FILE.read_text(encoding="utf-8")
 
         self.assertIn("agentplane projection runtime-env plan --target <target> --app <app>", repo_skill_text)
@@ -441,9 +454,11 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
         self.assertIn("agentplane projection ledger refresh --target <target>", repo_skill_text)
         self.assertIn("entrypoint: uv run python -m agentplane.cli projection", catalog_text)
 
+
 # ======================================================================
 # From: test_onepanel_app_plans.py
 # ======================================================================
+
 
 class OnePanelAppPlanTests(unittest.TestCase):
     def test_build_app_install_params_returns_empty_for_missing_or_non_mapping_params(self) -> None:
@@ -498,6 +513,8 @@ class OnePanelAppPlanTests(unittest.TestCase):
                 plan = plan_installed_app_operation(install_id=3, operate=operate)
 
                 self.assertEqual("/api/v2/apps/installed/op", plan.path)
-                self.assertEqual({"installId": 3, "operate": operate}, {k: plan.body[k] for k in ("installId", "operate")})
+                self.assertEqual(
+                    {"installId": 3, "operate": operate}, {k: plan.body[k] for k in ("installId", "operate")}
+                )
                 self.assertFalse(plan.body["deleteDB"])
                 self.assertFalse(plan.body["pullImage"])

@@ -109,8 +109,7 @@ def _validate_image_tag_rule(rule: Any) -> None:
     if not isinstance(rule, str) or rule != SUPPORTED_IMAGE_TAG_RULE:
         raise _contract_error(
             ERROR_ID_CONTRACT_INVALID_IMAGE_TAG_RULE,
-            "image_tag_rule 必须使用当前二开版本规范: "
-            f"{SUPPORTED_IMAGE_TAG_RULE}",
+            f"image_tag_rule 必须使用当前二开版本规范: {SUPPORTED_IMAGE_TAG_RULE}",
         )
 
 
@@ -219,19 +218,13 @@ def _tenant_dependency_kinds(depends: list[str], inventory: dict[str, Any]) -> s
     return kinds
 
 
-def _required_tenant_resource_errors(
-    app_id: str, required_kinds: set[str], tenant_resources: Any
-) -> list[str]:
+def _required_tenant_resource_errors(app_id: str, required_kinds: set[str], tenant_resources: Any) -> list[str]:
     if not required_kinds:
         return []
     if not isinstance(tenant_resources, dict):
         return [f"{ERROR_ID_APP_RESOURCE_RESOURCES_REQUIRED}: app={app_id} missing infra.tenant_resources"]
 
-    missing = [
-        kind
-        for kind in sorted(required_kinds)
-        if not isinstance(tenant_resources.get(kind), dict)
-    ]
+    missing = [kind for kind in sorted(required_kinds) if not isinstance(tenant_resources.get(kind), dict)]
     if not missing:
         return []
     return [
@@ -420,14 +413,14 @@ def validate_contract(contract_path: Path, *, repo_root: Path, target: str) -> d
 
     if isinstance(tenant_resources, dict):
         declared_kinds = {
-            kind
-            for kind in ("postgres", "redis", "minio")
-            if isinstance(tenant_resources.get(kind), dict)
+            kind for kind in ("postgres", "redis", "minio") if isinstance(tenant_resources.get(kind), dict)
         }
         for resource_kind in sorted(declared_kinds):
             resource_spec = tenant_resources.get(resource_kind)
             if isinstance(resource_spec, dict):
-                _validate_contract_tenant_secret_file(repo_root, validation_target, app_id, resource_kind, resource_spec)
+                _validate_contract_tenant_secret_file(
+                    repo_root, validation_target, app_id, resource_kind, resource_spec
+                )
         if declared_kinds:
             try:
                 _validate_contract_registry_formal_gate(

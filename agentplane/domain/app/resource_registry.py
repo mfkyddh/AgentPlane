@@ -81,12 +81,18 @@ def app_resource_inventory_projection(repo_root: Path, target: str, app: str) ->
 
 
 def _resource_kinds(raw_entry: dict[str, Any]) -> tuple[str, ...]:
-    items = [name for name, value in raw_entry.items() if name in {"postgres", "redis", "minio"} and isinstance(value, dict)]
+    items = [
+        name for name, value in raw_entry.items() if name in {"postgres", "redis", "minio"} and isinstance(value, dict)
+    ]
     return tuple(sorted(items))
 
 
 def _resource_payload(raw_entry: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    return {name: dict(value) for name, value in raw_entry.items() if name in {"postgres", "redis", "minio"} and isinstance(value, dict)}
+    return {
+        name: dict(value)
+        for name, value in raw_entry.items()
+        if name in {"postgres", "redis", "minio"} and isinstance(value, dict)
+    }
 
 
 def available_app_resources(repo_root: Path, target: str) -> list[tuple[AppResourceDefinition, dict[str, Any]]]:
@@ -114,9 +120,13 @@ def available_app_resources(repo_root: Path, target: str) -> list[tuple[AppResou
             app=canonical_app,
             owner_app=owner_app,
             resource_kinds=_resource_kinds(raw_entry),
-            ledger_status=dict(raw_entry.get("ledger_status", {})) if isinstance(raw_entry.get("ledger_status"), dict) else {},
+            ledger_status=dict(raw_entry.get("ledger_status", {}))
+            if isinstance(raw_entry.get("ledger_status"), dict)
+            else {},
             resources=_resource_payload(raw_entry),
-            secret_files=tuple(item for item in secret_files if isinstance(item, str)) if isinstance(secret_files, list) else (),
+            secret_files=tuple(item for item in secret_files if isinstance(item, str))
+            if isinstance(secret_files, list)
+            else (),
         )
         score = 0 if registry_key == canonical_app else 1
         existing = best_items.get(canonical_app)

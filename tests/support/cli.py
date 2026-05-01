@@ -52,4 +52,3 @@ def run_agentplane_cli(
         capture_output=True,
         check=False,
     )
-

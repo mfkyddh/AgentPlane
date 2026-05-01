@@ -22,6 +22,7 @@ from tests.support.service_cli import (
 
 pytestmark = pytest.mark.e2e
 
+
 class ServiceCliTests(unittest.TestCase):
     def test_service_search_lists_formal_managed_services(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -114,7 +115,9 @@ class ServiceCliTests(unittest.TestCase):
             write_inventory(root)
             compose_file = root / "infra" / "compose" / "sampleapi" / "docker-compose.prod0.yml"
             compose_file.parent.mkdir(parents=True, exist_ok=True)
-            compose_file.write_text("services:\n  sampleapi:\n    image: ghcr.io/example/sampleapi:2026.04\n", encoding="utf-8")
+            compose_file.write_text(
+                "services:\n  sampleapi:\n    image: ghcr.io/example/sampleapi:2026.04\n", encoding="utf-8"
+            )
 
             result = run_cli(
                 "service",
@@ -224,8 +227,22 @@ class ServiceCliTests(unittest.TestCase):
                 yaml.safe_dump(
                     {
                         "proxies": [
-                            {"name": "旧节点A", "type": "ss", "server": "a.example.com", "port": 443, "cipher": "aes-128-gcm", "password": "x"},
-                            {"name": "旧节点B", "type": "ss", "server": "b.example.com", "port": 443, "cipher": "aes-128-gcm", "password": "y"},
+                            {
+                                "name": "旧节点A",
+                                "type": "ss",
+                                "server": "a.example.com",
+                                "port": 443,
+                                "cipher": "aes-128-gcm",
+                                "password": "x",
+                            },
+                            {
+                                "name": "旧节点B",
+                                "type": "ss",
+                                "server": "b.example.com",
+                                "port": 443,
+                                "cipher": "aes-128-gcm",
+                                "password": "y",
+                            },
                         ],
                         "proxy-groups": [
                             {"name": "国外流量", "type": "select", "proxies": ["旧节点A", "旧节点B", "直接连接"]},
@@ -429,9 +446,11 @@ class ServiceCliTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("unsupported", result.stderr.lower())
 
+
 # ======================================================================
 # From: test_service_apply_cli.py
 # ======================================================================
+
 
 class ServiceApplyCliTests(unittest.TestCase):
     def test_service_apply_restarts_systemd_service_and_verifies(self) -> None:
@@ -537,12 +556,17 @@ class ServiceApplyCliTests(unittest.TestCase):
             self.assertEqual("projection", payload["payload"]["projection_handoff"]["steps"][0]["command"])
             self.assertEqual("ledger.refresh", payload["payload"]["projection_handoff"]["steps"][0]["action"])
             log_text = log_file.read_text(encoding="utf-8")
-            self.assertIn("cd /opt/agentplane/infra/compose/postgres && docker compose -f docker-compose.prod0.yml up -d", log_text)
+            self.assertIn(
+                "cd /opt/agentplane/infra/compose/postgres && docker compose -f docker-compose.prod0.yml up -d",
+                log_text,
+            )
             self.assertIn("docker inspect postgres18-prod", log_text)
+
 
 # ======================================================================
 # From: test_service_lifecycle.py
 # ======================================================================
+
 
 class ServiceLifecycleTests(unittest.TestCase):
     def test_plan_onboard_and_offboard_cycles(self):
@@ -676,9 +700,11 @@ class ServiceLifecycleTests(unittest.TestCase):
         inventory_file.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         return inventory_file
 
+
 # ======================================================================
 # From: test_service_public_endpoint_cli.py
 # ======================================================================
+
 
 class ServicePublicEndpointCliTests(unittest.TestCase):
     def test_service_public_endpoint_verify_checks_dns_and_certificate_contract(self) -> None:
@@ -692,10 +718,13 @@ class ServicePublicEndpointCliTests(unittest.TestCase):
             env_file.write_text("CLOUDFLARE_API_TOKEN=test-token\n", encoding="utf-8")
             write_fake_service_ssh(bin_dir)
 
-            with patch("agentplane.domain.service.public_endpoint.CloudflareClient", _FakeCloudflareClient), patch.dict(
-                os.environ,
-                {"PATH": f"{bin_dir}:{os.environ['PATH']}", "FAKE_CMD_LOG": str(log_file)},
-                clear=False,
+            with (
+                patch("agentplane.domain.service.public_endpoint.CloudflareClient", _FakeCloudflareClient),
+                patch.dict(
+                    os.environ,
+                    {"PATH": f"{bin_dir}:{os.environ['PATH']}", "FAKE_CMD_LOG": str(log_file)},
+                    clear=False,
+                ),
             ):
                 exit_code, stdout, stderr = run_cli_inline(
                     "service",
@@ -755,13 +784,17 @@ class ServicePublicEndpointCliTests(unittest.TestCase):
             bin_dir.mkdir(parents=True, exist_ok=True)
             log_file = root / "service-public-endpoint-apply.log"
             write_fake_service_ssh(bin_dir)
-            with patch("agentplane.domain.service.public_endpoint.CloudflareClient", _FakeCloudflareClient), patch(
-                "agentplane.scripts.internal.ensure_cloudflare_dns_record.CloudflareClient",
-                _FakeCloudflareClient,
-            ), patch.dict(
-                os.environ,
-                {"PATH": f"{bin_dir}:{os.environ['PATH']}", "FAKE_CMD_LOG": str(log_file)},
-                clear=False,
+            with (
+                patch("agentplane.domain.service.public_endpoint.CloudflareClient", _FakeCloudflareClient),
+                patch(
+                    "agentplane.scripts.internal.ensure_cloudflare_dns_record.CloudflareClient",
+                    _FakeCloudflareClient,
+                ),
+                patch.dict(
+                    os.environ,
+                    {"PATH": f"{bin_dir}:{os.environ['PATH']}", "FAKE_CMD_LOG": str(log_file)},
+                    clear=False,
+                ),
             ):
                 exit_code, stdout, stderr = run_cli_inline(
                     "service",

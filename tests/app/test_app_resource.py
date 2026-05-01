@@ -1,9 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
-import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -31,9 +28,9 @@ from tests.support.app_delivery_targets import (
 )
 from tests.support.app_resources import resource_relative, resource_root
 from tests.support.cli import run_agentplane_cli as run_cli
-from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
+
 
 def write_inventory(root: Path, *, projection_drift: bool = False) -> None:
     server_root = root / "inventory" / "servers" / "prod0-main"
@@ -76,6 +73,7 @@ def write_inventory(root: Path, *, projection_drift: bool = False) -> None:
         encoding="utf-8",
     )
 
+
 def write_registry(root: Path, *, secret_file: str | None = None) -> None:
     registry_file = root / "inventory" / "servers" / "prod0-main" / "app-resources.json"
     registry_file.parent.mkdir(parents=True, exist_ok=True)
@@ -112,6 +110,7 @@ def write_registry(root: Path, *, secret_file: str | None = None) -> None:
     }
     registry_file.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
+
 def write_resource_secrets(root: Path, *, include_redis: bool = True) -> None:
     resource_dir = resource_root(root, "prod0-main", "sub2api")
     resource_dir.mkdir(parents=True, exist_ok=True)
@@ -128,6 +127,7 @@ def write_resource_secrets(root: Path, *, include_redis: bool = True) -> None:
         "MINIO_BUCKET=prod0-sub2api\nMINIO_ACCESS_KEY=sub2api_prod0\nMINIO_SECRET_KEY=secret\n",
         encoding="utf-8",
     )
+
 
 def write_catalog(
     root: Path,
@@ -155,6 +155,7 @@ def write_catalog(
         ),
         encoding="utf-8",
     )
+
 
 class AppResourceCliTests(unittest.TestCase):
     def test_app_resource_search_lists_declared_registry_objects(self) -> None:
@@ -186,7 +187,9 @@ class AppResourceCliTests(unittest.TestCase):
             write_registry(root)
             write_resource_secrets(root)
 
-            result = run_cli("app", "resource", "get", "--target", "prod0-main", "--app", "sub2api", "--repo-root", str(root))
+            result = run_cli(
+                "app", "resource", "get", "--target", "prod0-main", "--app", "sub2api", "--repo-root", str(root)
+            )
 
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             payload = json.loads(result.stdout)
@@ -201,7 +204,9 @@ class AppResourceCliTests(unittest.TestCase):
             write_registry(root)
             write_resource_secrets(root)
 
-            result = run_cli("app", "resource", "verify", "--target", "prod0-main", "--app", "sub2api", "--repo-root", str(root))
+            result = run_cli(
+                "app", "resource", "verify", "--target", "prod0-main", "--app", "sub2api", "--repo-root", str(root)
+            )
 
             self.assertEqual(result.returncode, 1, msg=result.stdout)
             payload = json.loads(result.stdout)
@@ -226,7 +231,9 @@ class AppResourceCliTests(unittest.TestCase):
             registry_file.write_text(json.dumps(registry_payload, ensure_ascii=False, indent=2), encoding="utf-8")
             write_resource_secrets(root)
 
-            verify = run_cli("app", "resource", "verify", "--target", "prod0-main", "--app", "sub2api", "--repo-root", str(root))
+            verify = run_cli(
+                "app", "resource", "verify", "--target", "prod0-main", "--app", "sub2api", "--repo-root", str(root)
+            )
             search = run_cli("app", "resource", "search", "--target", "prod0-main", "--repo-root", str(root))
 
             self.assertEqual(verify.returncode, 0, msg=verify.stderr)
@@ -295,9 +302,11 @@ class AppResourceCliTests(unittest.TestCase):
             projection = payload["payload"]["projection"]
             self.assertEqual(service_key, projection["service_key"])
 
+
 # ======================================================================
 # From: test_app_resource_object_cli.py
 # ======================================================================
+
 
 class AppResourceObjectCliTests(unittest.TestCase):
     def test_resource_registry_lists_declared_app_resources(self) -> None:
@@ -426,7 +435,9 @@ class AppResourceObjectCliTests(unittest.TestCase):
             self.assertEqual("app", payload["command"])
             self.assertEqual("resource.refresh-ledger", payload["action"])
             self.assertEqual(1, payload["payload"]["counts"]["app_resources"])
-            self.assertTrue((root / "inventory" / "servers" / "prod0-main" / "ledgers" / "app_resources.json").is_file())
+            self.assertTrue(
+                (root / "inventory" / "servers" / "prod0-main" / "ledgers" / "app_resources.json").is_file()
+            )
             persisted_registry = json.loads(
                 (root / "inventory" / "servers" / "prod0-main" / "app-resources.json").read_text(encoding="utf-8")
             )
@@ -445,9 +456,11 @@ class AppResourceObjectCliTests(unittest.TestCase):
         self.assertIn("verify", result.stdout)
         self.assertIn("refresh-ledger", result.stdout)
 
+
 # ======================================================================
 # From: test_app_resource_lifecycle.py
 # ======================================================================
+
 
 class AppResourceLifecycleTests(unittest.TestCase):
     def test_registry_onboard_requires_phase1_key_and_owner(self) -> None:
@@ -497,9 +510,11 @@ class AppResourceLifecycleTests(unittest.TestCase):
             find_orphaned_inventory_app_resource_summaries(inventory_payload, catalog_keys={"sub2api"}),
         )
 
+
 # ======================================================================
 # From: test_app_artifact_contract.py
 # ======================================================================
+
 
 class AppArtifactContractTests(unittest.TestCase):
     def test_validate_contract_accepts_schema2_artifact_first_contract(self) -> None:

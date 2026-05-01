@@ -1,9 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
-import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -16,6 +13,7 @@ from tests.support.cli import run_agentplane_cli as run_cli
 from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
+
 
 def write_inventory(root: Path) -> None:
     inventory_file = root / "inventory" / "servers" / "prod0-main" / "inventory.json"
@@ -35,6 +33,7 @@ def write_inventory(root: Path) -> None:
         ),
         encoding="utf-8",
     )
+
 
 def write_registry(root: Path) -> None:
     registry_file = root / "inventory" / "servers" / "prod0-main" / "app-resources.json"
@@ -58,6 +57,7 @@ def write_registry(root: Path) -> None:
         encoding="utf-8",
     )
 
+
 def write_resource_secrets(root: Path) -> None:
     resource_dir = resource_root(root, "prod0-main", "sub2api")
     resource_dir.mkdir(parents=True, exist_ok=True)
@@ -69,6 +69,7 @@ def write_resource_secrets(root: Path) -> None:
         "REDIS_HOST=redis7-prod\nREDIS_PORT=6379\nREDIS_PASSWORD=secret\nREDIS_DB=1\nREDIS_KEY_PREFIX=sub2api:\nREDIS_ENABLE_TLS=false\n",
         encoding="utf-8",
     )
+
 
 class ProjectionRuntimeEnvCliTests(unittest.TestCase):
     def test_runtime_env_plan_reports_missing_app_as_app_resource_registry_gap(self) -> None:
@@ -215,9 +216,11 @@ class ProjectionRuntimeEnvCliTests(unittest.TestCase):
             self.assertNotIn("REDIS_PASSWORD=secret", result.stdout)
             self.assertNotIn("JWT_SECRET=keep", result.stdout)
 
+
 # ======================================================================
 # From: test_projection_validation_cli.py
 # ======================================================================
+
 
 class ProjectionValidationCliTests(unittest.TestCase):
     def test_projection_verification_run_wraps_suite_payload(self) -> None:
@@ -239,10 +242,13 @@ class ProjectionValidationCliTests(unittest.TestCase):
             firewall_tab="port",
         )
 
-        with patch("agentplane.cli.projection._executor_for_target", return_value=object()), patch(
-            "agentplane.cli.projection.run_onepanel_verification_suite",
-            return_value={"ok": True, "checks": []},
-        ) as run_suite:
+        with (
+            patch("agentplane.cli.projection._executor_for_target", return_value=object()),
+            patch(
+                "agentplane.cli.projection.run_onepanel_verification_suite",
+                return_value={"ok": True, "checks": []},
+            ) as run_suite,
+        ):
             payload = handle_projection_command(args)
 
         self.assertEqual("projection", payload["command"])
@@ -270,9 +276,12 @@ class ProjectionValidationCliTests(unittest.TestCase):
             firewall_tab="port",
         )
 
-        with patch("agentplane.cli.projection._executor_for_target", return_value=object()), patch(
-            "agentplane.cli.projection.run_onepanel_verification_suite",
-            return_value={"ok": True, "checks": [{"scope": "panel", "ok": True, "payload": {"apiKey": "secret"}}]},
+        with (
+            patch("agentplane.cli.projection._executor_for_target", return_value=object()),
+            patch(
+                "agentplane.cli.projection.run_onepanel_verification_suite",
+                return_value={"ok": True, "checks": [{"scope": "panel", "ok": True, "payload": {"apiKey": "secret"}}]},
+            ),
         ):
             payload = handle_projection_command(args)
 
@@ -315,13 +324,17 @@ class ProjectionValidationCliTests(unittest.TestCase):
             execute=True,
         )
 
-        with patch("agentplane.cli.projection.resolve_fixture_spec", return_value=object()) as resolve_spec, patch(
-            "agentplane.cli.projection._executor_for_target",
-            return_value=object(),
-        ), patch(
-            "agentplane.cli.projection.cleanup_fixture",
-            return_value={"ok": True, "items": [{"object": "project", "action": "down-project"}]},
-        ) as cleanup_fixture:
+        with (
+            patch("agentplane.cli.projection.resolve_fixture_spec", return_value=object()) as resolve_spec,
+            patch(
+                "agentplane.cli.projection._executor_for_target",
+                return_value=object(),
+            ),
+            patch(
+                "agentplane.cli.projection.cleanup_fixture",
+                return_value={"ok": True, "items": [{"object": "project", "action": "down-project"}]},
+            ) as cleanup_fixture,
+        ):
             payload = handle_projection_command(args)
 
         resolve_spec.assert_called_once_with(

@@ -73,7 +73,9 @@ class Prod0MainLifecyclePolicy:
     @classmethod
     def _ensure_prod0_target(cls, target: str) -> None:
         if target != PROD0_MAIN_TARGET:
-            raise ValueError(f"prod0-main lifecycle policy only applies to target '{PROD0_MAIN_TARGET}', got {target!r}")
+            raise ValueError(
+                f"prod0-main lifecycle policy only applies to target '{PROD0_MAIN_TARGET}', got {target!r}"
+            )
 
     @classmethod
     def _ensure_service_key(cls, service_key: str | None) -> None:
@@ -115,7 +117,9 @@ class Prod0MainLifecyclePolicy:
     def _ensure_offboarding_dry_run(cls, plan: Prod0MainLifecyclePlan) -> None:
         if plan.requires_dry_run or "dry_run" in plan.operations:
             return
-        raise ValueError("prod0-main offboarding plans must declare requires_dry_run=True or include the 'dry_run' operation")
+        raise ValueError(
+            "prod0-main offboarding plans must declare requires_dry_run=True or include the 'dry_run' operation"
+        )
 
 
 def lane2_policy_helper() -> dict[str, object]:

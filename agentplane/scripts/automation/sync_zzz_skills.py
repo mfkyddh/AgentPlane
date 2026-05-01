@@ -115,7 +115,9 @@ def run_sync(
     current_branch = _run_git(["branch", "--show-current"], cwd=resolved_target)
     branch_name = current_branch.stdout.strip() if current_branch.returncode == 0 else ""
     if branch_name != branch:
-        return _failing_precheck(f"target repo must be on branch {branch}, got {branch_name or 'unknown'}", skills=skills)
+        return _failing_precheck(
+            f"target repo must be on branch {branch}, got {branch_name or 'unknown'}", skills=skills
+        )
 
     status = _run_git(["status", "--short"], cwd=resolved_target)
     if status.returncode != 0:

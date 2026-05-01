@@ -12,9 +12,13 @@ class AppDeliveryService:
     repo_root: Path
 
     def validate_contract(self, *, target: str, app: str, app_repo_root: str | None = None) -> dict[str, Any]:
-        return delivery_handlers.validate_contract_for_app(self.repo_root, target=target, app=app, app_repo_root=app_repo_root)
+        return delivery_handlers.validate_contract_for_app(
+            self.repo_root, target=target, app=app, app_repo_root=app_repo_root
+        )
 
-    def render_runtime(self, *, target: str, app: str, image_ref: str | None, app_repo_root: str | None = None) -> dict[str, Any]:
+    def render_runtime(
+        self, *, target: str, app: str, image_ref: str | None, app_repo_root: str | None = None
+    ) -> dict[str, Any]:
         return delivery_handlers.render_runtime_for_app(
             self.repo_root,
             target=target,
@@ -23,7 +27,9 @@ class AppDeliveryService:
             app_repo_root=app_repo_root,
         )
 
-    def inventory_refresh(self, *, target: str, app: str, write: bool, app_repo_root: str | None = None) -> dict[str, Any]:
+    def inventory_refresh(
+        self, *, target: str, app: str, write: bool, app_repo_root: str | None = None
+    ) -> dict[str, Any]:
         return delivery_handlers.inventory_refresh_for_app(
             self.repo_root,
             target=target,

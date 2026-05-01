@@ -66,10 +66,10 @@ def _redis_conf_text(target: str) -> str:
         "rdbcompression yes\n"
         "dbfilename dump.rdb\n"
         "appendonly yes\n"
-        "appendfilename \"appendonly.aof\"\n"
+        'appendfilename "appendonly.aof"\n'
         "appendfsync everysec\n"
         "loglevel notice\n"
-        "logfile \"\"\n"
+        'logfile ""\n'
     )
 
 
@@ -157,7 +157,11 @@ def _ensure_host_truth_file(
         truth_path.write_text(migrated_content, encoding="utf-8")
         return {"path": str(truth_path), "status": "migrated", "role": "truth"}, migrated_content
     truth_path.write_text(generated_content, encoding="utf-8")
-    return {"path": str(truth_path), "status": "created" if not force else "written", "role": "truth"}, generated_content
+    return {
+        "path": str(truth_path),
+        "status": "created" if not force else "written",
+        "role": "truth",
+    }, generated_content
 
 
 def _legacy_runtime_env_path(repo_root: Path, target: str, app_id: str) -> Path:
@@ -264,7 +268,11 @@ def materialize_legacy_host_layout(repo_root: Path, target: str, *, write: bool)
         for app_dir in sorted(path for path in apps_root.iterdir() if path.is_dir()):
             runtime_env = app_dir / "runtime.env"
             if runtime_env.is_file():
-                projections.append(_copy_projection(runtime_env, _legacy_runtime_env_path(repo_root, target, app_dir.name), write=write))
+                projections.append(
+                    _copy_projection(
+                        runtime_env, _legacy_runtime_env_path(repo_root, target, app_dir.name), write=write
+                    )
+                )
             tenants_root = app_dir / "tenants"
             if tenants_root.is_dir():
                 for tenant_env in sorted(tenants_root.glob("*.env")):

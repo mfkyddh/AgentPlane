@@ -114,8 +114,7 @@ def _render_server_readme(target: str, inventory: dict[str, Any]) -> str:
                     item = app_resource_summary.get(kind)
                     if isinstance(item, dict) and item:
                         lines.append(
-                            f"- app_resource_summary.{kind}："
-                            f"`{json.dumps(item, ensure_ascii=False, sort_keys=True)}`"
+                            f"- app_resource_summary.{kind}：`{json.dumps(item, ensure_ascii=False, sort_keys=True)}`"
                         )
 
     if target == "prod0-main" and has_app_resource_summary:

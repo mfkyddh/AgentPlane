@@ -109,7 +109,9 @@ def run_verification_suite(
 ) -> dict[str, Any]:
     checks: list[dict[str, Any]] = []
 
-    checks.append(_run_check("panel", lambda: get_panel_summary(executor), lambda payload: payload.get("systemVersion")))
+    checks.append(
+        _run_check("panel", lambda: get_panel_summary(executor), lambda payload: payload.get("systemVersion"))
+    )
 
     if website_alias:
         checks.append(
@@ -121,23 +123,45 @@ def run_verification_suite(
         )
 
     if container_name:
-        checks.append(_run_check("container", lambda: get_container(executor, name=container_name), lambda payload: payload.get("name")))
+        checks.append(
+            _run_check(
+                "container", lambda: get_container(executor, name=container_name), lambda payload: payload.get("name")
+            )
+        )
 
     if project_name:
-        checks.append(_run_check("project", lambda: get_compose_project(executor, name=project_name), lambda payload: payload.get("name")))
+        checks.append(
+            _run_check(
+                "project", lambda: get_compose_project(executor, name=project_name), lambda payload: payload.get("name")
+            )
+        )
 
     resolved_cronjob_id = cronjob_id
     if resolved_cronjob_id is None and cronjob_name:
         resolved_cronjob_id = find_cronjob_id(executor, name=cronjob_name)
     if resolved_cronjob_id is not None:
         checks.append(
-            _run_check("cronjob", lambda: load_cronjob(executor, cronjob_id=resolved_cronjob_id), lambda payload: payload.get("id"))
+            _run_check(
+                "cronjob",
+                lambda: load_cronjob(executor, cronjob_id=resolved_cronjob_id),
+                lambda payload: payload.get("id"),
+            )
         )
 
-    checks.append(_run_check("firewall", lambda: load_firewall_base(executor, name=firewall_tab), lambda payload: "isActive" in payload))
+    checks.append(
+        _run_check(
+            "firewall", lambda: load_firewall_base(executor, name=firewall_tab), lambda payload: "isActive" in payload
+        )
+    )
 
     if app_name:
-        checks.append(_run_check("app", lambda: get_installed_app(executor, install_id=_app_id(executor, app_name)), lambda payload: payload.get("id")))
+        checks.append(
+            _run_check(
+                "app",
+                lambda: get_installed_app(executor, install_id=_app_id(executor, app_name)),
+                lambda payload: payload.get("id"),
+            )
+        )
 
     checks.append(_run_check("task", lambda: get_task_count(executor), lambda payload: "executing" in payload))
 

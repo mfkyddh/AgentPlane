@@ -19,17 +19,28 @@ LAST_VERIFIED_MAX_AGE_DAYS = 30
 
 # 人类面向文档中应避免的 AI 术语（中文+英文）
 HUMAN_DOC_TERM_BLACKLIST = {
-    "真源", "投影链", "投影",
-    "台账投影", "台账",
-    "Task-Entry", "task-entry",
-    "Resolver", "resolver",
-    "Ledger", "ledger",
-    "Inventory", "inventory",
-    "Contract", "contract",
-    "Catalog", "catalog",
+    "真源",
+    "投影链",
+    "投影",
+    "台账投影",
+    "台账",
+    "Task-Entry",
+    "task-entry",
+    "Resolver",
+    "resolver",
+    "Ledger",
+    "ledger",
+    "Inventory",
+    "inventory",
+    "Contract",
+    "contract",
+    "Catalog",
+    "catalog",
     "控制面",
-    "Projection Chain", "projection chain",
-    "Envelope", "envelope",
+    "Projection Chain",
+    "projection chain",
+    "Envelope",
+    "envelope",
 }
 
 # 人类文档长度封顶（路径前缀 -> 最大行数）
@@ -396,7 +407,9 @@ def run_docs_sanity(repo_root: Path) -> list[DocsSanityIssue]:
                     continue
                 if target_path.is_dir():
                     readme_path = target_path / "README.md"
-                    target_relative = readme_path.relative_to(root).as_posix() if readme_path.exists() else target_relative
+                    target_relative = (
+                        readme_path.relative_to(root).as_posix() if readme_path.exists() else target_relative
+                    )
                 if target_relative in inbound_links and target_relative != relative:
                     inbound_links[target_relative].add(relative)
 

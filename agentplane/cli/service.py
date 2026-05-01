@@ -96,9 +96,15 @@ def handle_service_command(args: argparse.Namespace) -> dict[str, Any]:
     if args.service_action == "plan":
         return _wrap("plan", args.target, plan_service_operation(repo_root, args.target, args.name, args.operation))
     if args.service_action == "apply":
-        return _wrap("apply", args.target, apply_service_operation(repo_root, args.target, args.name, args.operation, execute=bool(args.execute)))
+        return _wrap(
+            "apply",
+            args.target,
+            apply_service_operation(repo_root, args.target, args.name, args.operation, execute=bool(args.execute)),
+        )
     if args.service_action == "refresh-ledger":
-        return _wrap("refresh-ledger", args.target, refresh_service_ledger(repo_root, args.target, write=bool(args.write)))
+        return _wrap(
+            "refresh-ledger", args.target, refresh_service_ledger(repo_root, args.target, write=bool(args.write))
+        )
     if args.service_action == "materialize":
         return _wrap(
             "materialize",

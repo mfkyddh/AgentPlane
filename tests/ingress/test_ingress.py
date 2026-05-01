@@ -1,9 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
-import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -19,9 +16,9 @@ from agentplane.domain.ingress.lifecycle import (
 )
 from agentplane.domain.ingress.models import IngressDefinition
 from tests.support.cli import run_agentplane_cli as run_cli
-from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
+
 
 def write_inventory(root: Path) -> None:
     server_root = root / "inventory" / "servers" / "prod0-main"
@@ -49,6 +46,7 @@ def write_inventory(root: Path) -> None:
         ),
         encoding="utf-8",
     )
+
 
 class FakeWebsiteExecutor:
     def __init__(self, *, existing: dict[str, object] | None, https: dict[str, object] | None = None) -> None:
@@ -99,6 +97,7 @@ class FakeWebsiteExecutor:
             self._created = True
             return {"id": 9}
         raise AssertionError(f"Unexpected request: {method} {path} {body}")
+
 
 class WebsiteCliTests(unittest.TestCase):
     def test_ingress_apply_requires_execute(self) -> None:
@@ -268,13 +267,17 @@ class WebsiteCliTests(unittest.TestCase):
             self.assertEqual("ingress", payload["command"])
             self.assertEqual(1, payload["payload"]["counts"]["websites"])
             self.assertTrue((root / "inventory" / "servers" / "prod0-main" / "ledgers" / "websites.json").is_file())
-            persisted_inventory = json.loads((root / "inventory" / "servers" / "prod0-main" / "inventory.json").read_text(encoding="utf-8"))
+            persisted_inventory = json.loads(
+                (root / "inventory" / "servers" / "prod0-main" / "inventory.json").read_text(encoding="utf-8")
+            )
             self.assertEqual("token", persisted_inventory["services"]["public_ingresses"][0]["alias"])
             self.assertEqual(1, persisted_inventory["object_ledgers"]["counts"]["websites"])
+
 
 # ======================================================================
 # From: test_ingress_publish_cli.py
 # ======================================================================
+
 
 def write_publish_files(root: Path) -> tuple[Path, Path]:
     config_file = root / "publish.env"
@@ -300,6 +303,7 @@ def write_publish_files(root: Path) -> tuple[Path, Path]:
         encoding="utf-8",
     )
     return config_file, cloudflare_env_file
+
 
 class WebsitePublishCliTests(unittest.TestCase):
     def test_ingress_publish_apply_requires_execute(self) -> None:
@@ -341,7 +345,11 @@ class WebsitePublishCliTests(unittest.TestCase):
 
             with patch(
                 "agentplane.cli.ingress.plan_public_ingress",
-                return_value={"domain": "token.example.net", "steps": [{"kind": "cloudflare_dns"}], "execute_required": True},
+                return_value={
+                    "domain": "token.example.net",
+                    "steps": [{"kind": "cloudflare_dns"}],
+                    "execute_required": True,
+                },
             ):
                 payload = handle_ingress_command(args)
 
@@ -367,13 +375,16 @@ class WebsitePublishCliTests(unittest.TestCase):
                 execute=True,
             )
 
-            with patch(
-                "agentplane.cli.ingress.ensure_public_ingress",
-                return_value={"payload": {"ingress": {"id": 9, "alias": "token"}}},
-            ) as ensure_publish, patch(
-                "agentplane.cli.ingress.verify_public_ingress",
-                return_value={"payload": {"ok": True, "failures": [], "checks": {"ingress": {"ok": True}}}},
-            ) as verify_publish:
+            with (
+                patch(
+                    "agentplane.cli.ingress.ensure_public_ingress",
+                    return_value={"payload": {"ingress": {"id": 9, "alias": "token"}}},
+                ) as ensure_publish,
+                patch(
+                    "agentplane.cli.ingress.verify_public_ingress",
+                    return_value={"payload": {"ok": True, "failures": [], "checks": {"ingress": {"ok": True}}}},
+                ) as verify_publish,
+            ):
                 payload = handle_ingress_command(args)
 
         ensure_publish.assert_called_once()
@@ -406,7 +417,9 @@ class WebsitePublishCliTests(unittest.TestCase):
 
             with patch(
                 "agentplane.cli.ingress.verify_public_ingress",
-                return_value={"payload": {"ok": False, "failures": ["dns_content"], "checks": {"dns_content": {"ok": False}}}},
+                return_value={
+                    "payload": {"ok": False, "failures": ["dns_content"], "checks": {"dns_content": {"ok": False}}}
+                },
             ):
                 payload = handle_ingress_command(args)
 
@@ -417,21 +430,25 @@ class WebsitePublishCliTests(unittest.TestCase):
         self.assertEqual("projection", follow_through["owner_surface"])
         self.assertEqual("ingress.publish", follow_through["source_surface"])
 
+
 # ======================================================================
 # From: test_ingress_lifecycle.py
 # ======================================================================
 
 TARGET = "wsl"
 
+
 def _inventory_file(tmp_path: Path, target: str) -> Path:
     inventory_dir = tmp_path / "inventory" / "servers" / target
     inventory_dir.mkdir(parents=True, exist_ok=True)
     return inventory_dir / "inventory.json"
 
+
 def _write_inventory(tmp_path: Path, target: str, payload: dict) -> Path:
     inventory_file = _inventory_file(tmp_path, target)
     inventory_file.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return inventory_file
+
 
 def _definition() -> IngressDefinition:
     return IngressDefinition(
@@ -444,6 +461,7 @@ def _definition() -> IngressDefinition:
         ssl_id=77,
     )
 
+
 def _entry_from(definition: IngressDefinition) -> dict:
     return {
         "alias": definition.alias,
@@ -455,6 +473,7 @@ def _entry_from(definition: IngressDefinition) -> dict:
         "ssl_id": definition.ssl_id,
     }
 
+
 def test_plan_onboard_missing_appends_row(tmp_path: Path) -> None:
     definition = _definition()
     _write_inventory(tmp_path, TARGET, {"services": {"public_ingresses": []}})
@@ -462,6 +481,7 @@ def test_plan_onboard_missing_appends_row(tmp_path: Path) -> None:
     assert plan["drift"]["status"] == "missing"
     assert len(plan["steps"]) == 1
     assert plan["steps"][0]["kind"] == "append"
+
 
 def test_apply_onboard_creates_entry_and_verifies(tmp_path: Path) -> None:
     definition = _definition()
@@ -475,6 +495,7 @@ def test_apply_onboard_creates_entry_and_verifies(tmp_path: Path) -> None:
     ingresses = payload["services"]["public_ingresses"]
     assert ingresses[0]["alias"] == definition.alias
 
+
 def test_plan_onboard_mismatch_triggers_replace(tmp_path: Path) -> None:
     definition = _definition()
     entry = _entry_from(definition)
@@ -487,6 +508,7 @@ def test_plan_onboard_mismatch_triggers_replace(tmp_path: Path) -> None:
     assert result["result"]["action"] == "updated"
     payload = json.loads(_inventory_file(tmp_path, TARGET).read_text(encoding="utf-8"))
     assert payload["services"]["public_ingresses"][0]["public_url"] == definition.public_url
+
 
 def test_remove_and_offboard(tmp_path: Path) -> None:
     definition = _definition()

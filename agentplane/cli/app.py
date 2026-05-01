@@ -62,7 +62,12 @@ def main(argv: list[str] | None = None) -> int:
     parse_argv, remote_remainder = _split_remote_bash_remainder(raw_argv)
     parser = build_parser()
     args = parser.parse_args(parse_argv)
-    if remote_remainder and args.command == "infra" and getattr(args, "infra_action", None) == "remote" and getattr(args, "infra_remote_action", None) == "bash":
+    if (
+        remote_remainder
+        and args.command == "infra"
+        and getattr(args, "infra_action", None) == "remote"
+        and getattr(args, "infra_remote_action", None) == "bash"
+    ):
         args.remote_args = [*getattr(args, "remote_args", []), *remote_remainder]
 
     if args.command == "onepanel":
@@ -120,7 +125,10 @@ def main(argv: list[str] | None = None) -> int:
                 return 0 if payload.get("payload", {}).get("ok", True) else 1
             if args.service_action == "apply":
                 return 0 if payload.get("payload", {}).get("ok", True) else 1
-            if args.service_action == "public-endpoint" and getattr(args, "service_public_endpoint_action", None) in {"verify", "apply"}:
+            if args.service_action == "public-endpoint" and getattr(args, "service_public_endpoint_action", None) in {
+                "verify",
+                "apply",
+            }:
                 return 0 if payload.get("payload", {}).get("ok", True) else 1
             return 0
         except ValueError as exc:
@@ -135,7 +143,10 @@ def main(argv: list[str] | None = None) -> int:
                 return 0 if payload.get("payload", {}).get("ok", True) else 1
             if args.ingress_action == "apply":
                 return 0 if payload.get("payload", {}).get("ok", True) else 1
-            if args.ingress_action == "publish" and getattr(args, "ingress_publish_action", None) in {"apply", "verify"}:
+            if args.ingress_action == "publish" and getattr(args, "ingress_publish_action", None) in {
+                "apply",
+                "verify",
+            }:
                 return 0 if payload.get("payload", {}).get("ok", True) else 1
             return 0
         except ValueError as exc:

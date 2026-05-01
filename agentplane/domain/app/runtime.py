@@ -196,7 +196,9 @@ def _onepanel_lifecycle_command(repo_root: Path, *, target: str, operate: str, r
     return display
 
 
-def _onepanel_lifecycle_step(repo_root: Path, *, target: str, operate: str, rollback_entry: dict[str, Any]) -> tuple[list[str], str]:
+def _onepanel_lifecycle_step(
+    repo_root: Path, *, target: str, operate: str, rollback_entry: dict[str, Any]
+) -> tuple[list[str], str]:
     return default_provider_gateway().onepanel_app_lifecycle_step(
         repo_root,
         target=target,
@@ -205,7 +207,9 @@ def _onepanel_lifecycle_step(repo_root: Path, *, target: str, operate: str, roll
     )
 
 
-def _onepanel_project_step(repo_root: Path, *, target: str, operate: str, rollback_entry: dict[str, Any]) -> tuple[list[str], str]:
+def _onepanel_project_step(
+    repo_root: Path, *, target: str, operate: str, rollback_entry: dict[str, Any]
+) -> tuple[list[str], str]:
     return default_provider_gateway().onepanel_project_lifecycle_step(
         repo_root,
         target=target,
@@ -214,7 +218,9 @@ def _onepanel_project_step(repo_root: Path, *, target: str, operate: str, rollba
     )
 
 
-def _systemd_transition_step(repo_root: Path, *, target: str, operate: str, rollback_entry: dict[str, Any]) -> tuple[list[str], str]:
+def _systemd_transition_step(
+    repo_root: Path, *, target: str, operate: str, rollback_entry: dict[str, Any]
+) -> tuple[list[str], str]:
     service_name = rollback_entry.get("service_name")
     if not isinstance(service_name, str) or not service_name:
         raise ValueError(f"rollback.previous_control_plane.kind=systemd 缺少 service_name: {rollback_entry}")
@@ -291,8 +297,8 @@ def _origin_health_wait_command(contract: dict[str, Any], *, container_name: str
     return (
         "for i in $(seq 1 12); do "
         f"status=$(docker inspect {container_name} --format '{inspect_format}' 2>/dev/null || true); "
-        f"if [ \"$status\" = healthy ]; then {health_command}; exit 0; fi; "
-        f"if [ \"$status\" = running ] && {health_command} >/dev/null 2>&1; then {health_command}; exit 0; fi; "
+        f'if [ "$status" = healthy ]; then {health_command}; exit 0; fi; '
+        f'if [ "$status" = running ] && {health_command} >/dev/null 2>&1; then {health_command}; exit 0; fi; '
         "sleep 5; "
         "done; "
         f"{health_command}"
@@ -405,7 +411,9 @@ def _registry_app_resource_summary(repo_root: Path, target: str, app_id: str) ->
     return summary or None
 
 
-def render_runtime(contract: dict[str, Any], *, repo_root: Path, target: str, image_ref: str | None = None) -> dict[str, Any]:
+def render_runtime(
+    contract: dict[str, Any], *, repo_root: Path, target: str, image_ref: str | None = None
+) -> dict[str, Any]:
     template_path = _compose_template_path(repo_root, str(contract["app_id"]), target=target)
     compose = load_yaml(template_path)
     service_name = str(contract["app_id"])
@@ -435,7 +443,10 @@ def render_runtime(contract: dict[str, Any], *, repo_root: Path, target: str, im
     existing_healthcheck = service.get("healthcheck")
     if not isinstance(existing_healthcheck, dict) or not existing_healthcheck:
         service["healthcheck"] = {
-            "test": ["CMD-SHELL", f"curl -fsS http://127.0.0.1:{runtime['container_port']}{runtime['healthcheck']['path']} >/dev/null"],
+            "test": [
+                "CMD-SHELL",
+                f"curl -fsS http://127.0.0.1:{runtime['container_port']}{runtime['healthcheck']['path']} >/dev/null",
+            ],
             "interval": "30s",
             "timeout": "10s",
             "retries": 5,
@@ -474,7 +485,9 @@ def inventory_refresh(*, repo_root: Path, target: str, contract_paths: list[Path
         service_entry = {
             "control_plane": runtime["kind"],
             "container_name": _runtime_container_name(str(contract["app_id"]), runtime, target=target),
-            "depends_on_containers": _target_dependency_names(contract["infra"]["depends_on_containers"], target=target),
+            "depends_on_containers": _target_dependency_names(
+                contract["infra"]["depends_on_containers"], target=target
+            ),
             "runtime_root": runtime_root,
             "config_files": config_files,
             "data_dir": data_dir,
@@ -529,14 +542,16 @@ def _execute_step(
         )
         return redact_execution_payload(result.to_payload())
     result = _run(argv, cwd=cwd, env=env)
-    return redact_execution_payload({
-        "argv": argv,
-        "display": display,
-        "returncode": result.returncode,
-        "stdout": result.stdout,
-        "stderr": result.stderr,
-        "ok": result.returncode == 0,
-    })
+    return redact_execution_payload(
+        {
+            "argv": argv,
+            "display": display,
+            "returncode": result.returncode,
+            "stdout": result.stdout,
+            "stderr": result.stderr,
+            "ok": result.returncode == 0,
+        }
+    )
 
 
 def _production_network_preflight(repo_root: Path, target: str) -> dict[str, Any] | None:
@@ -759,7 +774,9 @@ def _service_env_path(repo_root: Path, app_id: str, target: str) -> Path:
     raise ValueError(f"Unsupported target for env path: {target}")
 
 
-def ship_image(contract: dict[str, Any], *, repo_root: Path, target: str, image_ref: str | None, archive_dir: Path, dry_run: bool) -> dict[str, Any]:
+def ship_image(
+    contract: dict[str, Any], *, repo_root: Path, target: str, image_ref: str | None, archive_dir: Path, dry_run: bool
+) -> dict[str, Any]:
     op_id = next_operation_id("ship-image")
     if not image_ref:
         raise ValueError("ship-image 必须显式传入 image_ref")
@@ -917,12 +934,16 @@ def deploy_app(
         ),
         ssh_target.display_scp_command("<rendered-compose>", remote_compose),
         ssh_target.display_scp_command(str(env_path), f"/tmp/{env_path.name}"),
-        ssh_target.display_ssh_command(f"install -Dm600 /tmp/{env_path.name} {remote_env} && rm -f /tmp/{env_path.name}"),
+        ssh_target.display_ssh_command(
+            f"install -Dm600 /tmp/{env_path.name} {remote_env} && rm -f /tmp/{env_path.name}"
+        ),
         ssh_target.display_ssh_command(
             f"cd /opt/agentplane/infra/compose/{contract['app_id']} && docker compose -f {remote_compose_name} up -d --pull never"
         ),
     ]
-    transition_step = _control_plane_transition_step(repo_root, target=target, rollback_entry=rollback_entry, operate="stop")
+    transition_step = _control_plane_transition_step(
+        repo_root, target=target, rollback_entry=rollback_entry, operate="stop"
+    )
     if transition_step:
         commands.insert(-1, transition_step[1])
     if dry_run:
@@ -981,11 +1002,17 @@ def deploy_app(
             ssh_target.display_scp_command(str(env_path), f"/tmp/{env_path.name}"),
         ),
         (
-            ssh_target.local_ssh_args_for_shell(f"install -Dm600 /tmp/{env_path.name} {remote_env} && rm -f /tmp/{env_path.name}"),
-            ssh_target.display_ssh_command(f"install -Dm600 /tmp/{env_path.name} {remote_env} && rm -f /tmp/{env_path.name}"),
+            ssh_target.local_ssh_args_for_shell(
+                f"install -Dm600 /tmp/{env_path.name} {remote_env} && rm -f /tmp/{env_path.name}"
+            ),
+            ssh_target.display_ssh_command(
+                f"install -Dm600 /tmp/{env_path.name} {remote_env} && rm -f /tmp/{env_path.name}"
+            ),
         ),
     ]
-    transition_step = _control_plane_transition_step(repo_root, target=target, rollback_entry=rollback_entry, operate="stop")
+    transition_step = _control_plane_transition_step(
+        repo_root, target=target, rollback_entry=rollback_entry, operate="stop"
+    )
     if transition_step:
         steps.append(transition_step)
     steps.append(
@@ -1013,8 +1040,17 @@ def deploy_app(
         action="deploy",
         target=target,
         dry_run=False,
-        operation={"op_id": op_id, "target": target, "artifact_summary": f"{contract['app_id']} compose + {env_path.name}", "result": "executed" if ok else "failed"},
-        details={"artifact_summary": f"{contract['app_id']} compose + {env_path.name}", "remote_env": remote_env, "remote_compose": remote_compose},
+        operation={
+            "op_id": op_id,
+            "target": target,
+            "artifact_summary": f"{contract['app_id']} compose + {env_path.name}",
+            "result": "executed" if ok else "failed",
+        },
+        details={
+            "artifact_summary": f"{contract['app_id']} compose + {env_path.name}",
+            "remote_env": remote_env,
+            "remote_compose": remote_compose,
+        },
     )
     return {
         "container_name": rendered["container_name"],
@@ -1030,7 +1066,9 @@ def deploy_app(
     }
 
 
-def verify_app(contract: dict[str, Any], *, repo_root: Path, target: str, dry_run: bool, execute: bool) -> dict[str, Any]:
+def verify_app(
+    contract: dict[str, Any], *, repo_root: Path, target: str, dry_run: bool, execute: bool
+) -> dict[str, Any]:
     op_id = next_operation_id("verify-app")
     local_backend = _local_backend_type()
     if execute and dry_run:
@@ -1137,7 +1175,12 @@ def verify_app(contract: dict[str, Any], *, repo_root: Path, target: str, dry_ru
         action="verify",
         target=target,
         dry_run=False,
-        operation={"op_id": op_id, "target": target, "artifact_summary": container_name, "result": "verified" if ok else "failed"},
+        operation={
+            "op_id": op_id,
+            "target": target,
+            "artifact_summary": container_name,
+            "result": "verified" if ok else "failed",
+        },
         details={"artifact_summary": container_name},
     )
     return {
@@ -1151,7 +1194,9 @@ def verify_app(contract: dict[str, Any], *, repo_root: Path, target: str, dry_ru
     }
 
 
-def rollback_app(contract: dict[str, Any], *, repo_root: Path, target: str, dry_run: bool, execute: bool) -> dict[str, Any]:
+def rollback_app(
+    contract: dict[str, Any], *, repo_root: Path, target: str, dry_run: bool, execute: bool
+) -> dict[str, Any]:
     op_id = next_operation_id("rollback-app")
     rollback_entry = contract["rollback"]["previous_control_plane"]
     local_backend = _local_backend_type()
@@ -1189,9 +1234,13 @@ def rollback_app(contract: dict[str, Any], *, repo_root: Path, target: str, dry_
             "ok": True,
         }
     ssh_target = _target_ssh_target(repo_root, target)
-    transition_step = _control_plane_transition_step(repo_root, target=target, rollback_entry=rollback_entry, operate="start")
+    transition_step = _control_plane_transition_step(
+        repo_root, target=target, rollback_entry=rollback_entry, operate="start"
+    )
     commands = [
-        ssh_target.display_ssh_command(f"cd /opt/agentplane/infra/compose/{contract['app_id']} && docker compose -f {_remote_compose_filename(target)} down || true"),
+        ssh_target.display_ssh_command(
+            f"cd /opt/agentplane/infra/compose/{contract['app_id']} && docker compose -f {_remote_compose_filename(target)} down || true"
+        ),
         transition_step[1] if transition_step else None,
     ]
     commands = [command for command in commands if command]
@@ -1217,8 +1266,12 @@ def rollback_app(contract: dict[str, Any], *, repo_root: Path, target: str, dry_
         }
     steps = [
         (
-            ssh_target.local_ssh_args_for_shell(f"cd /opt/agentplane/infra/compose/{contract['app_id']} && docker compose -f {_remote_compose_filename(target)} down || true"),
-            ssh_target.display_ssh_command(f"cd /opt/agentplane/infra/compose/{contract['app_id']} && docker compose -f {_remote_compose_filename(target)} down || true"),
+            ssh_target.local_ssh_args_for_shell(
+                f"cd /opt/agentplane/infra/compose/{contract['app_id']} && docker compose -f {_remote_compose_filename(target)} down || true"
+            ),
+            ssh_target.display_ssh_command(
+                f"cd /opt/agentplane/infra/compose/{contract['app_id']} && docker compose -f {_remote_compose_filename(target)} down || true"
+            ),
         ),
     ]
     if transition_step:

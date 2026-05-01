@@ -16,16 +16,17 @@ from agentplane.domain import networks as network_domain
 from agentplane.runtime.host_profile import HostProfile
 from agentplane.runtime.platform import HostPlatform
 from agentplane.runtime.wsl_bridge import inspect_local_host
+from tests.support.cli import run_agentplane_cli as run_cli
+from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
 
-from tests.support.cli import run_agentplane_cli as run_cli
-from tests.support.paths import REPO_ROOT
 
 def write_fake_command(bin_dir: Path, name: str, body: str) -> None:
     script = bin_dir / name
     script.write_text(body, encoding="utf-8")
     script.chmod(0o755)
+
 
 def write_fake_bridge_network_ssh(bin_dir: Path) -> None:
     write_fake_command(
@@ -70,6 +71,7 @@ fi
 exit 0
 """,
     )
+
 
 class HostCliTests(unittest.TestCase):
     def test_infra_help_lists_network(self) -> None:
@@ -409,10 +411,18 @@ class HostCliTests(unittest.TestCase):
                         ),
                     }
                 if "ip -json -4 addr show dev br-66f7da1be943" in command:
-                    stdout = '[{"ifname":"br-66f7da1be943","addr_info":[{"local":"172.19.0.1","prefixlen":16}]}]' if state["gateway_present"] else '[{"ifname":"br-66f7da1be943","addr_info":[]}]'
+                    stdout = (
+                        '[{"ifname":"br-66f7da1be943","addr_info":[{"local":"172.19.0.1","prefixlen":16}]}]'
+                        if state["gateway_present"]
+                        else '[{"ifname":"br-66f7da1be943","addr_info":[]}]'
+                    )
                     return {"ok": True, "stdout": stdout}
                 if "ip -json route show 172.19.0.0/16" in command:
-                    stdout = '[{"dst":"172.19.0.0/16","dev":"br-66f7da1be943","prefsrc":"172.19.0.1"}]' if state["route_present"] else "[]"
+                    stdout = (
+                        '[{"dst":"172.19.0.0/16","dev":"br-66f7da1be943","prefsrc":"172.19.0.1"}]'
+                        if state["route_present"]
+                        else "[]"
+                    )
                     return {"ok": True, "stdout": stdout}
                 if "ip addr add 172.19.0.1/16 dev br-66f7da1be943" in command:
                     state["gateway_present"] = True
@@ -439,15 +449,18 @@ class HostCliTests(unittest.TestCase):
             self.assertEqual("prod0-main", payload["target"])
             self.assertTrue(payload["payload"]["ok"])
 
+
 # ======================================================================
 # From: test_local_host_cli.py
 # ======================================================================
+
 
 def run_cli_json(*args: str) -> dict:
     result = run_cli(*args)
     if result.returncode != 0:
         raise AssertionError(result.stderr)
     return json.loads(result.stdout)
+
 
 class LocalHostCliTests(unittest.TestCase):
     def test_windows_host_binds_wsl_to_same_checkout(self) -> None:
@@ -489,7 +502,9 @@ class LocalHostCliTests(unittest.TestCase):
         self.assertEqual("wsl-linux", payload["payload"]["linux_backend"]["backend_type"])
         self.assertEqual("windows", payload["payload"]["host_profile"]["os_name"])
         self.assertEqual("windows-wsl", payload["payload"]["host_profile"]["linux_backend"])
-        self.assertEqual("/mnt/c/repos/agentplane/.agentplane/staging", payload["payload"]["workspace"]["artifact_staging_root"])
+        self.assertEqual(
+            "/mnt/c/repos/agentplane/.agentplane/staging", payload["payload"]["workspace"]["artifact_staging_root"]
+        )
         self.assertTrue(payload["payload"]["workspace"]["source_root"].endswith("C:\\repos\\agentplane"))
         self.assertTrue(payload["payload"]["workspace"]["local_command_root"].endswith("C:\\repos\\agentplane"))
         self.assertEqual("canonical-ref-only", payload["payload"]["path_policy"]["truth"])
@@ -506,9 +521,11 @@ class LocalHostCliTests(unittest.TestCase):
         self.assertNotEqual(0, result.returncode)
         self.assertIn("invalid choice", result.stderr)
 
+
 # ======================================================================
 # From: test_remote_cli.py
 # ======================================================================
+
 
 def common_repo_root(repo_root: Path) -> Path:
     git_entry = repo_root / ".git"
@@ -524,15 +541,22 @@ def common_repo_root(repo_root: Path) -> Path:
                 return git_dir.parents[2]
     return repo_root
 
+
 MAIN_REPO_ROOT = common_repo_root(REPO_ROOT)
+
 
 def expected_ssh_stdin_argv(config_path: Path, remote_command: str) -> list[str]:
     if os.name == "nt":
         drive = config_path.drive.rstrip(":").lower()
-        tail = config_path.as_posix().split(":", 1)[1].lstrip("/") if config_path.drive else config_path.as_posix().lstrip("/")
+        tail = (
+            config_path.as_posix().split(":", 1)[1].lstrip("/")
+            if config_path.drive
+            else config_path.as_posix().lstrip("/")
+        )
         rendered_config = f"/mnt/{drive}/{tail}" if drive else config_path.as_posix()
         return ["wsl.exe", "-e", "ssh", "-T", "-F", rendered_config, "root@prod0-main", remote_command]
     return ["ssh", "-T", "-F", str(config_path), "root@prod0-main", remote_command]
+
 
 class RemoteCliTests(unittest.TestCase):
     def test_execute_remote_bash_uses_explicit_stdin_text(self) -> None:
@@ -554,7 +578,9 @@ class RemoteCliTests(unittest.TestCase):
                 stderr="",
             )
             stdin_mock = Mock()
-            stdin_mock.read.side_effect = AssertionError("sys.stdin.read should not be used when stdin_text is explicit")
+            stdin_mock.read.side_effect = AssertionError(
+                "sys.stdin.read should not be used when stdin_text is explicit"
+            )
 
             with (
                 patch("agentplane.runtime.execution.subprocess.run", return_value=completed) as run_mock,

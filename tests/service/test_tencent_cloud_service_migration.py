@@ -21,8 +21,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-
 from tests.support.paths import REPO_ROOT
+
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
@@ -43,8 +43,10 @@ def _run_script(script: Path, *args: str, stdin: str | None = None) -> subproces
     """Run a bash script with the given arguments."""
     import shutil
 
+    from agentplane.runtime.wsl_bridge import windows_path_to_wsl_posix
+
     bash = shutil.which("bash")
-    script_str = str(script).replace("\\", "/")
+    script_str = windows_path_to_wsl_posix(script) or str(script).replace("\\", "/")
     args_str = " ".join(f'"{a}"' for a in args)
     cmd = f'bash "{script_str}" {args_str}'
     return subprocess.run(
@@ -175,13 +177,23 @@ class TestDeployDataServicesRequiredFiles(unittest.TestCase):
             _write_inventory(root)
             for svc in ("postgres", "redis", "minio"):
                 (root / "infra" / "compose" / svc).mkdir(parents=True, exist_ok=True)
-            (root / "infra" / "compose" / "postgres" / "docker-compose.prod0.yml").write_text("services: {}\n", encoding="utf-8")
-            (root / "infra" / "compose" / "redis" / "docker-compose.prod0.yml").write_text("services: {}\n", encoding="utf-8")
-            (root / "infra" / "compose" / "minio" / "docker-compose.prod0.yml").write_text("services: {}\n", encoding="utf-8")
+            (root / "infra" / "compose" / "postgres" / "docker-compose.prod0.yml").write_text(
+                "services: {}\n", encoding="utf-8"
+            )
+            (root / "infra" / "compose" / "redis" / "docker-compose.prod0.yml").write_text(
+                "services: {}\n", encoding="utf-8"
+            )
+            (root / "infra" / "compose" / "minio" / "docker-compose.prod0.yml").write_text(
+                "services: {}\n", encoding="utf-8"
+            )
             (root / "secrets" / "services" / "redis").mkdir(parents=True, exist_ok=True)
-            (root / "secrets" / "services" / "redis" / "admin.prod0.conf").write_text("requirepass x\n", encoding="utf-8")
+            (root / "secrets" / "services" / "redis" / "admin.prod0.conf").write_text(
+                "requirepass x\n", encoding="utf-8"
+            )
             (root / "secrets" / "services" / "minio").mkdir(parents=True, exist_ok=True)
-            (root / "secrets" / "services" / "minio" / "admin.prod0.env").write_text("MINIO_ROOT_USER=x\n", encoding="utf-8")
+            (root / "secrets" / "services" / "minio" / "admin.prod0.env").write_text(
+                "MINIO_ROOT_USER=x\n", encoding="utf-8"
+            )
 
             # The script checks files relative to REPO_ROOT, so we need to
             # run it with the correct CWD.  Since deploy_data_services_to_host.sh

@@ -14,6 +14,7 @@ from tests.support.app_object import REPO_ROOT, run_cli, write_inventory_with_ap
 
 pytestmark = pytest.mark.e2e
 
+
 class AppObjectCliTests(unittest.TestCase):
     def test_app_catalog_module_exists_for_object_and_delivery_resolution(self) -> None:
         catalog = importlib.import_module("agentplane.domain.app.catalog")
@@ -104,11 +105,7 @@ class AppObjectCliTests(unittest.TestCase):
             app_root = root / "sub2api"
             (app_root / "deploy" / "agentplane").mkdir(parents=True, exist_ok=True)
             (app_root / "deploy" / "agentplane" / "contract.yaml").write_text(
-                json.dumps(
-                    {
-                        "docs": {"app_summary_files": {"prod0-main": "docs/AGENTPLANE_DEPLOYMENT.prod0-main.md"}}
-                    }
-                ),
+                json.dumps({"docs": {"app_summary_files": {"prod0-main": "docs/AGENTPLANE_DEPLOYMENT.prod0-main.md"}}}),
                 encoding="utf-8",
             )
             summary_file = app_root / "docs" / "AGENTPLANE_DEPLOYMENT.prod0-main.md"
@@ -422,11 +419,7 @@ class AppObjectCliTests(unittest.TestCase):
             app_root = root / "sub2api"
             (app_root / "deploy" / "agentplane").mkdir(parents=True, exist_ok=True)
             (app_root / "deploy" / "agentplane" / "contract.yaml").write_text(
-                json.dumps(
-                    {
-                        "docs": {"app_summary_files": {"prod0-main": "docs/AGENTPLANE_DEPLOYMENT.prod0-main.md"}}
-                    }
-                ),
+                json.dumps({"docs": {"app_summary_files": {"prod0-main": "docs/AGENTPLANE_DEPLOYMENT.prod0-main.md"}}}),
                 encoding="utf-8",
             )
             inventory_file = root / "inventory" / "servers" / "prod0-main" / "inventory.json"
@@ -466,11 +459,7 @@ class AppObjectCliTests(unittest.TestCase):
             app_root = root / "sub2api"
             (app_root / "deploy" / "agentplane").mkdir(parents=True, exist_ok=True)
             (app_root / "deploy" / "agentplane" / "contract.yaml").write_text(
-                json.dumps(
-                    {
-                        "docs": {"app_summary_files": {"prod0-main": "docs/AGENTPLANE_DEPLOYMENT.prod0-main.md"}}
-                    }
-                ),
+                json.dumps({"docs": {"app_summary_files": {"prod0-main": "docs/AGENTPLANE_DEPLOYMENT.prod0-main.md"}}}),
                 encoding="utf-8",
             )
             summary_file = app_root / "docs" / "AGENTPLANE_DEPLOYMENT.prod0-main.md"
@@ -548,8 +537,12 @@ class AppObjectCliTests(unittest.TestCase):
                 "inventory/servers/prod0-main/ledgers/apps.json",
                 payload_json["payload"]["inventory_pointer"],
             )
-            inventory = json.loads((root / "inventory" / "servers" / "prod0-main" / "inventory.json").read_text(encoding="utf-8"))
-            ledger = json.loads((root / "inventory" / "servers" / "prod0-main" / "ledgers" / "apps.json").read_text(encoding="utf-8"))
+            inventory = json.loads(
+                (root / "inventory" / "servers" / "prod0-main" / "inventory.json").read_text(encoding="utf-8")
+            )
+            ledger = json.loads(
+                (root / "inventory" / "servers" / "prod0-main" / "ledgers" / "apps.json").read_text(encoding="utf-8")
+            )
             self.assertEqual(
                 "inventory/servers/prod0-main/ledgers/apps.json",
                 inventory["object_ledgers"]["ledgers"]["apps"],
@@ -558,9 +551,11 @@ class AppObjectCliTests(unittest.TestCase):
             self.assertNotIn("resolved_path", ledger["items"][0])
             self.assertNotIn("contract_file", ledger["items"][0])
 
+
 # ======================================================================
 # From: test_app_object_repo_root_cli.py
 # ======================================================================
+
 
 class AppObjectRepoRootCliTests(unittest.TestCase):
     def test_app_object_search_prefers_explicit_app_repo_root_over_catalog_repo_root(self) -> None:
@@ -762,9 +757,7 @@ class AppObjectRepoRootCliTests(unittest.TestCase):
                                 "public_url": "https://token.example.net:8443",
                             }
                         },
-                        "object_ledgers": {
-                            "ledgers": {"apps": "inventory/servers/prod0-main/ledgers/apps.json"}
-                        },
+                        "object_ledgers": {"ledgers": {"apps": "inventory/servers/prod0-main/ledgers/apps.json"}},
                     },
                     ensure_ascii=False,
                     indent=2,
@@ -773,7 +766,9 @@ class AppObjectRepoRootCliTests(unittest.TestCase):
             )
             ledger_root = server_root / "ledgers"
             ledger_root.mkdir(parents=True, exist_ok=True)
-            (ledger_root / "apps.json").write_text(json.dumps({"count": 1}, ensure_ascii=False, indent=2), encoding="utf-8")
+            (ledger_root / "apps.json").write_text(
+                json.dumps({"count": 1}, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
             (ledger_root / "apps.md").write_text("# apps\n", encoding="utf-8")
             catalog_root = repo_root / "inventory" / "apps"
             catalog_root.mkdir(parents=True, exist_ok=True)
@@ -840,18 +835,22 @@ class AppObjectRepoRootCliTests(unittest.TestCase):
                 payload_json["payload"]["checks"]["summary_files"]["items"],
             )
 
+
 # ======================================================================
 # From: test_app_object_lifecycle.py
 # ======================================================================
+
 
 def _write_catalog(repo_root: Path, payload: dict) -> None:
     path = repo_root / "inventory" / "apps" / "catalog.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
+
 def _read_catalog(repo_root: Path) -> dict:
     path = repo_root / "inventory" / "apps" / "catalog.json"
     return json.loads(path.read_text(encoding="utf-8"))
+
 
 class AppObjectLifecycleCatalogTests(unittest.TestCase):
     def test_onboard_adds_entry_and_sorts_by_app_id(self) -> None:
@@ -926,9 +925,11 @@ class AppObjectLifecycleCatalogTests(unittest.TestCase):
             payload = _read_catalog(repo_root)
             self.assertEqual([], payload["apps"])
 
+
 # ======================================================================
 # From: test_app_object_tracked_catalog.py
 # ======================================================================
+
 
 class AppObjectTrackedCatalogTests(unittest.TestCase):
     def test_real_tracked_catalog_contains_sub2api(self) -> None:

@@ -13,4 +13,3 @@ class ServiceDefinition:
     supported_targets: tuple[str, ...]
     inventory_key: str | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
-

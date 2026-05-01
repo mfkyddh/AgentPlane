@@ -14,6 +14,7 @@ from agentplane.runtime.wsl_bridge import normalize_repo_root_for_current_host, 
 
 pytestmark = pytest.mark.integration
 
+
 def test_workspace_derives_wsl_root_from_windows_control_root_for_single_checkout() -> None:
     workspace = resolve_workspace(
         control_root=Path("C:/repos/agentplane"),
@@ -27,6 +28,7 @@ def test_workspace_derives_wsl_root_from_windows_control_root_for_single_checkou
     assert workspace.linux_backend_root.as_posix() == "/mnt/c/repos/agentplane"
     assert workspace.source_root.as_posix().endswith("repos/agentplane")
     assert workspace.local_command_root.as_posix().endswith("repos/agentplane")
+
 
 def test_workspace_from_repo_uses_common_root_for_private_materials(tmp_path: Path) -> None:
     main_root = tmp_path / "main"
@@ -49,6 +51,7 @@ def test_workspace_from_repo_uses_common_root_for_private_materials(tmp_path: Pa
     assert workspace.source_root == worktree_root
     assert workspace.local_command_root == worktree_root
 
+
 def test_workspace_from_windows_repo_binds_linux_backend_to_same_checkout() -> None:
     workspace = resolve_workspace_from_repo(Path("C:/repos/agentplane"))
 
@@ -57,12 +60,14 @@ def test_workspace_from_windows_repo_binds_linux_backend_to_same_checkout() -> N
     assert workspace.linux_backend_root is not None
     assert workspace.linux_backend_root.as_posix() == "/mnt/c/repos/agentplane"
 
+
 def test_workspace_accepts_windows_mounted_wsl_control_root() -> None:
     workspace = resolve_workspace(control_root=Path("/mnt/c/repos/agentplane"))
 
     assert workspace.control_root.as_posix() == "/mnt/c/repos/agentplane"
     assert workspace.linux_backend_root is not None
     assert workspace.linux_backend_root.as_posix() == "/mnt/c/repos/agentplane"
+
 
 def test_workspace_resolver_exposes_linux_staging_root_for_unc_control_root() -> None:
     workspace = resolve_workspace(
@@ -80,6 +85,7 @@ def test_workspace_resolver_exposes_linux_staging_root_for_unc_control_root() ->
     assert resolver.bindings.source_root.as_posix() == "/srv/control-plane/agentplane"
     assert resolver.bindings.local_command_root.as_posix() == "/srv/control-plane/agentplane"
 
+
 def test_secret_resolver_uses_main_repo_private_root_for_git_worktree(tmp_path: Path) -> None:
     main_root = tmp_path / "main"
     worktree_root = tmp_path / "worktree"
@@ -94,14 +100,17 @@ def test_secret_resolver_uses_main_repo_private_root_for_git_worktree(tmp_path: 
 
     assert secret_path == main_root / "secrets" / "ssh" / "config"
 
+
 # ======================================================================
 # From: test_workspace_path.py
 # ======================================================================
+
 
 def test_workspace_path_posix() -> None:
     ws = resolve_workspace(control_root=Path("/srv/agentplane"))
     wp = WorkspacePath(workspace=ws, canonical_ref="apps/sub2api/contract.yaml")
     assert wp.posix_path.as_posix() == "/srv/agentplane/apps/sub2api/contract.yaml"
+
 
 def test_workspace_path_windows() -> None:
     ws = resolve_workspace(control_root=Path("C:/repos/agentplane"))
@@ -111,11 +120,13 @@ def test_workspace_path_windows() -> None:
     assert wp.wsl_path is not None
     assert wp.wsl_path.as_posix() == "/mnt/c/repos/agentplane/apps/sub2api/contract.yaml"
 
+
 def test_workspace_path_linux_backend() -> None:
     ws = resolve_workspace(control_root=Path("C:/repos/agentplane"))
     wp = WorkspacePath(workspace=ws, canonical_ref="secrets/ssh/config")
     assert wp.linux_backend_path is not None
     assert wp.linux_backend_path.as_posix() == "/mnt/c/repos/agentplane/secrets/ssh/config"
+
 
 def test_workspace_path_joinpath() -> None:
     ws = resolve_workspace(control_root=Path("/srv/agentplane"))
@@ -123,16 +134,19 @@ def test_workspace_path_joinpath() -> None:
     child = wp.joinpath("contracts", "prod0-main.yaml")
     assert child.canonical_ref == "apps/sub2api/contracts/prod0-main.yaml"
 
+
 def test_workspace_path_with_suffix() -> None:
     ws = resolve_workspace(control_root=Path("/srv/agentplane"))
     wp = WorkspacePath(workspace=ws, canonical_ref="apps/sub2api/contract.yaml")
     changed = wp.with_suffix(".json")
     assert changed.canonical_ref == "apps/sub2api/contract.json"
 
+
 def test_workspace_path_from_physical() -> None:
     ws = resolve_workspace(control_root=Path("C:/repos/agentplane"))
     wp = WorkspacePath.from_physical(ws, "C:/repos/agentplane/infra/compose/redis")
     assert wp.canonical_ref == "infra/compose/redis"
+
 
 def test_workspace_path_payload() -> None:
     ws = resolve_workspace(control_root=Path("C:/repos/agentplane"))
@@ -143,9 +157,11 @@ def test_workspace_path_payload() -> None:
     assert str(payload["wsl_path"]).replace("\\", "/") == "/mnt/c/repos/agentplane/apps/sub2api"
     assert str(payload["linux_backend_path"]).replace("\\", "/") == "/mnt/c/repos/agentplane/apps/sub2api"
 
+
 # ======================================================================
 # From: test_target_expression.py
 # ======================================================================
+
 
 def test_resolve_many_returns_list() -> None:
     resolver = TargetResolver(HostProfile(os_name="windows", linux_backend="windows-wsl", supports_docker=True))
@@ -153,6 +169,7 @@ def test_resolve_many_returns_list() -> None:
     assert len(results) == 2
     assert results[0].is_local is True
     assert results[1].is_local is False
+
 
 def test_resolve_expression_all_returns_known_targets(tmp_path: Path) -> None:
     resolver = TargetResolver(HostProfile(os_name="windows", linux_backend="windows-wsl", supports_docker=True))
@@ -166,10 +183,12 @@ def test_resolve_expression_all_returns_known_targets(tmp_path: Path) -> None:
     results = resolver.resolve_expression("all", repo_root=tmp_path)
     assert [r.target for r in results] == ["wsl", "prod0-main"]
 
+
 def test_resolve_expression_comma_separated() -> None:
     resolver = TargetResolver(HostProfile(os_name="windows", linux_backend="windows-wsl", supports_docker=True))
     results = resolver.resolve_expression("wsl,prod0-main")
     assert [r.target for r in results] == ["wsl", "prod0-main"]
+
 
 def test_resolve_expression_wildcard(tmp_path: Path) -> None:
     resolver = TargetResolver(HostProfile(os_name="windows", linux_backend="windows-wsl", supports_docker=True))
@@ -180,6 +199,7 @@ def test_resolve_expression_wildcard(tmp_path: Path) -> None:
     results = resolver.resolve_expression("prod*", repo_root=tmp_path)
     assert [r.target for r in results] == ["prod0-main"]
 
+
 def test_resolve_expression_unknown_target_falls_back_to_literal() -> None:
     resolver = TargetResolver(HostProfile(os_name="windows", linux_backend="windows-wsl", supports_docker=True))
     results = resolver.resolve_expression("custom-target")
@@ -187,9 +207,11 @@ def test_resolve_expression_unknown_target_falls_back_to_literal() -> None:
     assert results[0].target == "custom-target"
     assert results[0].execution_backend == "ssh-linux"
 
+
 # ======================================================================
 # From: test_runtime_platform.py
 # ======================================================================
+
 
 def test_selects_wsl_linux_backend_for_windows_host() -> None:
     facts = HostPlatform(os_name="windows", has_wsl=True, is_wsl=False)
@@ -200,6 +222,7 @@ def test_selects_wsl_linux_backend_for_windows_host() -> None:
     assert backend.executable == ("wsl.exe", "-e")
     assert backend.shell_executable == ("wsl.exe", "-e", "bash", "-lc")
 
+
 def test_selects_native_backend_inside_wsl_linux() -> None:
     facts = HostPlatform(os_name="linux", has_wsl=True, is_wsl=True)
 
@@ -209,10 +232,12 @@ def test_selects_native_backend_inside_wsl_linux() -> None:
     assert backend.executable == ()
     assert backend.shell_executable == ("bash", "-lc")
 
+
 def test_windows_backend_prefers_direct_program_invocation_for_simple_commands() -> None:
     backend = select_linux_backend(HostPlatform(os_name="windows", has_wsl=True, is_wsl=False))
 
     assert backend.program_argv("python3", "--version") == ["wsl.exe", "-e", "python3", "--version"]
+
 
 def test_host_profile_maps_windows_host_to_windows_wsl_backend() -> None:
     profile = host_profile_from_platform(HostPlatform(os_name="windows", has_wsl=True, is_wsl=False))
@@ -221,12 +246,14 @@ def test_host_profile_maps_windows_host_to_windows_wsl_backend() -> None:
     assert profile.linux_backend == "windows-wsl"
     assert profile.supports_docker is True
 
+
 def test_host_profile_maps_wsl_linux_to_linux_native_backend() -> None:
     profile = host_profile_from_platform(HostPlatform(os_name="linux", has_wsl=True, is_wsl=True))
 
     assert profile.os_name == "linux"
     assert profile.linux_backend == "linux-native"
     assert profile.is_wsl is True
+
 
 def test_repo_root_normalization_keeps_windows_drive_path_on_windows_host() -> None:
     normalized = normalize_repo_root_for_current_host(
@@ -235,6 +262,7 @@ def test_repo_root_normalization_keeps_windows_drive_path_on_windows_host() -> N
     )
 
     assert str(normalized).replace("\\", "/") == "C:/repos/agentplane"
+
 
 def test_windows_path_to_wsl_posix_maps_drive_path_to_mnt_mount() -> None:
     assert windows_path_to_wsl_posix("C:/repos/agentplane") == "/mnt/c/repos/agentplane"

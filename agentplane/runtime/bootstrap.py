@@ -71,11 +71,7 @@ def _parse_ssh_config(text: str) -> dict[str, dict[str, str]]:
 def bootstrap_target_names(repo_root: Path) -> tuple[str, ...]:
     inventory_root = repo_root / "inventory" / "servers"
     targets = sorted(
-        {
-            path.parent.name
-            for path in inventory_root.glob("*/inventory.json")
-            if path.is_file()
-        },
+        {path.parent.name for path in inventory_root.glob("*/inventory.json") if path.is_file()},
         key=lambda value: (value != "wsl", value),
     )
     if not targets:

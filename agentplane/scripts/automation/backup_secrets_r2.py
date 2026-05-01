@@ -228,7 +228,7 @@ class R2Client:
         query_items = sorted((query or {}).items())
         canonical_query = urllib.parse.urlencode(query_items, quote_via=urllib.parse.quote, safe="")
         payload_hash = hashlib.sha256(body).hexdigest()
-        canonical_headers = f"host:{self.host}\n" f"x-amz-content-sha256:{payload_hash}\n" f"x-amz-date:{timestamp}\n"
+        canonical_headers = f"host:{self.host}\nx-amz-content-sha256:{payload_hash}\nx-amz-date:{timestamp}\n"
         canonical_request = "\n".join(
             [
                 method.upper(),
@@ -445,7 +445,12 @@ def ensure_onepanel_task(*, env_file: Path, trigger_now: bool = False) -> dict[s
     response = send_signed_request(config, "POST", path, body_bytes=json.dumps(payload).encode("utf-8"))
     if response.get("status") != 200 or response.get("body", {}).get("code") != 200:
         raise RuntimeError(f"failed to {operation} cronjob: {response}")
-    result: dict[str, Any] = {"operation": operation, "task_name": TASK_NAME, "spec": TASK_SPEC, "command": TASK_COMMAND}
+    result: dict[str, Any] = {
+        "operation": operation,
+        "task_name": TASK_NAME,
+        "spec": TASK_SPEC,
+        "command": TASK_COMMAND,
+    }
     if trigger_now:
         refreshed = _search_cronjobs(env_file, TASK_NAME)
         refreshed_items = refreshed.get("body", {}).get("data", {}).get("items") or []

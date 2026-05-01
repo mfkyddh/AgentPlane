@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+from typing import Any
 
 from agentplane.domain.app.models import AppCatalogEntry
 from agentplane.domain.app.resource_paths import (

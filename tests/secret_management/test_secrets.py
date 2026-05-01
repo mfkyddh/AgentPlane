@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import json
 import os
-import subprocess
-import sys
 import tempfile
 import unittest
 from datetime import datetime, timezone
@@ -17,6 +15,7 @@ from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
 
+
 def parse_env_text(content: str) -> dict[str, str]:
     values: dict[str, str] = {}
     for raw_line in content.splitlines():
@@ -26,6 +25,7 @@ def parse_env_text(content: str) -> dict[str, str]:
         key, value = line.split("=", 1)
         values[key] = value
     return values
+
 
 class SecretsCliTests(unittest.TestCase):
     def test_init_data_services_generates_target_scoped_random_secrets(self) -> None:
@@ -110,14 +110,35 @@ class SecretsCliTests(unittest.TestCase):
                 projected.read_text(encoding="utf-8"),
             )
 
+
 class SecretLayoutTests(unittest.TestCase):
     def test_compose_and_deploy_scripts_use_target_scoped_secret_paths(self) -> None:
         files_and_expected = {
-            REPO_ROOT / "infra" / "compose" / "postgres" / "docker-compose.wsl.yml": "secrets/services/postgres/admin.wsl.env",
-            REPO_ROOT / "infra" / "compose" / "redis" / "docker-compose.wsl.yml": "secrets/services/redis/admin.wsl.conf",
-            REPO_ROOT / "infra" / "compose" / "minio" / "docker-compose.wsl.yml": "secrets/services/minio/admin.wsl.env",
-            REPO_ROOT / "agentplane" / "scripts" / "remote" / "deploy_data_services_to_host.sh": "secrets/services/postgres/admin.${target_alias}.env",
-            REPO_ROOT / "agentplane" / "scripts" / "remote" / "remote_deploy_data_services.sh": 'postgres_env="${control_root}/secrets/services/postgres/admin.${target_alias}.env"',
+            REPO_ROOT
+            / "infra"
+            / "compose"
+            / "postgres"
+            / "docker-compose.wsl.yml": "secrets/services/postgres/admin.wsl.env",
+            REPO_ROOT
+            / "infra"
+            / "compose"
+            / "redis"
+            / "docker-compose.wsl.yml": "secrets/services/redis/admin.wsl.conf",
+            REPO_ROOT
+            / "infra"
+            / "compose"
+            / "minio"
+            / "docker-compose.wsl.yml": "secrets/services/minio/admin.wsl.env",
+            REPO_ROOT
+            / "agentplane"
+            / "scripts"
+            / "remote"
+            / "deploy_data_services_to_host.sh": "secrets/services/postgres/admin.${target_alias}.env",
+            REPO_ROOT
+            / "agentplane"
+            / "scripts"
+            / "remote"
+            / "remote_deploy_data_services.sh": 'postgres_env="${control_root}/secrets/services/postgres/admin.${target_alias}.env"',
         }
         for path, expected in files_and_expected.items():
             with self.subTest(path=str(path)):
@@ -196,13 +217,17 @@ class SecretLayoutTests(unittest.TestCase):
             with self.subTest(service=service):
                 content = path.read_text(encoding="utf-8").lower()
                 self.assertTrue(
-                    any(marker in content for marker in ("legacy", "transitional", "projection-only", "projection only")),
+                    any(
+                        marker in content for marker in ("legacy", "transitional", "projection-only", "projection only")
+                    ),
                     msg=f"flat template must be explicitly marked transitional or projection-only: {path}",
                 )
+
 
 # ======================================================================
 # From: test_secrets_backup_r2.py
 # ======================================================================
+
 
 class FakeR2Client:
     def __init__(self, existing: dict[str, bytes] | None = None, *, fail_put: bool = False) -> None:
@@ -220,17 +245,17 @@ class FakeR2Client:
 
     def list_objects(self, *, bucket: str, prefix: str) -> list[dict[str, object]]:
         return [
-            {"key": key, "size": len(value)}
-            for key, value in sorted(self.objects.items())
-            if key.startswith(prefix)
+            {"key": key, "size": len(value)} for key, value in sorted(self.objects.items()) if key.startswith(prefix)
         ]
 
     def delete_object(self, *, bucket: str, key: str) -> None:
         self.delete_calls.append(key)
         self.objects.pop(key, None)
 
+
 def fake_encrypt_file(input_path: Path, output_path: Path, password: str) -> None:
     output_path.write_bytes(input_path.read_bytes() + f":{password}".encode("utf-8"))
+
 
 class SecretsBackupR2Tests(unittest.TestCase):
     def _make_config(self, root: Path):
@@ -347,9 +372,7 @@ class SecretsBackupR2Tests(unittest.TestCase):
             self.assertEqual(1, len(client.put_calls))
             self.assertEqual(1, payload["deleted_old_backups"])
             self.assertEqual(
-                [
-                    "backups/agentplane/secrets-main/agentplane-secrets-20260320T000000Z-old000000001.tar.gz.enc"
-                ],
+                ["backups/agentplane/secrets-main/agentplane-secrets-20260320T000000Z-old000000001.tar.gz.enc"],
                 client.delete_calls,
             )
             self.assertEqual(5, len(client.objects))
@@ -377,9 +400,11 @@ class SecretsBackupR2Tests(unittest.TestCase):
             self.assertEqual([], list(config.tmp_dir.glob("*")))
             self.assertFalse(config.state_file.exists())
 
+
 # ======================================================================
 # From: test_secrets_host_layout.py
 # ======================================================================
+
 
 class SecretsHostLayoutTests(unittest.TestCase):
     def test_bootstrap_required_truth_specs_keep_takeover_truth_separate_from_projections(self) -> None:
@@ -419,8 +444,12 @@ class SecretsHostLayoutTests(unittest.TestCase):
 
             (host_root / "onepanel" / "api.env").write_text("ONEPANEL_API_KEY=demo\n", encoding="utf-8")
             (host_root / "infra" / "postgres" / "admin.env").write_text("POSTGRES_USER=postgres\n", encoding="utf-8")
-            (host_root / "apps" / "sampleapi" / "runtime.env").write_text("DATABASE_URL=postgres://demo\n", encoding="utf-8")
-            (host_root / "apps" / "sampleapi" / "tenants" / "postgres.env").write_text("PGDATABASE=sampleapi_prod0\n", encoding="utf-8")
+            (host_root / "apps" / "sampleapi" / "runtime.env").write_text(
+                "DATABASE_URL=postgres://demo\n", encoding="utf-8"
+            )
+            (host_root / "apps" / "sampleapi" / "tenants" / "postgres.env").write_text(
+                "PGDATABASE=sampleapi_prod0\n", encoding="utf-8"
+            )
 
             payload = materialize_legacy_host_layout(root, "prod0-main", write=True)
 

@@ -33,7 +33,8 @@ def managed_bridge_network_declaration_errors(inventory: dict[str, Any]) -> list
             errors.append(f"{prefix}.driver only supports bridge")
         required_for = item.get("required_for", [])
         if required_for is not None and (
-            not isinstance(required_for, list) or any(not isinstance(entry, str) or not entry.strip() for entry in required_for)
+            not isinstance(required_for, list)
+            or any(not isinstance(entry, str) or not entry.strip() for entry in required_for)
         ):
             errors.append(f"{prefix}.required_for must be a string list")
         subnet = item.get("subnet")

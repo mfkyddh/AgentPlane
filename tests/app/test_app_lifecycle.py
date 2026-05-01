@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import json
-import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -49,11 +47,10 @@ from agentplane.domain.app.secrets_lifecycle import (
     plan_secret_allocation,
     plan_secret_retirement,
 )
+from tests.support.cli import run_agentplane_cli as run_cli
 
 pytestmark = pytest.mark.e2e
 
-from tests.support.cli import run_agentplane_cli as run_cli
-from tests.support.paths import REPO_ROOT
 
 class AppLifecycleCliContractsTests(unittest.TestCase):
     def test_onboard_help_exposes_single_formal_entry_contract(self) -> None:
@@ -114,9 +111,11 @@ class AppLifecycleCliContractsTests(unittest.TestCase):
         self.assertIn("--dry-run", result.stderr)
         self.assertIn("--write", result.stderr)
 
+
 # ======================================================================
 # From: test_app_lifecycle_prod0_main.py
 # ======================================================================
+
 
 def test_onboarding_plan_enforces_prod0_target() -> None:
     plan = Prod0MainLifecyclePlan(
@@ -128,6 +127,7 @@ def test_onboarding_plan_enforces_prod0_target() -> None:
     with pytest.raises(ValueError, match="prod0-main lifecycle policy only applies to target"):
         Prod0MainLifecyclePolicy.validate_onboarding_plan(plan)
 
+
 def test_onboarding_plan_requires_safety_check() -> None:
     plan = Prod0MainLifecyclePlan(
         action="onboard",
@@ -137,6 +137,7 @@ def test_onboarding_plan_requires_safety_check() -> None:
     )
     with pytest.raises(ValueError, match="production safety check"):
         Prod0MainLifecyclePolicy.validate_onboarding_plan(plan)
+
 
 def test_onboarding_plan_allows_required_operations() -> None:
     plan = Prod0MainLifecyclePlan(
@@ -149,6 +150,7 @@ def test_onboarding_plan_allows_required_operations() -> None:
     )
     Prod0MainLifecyclePolicy.validate_onboarding_plan(plan)
 
+
 def test_offboarding_plan_must_dry_run() -> None:
     plan = Prod0MainLifecyclePlan(
         action="offboard",
@@ -158,6 +160,7 @@ def test_offboarding_plan_must_dry_run() -> None:
     )
     with pytest.raises(ValueError, match="offboarding plans must declare requires_dry_run"):
         Prod0MainLifecyclePolicy.validate_offboarding_plan(plan)
+
 
 def test_offboarding_plan_accepts_dry_run_flag() -> None:
     plan = Prod0MainLifecyclePlan(
@@ -169,15 +172,18 @@ def test_offboarding_plan_accepts_dry_run_flag() -> None:
     )
     Prod0MainLifecyclePolicy.validate_offboarding_plan(plan)
 
+
 def test_policy_helper_lists_constraints() -> None:
     summary = prod0_lane2_policy_helper()
     assert summary["target"] == "prod0-main"
     assert "zqf_network" in summary["allowed_networks"]
     assert "dry_run" in summary["offboarding_operations"]
 
+
 # ======================================================================
 # From: test_app_lifecycle_wsl.py
 # ======================================================================
+
 
 def test_onboarding_plan_requires_wsl_target() -> None:
     plan = WslLifecyclePlan(
@@ -188,6 +194,7 @@ def test_onboarding_plan_requires_wsl_target() -> None:
     )
     with pytest.raises(ValueError, match="WSL lifecycle policy only applies to the 'wsl' target"):
         WslLifecyclePolicy.validate_onboarding_plan(plan)
+
 
 def test_onboarding_plan_disallows_production_networks() -> None:
     plan = WslLifecyclePlan(
@@ -200,6 +207,7 @@ def test_onboarding_plan_disallows_production_networks() -> None:
     with pytest.raises(ValueError, match="production networks"):
         WslLifecyclePolicy.validate_onboarding_plan(plan)
 
+
 def test_onboarding_plan_requires_local_service_key_prefix() -> None:
     plan = WslLifecyclePlan(
         action="onboard",
@@ -210,6 +218,7 @@ def test_onboarding_plan_requires_local_service_key_prefix() -> None:
     )
     with pytest.raises(ValueError, match="service_key"):
         WslLifecyclePolicy.validate_onboarding_plan(plan)
+
 
 def test_offboarding_plan_requires_explicit_dry_run() -> None:
     plan = WslLifecyclePlan(
@@ -224,11 +233,13 @@ def test_offboarding_plan_requires_explicit_dry_run() -> None:
     with pytest.raises(ValueError, match="dry_run"):
         WslLifecyclePolicy.validate_offboarding_plan(plan)
 
+
 def test_lane2_policy_helper_describes_detailed_constraints() -> None:
     summary = wsl_lane2_policy_helper()
     assert summary["target"] == "wsl"
     assert "dry_run" in summary["offboarding_operations"]
     assert "zqf_network" in summary["forbidden_networks"]
+
 
 # ======================================================================
 # From: test_app_lifecycle_secrets.py
@@ -236,6 +247,7 @@ def test_lane2_policy_helper_describes_detailed_constraints() -> None:
 
 TARGET = "prod0-main"
 APP = "phase5"
+
 
 def _write_catalog(root: Path) -> None:
     catalog_dir = root / "inventory" / "apps"
@@ -251,7 +263,10 @@ def _write_catalog(root: Path) -> None:
             }
         ]
     }
-    (catalog_dir / "catalog.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (catalog_dir / "catalog.json").write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+
 
 def _write_registry(root: Path) -> None:
     server_dir = root / "inventory" / "servers" / TARGET
@@ -271,6 +286,7 @@ def _write_registry(root: Path) -> None:
         }
     }
     (server_dir / "app-resources.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
 
 class SecretLifecycleTests(unittest.TestCase):
     def test_allocate_and_retire_lifecycle(self) -> None:
@@ -330,9 +346,11 @@ class SecretLifecycleTests(unittest.TestCase):
                 ],
             )
 
+
 # ======================================================================
 # From: test_app_lifecycle_projection.py
 # ======================================================================
+
 
 class ProjectionLifecyclePlanTests(unittest.TestCase):
     def test_onboarding_default_plan_sequence(self) -> None:

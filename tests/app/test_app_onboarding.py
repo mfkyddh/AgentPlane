@@ -1,18 +1,17 @@
 from __future__ import annotations
 
 import json
-import os
-import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 import pytest
 from agentplane.domain.app.resource_paths import app_resource_secret_dir, app_resource_secret_relative
+from tests.support.cli import run_agentplane_cli as run_cli
 from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
+
 
 class AppOnboardingStandardTests(unittest.TestCase):
     def test_reference_docs_for_app_onboarding_governance_exist(self) -> None:
@@ -32,7 +31,9 @@ class AppOnboardingStandardTests(unittest.TestCase):
 
         self.assertIn("[repository-structure.md](../reference/repository-structure.md)", architecture_index_text)
         self.assertIn("[app-repository-standard.md](../reference/app-repository-standard.md)", architecture_index_text)
-        self.assertIn("[control-plane-naming-registry.md](../reference/control-plane-naming-registry.md)", architecture_index_text)
+        self.assertIn(
+            "[control-plane-naming-registry.md](../reference/control-plane-naming-registry.md)", architecture_index_text
+        )
 
     def test_readme_prefers_bootstrap_first_startup_path(self) -> None:
         text = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
@@ -62,7 +63,7 @@ class AppOnboardingStandardTests(unittest.TestCase):
         text = script_path.read_text(encoding="utf-8")
 
         self.assertIn("uv run python -m pytest", text)
-        self.assertIn("-m \"unit or integration\"", text)
+        self.assertIn('-m "unit or integration"', text)
         self.assertNotIn("UV_PROJECT_ENVIRONMENT", text)
 
     def test_repo_ignores_only_the_single_default_venv(self) -> None:
@@ -87,18 +88,14 @@ class AppOnboardingStandardTests(unittest.TestCase):
                 self.assertIn(heading, text)
 
     def test_app_collaboration_doc_calls_out_upstream_and_rollback_state(self) -> None:
-        text = (REPO_ROOT / "docs" / "architecture" / "agentplane-app-collaboration.md").read_text(
-            encoding="utf-8"
-        )
+        text = (REPO_ROOT / "docs" / "architecture" / "agentplane-app-collaboration.md").read_text(encoding="utf-8")
         self.assertIn("`origin` 指向你自己的可写仓库", text)
         self.assertIn("`upstream` 指向官方只读源", text)
         self.assertIn("发布前先创建回滚态", text)
         self.assertIn("回滚态", text)
 
     def test_app_delivery_runbook_makes_validate_contract_the_pre_deploy_gate(self) -> None:
-        text = (REPO_ROOT / "docs" / "runbooks" / "app-project-delivery-workflow.md").read_text(
-            encoding="utf-8"
-        )
+        text = (REPO_ROOT / "docs" / "runbooks" / "app-project-delivery-workflow.md").read_text(encoding="utf-8")
 
         self.assertIn("这是应用接入不变量的最早正式门禁", text)
         self.assertIn(
@@ -118,47 +115,53 @@ class AppOnboardingStandardTests(unittest.TestCase):
         text = (REPO_ROOT / "docs" / "reference" / "app-repository-standard.md").read_text(encoding="utf-8")
 
         self.assertIn("如果 target 之间入口、依赖或回退面不同，一开始就提供 target-aware 合同与摘要文件", text)
-        self.assertIn("真实 app resource secrets 从首轮接入开始就固定放在 `secrets/hosts/<target>/apps/<app>/resources/`", text)
+        self.assertIn(
+            "真实 app resource secrets 从首轮接入开始就固定放在 `secrets/hosts/<target>/apps/<app>/resources/`", text
+        )
         self.assertIn("不为新接入项目再落一份 `secrets/app-resources/<target>/<app>/` 实体文件", text)
         self.assertIn("最终验收必须回到 catalog 指向的正式仓库根执行", text)
 
     def test_app_delivery_workflow_records_second_app_preflight_checks(self) -> None:
-        text = (REPO_ROOT / "docs" / "runbooks" / "app-project-delivery-workflow.md").read_text(
-            encoding="utf-8"
-        )
+        text = (REPO_ROOT / "docs" / "runbooks" / "app-project-delivery-workflow.md").read_text(encoding="utf-8")
 
         self.assertIn("### 4.6 第二个应用接入前的预检", text)
         self.assertIn("`--app-repo-root` 只用于临时 worktree 验证", text)
         self.assertIn("最终验收必须回到 catalog 指向的正式仓库根", text)
-        self.assertIn("`deploy/agentplane/contract*.yaml`、`docs/AGENTPLANE_DEPLOYMENT.*.md`、`inventory/servers/<target>/...` 与 `secrets/hosts/<target>/...` 必须在同一轮变更里收口", text)
-        self.assertIn("退役旧控制面时，不只删脚本和文案，还要删除 `secrets/app-resources/<target>/<app>/*.env` 实体旧文件", text)
+        self.assertIn(
+            "`deploy/agentplane/contract*.yaml`、`docs/AGENTPLANE_DEPLOYMENT.*.md`、`inventory/servers/<target>/...` 与 `secrets/hosts/<target>/...` 必须在同一轮变更里收口",
+            text,
+        )
+        self.assertIn(
+            "退役旧控制面时，不只删脚本和文案，还要删除 `secrets/app-resources/<target>/<app>/*.env` 实体旧文件", text
+        )
 
     def test_authoring_rules_prefer_active_docs_over_historical_specs(self) -> None:
-        text = (REPO_ROOT / "docs" / "maintainers" / "control-plane-authoring.md").read_text(
-            encoding="utf-8"
-        )
+        text = (REPO_ROOT / "docs" / "maintainers" / "control-plane-authoring.md").read_text(encoding="utf-8")
 
         self.assertIn("active docs 与现行 code/test 优先于历史 spec、plan、handoff", text)
         self.assertIn("不要把历史设计稿中的旧路径、旧文案、旧 rollback 形态重新抄回 active docs", text)
+
 
 # ======================================================================
 # From: test_project_lifecycle_acceptance.py
 # ======================================================================
 
-from tests.support.cli import run_agentplane_cli as run_cli
 
 def _write_text(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
 
+
 def _write_json(path: Path, payload: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
 
 def _target_contract_relpath(target: str) -> str:
     if target == "wsl":
         return "deploy/agentplane/contract.wsl.yaml"
     return "deploy/agentplane/contract.yaml"
+
 
 def _target_fixture_profile(target: str) -> dict[str, str]:
     if target == "wsl":
@@ -182,6 +185,7 @@ def _target_fixture_profile(target: str) -> dict[str, str]:
         "data_suffix": data_suffix,
         "public_url": "https://{app_id}.example.invalid:8443",
     }
+
 
 def _fixture_contract(app_id: str, *, target: str) -> dict[str, object]:
     # Keep the contract minimal but still passing validate_contract() and runtime-env projection checks.
@@ -226,6 +230,7 @@ def _fixture_contract(app_id: str, *, target: str) -> dict[str, object]:
             "public_sites": [{"alias": app_id, "public_url": profile["public_url"].format(app_id=app_id)}],
         },
     }
+
 
 def _write_minimal_repo_fixture(root: Path, *, app_id: str, target: str) -> Path:
     profile = _target_fixture_profile(target)
@@ -294,7 +299,7 @@ def _write_minimal_repo_fixture(root: Path, *, app_id: str, target: str) -> Path
                         "status": "Running",
                     }
                 ],
-            }
+            },
         },
     )
 
@@ -359,6 +364,7 @@ def _write_minimal_repo_fixture(root: Path, *, app_id: str, target: str) -> Path
     (root / "inventory" / "servers" / target / "ledgers").mkdir(parents=True, exist_ok=True)
     return contract_file
 
+
 class ProjectLifecycleAcceptanceTests(unittest.TestCase):
     def test_onboarding_dry_run_acceptance_cross_domain(self) -> None:
         app_id = "sub2api"
@@ -385,14 +391,27 @@ class ProjectLifecycleAcceptanceTests(unittest.TestCase):
             websites = json.loads(result.stdout)["payload"]["items"]
             self.assertEqual([app_id], [item["alias"] for item in websites])
 
-            result = run_cli("service", "plan", "--target", target, "--name", app_id, "--operation", "reconcile", "--repo-root", str(root))
+            result = run_cli(
+                "service",
+                "plan",
+                "--target",
+                target,
+                "--name",
+                app_id,
+                "--operation",
+                "reconcile",
+                "--repo-root",
+                str(root),
+            )
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             service_plan = json.loads(result.stdout)["payload"]
             handoff_steps = service_plan["projection_handoff"]["steps"]
             self.assertTrue(any(step.get("action") == "ledger.refresh" for step in handoff_steps))
             self.assertTrue(any(step.get("action") == "runtime-env.verify" for step in handoff_steps))
 
-            result = run_cli("projection", "runtime-env", "plan", "--target", target, "--app", app_id, "--repo-root", str(root))
+            result = run_cli(
+                "projection", "runtime-env", "plan", "--target", target, "--app", app_id, "--repo-root", str(root)
+            )
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             projection_payload = json.loads(result.stdout)
             self.assertTrue(projection_payload.get("ok"), msg=projection_payload)
@@ -455,5 +474,7 @@ class ProjectLifecycleAcceptanceTests(unittest.TestCase):
             self.assertIn("app.delivery.offboard.catalog", actions)
             self.assertIn("app.delivery.offboard.runtime-env", actions)
             self.assertIn("app.delivery.offboard.doc-sync", actions)
-            doc_step = next(step for step in offboard_payload["steps"] if step["action"] == "app.delivery.offboard.doc-sync")
+            doc_step = next(
+                step for step in offboard_payload["steps"] if step["action"] == "app.delivery.offboard.doc-sync"
+            )
             self.assertTrue(doc_step["payload"]["planned"])

@@ -11,10 +11,9 @@ from agentplane.domain.infra.live_gate import (
 )
 from agentplane.runtime.host_profile import HostProfile
 from agentplane.runtime.platform import HostPlatform
+from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.integration
-
-from tests.support.paths import REPO_ROOT
 
 
 class RecordingRunner:
@@ -224,4 +223,3 @@ def test_run_step_with_backend_resolves_backend_from_host_profile(monkeypatch) -
     )
     _run_step_with_backend(step)
     assert captured["backend_type"] == "macos-lima"
-

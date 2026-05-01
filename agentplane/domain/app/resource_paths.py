@@ -96,7 +96,9 @@ def _append_candidate(candidates: list[Path], candidate: Path | None) -> None:
         candidates.append(candidate)
 
 
-def _catalog_repo_candidates(workspace_control_root: Path, linux_backend_root: Path | None, *, repo_name: str) -> list[Path]:
+def _catalog_repo_candidates(
+    workspace_control_root: Path, linux_backend_root: Path | None, *, repo_name: str
+) -> list[Path]:
     candidates: list[Path] = []
     _append_candidate(candidates, workspace_control_root.parent / repo_name)
 

@@ -211,7 +211,8 @@ def _resolve_contract_source(
         resolved_contract = (
             (resolved_app_root / contract_path).resolve()
             if contract_path and not Path(contract_path).is_absolute()
-            else Path(contract_path).resolve() if contract_path
+            else Path(contract_path).resolve()
+            if contract_path
             else (resolved_app_root / "deploy" / "agentplane" / "contract.yaml").resolve()
         )
         if not resolved_contract.is_file():
@@ -453,8 +454,14 @@ def _target_policy_summary(repo_root: Path, *, target: str) -> dict[str, Any]:
     return {"target": target}
 
 
-def _planned_post_actions(validated: ValidatedDeliveryContract, *, target: str, write: bool, intent: str) -> dict[str, Any]:
-    projection_plan = default_onboarding_plan(dry_run=not write) if intent == "onboard" else default_offboarding_plan(dry_run=not write)
+def _planned_post_actions(
+    validated: ValidatedDeliveryContract, *, target: str, write: bool, intent: str
+) -> dict[str, Any]:
+    projection_plan = (
+        default_onboarding_plan(dry_run=not write)
+        if intent == "onboard"
+        else default_offboarding_plan(dry_run=not write)
+    )
     return {
         "ok": True,
         "write": write,
@@ -504,7 +511,9 @@ def run_delivery_post_actions(
 
     try:
         projection_payload = (
-            apply_runtime_env_projection(repo_root, target, app) if write else plan_runtime_env_projection(repo_root, target, app)
+            apply_runtime_env_projection(repo_root, target, app)
+            if write
+            else plan_runtime_env_projection(repo_root, target, app)
         )
     except (FileNotFoundError, ValueError) as exc:
         projection_payload = {
@@ -536,7 +545,9 @@ def run_delivery_post_actions(
                     "payload": inventory_payload,
                 }
             )
-            doc_payload = app_cli.doc_sync(repo_root=repo_root, target=target, contract_paths=[contract_file], write=write)
+            doc_payload = app_cli.doc_sync(
+                repo_root=repo_root, target=target, contract_paths=[contract_file], write=write
+            )
             steps.append(
                 {
                     "action": "app.delivery.doc-sync",
@@ -575,7 +586,11 @@ def run_delivery_post_actions(
             action=evidence_action,
             target=target,
             dry_run=not write,
-            operation={"op_id": evidence_op_id, "target": target, "result": "post-actions-synced" if ok else "post-actions-failed"},
+            operation={
+                "op_id": evidence_op_id,
+                "target": target,
+                "result": "post-actions-synced" if ok else "post-actions-failed",
+            },
             details=details,
         )
         evidence = {"ledger_file": operation["ledger_file"], "operation": operation}
@@ -607,7 +622,9 @@ def _catalog_step_payload(result: CatalogMutationResult) -> dict[str, Any]:
 def _plan_service_step(repo_root: Path, *, target: str, service_key: str, entry: dict[str, Any]) -> dict[str, Any]:
     inventory_payload = load_json_file(repo_root / "inventory" / "servers" / target / "inventory.json")
     services = inventory_payload.get("services")
-    next_services, evidence = plan_service_registry_onboard(services, service_key=service_key, entry=entry, allow_replace=True)
+    next_services, evidence = plan_service_registry_onboard(
+        services, service_key=service_key, entry=entry, allow_replace=True
+    )
     return {"services_after": sorted(next_services), "evidence": evidence}
 
 
@@ -618,7 +635,10 @@ def _plan_service_removal_step(repo_root: Path, *, target: str, service_key: str
         next_services, evidence = plan_service_registry_offboard(services, service_key=service_key)
         return {"services_after": sorted(next_services), "evidence": evidence, "present": True}
     except ValueError:
-        return {"services_after": sorted((services or {}).keys()) if isinstance(services, dict) else [], "present": False}
+        return {
+            "services_after": sorted((services or {}).keys()) if isinstance(services, dict) else [],
+            "present": False,
+        }
 
 
 def onboard_delivery_for_app(
@@ -703,7 +723,9 @@ def onboard_delivery_for_app(
         )
     )
 
-    secret_files = _secret_files_from_registry_entry(next_registry.get(validated.app), target=target, app=validated.app, tenant_resources=tenant_resources)
+    secret_files = _secret_files_from_registry_entry(
+        next_registry.get(validated.app), target=target, app=validated.app, tenant_resources=tenant_resources
+    )
     if write_mode:
         try:
             secret_payload = apply_secret_allocation(repo_root, target, validated.app, execute=True)
@@ -911,7 +933,9 @@ def offboard_delivery_for_app(
     current_registry = _load_resource_registry(repo_root, target)
     next_registry, registry_evidence = plan_app_resource_registry_offboard(current_registry, app_id=validated.app)
     registry_changed = next_registry != current_registry
-    secret_files = _secret_files_from_registry_entry(current_registry.get(validated.app), target=target, app=validated.app)
+    secret_files = _secret_files_from_registry_entry(
+        current_registry.get(validated.app), target=target, app=validated.app
+    )
     if write_mode and registry_changed:
         _write_resource_registry(registry_path, next_registry)
     steps.append(

@@ -29,16 +29,16 @@ from agentplane.scripts.onepanel.fixture_manager import (
     resolve_suite_targets,
 )
 from agentplane.scripts.onepanel.verification import run_verification_suite
+from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
-
-from tests.support.paths import REPO_ROOT
 
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 ONEPANEL_SCRIPTS = REPO_ROOT / "agentplane" / "scripts" / "onepanel"
 if str(ONEPANEL_SCRIPTS) not in sys.path:
     sys.path.insert(0, str(ONEPANEL_SCRIPTS))
+
 
 class FakeCloudflareClient(public_ingress.CloudflareClient):
     def __init__(self, responses: list[dict[str, object]]) -> None:
@@ -56,6 +56,7 @@ class FakeCloudflareClient(public_ingress.CloudflareClient):
     ) -> dict[str, object]:
         self.calls.append((method, path, query, body))
         return self.responses.pop(0)
+
 
 class FakePanelExecutor:
     def __init__(self) -> None:
@@ -99,6 +100,7 @@ class FakePanelExecutor:
                 "SSL": {"id": 3},
             }
         raise AssertionError(f"Unexpected request: {method} {path}")
+
 
 class CreatingPanelExecutor(FakePanelExecutor):
     def __init__(self) -> None:
@@ -148,6 +150,7 @@ class CreatingPanelExecutor(FakePanelExecutor):
                 "SSL": {"id": 3},
             }
         raise AssertionError(f"Unexpected request: {method} {path}")
+
 
 class OnePanelPublicIngressTests(unittest.TestCase):
     def test_load_shell_env_file_supports_export_prefix(self) -> None:
@@ -200,7 +203,15 @@ class OnePanelPublicIngressTests(unittest.TestCase):
             [
                 {"success": True, "result": [{"id": "zone-1"}]},
                 {"success": True, "result": []},
-                {"success": True, "result": {"id": "record-1", "name": "1panel.example.org", "content": "198.51.100.20", "proxied": True}},
+                {
+                    "success": True,
+                    "result": {
+                        "id": "record-1",
+                        "name": "1panel.example.org",
+                        "content": "198.51.100.20",
+                        "proxied": True,
+                    },
+                },
             ]
         )
 
@@ -363,15 +374,19 @@ class OnePanelPublicIngressTests(unittest.TestCase):
 
         result = manager.ensure()
 
-        create_request = next(body for method, path, body in panel.requests if method == "POST" and path == "/api/v2/websites")
+        create_request = next(
+            body for method, path, body in panel.requests if method == "POST" and path == "/api/v2/websites"
+        )
         self.assertEqual("new", create_request["appType"])
         self.assertEqual("proxy", create_request["type"])
         self.assertEqual([{"domain": "token.example.org", "port": 80, "ssl": False}], create_request["domains"])
         self.assertEqual(5, result["ingress"]["id"])
 
+
 # ======================================================================
 # From: test_onepanel_compose_policy.py
 # ======================================================================
+
 
 class ComposePolicyTests(unittest.TestCase):
     def test_openresty_requires_infra_network_mode(self) -> None:
@@ -443,9 +458,11 @@ services:
         self.assertIn("zqf_network", rendered)
         self.assertNotIn("network_mode: host", rendered)
 
+
 # ======================================================================
 # From: test_onepanel_env_targets.py
 # ======================================================================
+
 
 class OnePanelEnvTargetsTests(unittest.TestCase):
     def _run_cli(self, *args: str) -> subprocess.CompletedProcess[str]:
@@ -581,9 +598,11 @@ class OnePanelEnvTargetsTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("requires --execute", result.stderr)
 
+
 # ======================================================================
 # From: test_onepanel_fixture_manager.py
 # ======================================================================
+
 
 class FakeFixtureExecutor:
     def __init__(self) -> None:
@@ -669,6 +688,7 @@ class FakeFixtureExecutor:
             return {"ok": True}
         raise AssertionError(f"Unexpected request: {method} {path} {body}")
 
+
 class OnePanelFixtureManagerTests(unittest.TestCase):
     def test_resolve_suite_targets_uses_wsl_fixture_defaults(self) -> None:
         targets = resolve_suite_targets(profile="wsl-fixture", env="wsl")
@@ -717,9 +737,11 @@ class OnePanelFixtureManagerTests(unittest.TestCase):
         self.assertIsNone(executor.project)
         self.assertEqual("Disable", executor.cronjob["status"])
 
+
 # ======================================================================
 # From: test_onepanel_verification_suite.py
 # ======================================================================
+
 
 class FakeExecutor:
     def __init__(self) -> None:
@@ -756,6 +778,7 @@ class FakeExecutor:
             return {"executing": 0}
         raise AssertionError(f"Unexpected request: {method} {path} {body}")
 
+
 class ComposeSearchFailExecutor(FakeExecutor):
     def api_request(self, method: str, path: str, body: dict[str, object] | None = None) -> object:
         if path == "/api/v2/containers/compose/search":
@@ -766,6 +789,7 @@ class ComposeSearchFailExecutor(FakeExecutor):
             return {"id": 9, "name": "sub2api", "status": "Running"}
         return super().api_request(method, path, body)
 
+
 class CronjobByNameExecutor(FakeExecutor):
     def api_request(self, method: str, path: str, body: dict[str, object] | None = None) -> object:
         if path == "/api/v2/cronjobs/search":
@@ -774,6 +798,7 @@ class CronjobByNameExecutor(FakeExecutor):
             assert body is not None
             return {"id": int(body["id"]), "status": "Enable"}
         return super().api_request(method, path, body)
+
 
 class OnePanelVerificationSuiteTests(unittest.TestCase):
     def test_wsl_fixture_profile_runs_expected_checks(self) -> None:
@@ -811,8 +836,14 @@ class OnePanelVerificationSuiteTests(unittest.TestCase):
             )
 
             report = payload["report"]
-            self.assertTrue((root / "inventory" / "servers" / "prod0-main" / "ledgers" / "verification-prod0-readonly.json").is_file())
-            self.assertTrue((root / "inventory" / "servers" / "prod0-main" / "ledgers" / "verification-prod0-readonly.md").is_file())
+            self.assertTrue(
+                (
+                    root / "inventory" / "servers" / "prod0-main" / "ledgers" / "verification-prod0-readonly.json"
+                ).is_file()
+            )
+            self.assertTrue(
+                (root / "inventory" / "servers" / "prod0-main" / "ledgers" / "verification-prod0-readonly.md").is_file()
+            )
             self.assertEqual("prod0-readonly", report["profile"])
             self.assertEqual("raw-panel-api-key", payload["checks"][0]["payload"]["apiKey"])
             self.assertEqual("raw-proxy-password", payload["checks"][0]["payload"]["proxyPasswd"])
@@ -852,8 +883,14 @@ class OnePanelVerificationSuiteTests(unittest.TestCase):
                 checks["project"]["payload"]["error"]["message"],
             )
             self.assertTrue(checks["app"]["ok"])
-            self.assertTrue((root / "inventory" / "servers" / "prod0-main" / "ledgers" / "verification-prod2-readonly.json").is_file())
-            self.assertTrue((root / "inventory" / "servers" / "prod0-main" / "ledgers" / "verification-prod2-readonly.md").is_file())
+            self.assertTrue(
+                (
+                    root / "inventory" / "servers" / "prod0-main" / "ledgers" / "verification-prod2-readonly.json"
+                ).is_file()
+            )
+            self.assertTrue(
+                (root / "inventory" / "servers" / "prod0-main" / "ledgers" / "verification-prod2-readonly.md").is_file()
+            )
 
     def test_suite_can_resolve_cronjob_by_name(self) -> None:
         executor = CronjobByNameExecutor()

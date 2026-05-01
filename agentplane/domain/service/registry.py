@@ -79,7 +79,9 @@ def _wsl_service_names(inventory: dict[str, Any]) -> set[str]:
     return names
 
 
-def service_inventory_entry(inventory: dict[str, Any], definition: ServiceDefinition, *, target: str) -> dict[str, Any] | None:
+def service_inventory_entry(
+    inventory: dict[str, Any], definition: ServiceDefinition, *, target: str
+) -> dict[str, Any] | None:
     services = inventory.get("services")
     if isinstance(services, dict):
         raw = services.get(definition.inventory_key or definition.name)
@@ -117,7 +119,9 @@ def _dynamic_service_definition(name: str, declared: dict[str, Any], *, target: 
     )
 
 
-def _dynamic_services_for_target(inventory: dict[str, Any], *, target: str) -> list[tuple[ServiceDefinition, dict[str, Any]]]:
+def _dynamic_services_for_target(
+    inventory: dict[str, Any], *, target: str
+) -> list[tuple[ServiceDefinition, dict[str, Any]]]:
     services = inventory.get("services")
     if not isinstance(services, dict):
         return []

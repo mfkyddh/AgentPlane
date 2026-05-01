@@ -66,7 +66,9 @@ def _service_canonical_ref(target: str, name: str) -> str:
     return assert_canonical_ref(f"targets/{target}/services/{name}")
 
 
-def _service_ledger_fields(definition: ServiceDefinition, declared: dict[str, Any] | None, *, target: str) -> dict[str, Any]:
+def _service_ledger_fields(
+    definition: ServiceDefinition, declared: dict[str, Any] | None, *, target: str
+) -> dict[str, Any]:
     return {
         "target": target,
         **_service_summary(definition, declared),
@@ -126,7 +128,9 @@ def verify_service(repo_root: Path, target: str, name: str) -> dict[str, Any]:
     return wrapped
 
 
-def _plan_steps(repo_root: Path, target: str, definition: ServiceDefinition, declared: dict[str, Any] | None, operation: str) -> list[dict[str, object]]:
+def _plan_steps(
+    repo_root: Path, target: str, definition: ServiceDefinition, declared: dict[str, Any] | None, operation: str
+) -> list[dict[str, object]]:
     if operation not in definition.supported_operations:
         raise ValueError(f"unsupported operation for {definition.name}: {operation}")
     if definition.runtime_kind == "docker":
@@ -153,7 +157,9 @@ def plan_service_operation(repo_root: Path, target: str, name: str, operation: s
     }
 
 
-def apply_service_operation(repo_root: Path, target: str, name: str, operation: str, *, execute: bool) -> dict[str, Any]:
+def apply_service_operation(
+    repo_root: Path, target: str, name: str, operation: str, *, execute: bool
+) -> dict[str, Any]:
     if not execute:
         raise ValueError("service apply requires --execute")
 

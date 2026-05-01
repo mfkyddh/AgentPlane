@@ -123,7 +123,9 @@ def check_skill_surface(repo_root: Path) -> list[SkillIssue]:
     names = [str(entry.get("name", "")) for entry in entries]
     duplicate_names = sorted({name for name in names if names.count(name) > 1})
     for name in duplicate_names:
-        issues.append(SkillIssue(path=_relative(root, catalog_path), kind="duplicate-skill", detail=f"duplicate skill: {name}"))
+        issues.append(
+            SkillIssue(path=_relative(root, catalog_path), kind="duplicate-skill", detail=f"duplicate skill: {name}")
+        )
 
     catalog_by_name = {str(entry.get("name")): entry for entry in entries if entry.get("name")}
     tracked_paths = _git_tracked_skill_paths(root)
@@ -153,12 +155,22 @@ def check_skill_surface(repo_root: Path) -> list[SkillIssue]:
         source_path = str(entry.get("source_path", ""))
         skill_path = root / source_path
         if not source_path:
-            issues.append(SkillIssue(path=_relative(root, catalog_path), kind="missing-source-path", detail=f"{name} has no source_path"))
+            issues.append(
+                SkillIssue(
+                    path=_relative(root, catalog_path), kind="missing-source-path", detail=f"{name} has no source_path"
+                )
+            )
             continue
         if skill_path.parent.name != name:
-            issues.append(SkillIssue(path=source_path, kind="path-name-mismatch", detail=f"path directory must match skill name: {name}"))
+            issues.append(
+                SkillIssue(
+                    path=source_path, kind="path-name-mismatch", detail=f"path directory must match skill name: {name}"
+                )
+            )
         if not skill_path.is_file():
-            issues.append(SkillIssue(path=source_path, kind="missing-skill-file", detail="catalog source_path does not exist"))
+            issues.append(
+                SkillIssue(path=source_path, kind="missing-skill-file", detail="catalog source_path does not exist")
+            )
             continue
 
         text = skill_path.read_text(encoding="utf-8")
@@ -170,7 +182,13 @@ def check_skill_surface(repo_root: Path) -> list[SkillIssue]:
 
         frontmatter_name = str(frontmatter.get("name", ""))
         if frontmatter_name != name:
-            issues.append(SkillIssue(path=source_path, kind="frontmatter-name-mismatch", detail=f"expected {name}, got {frontmatter_name}"))
+            issues.append(
+                SkillIssue(
+                    path=source_path,
+                    kind="frontmatter-name-mismatch",
+                    detail=f"expected {name}, got {frontmatter_name}",
+                )
+            )
         if str(entry.get("frontmatter_name", "")) != frontmatter_name:
             issues.append(
                 SkillIssue(
@@ -182,12 +200,20 @@ def check_skill_surface(repo_root: Path) -> list[SkillIssue]:
 
         for section in REQUIRED_SKILL_SECTIONS:
             if section not in text:
-                issues.append(SkillIssue(path=source_path, kind="missing-section", detail=f"missing required section: {section}"))
+                issues.append(
+                    SkillIssue(path=source_path, kind="missing-section", detail=f"missing required section: {section}")
+                )
 
         kind = str(entry.get("kind", ""))
         has_cli_routing = "uv run python -m agentplane.cli" in text or "\nagentplane " in text
         if kind == "canonical" and not has_cli_routing:
-            issues.append(SkillIssue(path=source_path, kind="canonical-without-cli", detail="canonical skill must route through AgentPlane CLI"))
+            issues.append(
+                SkillIssue(
+                    path=source_path,
+                    kind="canonical-without-cli",
+                    detail="canonical skill must route through AgentPlane CLI",
+                )
+            )
         if kind == "workflow" and "docker compose" in text and "Prefer a formal AgentPlane CLI workflow" not in text:
             issues.append(
                 SkillIssue(

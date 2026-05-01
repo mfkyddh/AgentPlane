@@ -53,7 +53,12 @@ def add_projection_parser(subparsers: argparse._SubParsersAction[argparse.Argume
     verification_subparsers = verification.add_subparsers(dest="projection_verification_action", required=True)
     run = verification_subparsers.add_parser("run", help="Run verification suite")
     run.add_argument("--target", required=True, choices=supported_onepanel_targets(), help="Target environment")
-    run.add_argument("--profile", required=True, choices=("wsl-fixture", "prod2-readonly", "prod0-readonly"), help="Verification profile")
+    run.add_argument(
+        "--profile",
+        required=True,
+        choices=("wsl-fixture", "prod2-readonly", "prod0-readonly"),
+        help="Verification profile",
+    )
     run.add_argument("--repo-root", default=".", help="Repository root")
     run.add_argument("--write-report", action="store_true", help="Write verification report")
     run.add_argument("--website-alias", default="", help="Website alias selector")
@@ -62,7 +67,9 @@ def add_projection_parser(subparsers: argparse._SubParsersAction[argparse.Argume
     run.add_argument("--cronjob-id", type=int, default=None, help="Cronjob id selector")
     run.add_argument("--cronjob-name", default="", help="Cronjob name selector")
     run.add_argument("--app-name", default="", help="Installed app selector")
-    run.add_argument("--firewall-tab", default="port", choices=("port", "address", "forward"), help="Firewall tab selector")
+    run.add_argument(
+        "--firewall-tab", default="port", choices=("port", "address", "forward"), help="Firewall tab selector"
+    )
 
     fixture = projection_subparsers.add_parser("fixture", help="Fixture task surface")
     fixture_subparsers = fixture.add_subparsers(dest="projection_fixture_action", required=True)
@@ -186,7 +193,9 @@ def handle_projection_command(args: argparse.Namespace) -> dict[str, Any]:
         return _wrap("fixture", f"fixture.{args.projection_fixture_action}", payload)
     if args.projection_surface == "ledger" and args.projection_ledger_action == "refresh":
         _require_formal_action(args.projection_surface, args.projection_ledger_action, FORMAL_LEDGER_ACTIONS)
-        return _wrap("ledger", "ledger.refresh", refresh_onepanel_ledgers(repo_root, args.target, write=bool(args.write)))
+        return _wrap(
+            "ledger", "ledger.refresh", refresh_onepanel_ledgers(repo_root, args.target, write=bool(args.write))
+        )
     action = (
         getattr(args, "projection_action", None)
         or getattr(args, "projection_verification_action", None)

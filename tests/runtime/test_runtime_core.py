@@ -25,16 +25,19 @@ from agentplane.ssh import SshTarget
 
 pytestmark = pytest.mark.integration
 
+
 def test_registry_self_registers_backends() -> None:
     runner = build_backend_runner()
     assert isinstance(runner, BackendRunner)
     # All four default backends should be present.
     assert set(runner._backends.keys()) == {"linux-native", "windows-wsl", "macos-lima", "ssh-linux"}
 
+
 def test_registry_tracks_registered_types() -> None:
     registry = BackendRegistry()
     registry.register("fake", object)
     assert registry.registered_types() == ("fake",)
+
 
 def test_registry_duplicate_registration_raises() -> None:
     registry = BackendRegistry()
@@ -44,6 +47,7 @@ def test_registry_duplicate_registration_raises() -> None:
         raise AssertionError("should have raised ValueError")
     except ValueError as exc:
         assert "already registered" in str(exc)
+
 
 def test_register_backend_decorator() -> None:
     registry = BackendRegistry()
@@ -59,9 +63,11 @@ def test_register_backend_decorator() -> None:
     runner = registry.build_runner()
     assert isinstance(runner._backends["demo"], DemoBackend)
 
+
 # ======================================================================
 # From: test_backend_runner.py
 # ======================================================================
+
 
 def test_windows_wsl_backend_routes_windows_checkout_cwd_through_wsl_bridge(monkeypatch) -> None:
     monkeypatch.setattr("agentplane.runtime.backends.windows_wsl.require_local_executable", lambda _name: None)
@@ -83,6 +89,7 @@ def test_windows_wsl_backend_routes_windows_checkout_cwd_through_wsl_bridge(monk
 
     assert rendered.argv[:4] == ("wsl.exe", "-e", "bash", "-lc")
     assert rendered.metadata["linux_command"] == "cd /mnt/c/Users/example/AgentPlane && docker ps"
+
 
 def test_backend_runner_renders_ssh_linux_shell_plan() -> None:
     ssh_config = Path("/tmp/ssh-config")
@@ -111,6 +118,7 @@ def test_backend_runner_renders_ssh_linux_shell_plan() -> None:
     else:
         assert rendered.argv[:5] == ("ssh", "-T", "-F", str(ssh_config), "root@prod0-main")
     assert rendered.metadata["remote_command"] == "docker inspect sub2api-prod"
+
 
 def test_backend_runner_uses_binary_stdin_for_windows_wsl(monkeypatch) -> None:
     monkeypatch.setattr("agentplane.runtime.execution.os.name", "nt")
@@ -145,9 +153,11 @@ def test_backend_runner_uses_binary_stdin_for_windows_wsl(monkeypatch) -> None:
     assert captured["input"] == b"set -euo pipefail\n"
     assert captured["text"] is False
 
+
 # ======================================================================
 # From: test_execute_stream.py
 # ======================================================================
+
 
 class TestBackendRunnerExecuteStream:
     def setup_method(self) -> None:
@@ -252,9 +262,11 @@ class TestBackendRunnerExecuteStream:
         assert result.ok is True
         assert result.stdout == "hi\n"
 
+
 # ======================================================================
 # From: test_execution_error.py
 # ======================================================================
+
 
 class TestClassifyError:
     def test_permission_denied_maps_to_auth(self) -> None:
@@ -287,6 +299,7 @@ class TestClassifyError:
         assert err.retryable is False
         assert err.escalation == "none"
 
+
 class TestBackendRunnerErrorHandling:
     def setup_method(self) -> None:
         self._which_patcher = patch("shutil.which", return_value="/bin/fake")
@@ -307,7 +320,10 @@ class TestBackendRunnerErrorHandling:
             capabilities=("bash",),
             timeout=1,
         )
-        with patch("agentplane.runtime.execution.subprocess.run", side_effect=subprocess.TimeoutExpired(cmd="sleep 10", timeout=1)):
+        with patch(
+            "agentplane.runtime.execution.subprocess.run",
+            side_effect=subprocess.TimeoutExpired(cmd="sleep 10", timeout=1),
+        ):
             result = runner.execute(plan)
         assert result.ok is False
         assert result.returncode == -1
@@ -402,6 +418,7 @@ class TestBackendRunnerErrorHandling:
         assert result.ok is True
         assert result.error is None
 
+
 class TestExecutionResultPayload:
     def test_payload_includes_error_when_present(self) -> None:
         error = ExecutionError(
@@ -445,19 +462,23 @@ class TestExecutionResultPayload:
         payload = result.to_payload()
         assert "error" not in payload
 
+
 # ======================================================================
 # From: test_ssh_tty_and_batch.py
 # ======================================================================
+
 
 def test_ssh_target_default_uses_no_tty() -> None:
     target = SshTarget(alias="prod0-main", config_path=Path("/tmp/ssh-config"), user="root")
     assert target._tty_flag() == "-T"
     assert target.ssh_args_for_bash_stdin()[1] == "-T"
 
+
 def test_ssh_target_allocate_tty_uses_t() -> None:
     target = SshTarget(alias="prod0-main", config_path=Path("/tmp/ssh-config"), user="root", allocate_tty=True)
     assert target._tty_flag() == "-t"
     assert target.ssh_args_for_bash_stdin()[1] == "-t"
+
 
 def test_backend_runner_execute_batch_runs_serially(monkeypatch) -> None:
     monkeypatch.setattr("agentplane.runtime.backends.linux_native.require_local_executable", lambda _name: None)
@@ -467,6 +488,7 @@ def test_backend_runner_execute_batch_runs_serially(monkeypatch) -> None:
         nonlocal call_count
         call_count += 1
         from subprocess import CompletedProcess
+
         return CompletedProcess(argv, 0, stdout=f"ok{call_count}", stderr="")
 
     monkeypatch.setattr("agentplane.runtime.execution.subprocess.run", fake_run)
@@ -492,11 +514,13 @@ def test_backend_runner_execute_batch_runs_serially(monkeypatch) -> None:
     assert results[0].stdout == "ok1"
     assert results[1].stdout == "ok2"
 
+
 def test_backend_runner_execute_batch_on_each_callback(monkeypatch) -> None:
     monkeypatch.setattr("agentplane.runtime.backends.linux_native.require_local_executable", lambda _name: None)
 
     def fake_run(argv: list[str], **kwargs: object):
         from subprocess import CompletedProcess
+
         return CompletedProcess(argv, 0, stdout="done", stderr="")
 
     monkeypatch.setattr("agentplane.runtime.execution.subprocess.run", fake_run)
@@ -519,9 +543,11 @@ def test_backend_runner_execute_batch_on_each_callback(monkeypatch) -> None:
     )
     assert collected == ["done", "done"]
 
+
 # ======================================================================
 # From: test_runtime_resolution.py
 # ======================================================================
+
 
 def test_workspace_resolver_returns_canonical_and_resolved_paths() -> None:
     with tempfile.TemporaryDirectory() as tmp:
@@ -555,6 +581,7 @@ def test_workspace_resolver_returns_canonical_and_resolved_paths() -> None:
 
         assert result.canonical_ref == "apps/sub2api/contracts/prod0-main"
         assert result.resolved_path.samefile(contract_file)
+
 
 def test_target_resolver_distinguishes_local_and_remote_execution_policies() -> None:
     resolver = TargetResolver(HostProfile(os_name="windows", linux_backend="windows-wsl", supports_docker=True))

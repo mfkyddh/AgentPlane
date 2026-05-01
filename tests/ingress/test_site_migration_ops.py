@@ -17,7 +17,6 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 import pytest
-
 from agentplane.domain.ingress.lifecycle import (
     apply_ingress_truth_offboard,
     apply_ingress_truth_onboard,
@@ -179,7 +178,9 @@ class TestParallelValidation(unittest.TestCase):
                 "proxy": "http://127.0.0.1:4000",
                 "status": "Running",
             }
-            _write_inventory(root, TARGET, {"services": {"public_ingresses": [other_entry, _entry_from(_migration_definition())]}})
+            _write_inventory(
+                root, TARGET, {"services": {"public_ingresses": [other_entry, _entry_from(_migration_definition())]}}
+            )
 
             apply_ingress_truth_offboard(root, TARGET, "migrated-app", execute=True)
 
@@ -387,7 +388,6 @@ class TestMigrationLifecycle(unittest.TestCase):
 
     def test_full_migration_lifecycle(self) -> None:
         """Simulates: onboard truth -> reconcile -> verify -> offboard old alias."""
-        from agentplane.domain.ingress.handlers import apply_ingress_operation, verify_ingress
         from agentplane.cli.ingress import handle_ingress_command
 
         with tempfile.TemporaryDirectory() as tmp:

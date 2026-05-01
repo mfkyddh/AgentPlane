@@ -26,11 +26,7 @@ def observation_timestamp() -> str:
 
 
 def tracked_ledger_fields(value: Mapping[str, Any]) -> dict[str, Any]:
-    return {
-        key: item
-        for key, item in dict(value).items()
-        if key not in OBSERVATION_ONLY_KEYS
-    }
+    return {key: item for key, item in dict(value).items() if key not in OBSERVATION_ONLY_KEYS}
 
 
 def extract_ledger_fields(payload: Mapping[str, Any]) -> dict[str, Any]:

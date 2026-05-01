@@ -47,8 +47,7 @@ def build_ingress_follow_through(target: str, *, source_surface: str, alias: str
     if alias:
         verify_cmd = f"{verify_cmd} --website-alias {alias}"
     ledger_cmd = (
-        f"uv run python -m agentplane.cli projection ledger refresh "
-        f"--target {target} --repo-root {REPO_ROOT} --write"
+        f"uv run python -m agentplane.cli projection ledger refresh --target {target} --repo-root {REPO_ROOT} --write"
     )
     follow_through = IngressFollowThrough(
         owner_surface="projection",
@@ -107,7 +106,9 @@ def plan_ingress_truth_onboard(repo_root: Path | str, target: str, definition: I
     )
 
 
-def apply_ingress_truth_onboard(repo_root: Path | str, target: str, definition: IngressDefinition, *, execute: bool) -> dict[str, Any]:
+def apply_ingress_truth_onboard(
+    repo_root: Path | str, target: str, definition: IngressDefinition, *, execute: bool
+) -> dict[str, Any]:
     if not execute:
         raise ValueError("website truth onboarding apply requires --execute")
     resolved_root = Path(repo_root).resolve()

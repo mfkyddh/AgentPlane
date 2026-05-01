@@ -123,7 +123,7 @@ def _fixture_compose(spec: FixtureSpec) -> str:
         f"    container_name: {spec.project_container_name}\n"
         "    restart: unless-stopped\n"
         "    ports:\n"
-        f"      - \"127.0.0.1:{spec.project_host_port}:{spec.project_container_port}\"\n"
+        f'      - "127.0.0.1:{spec.project_host_port}:{spec.project_container_port}"\n'
     )
 
 
@@ -141,7 +141,9 @@ def _find_existing_website(executor: Any, spec: FixtureSpec) -> dict[str, Any] |
 def _has_openresty_runtime(executor: Any) -> bool:
     payload = search_installed_apps(executor, name="openresty")
     items = payload.get("items")
-    return isinstance(items, list) and any(isinstance(item, dict) and item.get("appKey") == "openresty" for item in items)
+    return isinstance(items, list) and any(
+        isinstance(item, dict) and item.get("appKey") == "openresty" for item in items
+    )
 
 
 def _find_existing_project(executor: Any, spec: FixtureSpec) -> dict[str, Any] | None:
@@ -176,7 +178,9 @@ def _cronjob_group_id(executor: Any, existing: dict[str, Any] | None) -> int:
     return int(first.get("groupID", 0))
 
 
-def _cronjob_create_payload(spec: FixtureSpec, *, group_id: int, existing: dict[str, Any] | None = None) -> dict[str, Any]:
+def _cronjob_create_payload(
+    spec: FixtureSpec, *, group_id: int, existing: dict[str, Any] | None = None
+) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "name": spec.cronjob_name,
         "type": "shell",
@@ -232,7 +236,9 @@ def plan_fixture(executor: Any, spec: FixtureSpec) -> dict[str, Any]:
                 "domain": spec.website_domain,
                 "proxy": spec.website_proxy,
             },
-            "blocked_reason": "" if website_runtime_ready else "WSL onepanel does not have the openresty installed-app runtime yet.",
+            "blocked_reason": ""
+            if website_runtime_ready
+            else "WSL onepanel does not have the openresty installed-app runtime yet.",
         },
         {
             "object": "project",
@@ -281,7 +287,9 @@ def apply_fixture(executor: Any, spec: FixtureSpec, *, execute: bool) -> dict[st
         actions.append({"object": "ingress", "action": "create", "result": result})
     elif website is None and website_item and website_item["action"] == "blocked-missing-openresty":
         ok = False
-        actions.append({"object": "ingress", "action": "blocked-missing-openresty", "reason": website_item["blocked_reason"]})
+        actions.append(
+            {"object": "ingress", "action": "blocked-missing-openresty", "reason": website_item["blocked_reason"]}
+        )
     else:
         actions.append({"object": "ingress", "action": "noop", "result": {"id": website.get("id")}})
 
@@ -292,7 +300,9 @@ def apply_fixture(executor: Any, spec: FixtureSpec, *, execute: bool) -> dict[st
         operate = operate_compose(executor, name=spec.project_name, operation="up")
         actions.append({"object": "project", "action": "create", "result": result, "operate": operate})
     else:
-        detail_path = str(project.get("configFile") or f"/data/1panel/docker/compose/{spec.project_name}/docker-compose.yml")
+        detail_path = str(
+            project.get("configFile") or f"/data/1panel/docker/compose/{spec.project_name}/docker-compose.yml"
+        )
         result = update_compose(executor, name=spec.project_name, detail_path=detail_path, content=compose_content)
         operate = operate_compose(executor, name=spec.project_name, operation="up")
         actions.append({"object": "project", "action": "update", "result": result, "operate": operate})

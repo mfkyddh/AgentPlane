@@ -30,10 +30,7 @@ class PreflightReport:
         return {
             "target": self.target,
             "overall": self.overall,
-            "checks": [
-                {"name": c.name, "status": c.status, "message": c.message}
-                for c in self.checks
-            ],
+            "checks": [{"name": c.name, "status": c.status, "message": c.message} for c in self.checks],
         }
 
 
@@ -49,7 +46,8 @@ def _check_wsl_available() -> PreflightCheck:
         if result.returncode == 0 and "ok" in result.stdout:
             return PreflightCheck("wsl-available", "ok", "WSL is running and responsive")
         return PreflightCheck(
-            "wsl-available", "failed",
+            "wsl-available",
+            "failed",
             f"WSL check failed: {result.stderr.strip() or 'unknown error'}",
         )
     except FileNotFoundError:
@@ -72,7 +70,8 @@ def _check_lima_available() -> PreflightCheck:
         if result.returncode == 0:
             return PreflightCheck("lima-available", "ok", "Lima is installed and responsive")
         return PreflightCheck(
-            "lima-available", "failed",
+            "lima-available",
+            "failed",
             f"Lima check failed: {result.stderr.strip()}",
         )
     except FileNotFoundError:
@@ -121,7 +120,8 @@ def _check_ssh_key_permissions(ssh_target) -> PreflightCheck:
     mode = key_path.stat().st_mode
     if mode & 0o077:
         return PreflightCheck(
-            "ssh-key", "warning",
+            "ssh-key",
+            "warning",
             f"SSH private key permissions are too open ({oct(mode & 0o777)}), should be 0o600",
         )
     return PreflightCheck("ssh-key", "ok", f"SSH private key exists with correct permissions: {key_path}")
@@ -139,22 +139,26 @@ def _check_ssh_reachable(ssh_target) -> PreflightCheck:
         )
         if result.returncode == 0 and "ok" in result.stdout:
             return PreflightCheck(
-                "ssh-reachable", "ok",
+                "ssh-reachable",
+                "ok",
                 f"SSH to {ssh_target.connection_target} is reachable",
             )
         stderr = result.stderr.lower()
         if "permission denied" in stderr or "authentication" in stderr:
             return PreflightCheck(
-                "ssh-reachable", "failed",
+                "ssh-reachable",
+                "failed",
                 f"SSH authentication failed: {result.stderr.strip()}",
             )
         if any(t in stderr for t in ("connection refused", "could not resolve", "no route", "network is unreachable")):
             return PreflightCheck(
-                "ssh-reachable", "failed",
+                "ssh-reachable",
+                "failed",
                 f"SSH network failure: {result.stderr.strip()}",
             )
         return PreflightCheck(
-            "ssh-reachable", "failed",
+            "ssh-reachable",
+            "failed",
             f"SSH check failed (exit {result.returncode}): {result.stderr.strip() or result.stdout.strip()}",
         )
     except FileNotFoundError:
