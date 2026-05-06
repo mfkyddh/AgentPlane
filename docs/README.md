@@ -82,6 +82,7 @@ audience: both
 | [跨平台规范](reference/cross-platform.md) | Windows / WSL / Linux 规则 |
 | [容器规范](reference/container-conventions.md) | Docker Compose、容器命名、打包规范 |
 | [命名注册表](reference/control-plane-naming-registry.md) | app_id、容器名、路径策略 |
+| [GStack 设置](reference/gstack-setup.md) | 网页浏览、QA 测试工具安装 |
 
 ### 🔐 安全与开源
 

@@ -79,6 +79,49 @@
 - **KISS** — 保持简单
 - **SOLID** — 遵循职责单一、开闭原则等
 
+## GStack
+
+使用 `/browse` skill 进行所有网页浏览，**不要使用** `mcp__claude-in-chrome__*` 工具。
+
+可用 skills：
+
+| Skill | 用途 |
+|-------|------|
+| `/browse` | 网页浏览和测试 |
+| `/office-hours` | 办公时间 |
+| `/plan-ceo-review` | CEO 审查计划 |
+| `/plan-eng-review` | 工程审查计划 |
+| `/plan-design-review` | 设计审查计划 |
+| `/design-consultation` | 设计咨询 |
+| `/design-shotgun` | 设计快速迭代 |
+| `/design-html` | HTML 设计 |
+| `/review` | 代码审查 |
+| `/ship` | 发布 |
+| `/land-and-deploy` | 部署 |
+| `/canary` | 金丝雀发布 |
+| `/benchmark` | 基准测试 |
+| `/connect-chrome` | 连接 Chrome |
+| `/qa` | 质量保证 |
+| `/qa-only` | 仅 QA |
+| `/design-review` | 设计审查 |
+| `/setup-browser-cookies` | 浏览器 Cookie 设置 |
+| `/setup-deploy` | 部署设置 |
+| `/setup-gbrain` | GBrain 设置 |
+| `/retro` | 回顾 |
+| `/investigate` | 调查 |
+| `/document-release` | 文档发布 |
+| `/codex` | Codex |
+| `/cso` | CSO |
+| `/autoplan` | 自动规划 |
+| `/plan-devex-review` | DevEx 审查计划 |
+| `/devex-review` | DevEx 审查 |
+| `/careful` | 谨慎模式 |
+| `/freeze` | 冻结 |
+| `/guard` | 守护 |
+| `/unfreeze` | 解冻 |
+| `/gstack-upgrade` | GStack 升级 |
+| `/learn` | 学习 |
+
 ## 关键文档
 
 | 文档 | 用途 |
