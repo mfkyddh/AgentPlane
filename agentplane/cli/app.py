@@ -19,6 +19,7 @@ from agentplane.cli.projection import add_projection_parser, handle_projection_c
 from agentplane.cli.repository import add_repository_parser, handle_repository_command
 from agentplane.cli.service import add_service_parser, handle_service_command
 from agentplane.cli.test_runner import add_test_parser, handle_test_command
+from agentplane.cli.web import add_web_parser, handle_web_command
 
 
 def _emit(payload: dict[str, Any]) -> None:
@@ -53,6 +54,7 @@ def build_parser() -> argparse.ArgumentParser:
     add_repository_parser(subparsers)
     add_onepanel_parser(subparsers)
     add_test_parser(subparsers)
+    add_web_parser(subparsers)
 
     return parser
 
@@ -179,6 +181,9 @@ def main(argv: list[str] | None = None) -> int:
         except ValueError as exc:
             print(str(exc), file=sys.stderr)
             return 1
+
+    if args.command == "web":
+        return handle_web_command(args)
 
     parser.error("Unsupported command")
     return 2
