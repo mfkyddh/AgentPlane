@@ -14,7 +14,8 @@ from typing import Any
 
 from agentplane.adapters.cloudflare import CloudflareClient, load_shell_env_file
 from agentplane.scripts.onepanel.client import load_config, send_signed_request
-from agentplane.scripts.onepanel.env_targets import TargetConfig, build_api_request_command, get_target
+from agentplane.scripts.onepanel.env_targets import TargetConfig, get_target
+from agentplane.scripts.onepanel.executor import TargetExecutor
 
 
 def parse_bool(value: str | None, default: bool = False) -> bool:
@@ -101,33 +102,10 @@ class OnePanelExecutor:
     def __init__(self, target: TargetConfig, env_file_override: str | None = None) -> None:
         self.target = target
         self.env_file_override = env_file_override
+        self._delegate = TargetExecutor(target)
 
     def request(self, method: str, path: str, body: dict[str, Any] | None = None) -> Any:
-        if self.target.mode == "local":
-            config = load_config(Path(self.env_file_override) if self.env_file_override else self.target.api_env_file)
-            response = send_signed_request(
-                config,
-                method,
-                path,
-                body_bytes=json.dumps(body, ensure_ascii=False).encode("utf-8") if body is not None else None,
-            )
-        else:
-            command = build_api_request_command(self.target, method, path, body=body)
-            result = subprocess.run(
-                self.target.build_ssh_target().local_ssh_args_for_argv(command),
-                text=True,
-                capture_output=True,
-                check=False,
-            )
-            if result.returncode != 0:
-                raise RuntimeError(
-                    result.stdout.strip() or result.stderr.strip() or f"1Panel request failed: {method} {path}"
-                )
-            response = json.loads(result.stdout)
-        body_payload = response.get("body")
-        if response.get("status", 500) >= 400 or not isinstance(body_payload, dict) or body_payload.get("code") != 200:
-            raise RuntimeError(json.dumps(response, ensure_ascii=False))
-        return body_payload.get("data")
+        return self._delegate.api_request(method, path, body)
 
 
 class PublicIngressManager:

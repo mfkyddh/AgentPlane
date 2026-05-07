@@ -53,7 +53,7 @@ def run_shell_command(repo_root: Path, target: str, command: str) -> dict[str, o
 
 
 def run_command_argv(argv: list[str], display: str) -> dict[str, object]:
-    result = subprocess.run(argv, text=True, capture_output=True, check=False)
+    result = subprocess.run(argv, text=True, capture_output=True, check=False, encoding="utf-8")
     return {
         "argv": argv,
         "display": display,

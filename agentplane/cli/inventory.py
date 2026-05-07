@@ -28,7 +28,7 @@ print(json.dumps(_wsl_snapshot(repo_root), ensure_ascii=False))
 
 
 def _run_command(command: list[str]) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(command, text=True, capture_output=True, check=False)
+    return subprocess.run(command, text=True, capture_output=True, check=False, encoding="utf-8")
 
 
 def _docker_container_rows() -> list[dict[str, Any]]:
