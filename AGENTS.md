@@ -18,7 +18,7 @@ audience: ai
 
 ## 项目概述
 
-AgentPlane 是 Agent-first 控制面 CLI。所有操作通过 `agentplane <domain> <surface> <verb> [flags]` 进入，提供 plan → execute → verify → record 生命周期。Skill 是 AI 入口，路由到 CLI——永远不要绕过 CLI。
+AgentPlane 是 Agent-first 控制面 CLI。所有操作通过 `agentplane <domain> <surface> <verb> [flags]` 进入，提供 Plan → Apply → Verify → Record 执行闭环。Skill 是 AI 入口，路由到 CLI——永远不要绕过 CLI。
 
 **入口**: `agentplane/cli/app.py` → `main()`（也可 `python -m agentplane`）。
 
@@ -47,6 +47,8 @@ AgentPlane 是 Agent-first 控制面 CLI。所有操作通过 `agentplane <domai
 | 15 | **Skill 同步**：正式能力变更必须同步 `.agents/skills` 或说明无需更新 | 🔴 |
 | 16 | **单人维护收尾**：小任务完成后必须自动 commit、合入本地 `main`、推送 `origin main` | 🔴 |
 | 17 | **提交前必须通过本地检查**：`git commit` 前通过 pre-commit，`git push` 前通过 pre-push | 🔴 |
+| 18 | **回答前声明 Skills**：回答问题时必须首先说明使用了哪些 skills | 🔴 |
+| 19 | **原则驱动决策**：做架构、设计、原则相关判断时，必须参考 [principles.md](docs/principles.md) 的道法术体系 | 🔴 |
 
 ---
 
@@ -77,4 +79,4 @@ AgentPlane 是 Agent-first 控制面 CLI。所有操作通过 `agentplane <domai
 
 ## 文档索引
 
-完整地图见 [docs/README.md](docs/README.md)。最常用：[架构](docs/architecture.md) · [技术栈](docs/tech-stack.md) · [命令参考](docs/command-reference.md) · [WebUI](docs/webui.md) · [编码与协作规范](docs/conventions.md)
+完整地图见 [docs/README.md](docs/README.md)。最常用：[架构](docs/architecture.md) · [技术栈](docs/tech-stack.md) · [命令参考](docs/command-reference.md) · [WebUI](docs/webui.md) · [编码与协作规范](docs/conventions.md) · [Maintainer 指南](docs/maintainer-guide.md) · [Maintainer 指南](docs/maintainer-guide.md)

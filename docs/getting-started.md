@@ -81,4 +81,4 @@ agentplane app object search --target <target> --repo-root .
 
 - [README.md](../README.md) — 项目入口
 - [AGENTS.md](../AGENTS.md) — AI 工作规范
-- [术语表](archive/reference/glossary.md) — 核心术语
+- [术语表](glossary.md) — 核心术语

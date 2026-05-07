@@ -18,6 +18,14 @@
 
 ---
 
+## 战略文档
+
+- [愿景](vision.md) — 项目定位、目标用户、项目模型、核心价值
+- [原则](principles.md) — 哲学基座、方法论、工程原则
+- [路线图](roadmap.md) — Alpha → Beta → GA 三阶段推进
+- [决策记录](decisions/) — 关键决策追溯
+- [术语表](glossary.md) — 唯一术语真源
+
 ## 核心文档
 
 - [架构](architecture.md) — 控制面合同、投影模型、跨平台执行、应用协作
