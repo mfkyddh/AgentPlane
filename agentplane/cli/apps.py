@@ -331,93 +331,66 @@ def handle_app_command(args: argparse.Namespace) -> dict[str, Any]:
 
     if args.app_surface == "delivery":
         _ensure_formal_delivery_action_contract(args)
-        from agentplane.domain.app.delivery_service import AppDeliveryService
-
-        delivery_service = AppDeliveryService(repo_root)
+        from agentplane.domain.app import delivery_handlers
 
         if args.app_delivery_action == "validate-contract":
-            return delivery_service.validate_contract(
-                target=args.target,
-                app=args.app,
-                app_repo_root=getattr(args, "app_repo_root", None),
+            return delivery_handlers.validate_contract_for_app(
+                repo_root, target=args.target, app=args.app, app_repo_root=getattr(args, "app_repo_root", None)
             )
         if args.app_delivery_action == "render-runtime":
-            return delivery_service.render_runtime(
-                target=args.target,
-                app=args.app,
-                image_ref=args.image_ref,
-                app_repo_root=getattr(args, "app_repo_root", None),
+            return delivery_handlers.render_runtime_for_app(
+                repo_root, target=args.target, app=args.app, image_ref=args.image_ref,
+                app_repo_root=getattr(args, "app_repo_root", None)
             )
         if args.app_delivery_action == "inventory-refresh":
-            return delivery_service.inventory_refresh(
-                target=args.target,
-                app=args.app,
-                write=bool(args.write),
-                app_repo_root=getattr(args, "app_repo_root", None),
+            return delivery_handlers.inventory_refresh_for_app(
+                repo_root, target=args.target, app=args.app, write=bool(args.write),
+                app_repo_root=getattr(args, "app_repo_root", None)
             )
         if args.app_delivery_action == "doc-sync":
-            return delivery_service.doc_sync(
-                target=args.target,
-                app=args.app,
-                write=bool(args.write),
-                app_repo_root=getattr(args, "app_repo_root", None),
+            return delivery_handlers.doc_sync_for_app(
+                repo_root, target=args.target, app=args.app, write=bool(args.write),
+                app_repo_root=getattr(args, "app_repo_root", None)
             )
         if args.app_delivery_action == "build-artifact":
-            return delivery_service.build_artifact(
-                target=args.target,
-                app=args.app,
-                image_tag=args.image_tag,
-                auto_version=args.auto_version,
-                dry_run=args.dry_run,
-                app_repo_root=getattr(args, "app_repo_root", None),
+            return delivery_handlers.build_artifact_for_app(
+                repo_root, target=args.target, app=args.app, image_tag=args.image_tag,
+                auto_version=args.auto_version, dry_run=args.dry_run,
+                app_repo_root=getattr(args, "app_repo_root", None)
             )
         if args.app_delivery_action == "package-runtime":
-            return delivery_service.package_runtime(
-                target=args.target,
-                app=args.app,
-                image_tag=args.image_tag,
-                auto_version=args.auto_version,
-                dry_run=args.dry_run,
-                app_repo_root=getattr(args, "app_repo_root", None),
+            return delivery_handlers.package_runtime_for_app(
+                repo_root, target=args.target, app=args.app, image_tag=args.image_tag,
+                auto_version=args.auto_version, dry_run=args.dry_run,
+                app_repo_root=getattr(args, "app_repo_root", None)
             )
         if args.app_delivery_action == "ship-image":
-            return delivery_service.ship_image(
-                target=args.target,
-                app=args.app,
-                image_ref=args.image_ref,
-                archive_dir=Path(args.archive_dir),
-                dry_run=args.dry_run,
-                app_repo_root=getattr(args, "app_repo_root", None),
+            return delivery_handlers.ship_image_for_app(
+                repo_root, target=args.target, app=args.app, image_ref=args.image_ref,
+                archive_dir=Path(args.archive_dir), dry_run=args.dry_run,
+                app_repo_root=getattr(args, "app_repo_root", None)
             )
         if args.app_delivery_action == "deploy":
-            return delivery_service.deploy(
-                target=args.target,
-                app=args.app,
-                image_ref=args.image_ref,
-                dry_run=args.dry_run,
-                execute=bool(getattr(args, "execute", False)),
-                app_repo_root=getattr(args, "app_repo_root", None),
+            return delivery_handlers.deploy_for_app(
+                repo_root, target=args.target, app=args.app, image_ref=args.image_ref,
+                dry_run=args.dry_run, execute=bool(getattr(args, "execute", False)),
+                app_repo_root=getattr(args, "app_repo_root", None)
             )
         if args.app_delivery_action == "verify":
-            return delivery_service.verify(
-                target=args.target,
-                app=args.app,
-                dry_run=args.dry_run,
+            return delivery_handlers.verify_delivery_for_app(
+                repo_root, target=args.target, app=args.app, dry_run=args.dry_run,
                 execute=bool(getattr(args, "execute", False)),
-                app_repo_root=getattr(args, "app_repo_root", None),
+                app_repo_root=getattr(args, "app_repo_root", None)
             )
         if args.app_delivery_action == "rollback":
-            return delivery_service.rollback(
-                target=args.target,
-                app=args.app,
-                dry_run=args.dry_run,
+            return delivery_handlers.rollback_for_app(
+                repo_root, target=args.target, app=args.app, dry_run=args.dry_run,
                 execute=bool(getattr(args, "execute", False)),
-                app_repo_root=getattr(args, "app_repo_root", None),
+                app_repo_root=getattr(args, "app_repo_root", None)
             )
         if args.app_delivery_action == "onboard":
-            return delivery_service.onboard(
-                target=args.target,
-                app=args.app,
+            return delivery_handlers.onboard_for_app(
+                repo_root, target=args.target, app=args.app,
                 dry_run=bool(getattr(args, "dry_run", False)),
                 write=bool(getattr(args, "write", False)),
                 app_repo_root=getattr(args, "app_repo_root", None),
@@ -425,9 +398,8 @@ def handle_app_command(args: argparse.Namespace) -> dict[str, Any]:
                 contract_path=getattr(args, "contract_path", None),
             )
         if args.app_delivery_action == "offboard":
-            return delivery_service.offboard(
-                target=args.target,
-                app=args.app,
+            return delivery_handlers.offboard_for_app(
+                repo_root, target=args.target, app=args.app,
                 dry_run=bool(getattr(args, "dry_run", False)),
                 write=bool(getattr(args, "write", False)),
             )
