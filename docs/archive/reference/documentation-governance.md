@@ -145,7 +145,7 @@ layer: engineering
 
 ```markdown
 ---
-status: active
+status: archived
 owner: AgentPlane maintainers
 last_verified: YYYY-MM-DD
 superseded_by: null

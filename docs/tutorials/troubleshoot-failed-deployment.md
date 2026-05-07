@@ -44,7 +44,7 @@ agentplane app delivery validate-contract --target wsl --app sub2api --repo-root
 **如果这里也失败了** → 问题在"约定书"层面：
 - 应用仓库的 `deploy/agentplane/contract.yaml` 可能被改了
 - 资产清单目录（`inventory/servers/wsl/`）下的配置可能和应用声明不匹配
-- 见 [App Delivery 失败处理](../runbooks/app-delivery-failure-handling.md) 的"约定书或资源配置失败"
+- 见 排查指南 的"约定书或资源配置失败"
 
 **如果这里通过了** → 问题在部署执行层面，继续下一步。
 

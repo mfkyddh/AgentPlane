@@ -55,9 +55,9 @@ agentplane app delivery validate-contract --target wsl --app sub2api --repo-root
 [PASS] infra.tenant_resources valid
 ```
 
-> 💡 如果失败，看 [App Delivery 失败处理](../runbooks/app-delivery-failure-handling.md) 的"约定书或资源配置失败"部分。
+> 💡 如果失败，看 排查指南 的"约定书或资源配置失败"部分。
 
-> 💡 如果失败，看 [App Delivery 失败处理](../runbooks/app-delivery-failure-handling.md) 的"合同或 app resource 失败"部分。
+> 💡 如果失败，看 排查指南 的"合同或 app resource 失败"部分。
 
 ## 第三步：构建运行时产物
 
@@ -114,7 +114,7 @@ agentplane app delivery deploy --target wsl --app sub2api --repo-root . --image-
 [INFO] Container started: sub2api
 ```
 
-> 💡 如果 deploy 失败，先不要重试！记录错误输出，然后看 [App Delivery 失败处理](../runbooks/app-delivery-failure-handling.md)。
+> 💡 如果 deploy 失败，先不要重试！记录错误输出，然后看 排查指南。
 
 ## 第六步：验证部署
 

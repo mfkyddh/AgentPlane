@@ -173,10 +173,10 @@ agentplane repo health-check --repo-root .
 
 > 💡 体检通过后，Agent 就可以接管后续操作了。
 
-📖 **第一次用？** → [入门指南](docs/getting-started/getting-started.md)
-🏗️ **想深入？** → [架构概览](docs/getting-started/architecture-overview.md)
-🚀 **想动手？** → [部署你的第一个应用](docs/tutorials/deploy-first-app.md)
-🔍 **出错了？** → [排查部署失败](docs/tutorials/troubleshoot-failed-deployment.md)
+📖 **第一次用？** → [入门指南](docs/getting-started.md)
+🏗️ **想深入？** → [架构概览](docs/architecture.md)
+🚀 **想动手？** → [命令参考](docs/command-reference.md)
+🔍 **出错了？** → [技术栈](docs/tech-stack.md)
 
 ---
 
@@ -193,24 +193,24 @@ AgentPlane 不是 Terraform、Kubernetes controller 或 SSH 脚本集合。
 | 需要稳定任务入口和审计证据 | 只想保留一次性 SSH/Docker 命令 |
 | 应用仓库只交付代码和合同 | 应用仓库自带第二套生产控制面 |
 
-详细边界见 [愿景](docs/strategy/vision.md)，演进计划见 [Roadmap](docs/strategy/roadmap.md)。
+详细边界和演进计划见 [架构](docs/architecture.md)。
 
 ---
 
 ## 📖 文档导航
 
 **👤 人类入口**：
-[入门指南](docs/getting-started/getting-started.md) ·
-[架构概览](docs/getting-started/architecture-overview.md) ·
-[战略](docs/strategy/README.md) ·
+[入门指南](docs/getting-started.md) ·
+[架构](docs/architecture.md) ·
+[命令参考](docs/command-reference.md) ·
 [部署应用](docs/runbooks/app-project-delivery-workflow.md) ·
-[术语表](docs/reference/glossary.md)
+[WebUI](docs/webui.md)
 
 **🤖 AI 入口**：
 [AGENTS.md](AGENTS.md) ·
-[Roadmap Workbook（归档）](docs/archive/maintainers/agentplane-roadmap-workbook.md) ·
-[control-plane.md](docs/architecture/control-plane.md) ·
-[execution-flow.md](docs/runbooks/control-plane-agent-execution-flow.md)
+[CLAUDE.md](CLAUDE.md) ·
+[架构](docs/architecture.md) ·
+[执行闭环](docs/runbooks/control-plane-agent-execution-flow.md)
 
 ---
 
@@ -220,8 +220,8 @@ AgentPlane 不是 Terraform、Kubernetes controller 或 SSH 脚本集合。
 |------|------|
 | [LICENSE](LICENSE) | MIT 开源许可证 |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | 如何参与开发、安全策略、行为准则、获取帮助 |
-| [Git 规范](docs/reference/git-conventions.md) | 分支、提交、PR 与 main 合并规则 |
-| [路线图](docs/strategy/roadmap.md) | 项目成熟度与路线图 |
+| [架构](docs/architecture.md) | 控制面契约、投影模型、跨平台执行 |
+| [命令参考](docs/command-reference.md) | 所有 CLI 命令 |
 | [CHANGELOG.md](CHANGELOG.md) | 版本变更摘要 |
 
 ---
@@ -230,4 +230,4 @@ AgentPlane 不是 Terraform、Kubernetes controller 或 SSH 脚本集合。
 
 AgentPlane 的长期目标，是从 AI-assisted 运维控制面，演进为新项目从创建、开发、发布、部署到运维的统一控制面。
 
-更多规划见 [Roadmap](docs/strategy/roadmap.md) 和 [愿景](docs/strategy/vision.md)。
+更多规划见 [架构](docs/architecture.md) 和 [技术栈](docs/tech-stack.md)。

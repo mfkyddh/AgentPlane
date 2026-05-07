@@ -69,7 +69,7 @@ This runs the same checks as CI (`fast-gate`) locally:
 - **pre-commit**: Ruff lint, commit message validation
 - **pre-push**: Fast tests, docs sanity, secret scan
 
-Detailed guide: [docs/reference/testing-conventions.md](docs/reference/testing-conventions.md)
+Detailed guide: [docs/tech-stack.md](docs/tech-stack.md)
 
 ## Before Opening A PR
 
@@ -81,7 +81,7 @@ agentplane repo health-check --repo-root .
 
 For docs or contract changes, also run the relevant focused tests under `tests/`.
 
-Full Git policy: [docs/reference/git-conventions.md](docs/reference/git-conventions.md).
+Full architecture and conventions: [docs/architecture.md](docs/architecture.md).
 
 ---
 

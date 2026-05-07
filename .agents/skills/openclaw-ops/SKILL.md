@@ -36,5 +36,5 @@ agentplane projection ledger refresh --target <target> --repo-root <repo-root> -
 
 ## Downstream Docs
 
-- `docs/reference/container-conventions.md`
+- `docs/tech-stack.md`
 - `agentplane/scripts/browser/README.md`

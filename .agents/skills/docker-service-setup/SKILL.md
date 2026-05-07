@@ -46,5 +46,5 @@ docker compose -f infra/compose/<service>/docker-compose.<target>.yml up -d
 
 ## Downstream Docs
 
-- `docs/reference/container-conventions.md`
-- `docs/reference/repository-structure.md`
+- `docs/tech-stack.md`
+- `docs/architecture.md`

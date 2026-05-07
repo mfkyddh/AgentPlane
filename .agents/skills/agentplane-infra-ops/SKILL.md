@@ -51,6 +51,6 @@ agentplane onepanel --env <target> cronjob search --info <keyword>
 
 ## Downstream Docs
 
-- `docs/reference/cross-platform.md`
+- `docs/tech-stack.md`
 - `docs/runbooks/control-plane-agent-execution-flow.md`
 - `docs/runbooks/control-plane-domain-onboarding.md`

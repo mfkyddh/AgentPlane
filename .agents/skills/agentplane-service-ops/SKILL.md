@@ -34,5 +34,5 @@ agentplane service apply --target <target> --name <service> --operation restart 
 
 ## Downstream Docs
 
-- `docs/architecture/control-plane.md`
+- `docs/architecture.md`
 - `docs/runbooks/control-plane-agent-execution-flow.md`

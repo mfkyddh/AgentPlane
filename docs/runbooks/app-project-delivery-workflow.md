@@ -9,7 +9,7 @@ layer: technical
 
 # 📦 应用项目接入 AgentPlane 工作流
 
-结论：应用交付主路径是 `validate-contract → build-artifact → ship-image → render-runtime → deploy → verify → inventory-refresh → doc-sync`，失败止损看 [app-delivery-failure-handling.md](./app-delivery-failure-handling.md)。
+结论：应用交付主路径是 `validate-contract → build-artifact → ship-image → render-runtime → deploy → verify → inventory-refresh → doc-sync`。
 
 ## 🎯 适用范围
 
@@ -19,8 +19,6 @@ layer: technical
 - 合同版本：`schema_version: 2`
 - 当前样板：`sub2api`
 - 正式闭环：`validate-contract -> build-artifact -> ship-image -> render-runtime -> deploy -> verify -> inventory-refresh -> doc-sync`
-
-失败止损和分流处理见 [App Delivery 失败处理 Runbook](./app-delivery-failure-handling.md)。
 
 ## 先把路径关系讲清楚
 

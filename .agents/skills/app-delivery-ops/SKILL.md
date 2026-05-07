@@ -37,4 +37,4 @@ agentplane app delivery doc-sync --target <target> --app <app> --repo-root <repo
 ## Downstream Docs
 
 - `docs/runbooks/app-project-delivery-workflow.md`
-- `docs/architecture/agentplane-app-collaboration.md`
+- `docs/architecture.md`

@@ -30,5 +30,5 @@ agentplane infra audit <target> --repo-root <repo-root>
 
 ## Downstream Docs
 
-- `docs/reference/tech-stack.md`
-- `docs/reference/cross-platform.md`
+- `docs/tech-stack.md`
+- `docs/tech-stack.md`

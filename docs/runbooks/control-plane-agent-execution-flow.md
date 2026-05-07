@@ -138,6 +138,5 @@ Agent 在结束时应至少明确：
 
 ## 关联文档
 
-- [control-plane.md](../architecture/control-plane.md#principles)
-- [control-plane.md](../architecture/control-plane.md#cli-contract)
+- [架构](../architecture.md)
 - [app-project-delivery-workflow.md](app-project-delivery-workflow.md)

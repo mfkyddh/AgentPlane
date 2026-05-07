@@ -38,5 +38,5 @@ agentplane test fast --tb=short
 
 ## Downstream Docs
 
-- `docs/reference/open-source-readiness.md`
-- `docs/maintainers/control-plane-authoring.md`
+- `docs/architecture.md`
+- `docs/architecture.md`

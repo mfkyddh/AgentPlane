@@ -1,29 +1,28 @@
 ---
 status: active
 owner: AgentPlane maintainers
-last_verified: 2026-04-30
+last_verified: 2026-05-07
 superseded_by: null
-audience: both
+audience: ai
 ---
 
 # AI 助手工作规范
 
-> 👤 **人类读者**：本文档面向 AI Agent。如果你想了解"AI 是怎么工作的"，请查看
-> [docs/getting-started/getting-started.md](docs/getting-started/getting-started.md)。
+> 👤 **人类读者**：本文档面向 AI Agent。人类入口见 [docs/getting-started.md](docs/getting-started.md)。
 >
-> 本文档是 AI 助手的工作手册，每次对话自动注入。只放核心约束，详细规范见 `docs/reference/`。
+> 本文档是 AI 助手的工作手册，每次对话自动注入。只放核心约束。
 >
-> **维护规则**：本文档不超过 120 行。新规则一律先写进 reference 文档，只有 🔴 级别规则才可提炼一行到此处。
+> **维护规则**：本文档不超过 120 行。新规则一律先写进 `docs/`，只有 🔴 级别规则才可提炼一行到此处。
 
 ---
 
 ## 项目概述
 
-AgentPlane 是一个 Agent-first 控制面 CLI 工具。所有正式操作通过 `agentplane <domain> <surface> <verb> [flags]` 进入，提供 plan → execute → verify → record 生命周期。`.agents/skills/` 中定义的 Skill 是 AI 入口，它们路由到 CLI 命令——永远不要绕过 CLI。
+AgentPlane 是 Agent-first 控制面 CLI。所有操作通过 `agentplane <domain> <surface> <verb> [flags]` 进入，提供 plan → execute → verify → record 生命周期。Skill 是 AI 入口，路由到 CLI——永远不要绕过 CLI。
 
 **入口**: `agentplane/cli/app.py` → `main()`（也可 `python -m agentplane`）。
 
-**常用命令**: `uv run agentplane ...`（无需全局安装）· `agentplane test fast --tb=short`（快速测试）· `agentplane repo health-check --repo-root .`（健康检查）· `agentplane --help`（命令列表）
+**常用**: `uv run agentplane ...` · `agentplane test fast --tb=short` · `agentplane repo health-check --repo-root .` · `agentplane --help`
 
 ---
 
@@ -38,7 +37,7 @@ AgentPlane 是一个 Agent-first 控制面 CLI 工具。所有正式操作通过
 | 5 | **原子提交**：每个逻辑变更单元独立提交，暂存超 15 文件必须评估拆分 | 🔴 |
 | 6 | **Conventional Commits**：`type(scope): description` 格式 | 🔴 |
 | 7 | **先计划后执行**：高风险操作必须有 plan 阶段 | 🔴 |
-| 8 | **固定顶层结构**：新增顶层目录前先更新 `docs/reference/repository-structure.md` | 🔴 |
+| 8 | **固定顶层结构**：新增顶层目录前先更新目录契约 | 🔴 |
 | 9 | **执行后必验证**：每次变更都运行最小验证 | 🟡 |
 | 10 | **用 `pwsh` 而非 `cmd`**：Windows 上默认用 PowerShell | 🟡 |
 | 11 | **先查帮助再执行**：不确定时用 `--help` | 🟡 |
@@ -57,7 +56,7 @@ AgentPlane 是一个 Agent-first 控制面 CLI 工具。所有正式操作通过
 - 远程 Linux 走 `agentplane infra remote bash`，禁止手写多层 SSH
 - Python 用 `uv`，Node 用 `pnpm`，禁止 `UV_PROJECT_ENVIRONMENT` 指向平台路径
 
-> 完整规范：[docs/reference/cross-platform.md](docs/reference/cross-platform.md)
+> 完整规范：[docs/tech-stack.md](docs/tech-stack.md)
 
 ## 安全约束
 
@@ -73,8 +72,6 @@ AgentPlane 是一个 Agent-first 控制面 CLI 工具。所有正式操作通过
 - `.gitattributes` 为换行符唯一权威（`* text=auto eol=lf`），`core.autocrlf=false`
 - 单人维护默认完成小任务后自动 commit、合入本地 `main`、推送 `origin main`
 - 禁止 `push --force` 到 main
-
-> 完整规范：[docs/reference/git-conventions.md](docs/reference/git-conventions.md)
 
 ---
 
@@ -117,4 +114,4 @@ AgentPlane 是一个 Agent-first 控制面 CLI 工具。所有正式操作通过
 
 ## 文档索引
 
-完整地图见 [docs/README.md](docs/README.md)。最常用：[控制面合同](docs/architecture/control-plane.md) · [跨平台](docs/reference/cross-platform.md) · [Git 规范](docs/reference/git-conventions.md) · [测试分层](docs/reference/testing-architecture.md) · [代码联动](docs/maintainers/control-plane-authoring.md)
+完整地图见 [docs/README.md](docs/README.md)。最常用：[架构](docs/architecture.md) · [技术栈](docs/tech-stack.md) · [命令参考](docs/command-reference.md) · [WebUI](docs/webui.md)

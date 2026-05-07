@@ -33,5 +33,5 @@ agentplane app delivery doc-sync --target <target> --app <app> --repo-root <repo
 
 ## Downstream Docs
 
-- `docs/architecture/control-plane.md`
+- `docs/architecture.md`
 - `docs/runbooks/control-plane-agent-execution-flow.md`

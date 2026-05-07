@@ -39,5 +39,5 @@ agentplane infra secrets sync-layout <target> --repo-root <repo-root> --write
 
 ## Downstream Docs
 
-- `docs/reference/app-repository-standard.md`
-- `docs/architecture/agentplane-app-collaboration.md`
+- `docs/architecture.md`
+- `docs/architecture.md`

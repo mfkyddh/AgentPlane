@@ -172,7 +172,7 @@ agentplane repo health-check --repo-root .
 
 - **部署应用到新服务器**：跟着 [部署你的第一个应用](./deploy-first-app.md)，把 `--target` 换成 `prod3-main`
 - **配置网络**：如果新服务器需要与其他服务器通信，先在私有 runbook 中记录目标网络拓扑，再用 `agentplane infra network audit` 验证。
-- **创建治理文档**：参考 [control-plane-domain-onboarding.md](../runbooks/control-plane-domain-onboarding.md) 把新服务器纳入正式治理
+- **创建治理文档**：参考 [架构文档](../architecture.md) 把新服务器纳入正式治理
 
 ## 常用命令速查
 

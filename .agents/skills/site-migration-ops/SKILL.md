@@ -32,5 +32,5 @@ agentplane ingress refresh-ledger --target <target> --repo-root <repo-root> --wr
 
 ## Downstream Docs
 
-- `docs/runbooks/control-plane-domain-onboarding.md`
-- `docs/reference/onepanel-api-contract.md`
+- [docs/architecture.md](../../docs/architecture.md)
+- [docs/tech-stack.md](../../docs/tech-stack.md)

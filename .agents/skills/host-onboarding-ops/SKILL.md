@@ -35,4 +35,4 @@ agentplane infra network audit <target> --repo-root <repo-root>
 
 - `docs/tutorials/add-new-server.md`
 - `docs/runbooks/bootstrap-secrets.md`
-- `docs/reference/cross-platform.md`
+- `docs/tech-stack.md`
