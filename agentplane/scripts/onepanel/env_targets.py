@@ -3,7 +3,9 @@
 
 from __future__ import annotations
 
+import re
 import subprocess
+import urllib.parse
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -55,29 +57,57 @@ def repo_root() -> Path:
     return REPO_ROOT
 
 
+def _parse_ssh_config(config_path: Path) -> dict[str, dict[str, str]]:
+    """Parse SSH config into {alias: {user, hostname, ...}}."""
+    entries: dict[str, dict[str, str]] = {}
+    current_alias: str | None = None
+    if not config_path.is_file():
+        return entries
+    for raw_line in config_path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        match = re.match(r"^Host\s+(.+)$", line, re.IGNORECASE)
+        if match:
+            # First token is the primary alias
+            current_alias = match.group(1).split()[0]
+            entries[current_alias] = {}
+            continue
+        if current_alias:
+            kv = line.split(None, 1)
+            if len(kv) == 2:
+                entries[current_alias][kv[0].lower()] = kv[1]
+    return entries
+
+
+def _derive_env_file(root: Path, target: str) -> Path:
+    """Find the API env file for a target, checking target-specific first."""
+    target_specific = root / "secrets" / "services" / f"onepanel-api.{target}.env"
+    if target_specific.is_file():
+        return target_specific
+    host_specific = root / "secrets" / "hosts" / target / "onepanel" / "api.env"
+    if host_specific.is_file():
+        return host_specific
+    return root / "secrets" / "services" / "onepanel-api.env"
+
+
+def _derive_tunnel_port(config: OnePanelConfig) -> int | None:
+    """Extract port from connect_base_url if it's a localhost address."""
+    parsed = urllib.parse.urlparse(config.connect_base_url)
+    if parsed.hostname in ("127.0.0.1", "localhost") and parsed.port:
+        return parsed.port
+    return None
+
+
 def get_target(name: str, env_file_override: str | None = None) -> TargetConfig:
     root = repo_root()
     workspace = resolve_workspace_from_repo(root)
-    if name == "prod0-main":
-        env_file = Path(env_file_override) if env_file_override else root / "secrets" / "services" / "onepanel-api.env"
-        return TargetConfig(
-            name=name,
-            mode="ssh",
-            api_env_file=env_file,
-            api_config=load_config(env_file),
-            ssh_alias="prod0-main",
-            ssh_config=workspace.private_root / "ssh" / "config",
-            ssh_user="root",
-            ssh_requires_sudo=False,
-            tunnel_port=2096,
-        )
+    ssh_config_path = workspace.private_root / "ssh" / "config"
+    ssh_entries = _parse_ssh_config(ssh_config_path)
+
+    # WSL: local mode with WSL backend
     if name == "wsl":
-        host_truth_env = workspace.private_root / "hosts" / "wsl" / "onepanel" / "api.env"
-        env_file = (
-            Path(env_file_override)
-            if env_file_override
-            else (host_truth_env if host_truth_env.is_file() else workspace.private_root / "services" / "onepanel-api.wsl.env")
-        )
+        env_file = Path(env_file_override) if env_file_override else _derive_env_file(root, name)
         return TargetConfig(
             name=name,
             mode="local",
@@ -85,8 +115,30 @@ def get_target(name: str, env_file_override: str | None = None) -> TargetConfig:
             api_config=load_config(env_file),
             linux_backend=default_linux_backend(),
         )
+
+    # SSH targets: derived from SSH config
+    if name in ssh_entries:
+        entry = ssh_entries[name]
+        env_file = Path(env_file_override) if env_file_override else _derive_env_file(root, name)
+        config = load_config(env_file)
+        return TargetConfig(
+            name=name,
+            mode="ssh",
+            api_env_file=env_file,
+            api_config=config,
+            ssh_alias=name,
+            ssh_config=ssh_config_path,
+            ssh_user=entry.get("user"),
+            ssh_requires_sudo=entry.get("user") != "root",
+            tunnel_port=_derive_tunnel_port(config),
+        )
+
     raise ValueError(f"Unsupported target: {name}")
 
 
 def supported_targets() -> tuple[str, ...]:
-    return ("prod0-main", "wsl")
+    root = repo_root()
+    workspace = resolve_workspace_from_repo(root)
+    ssh_config_path = workspace.private_root / "ssh" / "config"
+    ssh_entries = _parse_ssh_config(ssh_config_path)
+    return ("wsl", *ssh_entries.keys())
