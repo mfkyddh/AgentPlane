@@ -585,6 +585,7 @@ class OnePanelEnvTargetsTests(unittest.TestCase):
 
     def test_phase4_lane12_projection_fixture_apply_requires_execute_for_mutation_guardrail(self) -> None:
         result = self._run_cli(
+            "project",
             "projection",
             "fixture",
             "apply",

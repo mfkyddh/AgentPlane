@@ -1,21 +1,11 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import Any
 
 from agentplane.domain.app.models import AppCatalogEntry
 from agentplane.domain.app.resource_models import AppResourceDefinition
-
-
-def load_target_inventory(repo_root: Path, target: str) -> dict[str, Any]:
-    inventory_file = repo_root / "inventory" / "servers" / target / "inventory.json"
-    if not inventory_file.is_file():
-        return {}
-    payload = json.loads(inventory_file.read_text(encoding="utf-8"))
-    if not isinstance(payload, dict):
-        raise ValueError(f"inventory 顶层必须是对象: {inventory_file}")
-    return payload
+from agentplane.inventory.host_inventory import load_host_inventory
 
 
 def _catalog_entry_maps(repo_root: Path) -> tuple[dict[str, AppCatalogEntry], dict[str, AppCatalogEntry]]:
@@ -64,7 +54,10 @@ def _registry_identity(
 
 
 def app_resource_inventory_projection(repo_root: Path, target: str, app: str) -> dict[str, Any]:
-    inventory = load_target_inventory(repo_root, target)
+    try:
+        inventory = load_host_inventory(repo_root, target)
+    except ValueError:
+        inventory = {}
     by_app, by_service_key = _catalog_entry_maps(repo_root)
     _, service_key = _catalog_identity(by_app, by_service_key, app=app)
     services = inventory.get("services")

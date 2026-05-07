@@ -53,7 +53,7 @@ $ agentplane service apply --target prod --name myapp --execute
 ```bash
 git clone <你的仓库地址> && cd AgentPlane
 uv tool install -e .
-agentplane bootstrap doctor --repo-root .
+agentplane infra bootstrap doctor --repo-root .
 ```
 
 详细步骤见 [入门指南](docs/getting-started.md)。

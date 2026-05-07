@@ -199,12 +199,12 @@ agentplane service verify --target prod0-main --name myapp
 
 **如何生成**：从 Host Inventory 和 Object Ledgers 计算得出。
 
-**何时更新**：每次执行 `agentplane repo status` 时更新。
+**何时更新**：每次执行 `agentplane project status` 时更新。
 
 **示例**：
 ```bash
 # 查看仓库状态
-agentplane repo status --repo-root .
+agentplane project status --repo-root .
 ```
 
 ### 标准执行闭环

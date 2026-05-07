@@ -80,20 +80,13 @@ class ProjectionRuntimeEnvCliTests(unittest.TestCase):
             write_resource_secrets(root)
 
             result = run_cli(
-                "projection",
-                "runtime-env",
-                "plan",
-                "--target",
-                "prod0-main",
-                "--app",
-                "sampleapi",
-                "--repo-root",
-                str(root),
+                "project", "projection", "runtime-env", "plan",
+                "--target", "prod0-main", "--app", "sampleapi", "--repo-root", str(root),
             )
 
             self.assertNotEqual(result.returncode, 0)
             payload = json.loads(result.stdout)
-            self.assertEqual("projection", payload["command"])
+            self.assertEqual("project", payload["command"])
             self.assertEqual("runtime-env.plan", payload["action"])
             self.assertFalse(payload["ok"])
             self.assertEqual("app.resource.registry_missing_app", payload["error"]["id"])
@@ -106,20 +99,13 @@ class ProjectionRuntimeEnvCliTests(unittest.TestCase):
             write_resource_secrets(root)
 
             result = run_cli(
-                "projection",
-                "runtime-env",
-                "plan",
-                "--target",
-                "prod0-main",
-                "--app",
-                "sub2api",
-                "--repo-root",
-                str(root),
+                "project", "projection", "runtime-env", "plan",
+                "--target", "prod0-main", "--app", "sub2api", "--repo-root", str(root),
             )
 
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             payload = json.loads(result.stdout)
-            self.assertEqual("projection", payload["command"])
+            self.assertEqual("project", payload["command"])
             self.assertEqual("runtime-env.plan", payload["action"])
             self.assertEqual(str(root / "secrets" / "services" / "sub2api.prod0.env"), payload["env_file"])
             self.assertFalse(payload["written"])
@@ -131,15 +117,8 @@ class ProjectionRuntimeEnvCliTests(unittest.TestCase):
             self.assertFalse((root / "secrets" / "services" / "sub2api.prod0.env").exists())
 
             revealed = run_cli(
-                "projection",
-                "runtime-env",
-                "plan",
-                "--target",
-                "prod0-main",
-                "--app",
-                "sub2api",
-                "--repo-root",
-                str(root),
+                "project", "projection", "runtime-env", "plan",
+                "--target", "prod0-main", "--app", "sub2api", "--repo-root", str(root),
                 "--reveal-secrets",
             )
 
@@ -157,20 +136,13 @@ class ProjectionRuntimeEnvCliTests(unittest.TestCase):
             write_resource_secrets(root)
 
             result = run_cli(
-                "projection",
-                "runtime-env",
-                "verify",
-                "--target",
-                "prod0-main",
-                "--app",
-                "sub2api",
-                "--repo-root",
-                str(root),
+                "project", "projection", "runtime-env", "verify",
+                "--target", "prod0-main", "--app", "sub2api", "--repo-root", str(root),
             )
 
             self.assertNotEqual(result.returncode, 0)
             payload = json.loads(result.stdout)
-            self.assertEqual("projection", payload["command"])
+            self.assertEqual("project", payload["command"])
             self.assertEqual("runtime-env.verify", payload["action"])
             self.assertFalse(payload["ok"])
             self.assertEqual("projection.runtime_env_missing", payload["error"]["id"])
@@ -189,20 +161,13 @@ class ProjectionRuntimeEnvCliTests(unittest.TestCase):
             )
 
             result = run_cli(
-                "projection",
-                "runtime-env",
-                "verify",
-                "--target",
-                "prod0-main",
-                "--app",
-                "sub2api",
-                "--repo-root",
-                str(root),
+                "project", "projection", "runtime-env", "verify",
+                "--target", "prod0-main", "--app", "sub2api", "--repo-root", str(root),
             )
 
             self.assertNotEqual(result.returncode, 0)
             payload = json.loads(result.stdout)
-            self.assertEqual("projection", payload["command"])
+            self.assertEqual("project", payload["command"])
             self.assertEqual("runtime-env.verify", payload["action"])
             self.assertFalse(payload["ok"])
             self.assertEqual("projection.runtime_env_drift", payload["error"]["id"])
@@ -217,18 +182,14 @@ class ProjectionRuntimeEnvCliTests(unittest.TestCase):
             self.assertNotIn("JWT_SECRET=keep", result.stdout)
 
 
-# ======================================================================
-# From: test_projection_validation_cli.py
-# ======================================================================
-
-
 class ProjectionValidationCliTests(unittest.TestCase):
     def test_projection_verification_run_wraps_suite_payload(self) -> None:
-        from agentplane.cli.projection import handle_projection_command
+        from agentplane.cli.project import _handle_projection
 
         args = SimpleNamespace(
-            projection_surface="verification",
-            projection_verification_action="run",
+            project_action="projection",
+            project_projection_surface="verification",
+            project_projection_verification_action="run",
             target="wsl",
             profile="wsl-fixture",
             repo_root=str(REPO_ROOT),
@@ -243,26 +204,27 @@ class ProjectionValidationCliTests(unittest.TestCase):
         )
 
         with (
-            patch("agentplane.cli.projection._executor_for_target", return_value=object()),
+            patch("agentplane.cli.project.onepanel_target_executor", return_value=object()),
             patch(
-                "agentplane.cli.projection.run_onepanel_verification_suite",
+                "agentplane.cli.project.run_onepanel_verification_suite",
                 return_value={"ok": True, "checks": []},
             ) as run_suite,
         ):
-            payload = handle_projection_command(args)
+            payload = _handle_projection(args)
 
-        self.assertEqual("projection", payload["command"])
+        self.assertEqual("project", payload["command"])
         self.assertEqual("verification.run", payload["action"])
         self.assertTrue(payload["ok"])
         self.assertEqual("wsl-fixture", run_suite.call_args.kwargs["profile"])
         self.assertEqual("wsl", run_suite.call_args.kwargs["env"])
 
     def test_projection_verification_run_redacts_sensitive_payload(self) -> None:
-        from agentplane.cli.projection import handle_projection_command
+        from agentplane.cli.project import _handle_projection
 
         args = SimpleNamespace(
-            projection_surface="verification",
-            projection_verification_action="run",
+            project_action="projection",
+            project_projection_surface="verification",
+            project_projection_verification_action="run",
             target="wsl",
             profile="wsl-fixture",
             repo_root=str(REPO_ROOT),
@@ -277,22 +239,23 @@ class ProjectionValidationCliTests(unittest.TestCase):
         )
 
         with (
-            patch("agentplane.cli.projection._executor_for_target", return_value=object()),
+            patch("agentplane.cli.project.onepanel_target_executor", return_value=object()),
             patch(
-                "agentplane.cli.projection.run_onepanel_verification_suite",
+                "agentplane.cli.project.run_onepanel_verification_suite",
                 return_value={"ok": True, "checks": [{"scope": "panel", "ok": True, "payload": {"apiKey": "secret"}}]},
             ),
         ):
-            payload = handle_projection_command(args)
+            payload = _handle_projection(args)
 
         self.assertEqual("<redacted>", payload["checks"][0]["payload"]["apiKey"])
 
     def test_projection_fixture_apply_requires_execute(self) -> None:
-        from agentplane.cli.projection import handle_projection_command
+        from agentplane.cli.project import _handle_projection
 
         args = SimpleNamespace(
-            projection_surface="fixture",
-            projection_fixture_action="apply",
+            project_action="projection",
+            project_projection_surface="fixture",
+            project_projection_fixture_action="apply",
             target="wsl",
             profile="wsl-fixture",
             repo_root=str(REPO_ROOT),
@@ -305,14 +268,15 @@ class ProjectionValidationCliTests(unittest.TestCase):
         )
 
         with self.assertRaisesRegex(ValueError, "--execute"):
-            handle_projection_command(args)
+            _handle_projection(args)
 
     def test_projection_fixture_cleanup_wraps_underlying_payload(self) -> None:
-        from agentplane.cli.projection import handle_projection_command
+        from agentplane.cli.project import _handle_projection
 
         args = SimpleNamespace(
-            projection_surface="fixture",
-            projection_fixture_action="cleanup",
+            project_action="projection",
+            project_projection_surface="fixture",
+            project_projection_fixture_action="cleanup",
             target="wsl",
             profile="wsl-fixture",
             repo_root=str(REPO_ROOT),
@@ -325,17 +289,14 @@ class ProjectionValidationCliTests(unittest.TestCase):
         )
 
         with (
-            patch("agentplane.cli.projection.resolve_fixture_spec", return_value=object()) as resolve_spec,
+            patch("agentplane.cli.project.resolve_fixture_spec", return_value=object()) as resolve_spec,
+            patch("agentplane.cli.project.onepanel_target_executor", return_value=object()),
             patch(
-                "agentplane.cli.projection._executor_for_target",
-                return_value=object(),
-            ),
-            patch(
-                "agentplane.cli.projection.cleanup_fixture",
+                "agentplane.cli.project.cleanup_fixture",
                 return_value={"ok": True, "items": [{"object": "project", "action": "down-project"}]},
             ) as cleanup_fixture,
         ):
-            payload = handle_projection_command(args)
+            payload = _handle_projection(args)
 
         resolve_spec.assert_called_once_with(
             "wsl-fixture",
@@ -347,29 +308,30 @@ class ProjectionValidationCliTests(unittest.TestCase):
             firewall_tab="",
         )
         cleanup_fixture.assert_called_once()
-        self.assertEqual("projection", payload["command"])
+        self.assertEqual("project", payload["command"])
         self.assertEqual("fixture.cleanup", payload["action"])
         self.assertTrue(payload["ok"])
 
     def test_projection_ledger_refresh_wraps_formal_envelope(self) -> None:
-        from agentplane.cli.projection import handle_projection_command
+        from agentplane.cli.project import _handle_projection
 
         args = SimpleNamespace(
-            projection_surface="ledger",
-            projection_ledger_action="refresh",
+            project_action="projection",
+            project_projection_surface="ledger",
+            project_projection_ledger_action="refresh",
             target="prod0-main",
             repo_root=str(REPO_ROOT),
             write=True,
         )
 
         with patch(
-            "agentplane.cli.projection.refresh_onepanel_ledgers",
+            "agentplane.cli.project.refresh_onepanel_ledgers",
             return_value={"counts": {"websites": 1}, "written": True},
         ) as refresh_ledgers:
-            payload = handle_projection_command(args)
+            payload = _handle_projection(args)
 
         refresh_ledgers.assert_called_once_with(REPO_ROOT.resolve(), "prod0-main", write=True)
-        self.assertEqual("projection", payload["command"])
+        self.assertEqual("project", payload["command"])
         self.assertEqual("ledger.refresh", payload["action"])
         self.assertEqual({"websites": 1}, payload["counts"])
 

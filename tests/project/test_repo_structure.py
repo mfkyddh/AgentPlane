@@ -610,7 +610,7 @@ class CommitMessagePolicyTests(unittest.TestCase):
             [
                 sys.executable,
                 "-m",
-                "agentplane.domain.repository.commit_message",
+                "agentplane.domain.project.commit_message",
                 "--message",
                 "docs(standards): add project health guardrails",
             ],
@@ -627,7 +627,7 @@ class CommitMessagePolicyTests(unittest.TestCase):
             [
                 sys.executable,
                 "-m",
-                "agentplane.domain.repository.commit_message",
+                "agentplane.domain.project.commit_message",
                 "--message",
                 "Update stuff",
             ],
@@ -667,7 +667,7 @@ class CommitMessagePolicyTests(unittest.TestCase):
                 [
                     sys.executable,
                     "-m",
-                    "agentplane.domain.repository.commit_message",
+                    "agentplane.domain.project.commit_message",
                     "--range",
                     "HEAD",
                 ],

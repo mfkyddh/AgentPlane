@@ -29,10 +29,10 @@ python -m agentplane ...
 ## 体检
 
 ```bash
-agentplane bootstrap inspect-local --repo-root .
-agentplane bootstrap doctor --repo-root .
-agentplane bootstrap init-secrets --repo-root .
-agentplane bootstrap verify-secrets --repo-root .
+agentplane infra bootstrap inspect-local --repo-root .
+agentplane infra bootstrap doctor --repo-root .
+agentplane infra bootstrap init-secrets --repo-root .
+agentplane infra bootstrap verify-secrets --repo-root .
 ```
 
 体检通过，说明环境就绪。
@@ -42,8 +42,8 @@ agentplane bootstrap verify-secrets --repo-root .
 ## 查看状态
 
 ```bash
-agentplane repo status --repo-root . --html tmp/agentplane-status.html
-agentplane repo health-check --repo-root .
+agentplane project status --repo-root . --html tmp/agentplane-status.html
+agentplane project health-check --repo-root .
 ```
 
 ---

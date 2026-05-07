@@ -25,16 +25,16 @@ skills:
     frontmatter_name: agentplane-projection-ops
     source_path: .agents/skills/agentplane-projection-ops/SKILL.md
     kind: canonical
-    domains: [projection]
+    domains: [project]
     aliases: [projection-ops, inventory-ledger-ops]
-    entrypoint: uv run python -m agentplane.cli projection
-  - name: agentplane-repo-ops
-    frontmatter_name: agentplane-repo-ops
-    source_path: .agents/skills/agentplane-repo-ops/SKILL.md
+    entrypoint: uv run python -m agentplane.cli project projection
+  - name: agentplane-project-ops
+    frontmatter_name: agentplane-project-ops
+    source_path: .agents/skills/agentplane-project-ops/SKILL.md
     kind: canonical
-    domains: [repo]
+    domains: [project]
     aliases: []
-    entrypoint: uv run python -m agentplane.cli repo
+    entrypoint: uv run python -m agentplane.cli project
   - name: agentplane-service-ops
     frontmatter_name: agentplane-service-ops
     source_path: .agents/skills/agentplane-service-ops/SKILL.md
@@ -62,7 +62,7 @@ skills:
     kind: workflow
     domains: [infra]
     aliases: [onepanel-host-setup, ubuntu-ssh-security-baseline, ssh-root-login-setup]
-    entrypoint: uv run python -m agentplane.cli bootstrap
+    entrypoint: uv run python -m agentplane.cli infra bootstrap
   - name: openclaw-ops
     frontmatter_name: openclaw-ops
     source_path: .agents/skills/openclaw-ops/SKILL.md

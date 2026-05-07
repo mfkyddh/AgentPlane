@@ -17,11 +17,12 @@ VALID_CLI_PREFIXES = (
     "agentplane service",
     "agentplane ingress",
     "agentplane app",
-    "agentplane projection",
-    "agentplane repo",
-    "agentplane bootstrap",
+    "agentplane project",
+    "agentplane infra",
+    "agentplane service",
+    "agentplane ingress",
+    "agentplane app",
     "agentplane test",
-    "agentplane onepanel",
 )
 
 

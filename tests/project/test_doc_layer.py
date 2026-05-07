@@ -4,7 +4,7 @@ import textwrap
 from pathlib import Path
 
 import pytest
-from agentplane.domain.repository.doc_layer import _expected_layer, _extract_layer, run_doc_layer_check
+from agentplane.domain.project.doc_layer import _expected_layer, _extract_layer, run_doc_layer_check
 
 
 class TestExpectedLayer:

@@ -30,9 +30,6 @@ agentplane infra automation plan <target> --name <automation-name> --operation <
 agentplane infra automation apply <target> --name <automation-name> --operation <operation> --repo-root <repo-root> --execute
 agentplane infra secrets init-data-services <target> --repo-root <repo-root>
 agentplane infra secrets sync-layout <target> --repo-root <repo-root> --write
-agentplane onepanel --env <target> panel get
-agentplane onepanel --env <target> firewall verify --tab port --expected-active true --json
-agentplane onepanel --env <target> cronjob search --info <keyword>
 ```
 
 ## Capability Details

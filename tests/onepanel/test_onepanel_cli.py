@@ -254,7 +254,7 @@ class OnePanelObjectCliHandlerTests(unittest.TestCase):
 # ======================================================================
 
 CATALOG_FILE = REPO_ROOT / ".agents" / "skills" / "catalog.yaml"
-REQUIRED_DOMAINS = {"infra", "service", "ingress", "app", "projection", "repo"}
+REQUIRED_DOMAINS = {"infra", "service", "ingress", "app", "project"}
 
 
 class OnePanelPluginAndSkillsTests(unittest.TestCase):
@@ -371,11 +371,11 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
             ),
             "agentplane-projection-ops": (
                 "--repo-root <repo-root>",
-                "projection verification run --target <target> --profile <profile> --repo-root <repo-root>",
+                "project projection verification run --target <target> --profile <profile> --repo-root <repo-root>",
             ),
-            "agentplane-repo-ops": (
+            "agentplane-project-ops": (
                 "--repo-root <repo-root>",
-                "repo docs-sanity --repo-root <repo-root>",
+                "project docs-sanity --repo-root <repo-root>",
             ),
             "agentplane-service-ops": (
                 "--repo-root <repo-root>",
@@ -446,13 +446,13 @@ class OnePanelPluginAndSkillsTests(unittest.TestCase):
         )
         catalog_text = CATALOG_FILE.read_text(encoding="utf-8")
 
-        self.assertIn("agentplane projection runtime-env plan --target <target> --app <app>", repo_skill_text)
-        self.assertIn("agentplane projection runtime-env apply --target <target> --app <app>", repo_skill_text)
-        self.assertIn("agentplane projection runtime-env verify --target <target> --app <app>", repo_skill_text)
-        self.assertIn("agentplane projection verification run --target <target> --profile <profile>", repo_skill_text)
-        self.assertIn("agentplane projection fixture plan --target <target> --profile <profile>", repo_skill_text)
-        self.assertIn("agentplane projection ledger refresh --target <target>", repo_skill_text)
-        self.assertIn("entrypoint: uv run python -m agentplane.cli projection", catalog_text)
+        self.assertIn("agentplane project projection runtime-env plan --target <target> --app <app>", repo_skill_text)
+        self.assertIn("agentplane project projection runtime-env apply --target <target> --app <app>", repo_skill_text)
+        self.assertIn("agentplane project projection runtime-env verify --target <target> --app <app>", repo_skill_text)
+        self.assertIn("agentplane project projection verification run --target <target> --profile <profile>", repo_skill_text)
+        self.assertIn("agentplane project projection fixture plan --target <target> --profile <profile>", repo_skill_text)
+        self.assertIn("agentplane project projection ledger refresh --target <target>", repo_skill_text)
+        self.assertIn("entrypoint: uv run python -m agentplane.cli project projection", catalog_text)
 
 
 # ======================================================================

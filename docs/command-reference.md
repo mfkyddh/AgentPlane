@@ -19,7 +19,7 @@ agentplane <domain> <surface> <verb> [flags]
 
 | 部分 | 说明 | 示例 |
 |------|------|------|
-| `<domain>` | 域 | `infra`、`service`、`app`、`ingress` |
+| `<domain>` | 域 | `infra`、`service`、`app`、`ingress`、`project` |
 | `<surface>` | 对象面或工作流面 | `service`、`app delivery` |
 | `<verb>` | 动作 | `search`、`get`、`plan`、`apply`、`verify` |
 | `[flags]` | 可选参数 | `--target`、`--repo-root`、`--json` |
@@ -55,6 +55,12 @@ agentplane infra secrets sync-layout <target> --repo-root <repo-root>
 
 # 健康检查
 agentplane infra health <target> --repo-root <repo-root>
+
+# Bootstrap
+agentplane infra bootstrap doctor --repo-root .
+agentplane infra bootstrap inspect-local --repo-root .
+agentplane infra bootstrap init-secrets --repo-root .
+agentplane infra bootstrap verify-secrets --repo-root .
 ```
 
 ---
@@ -182,79 +188,38 @@ agentplane ingress publish apply --target <target> --config-file <config-file> -
 
 ## project 域：项目治理
 
-管理项目分组、聚合状态、项目级配置。
-
-> project 域当前未实现，以下为规划中的命令。
+管理仓库健康、投影验证、Skill 治理。
 
 ```bash
-# 查看项目整体状态
-agentplane project status --project <project>
+# 仓库状态
+agentplane project status --repo-root . --html tmp/agentplane-status.html
 
-# 列出项目下的应用
-agentplane project apps list --project <project>
+# 健康检查
+agentplane project health-check --repo-root .
+
+# 文档检查
+agentplane project docs-sanity --repo-root .
+agentplane project doc-layer --repo-root .
+
+# 安全扫描
+agentplane project secret-scan --repo-root .
+agentplane project privacy-scan --repo-root .
+
+# Skill 治理
+agentplane project skills check --repo-root .
+agentplane project skills list --repo-root .
+
+# 投影管理
+agentplane project projection runtime-env plan --target <target> --app <app> --repo-root <repo-root>
+agentplane project projection runtime-env verify --target <target> --app <app> --repo-root <repo-root>
+agentplane project projection verification run --target <target> --profile <profile> --repo-root <repo-root>
+agentplane project projection fixture plan --target <target> --profile <profile> --repo-root <repo-root>
+agentplane project projection ledger refresh --target <target> --repo-root <repo-root> --write
 ```
 
 ---
 
 ## 工具命令
-
-以下命令不属于业务域，而是项目治理和调试工具。
-
-### 投影管理 (projection)
-
-```bash
-# 运行时环境计划
-agentplane projection runtime-env plan --target <target> --app <app> --repo-root <repo-root>
-
-# 运行时环境验证
-agentplane projection runtime-env verify --target <target> --app <app> --repo-root <repo-root>
-
-# 验证套件运行
-agentplane projection verification run --target <target> --profile <profile> --repo-root <repo-root>
-
-# Fixture 管理
-agentplane projection fixture plan --target <target> --profile <profile> --repo-root <repo-root>
-agentplane projection fixture apply --target <target> --profile <profile> --repo-root <repo-root> --execute
-agentplane projection fixture cleanup --target <target> --profile <profile> --repo-root <repo-root> --execute
-
-# 台账刷新
-agentplane projection ledger refresh --target <target> --repo-root <repo-root> --write
-```
-
-### 仓库治理 (repo)
-
-```bash
-# 仓库状态
-agentplane repo status --repo-root . --html tmp/agentplane-status.html
-
-# 健康检查
-agentplane repo health-check --repo-root .
-
-# 文档检查
-agentplane repo docs-sanity --repo-root .
-
-# Skill 检查
-agentplane repo skills check --repo-root .
-
-# 隐私扫描
-agentplane repo privacy-scan --repo-root .
-```
-
-### 引导 (bootstrap)
-
-```bash
-# 本地检查
-agentplane bootstrap inspect-local --repo-root .
-
-# 诊断
-agentplane bootstrap doctor --repo-root .
-
-# 初始化 secrets
-agentplane bootstrap init-secrets --repo-root .
-
-# 验证 secrets
-agentplane bootstrap verify-secrets --repo-root .
-```
 
 ### WebUI
 

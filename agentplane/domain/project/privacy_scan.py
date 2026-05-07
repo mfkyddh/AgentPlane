@@ -5,7 +5,7 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
-from agentplane.domain.repository.secret_scan import load_secret_scan_allowlist
+from agentplane.domain.project.secret_scan import load_secret_scan_allowlist
 
 PRIVATE_PATH_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("private-inventory", re.compile(r"^inventory/servers/")),

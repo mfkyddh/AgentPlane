@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import Any
 
 from agentplane.domain.service.models import ServiceDefinition
 from agentplane.domain.targets import SUPPORTED_SERVICE_TARGETS
+from agentplane.inventory.host_inventory import load_host_inventory
 
 FIXED_SERVICE_DEFINITIONS: dict[str, ServiceDefinition] = {
     "postgres": ServiceDefinition(
@@ -57,16 +57,6 @@ _RESERVED_SERVICE_KEYS = {"public_ingresses", "docker", "onepanel"}
 _DYNAMIC_CONTROL_PLANES = {"compose", "onepanel-app", "onepanel-compose"}
 RESERVED_SERVICE_KEYS = frozenset(_RESERVED_SERVICE_KEYS)
 DYNAMIC_CONTROL_PLANES = frozenset(_DYNAMIC_CONTROL_PLANES)
-
-
-def load_target_inventory(repo_root: Path, target: str) -> dict[str, Any]:
-    inventory_file = repo_root / "inventory" / "servers" / target / "inventory.json"
-    if not inventory_file.is_file():
-        raise ValueError(f"缺少 inventory 文件: {inventory_file}")
-    payload = json.loads(inventory_file.read_text(encoding="utf-8"))
-    if not isinstance(payload, dict):
-        raise ValueError(f"inventory 顶层必须是对象: {inventory_file}")
-    return payload
 
 
 def _wsl_service_names(inventory: dict[str, Any]) -> set[str]:
@@ -141,7 +131,7 @@ def _dynamic_services_for_target(
 
 
 def available_services(repo_root: Path, target: str) -> list[tuple[ServiceDefinition, dict[str, Any] | None]]:
-    inventory = load_target_inventory(repo_root, target)
+    inventory = load_host_inventory(repo_root, target)
     items: list[tuple[ServiceDefinition, dict[str, Any] | None]] = []
     for definition in FIXED_SERVICE_DEFINITIONS.values():
         if target not in definition.supported_targets:
@@ -169,7 +159,7 @@ def resolve_service_name(
     container_name: str = "",
     project_name: str = "",
 ) -> str:
-    inventory = load_target_inventory(repo_root, target)
+    inventory = load_host_inventory(repo_root, target)
     services = inventory.get("services")
     if not isinstance(services, dict):
         raise ValueError(f"inventory.services 缺失: {target}")

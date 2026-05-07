@@ -76,7 +76,7 @@ Detailed guide: [docs/tech-stack.md](docs/tech-stack.md)
 Run:
 
 ```bash
-agentplane repo health-check --repo-root .
+agentplane project health-check --repo-root .
 ```
 
 For docs or contract changes, also run the relevant focused tests under `tests/`.

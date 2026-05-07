@@ -22,7 +22,7 @@ AgentPlane 是 Agent-first 控制面 CLI。所有操作通过 `agentplane <domai
 
 **入口**: `agentplane/cli/app.py` → `main()`（也可 `python -m agentplane`）。
 
-**常用**: `uv run agentplane ...` · `agentplane test fast --tb=short` · `agentplane repo health-check --repo-root .` · `agentplane --help`
+**常用**: `uv run agentplane ...` · `agentplane test fast --tb=short` · `agentplane project health-check --repo-root .` · `agentplane --help`
 
 ---
 

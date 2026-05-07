@@ -80,3 +80,25 @@ def redact_execution_payload(payload: dict[str, Any]) -> dict[str, Any]:
         if isinstance(value, str):
             redacted[key] = redact_output_text(value)
     return redacted
+
+
+REDACTED = "[REDACTED]"
+
+
+def scrub_persisted_payload(value: Any) -> Any:
+    """Recursively scrub sensitive keys from a payload dict.
+
+    Replaces values of sensitive keys with "[REDACTED]".
+    Used for persisted artifacts like ledgers and verification reports.
+    """
+    if isinstance(value, dict):
+        scrubbed: dict[str, Any] = {}
+        for key, item in value.items():
+            if is_sensitive_key(key):
+                scrubbed[key] = REDACTED
+            else:
+                scrubbed[key] = scrub_persisted_payload(item)
+        return scrubbed
+    if isinstance(value, list):
+        return [scrub_persisted_payload(item) for item in value]
+    return value

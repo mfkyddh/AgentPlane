@@ -10,8 +10,8 @@ from agentplane.domain.service.registry import (
     DYNAMIC_CONTROL_PLANES,
     RESERVED_SERVICE_KEYS,
     SUPPORTED_SERVICE_TARGETS,
-    load_target_inventory,
 )
+from agentplane.inventory.host_inventory import load_host_inventory
 
 SERVICE_KEY_PATTERN = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
 SERVICE_SECTION_KEY = "services"
@@ -75,7 +75,7 @@ def apply_service_onboard(
 ) -> ServiceLifecycleMutation:
     _ensure_supported_target(target)
     inventory_path = _inventory_path(repo_root, target)
-    inventory = load_target_inventory(repo_root, target)
+    inventory = load_host_inventory(repo_root, target)
     services_section = inventory.get(SERVICE_SECTION_KEY)
     next_services, evidence = plan_service_registry_onboard(
         services_section,
@@ -109,7 +109,7 @@ def apply_service_offboard(
 ) -> ServiceLifecycleMutation:
     _ensure_supported_target(target)
     inventory_path = _inventory_path(repo_root, target)
-    inventory = load_target_inventory(repo_root, target)
+    inventory = load_host_inventory(repo_root, target)
     services_section = inventory.get(SERVICE_SECTION_KEY)
     normalized_key = _normalize_service_key(service_key)
     normalized_entry = _snapshot_entry(_services_dict(services_section).get(normalized_key))

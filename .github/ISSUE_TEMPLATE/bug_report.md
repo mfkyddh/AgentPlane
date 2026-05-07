@@ -21,7 +21,7 @@ assignees: ""
 ## Verification Output
 
 ```text
-agentplane repo health-check --repo-root .
+agentplane project health-check --repo-root .
 ```
 
 ## Environment

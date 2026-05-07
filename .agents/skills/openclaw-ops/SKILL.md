@@ -24,7 +24,7 @@ agentplane infra inventory <target> --repo-root <repo-root>
 agentplane infra remote bash <target> -- command -v openclaw
 agentplane service search --target <target> --repo-root <repo-root>
 agentplane service verify --target <target> --name openclaw --repo-root <repo-root>
-agentplane projection ledger refresh --target <target> --repo-root <repo-root> --write
+agentplane project projection ledger refresh --target <target> --repo-root <repo-root> --write
 ```
 
 ## Rules

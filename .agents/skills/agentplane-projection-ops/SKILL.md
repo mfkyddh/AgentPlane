@@ -12,14 +12,14 @@ Use this domain skill for generated runtime env files, projection verification, 
 ## Commands
 
 ```bash
-agentplane projection runtime-env plan --target <target> --app <app> --repo-root <repo-root>
-agentplane projection runtime-env apply --target <target> --app <app> --repo-root <repo-root>
-agentplane projection runtime-env verify --target <target> --app <app> --repo-root <repo-root>
-agentplane projection verification run --target <target> --profile <profile> --repo-root <repo-root>
-agentplane projection fixture plan --target <target> --profile <profile> --repo-root <repo-root>
-agentplane projection fixture apply --target <target> --profile <profile> --repo-root <repo-root> --execute
-agentplane projection fixture cleanup --target <target> --profile <profile> --repo-root <repo-root> --execute
-agentplane projection ledger refresh --target <target> --repo-root <repo-root> --write
+agentplane project projection runtime-env plan --target <target> --app <app> --repo-root <repo-root>
+agentplane project projection runtime-env apply --target <target> --app <app> --repo-root <repo-root>
+agentplane project projection runtime-env verify --target <target> --app <app> --repo-root <repo-root>
+agentplane project projection verification run --target <target> --profile <profile> --repo-root <repo-root>
+agentplane project projection fixture plan --target <target> --profile <profile> --repo-root <repo-root>
+agentplane project projection fixture apply --target <target> --profile <profile> --repo-root <repo-root> --execute
+agentplane project projection fixture cleanup --target <target> --profile <profile> --repo-root <repo-root> --execute
+agentplane project projection ledger refresh --target <target> --repo-root <repo-root> --write
 agentplane app delivery inventory-refresh --target <target> --app <app> --repo-root <repo-root> --write
 agentplane app delivery doc-sync --target <target> --app <app> --repo-root <repo-root> --write
 ```

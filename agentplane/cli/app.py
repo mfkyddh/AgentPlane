@@ -6,17 +6,9 @@ import sys
 from typing import Any
 
 from agentplane.cli.apps import add_app_parser, handle_app_command
-from agentplane.cli.bootstrap import add_bootstrap_parser, handle_bootstrap_command
 from agentplane.cli.infra import add_infra_parser, handle_infra_command
-from agentplane.cli.infra_onepanel import (
-    add_onepanel_parser,
-    handle_onepanel_command,
-    onepanel_error_payload,
-    render_onepanel_text,
-)
 from agentplane.cli.ingress import add_ingress_parser, handle_ingress_command
-from agentplane.cli.projection import add_projection_parser, handle_projection_command
-from agentplane.cli.repository import add_repository_parser, handle_repository_command
+from agentplane.cli.project import add_project_parser, handle_project_command
 from agentplane.cli.service import add_service_parser, handle_service_command
 from agentplane.cli.test_runner import add_test_parser, handle_test_command
 from agentplane.cli.web import add_web_parser, handle_web_command
@@ -45,14 +37,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    add_bootstrap_parser(subparsers)
     add_infra_parser(subparsers)
     add_service_parser(subparsers)
     add_ingress_parser(subparsers)
     add_app_parser(subparsers)
-    add_projection_parser(subparsers)
-    add_repository_parser(subparsers)
-    add_onepanel_parser(subparsers)
+    add_project_parser(subparsers)
     add_test_parser(subparsers)
     add_web_parser(subparsers)
 
@@ -72,24 +61,6 @@ def main(argv: list[str] | None = None) -> int:
     ):
         args.remote_args = [*getattr(args, "remote_args", []), *remote_remainder]
 
-    if args.command == "onepanel":
-        try:
-            payload = handle_onepanel_command(args)
-            if getattr(args, "json", False):
-                _emit(payload)
-            else:
-                print(render_onepanel_text(payload), end="")
-            if payload.get("payload", {}).get("ok") is False:
-                return 1
-            return 0
-        except (RuntimeError, ValueError, json.JSONDecodeError) as exc:
-            payload = onepanel_error_payload(args, exc)
-            if getattr(args, "json", False):
-                _emit(payload)
-            else:
-                print(render_onepanel_text(payload), end="")
-            return 1
-
     if args.command == "test":
         return handle_test_command(args)
 
@@ -106,15 +77,6 @@ def main(argv: list[str] | None = None) -> int:
             if payload.get("action") in {"automation.verify", "automation.apply"}:
                 return 0 if payload.get("payload", {}).get("ok", True) else 1
             return 0
-        except ValueError as exc:
-            print(str(exc), file=sys.stderr)
-            return 1
-
-    if args.command == "bootstrap":
-        try:
-            payload = handle_bootstrap_command(args)
-            _emit(payload)
-            return 0 if payload.get("payload", {}).get("ok", True) else 1
         except ValueError as exc:
             print(str(exc), file=sys.stderr)
             return 1
@@ -164,18 +126,9 @@ def main(argv: list[str] | None = None) -> int:
             print(str(exc), file=sys.stderr)
             return 1
 
-    if args.command == "projection":
+    if args.command == "project":
         try:
-            payload = handle_projection_command(args)
-            _emit(payload)
-            return 0 if payload.get("ok", True) else 1
-        except ValueError as exc:
-            print(str(exc), file=sys.stderr)
-            return 1
-
-    if args.command == "repo":
-        try:
-            payload = handle_repository_command(args)
+            payload = handle_project_command(args)
             _emit(payload)
             return 0 if payload.get("ok", True) else 1
         except ValueError as exc:

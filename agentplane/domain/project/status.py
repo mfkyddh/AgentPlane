@@ -7,10 +7,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from agentplane.domain.repository.docs_sanity import run_docs_sanity
-from agentplane.domain.repository.privacy_scan import scan_repository_for_private_material
-from agentplane.domain.repository.secret_scan import scan_repository_for_secrets
-from agentplane.domain.repository.skills import check_skill_surface, list_skill_entries
+from agentplane.domain.project.docs_sanity import run_docs_sanity
+from agentplane.domain.project.privacy_scan import scan_repository_for_private_material
+from agentplane.domain.project.secret_scan import scan_repository_for_secrets
+from agentplane.domain.project.skills import check_skill_surface, list_skill_entries
 
 LEDGER_FILES = {
     "containers": "containers.json",
@@ -167,7 +167,7 @@ def _recommendations(payload: dict[str, Any]) -> list[str]:
     if not checks["boundaries"]["ok"]:
         recommendations.append("Resolve secret or privacy scan issues before sharing status output.")
     if not checks["skills"]["ok"]:
-        recommendations.append("Run `agentplane repo skills check` and fix public Skill catalog drift.")
+        recommendations.append("Run `agentplane project skills check` and fix public Skill catalog drift.")
     if payload["apps"]["count"] == 0:
         recommendations.append("No active app catalog entries are registered yet.")
     if payload["targets"]["count"] == 0:

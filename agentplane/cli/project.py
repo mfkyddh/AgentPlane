@@ -9,31 +9,48 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from agentplane.domain.repository.doc_layer import run_doc_layer_check
-from agentplane.domain.repository.docs_sanity import run_docs_sanity
-from agentplane.domain.repository.onepanel_provider import (
+from agentplane.domain.project.doc_layer import run_doc_layer_check
+from agentplane.domain.project.docs_sanity import run_docs_sanity
+from agentplane.domain.project.onepanel_provider import (
     build_onepanel_route_fingerprint,
     compare_route_fingerprints,
     load_route_fingerprint,
     write_route_fingerprint,
 )
-from agentplane.domain.repository.privacy_scan import scan_repository_for_private_material
-from agentplane.domain.repository.secret_scan import scan_repository_for_secrets
-from agentplane.domain.repository.skills import (
+from agentplane.domain.project.privacy_scan import scan_repository_for_private_material
+from agentplane.domain.project.secret_scan import scan_repository_for_secrets
+from agentplane.domain.project.skills import (
     check_skill_surface,
     export_skill_surface,
     list_skill_entries,
     skill_sync_report,
     write_skill_export,
 )
-from agentplane.domain.repository.status import build_repo_status, write_status_html
+from agentplane.domain.project.status import build_repo_status, write_status_html
+from agentplane.domain.app.projection.runtime_env import (
+    apply_runtime_env_projection,
+    plan_runtime_env_projection,
+    verify_runtime_env_projection,
+)
+from agentplane.domain.targets import SUPPORTED_RUNTIME_ENV_TARGETS
+from agentplane.providers.onepanel_fixtures import (
+    apply_fixture,
+    cleanup_fixture,
+    plan_fixture,
+    resolve_fixture_spec,
+    run_onepanel_verification_suite,
+)
+from agentplane.providers.onepanel_ledgers import refresh_onepanel_ledgers
+from agentplane.providers.onepanel_objects import onepanel_target_executor, supported_onepanel_targets
+from agentplane.runtime.redaction import redact_sensitive_value
+from agentplane.runtime.wsl_bridge import normalize_repo_root_for_current_host
 
 
-def add_repository_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
-    repo_parser = subparsers.add_parser("repo", help="仓库自身治理与健康检查")
-    repo_subparsers = repo_parser.add_subparsers(dest="repo_action", required=True)
+def add_project_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    project_parser = subparsers.add_parser("project", help="项目治理与健康检查")
+    project_subparsers = project_parser.add_subparsers(dest="project_action", required=True)
 
-    health = repo_subparsers.add_parser("health-check", help="运行仓库默认健康检查")
+    health = project_subparsers.add_parser("health-check", help="运行仓库默认健康检查")
     health.add_argument("--repo-root", type=Path, default=Path.cwd())
     health.add_argument("--skip-ruff", action="store_true")
     health.add_argument("--skip-tests", action="store_true")
@@ -48,30 +65,30 @@ def add_repository_parser(subparsers: argparse._SubParsersAction[argparse.Argume
         "--fail-on-onepanel-drift", action="store_true", help="可选：存在 1Panel route drift 时健康检查失败"
     )
 
-    status = repo_subparsers.add_parser("status", help="生成当前控制面状态摘要")
+    status = project_subparsers.add_parser("status", help="生成当前控制面状态摘要")
     status.add_argument("--repo-root", type=Path, default=Path.cwd())
     status.add_argument("--html", type=Path, help="写出静态 HTML 仪表盘")
 
-    docs_sanity = repo_subparsers.add_parser("docs-sanity", help="检查 active 文档链接和正式入口引用")
+    docs_sanity = project_subparsers.add_parser("docs-sanity", help="检查 active 文档链接和正式入口引用")
     docs_sanity.add_argument("--repo-root", type=Path, default=Path.cwd())
 
-    secret_scan = repo_subparsers.add_parser("secret-scan", help="扫描 Git 可见文件中的敏感信息")
+    secret_scan = project_subparsers.add_parser("secret-scan", help="扫描 Git 可见文件中的敏感信息")
     secret_scan.add_argument("--repo-root", type=Path, default=Path.cwd())
     secret_scan.add_argument("--allowlist", type=Path)
 
-    privacy_scan = repo_subparsers.add_parser("privacy-scan", help="扫描 Git 可见文件中的私有环境信息")
+    privacy_scan = project_subparsers.add_parser("privacy-scan", help="扫描 Git 可见文件中的私有环境信息")
     privacy_scan.add_argument("--repo-root", type=Path, default=Path.cwd())
 
-    doc_layer = repo_subparsers.add_parser("doc-layer", help="检查文档是否在正确的四层目录并有层级标注")
+    doc_layer = project_subparsers.add_parser("doc-layer", help="检查文档是否在正确的四层目录并有层级标注")
     doc_layer.add_argument("--repo-root", type=Path, default=Path.cwd())
 
-    release = repo_subparsers.add_parser("release-check", help="运行发布前检查")
+    release = project_subparsers.add_parser("release-check", help="运行发布前检查")
     release.add_argument("--repo-root", type=Path, default=Path.cwd())
 
-    provider = repo_subparsers.add_parser("provider", help="Provider 更新适配门禁")
-    provider_subparsers = provider.add_subparsers(dest="repo_provider_action", required=True)
+    provider = project_subparsers.add_parser("provider", help="Provider 更新适配门禁")
+    provider_subparsers = provider.add_subparsers(dest="project_provider_action", required=True)
     onepanel = provider_subparsers.add_parser("onepanel", help="1Panel provider 更新检查")
-    onepanel_subparsers = onepanel.add_subparsers(dest="repo_provider_onepanel_action", required=True)
+    onepanel_subparsers = onepanel.add_subparsers(dest="project_provider_onepanel_action", required=True)
     route_fingerprint = onepanel_subparsers.add_parser(
         "route-fingerprint",
         help="从本地 1Panel 源码生成 API route fingerprint",
@@ -82,8 +99,8 @@ def add_repository_parser(subparsers: argparse._SubParsersAction[argparse.Argume
     route_fingerprint.add_argument("--output", type=Path, help="写出当前 route fingerprint JSON")
     route_fingerprint.add_argument("--fail-on-drift", action="store_true", help="存在 route drift 时返回失败")
 
-    skills = repo_subparsers.add_parser("skills", help="Skill 能力面治理")
-    skills_subparsers = skills.add_subparsers(dest="repo_skills_action", required=True)
+    skills = project_subparsers.add_parser("skills", help="Skill 能力面治理")
+    skills_subparsers = skills.add_subparsers(dest="project_skills_action", required=True)
     skills_parent = argparse.ArgumentParser(add_help=False)
     skills_parent.add_argument("--repo-root", type=Path, default=Path.cwd())
 
@@ -94,6 +111,63 @@ def add_repository_parser(subparsers: argparse._SubParsersAction[argparse.Argume
     skills_subparsers.add_parser(
         "sync", parents=[skills_parent], help="dry-run 报告 Skill catalog 与 tracked Skill 漂移"
     )
+
+    # --- projection surface (merged from cli/projection.py) ---
+    projection = project_subparsers.add_parser("projection", help="投影与验证任务")
+    projection_subparsers = projection.add_subparsers(dest="project_projection_surface", required=True)
+
+    runtime_env = projection_subparsers.add_parser("runtime-env", help="Runtime env projection tasks")
+    runtime_env_subparsers = runtime_env.add_subparsers(dest="project_projection_action", required=True)
+    for action in ("plan", "apply", "verify"):
+        parser = runtime_env_subparsers.add_parser(action, help=f"{action} runtime env projection")
+        parser.add_argument("--target", required=True, choices=SUPPORTED_RUNTIME_ENV_TARGETS, help="Target environment")
+        parser.add_argument("--app", required=True, help="Application id")
+        parser.add_argument("--repo-root", default=".", help="Repository root")
+        parser.add_argument("--reveal-secrets", action="store_true", help="Include unredacted env content in output")
+
+    verification = projection_subparsers.add_parser("verification", help="Verification observation surface")
+    verification_subparsers = verification.add_subparsers(dest="project_projection_verification_action", required=True)
+    run = verification_subparsers.add_parser("run", help="Run verification suite")
+    run.add_argument("--target", required=True, choices=supported_onepanel_targets(), help="Target environment")
+    run.add_argument(
+        "--profile",
+        required=True,
+        choices=("wsl-fixture", "prod2-readonly", "prod0-readonly"),
+        help="Verification profile",
+    )
+    run.add_argument("--repo-root", default=".", help="Repository root")
+    run.add_argument("--write-report", action="store_true", help="Write verification report")
+    run.add_argument("--website-alias", default="", help="Website alias selector")
+    run.add_argument("--container-name", default="", help="Container selector")
+    run.add_argument("--project-name", default="", help="Compose project selector")
+    run.add_argument("--cronjob-id", type=int, default=None, help="Cronjob id selector")
+    run.add_argument("--cronjob-name", default="", help="Cronjob name selector")
+    run.add_argument("--app-name", default="", help="Installed app selector")
+    run.add_argument(
+        "--firewall-tab", default="port", choices=("port", "address", "forward"), help="Firewall tab selector"
+    )
+
+    fixture = projection_subparsers.add_parser("fixture", help="Fixture task surface")
+    fixture_subparsers = fixture.add_subparsers(dest="project_projection_fixture_action", required=True)
+    for action in ("plan", "apply", "cleanup"):
+        parser = fixture_subparsers.add_parser(action, help=f"{action} fixture profile")
+        parser.add_argument("--target", required=True, choices=supported_onepanel_targets(), help="Target environment")
+        parser.add_argument("--profile", required=True, choices=("wsl-fixture",), help="Fixture profile")
+        parser.add_argument("--repo-root", default=".", help="Repository root")
+        parser.add_argument("--website-alias", default="", help="Website alias override")
+        parser.add_argument("--container-name", default="", help="Container name override")
+        parser.add_argument("--project-name", default="", help="Compose project override")
+        parser.add_argument("--cronjob-name", default="", help="Cronjob name override")
+        parser.add_argument("--firewall-tab", default="", help="Firewall tab override")
+        if action in {"apply", "cleanup"}:
+            parser.add_argument("--execute", action="store_true", help="Execute write operation")
+
+    ledger = projection_subparsers.add_parser("ledger", help="Projection-only ledger task surface")
+    ledger_subparsers = ledger.add_subparsers(dest="project_projection_ledger_action", required=True)
+    refresh = ledger_subparsers.add_parser("refresh", help="Refresh tracked ledgers")
+    refresh.add_argument("--target", required=True, choices=supported_onepanel_targets(), help="Target environment")
+    refresh.add_argument("--repo-root", default=".", help="Repository root")
+    refresh.add_argument("--write", action="store_true", help="Write tracked artifacts")
 
 
 def _run_check(name: str, argv: list[str], *, repo_root: Path) -> dict[str, Any]:
@@ -321,7 +395,7 @@ def run_health_check(args: argparse.Namespace) -> dict[str, Any]:
     checks.append(_skills_check(repo_root))
 
     return {
-        "command": "repo",
+        "command": "project",
         "action": "health-check",
         "repo_root": str(repo_root),
         "ok": all(check.get("ok") is True for check in checks),
@@ -347,7 +421,7 @@ def run_docs_sanity_command(args: argparse.Namespace) -> dict[str, Any]:
     errors = [i for i in issues if i.severity == "error"]
     warnings = [i for i in issues if i.severity == "warning"]
     return {
-        "command": "repo",
+        "command": "project",
         "action": "docs-sanity",
         "repo_root": str(repo_root),
         "ok": not errors,
@@ -363,7 +437,7 @@ def run_doc_layer_command(args: argparse.Namespace) -> dict[str, Any]:
     errors = [i for i in issues if i.severity == "error"]
     warnings = [i for i in issues if i.severity == "warning"]
     return {
-        "command": "repo",
+        "command": "project",
         "action": "doc-layer",
         "repo_root": str(repo_root),
         "ok": not errors,
@@ -378,7 +452,7 @@ def run_secret_scan(args: argparse.Namespace) -> dict[str, Any]:
     allowlist = args.allowlist.resolve() if args.allowlist else None
     issues = scan_repository_for_secrets(repo_root, allowlist_path=allowlist)
     return {
-        "command": "repo",
+        "command": "project",
         "action": "secret-scan",
         "repo_root": str(repo_root),
         "ok": not issues,
@@ -390,7 +464,7 @@ def run_privacy_scan(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = args.repo_root.resolve()
     issues = scan_repository_for_private_material(repo_root)
     return {
-        "command": "repo",
+        "command": "project",
         "action": "privacy-scan",
         "repo_root": str(repo_root),
         "ok": not issues,
@@ -414,7 +488,7 @@ def run_release_check(args: argparse.Namespace) -> dict[str, Any]:
         _git_clean_check(repo_root),
     ]
     return {
-        "command": "repo",
+        "command": "project",
         "action": "release-check",
         "repo_root": str(repo_root),
         "ok": all(check.get("ok") is True for check in checks),
@@ -424,7 +498,7 @@ def run_release_check(args: argparse.Namespace) -> dict[str, Any]:
 
 def run_provider_command(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = args.repo_root.resolve()
-    if args.repo_provider_action == "onepanel" and args.repo_provider_onepanel_action == "route-fingerprint":
+    if args.project_provider_action == "onepanel" and args.project_provider_onepanel_action == "route-fingerprint":
         payload = build_onepanel_route_fingerprint(args.source_root)
         output = args.output.resolve() if args.output else None
         if output is not None:
@@ -439,7 +513,7 @@ def run_provider_command(args: argparse.Namespace) -> dict[str, Any]:
                 ok = False
 
         return {
-            "command": "repo",
+            "command": "project",
             "action": "provider.onepanel.route-fingerprint",
             "repo_root": str(repo_root),
             "ok": ok,
@@ -448,69 +522,140 @@ def run_provider_command(args: argparse.Namespace) -> dict[str, Any]:
             "drift": drift,
             "payload": payload,
         }
-    raise ValueError(f"unsupported repo provider action: {args.repo_provider_action}")
+    raise ValueError(f"unsupported repo provider action: {args.project_provider_action}")
 
 
 def run_skills_command(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = args.repo_root.resolve()
-    if args.repo_skills_action == "check":
+    if args.project_skills_action == "check":
         issues = check_skill_surface(repo_root)
         return {
-            "command": "repo",
+            "command": "project",
             "action": "skills.check",
             "repo_root": str(repo_root),
             "ok": not issues,
             "issues": [issue.to_dict() for issue in issues],
         }
-    if args.repo_skills_action == "list":
+    if args.project_skills_action == "list":
         return {
-            "command": "repo",
+            "command": "project",
             "action": "skills.list",
             "repo_root": str(repo_root),
             "ok": True,
             "skills": list_skill_entries(repo_root),
         }
-    if args.repo_skills_action == "export":
+    if args.project_skills_action == "export":
         payload = export_skill_surface(repo_root)
         output = args.output.resolve() if args.output else None
         if output is not None:
             write_skill_export(repo_root, output)
         return {
-            "command": "repo",
+            "command": "project",
             "action": "skills.export",
             "repo_root": str(repo_root),
             "ok": True,
             "output": str(output) if output is not None else None,
             "payload": payload,
         }
-    if args.repo_skills_action == "sync":
+    if args.project_skills_action == "sync":
         report = skill_sync_report(repo_root)
         return {
-            "command": "repo",
+            "command": "project",
             "action": "skills.sync",
             "repo_root": str(repo_root),
             **report,
         }
-    raise ValueError(f"unsupported repo skills action: {args.repo_skills_action}")
+    raise ValueError(f"unsupported project skills action: {args.project_skills_action}")
 
 
-def handle_repository_command(args: argparse.Namespace) -> dict[str, Any]:
-    if args.repo_action == "health-check":
+_PROJECTION_SURFACE_CONTRACTS = {
+    "runtime-env": "projection",
+    "verification": "observation",
+    "fixture": "projection",
+    "ledger": "projection",
+}
+
+
+def _wrap_projection(surface: str, action: str, payload: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "command": "project",
+        "surface_contract": _PROJECTION_SURFACE_CONTRACTS[surface],
+        "action": action,
+        **payload,
+    }
+
+
+def _handle_projection(args: argparse.Namespace) -> dict[str, Any]:
+    repo_root = normalize_repo_root_for_current_host(args.repo_root)
+    surface = args.project_projection_surface
+
+    if surface == "runtime-env" and args.project_projection_action == "plan":
+        return _wrap_projection("runtime-env", "runtime-env.plan",
+            plan_runtime_env_projection(repo_root, args.target, args.app, reveal_secrets=args.reveal_secrets))
+    if surface == "runtime-env" and args.project_projection_action == "apply":
+        return _wrap_projection("runtime-env", "runtime-env.apply",
+            apply_runtime_env_projection(repo_root, args.target, args.app, reveal_secrets=args.reveal_secrets))
+    if surface == "runtime-env" and args.project_projection_action == "verify":
+        return _wrap_projection("runtime-env", "runtime-env.verify",
+            verify_runtime_env_projection(repo_root, args.target, args.app, reveal_secrets=args.reveal_secrets))
+    if surface == "verification" and args.project_projection_verification_action == "run":
+        payload = run_onepanel_verification_suite(
+            onepanel_target_executor(args.target),
+            profile=args.profile, env=args.target, repo_root=repo_root,
+            write_report=bool(args.write_report), website_alias=args.website_alias,
+            container_name=args.container_name, project_name=args.project_name,
+            cronjob_id=args.cronjob_id, cronjob_name=args.cronjob_name,
+            app_name=args.app_name, firewall_tab=args.firewall_tab,
+        )
+        return _wrap_projection("verification", "verification.run", redact_sensitive_value(payload))
+    if surface == "fixture":
+        fixture_action = args.project_projection_fixture_action
+        if fixture_action in {"apply", "cleanup"} and not bool(args.execute):
+            raise ValueError(f"project projection fixture {fixture_action} requires --execute")
+        spec = resolve_fixture_spec(
+            args.profile, env=args.target, website_alias=args.website_alias,
+            container_name=args.container_name, project_name=args.project_name,
+            cronjob_name=args.cronjob_name, firewall_tab=args.firewall_tab,
+        )
+        executor = onepanel_target_executor(args.target)
+        if fixture_action == "plan":
+            payload = plan_fixture(executor, spec)
+        elif fixture_action == "apply":
+            payload = apply_fixture(executor, spec, execute=True)
+        else:
+            payload = cleanup_fixture(executor, spec, execute=True)
+        return _wrap_projection("fixture", f"fixture.{fixture_action}", payload)
+    if surface == "ledger" and args.project_projection_ledger_action == "refresh":
+        return _wrap_projection("ledger", "ledger.refresh",
+            refresh_onepanel_ledgers(repo_root, args.target, write=bool(args.write)))
+
+    action = (getattr(args, "project_projection_action", None)
+        or getattr(args, "project_projection_verification_action", None)
+        or getattr(args, "project_projection_fixture_action", None)
+        or getattr(args, "project_projection_ledger_action", None)
+        or "unknown")
+    raise ValueError(f"Unsupported projection action: {surface}.{action}")
+
+
+def handle_project_command(args: argparse.Namespace) -> dict[str, Any]:
+    if args.project_action == "health-check":
         return run_health_check(args)
-    if args.repo_action == "status":
+    if args.project_action == "status":
         return run_status_command(args)
-    if args.repo_action == "docs-sanity":
+    if args.project_action == "docs-sanity":
         return run_docs_sanity_command(args)
-    if args.repo_action == "doc-layer":
+    if args.project_action == "doc-layer":
         return run_doc_layer_command(args)
-    if args.repo_action == "secret-scan":
+    if args.project_action == "secret-scan":
         return run_secret_scan(args)
-    if args.repo_action == "privacy-scan":
+    if args.project_action == "privacy-scan":
         return run_privacy_scan(args)
-    if args.repo_action == "release-check":
+    if args.project_action == "release-check":
         return run_release_check(args)
-    if args.repo_action == "provider":
+    if args.project_action == "provider":
         return run_provider_command(args)
-    if args.repo_action == "skills":
+    if args.project_action == "skills":
         return run_skills_command(args)
-    raise ValueError(f"unsupported repo action: {args.repo_action}")
+    if args.project_action == "projection":
+        return _handle_projection(args)
+    raise ValueError(f"unsupported project action: {args.project_action}")

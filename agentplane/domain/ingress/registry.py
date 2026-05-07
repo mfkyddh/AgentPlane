@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 from agentplane.domain.ingress.models import IngressDefinition
+from agentplane.inventory.host_inventory import load_host_inventory
 
 INGRESS_VERIFICATION_PROFILE_BY_TARGET = {
     "wsl": "wsl-fixture",
@@ -11,18 +11,8 @@ INGRESS_VERIFICATION_PROFILE_BY_TARGET = {
 }
 
 
-def load_target_inventory(repo_root: Path, target: str) -> dict[str, object]:
-    inventory_file = repo_root / "inventory" / "servers" / target / "inventory.json"
-    if not inventory_file.is_file():
-        raise ValueError(f"缺少 inventory 文件: {inventory_file}")
-    payload = json.loads(inventory_file.read_text(encoding="utf-8"))
-    if not isinstance(payload, dict):
-        raise ValueError(f"inventory 顶层必须是对象: {inventory_file}")
-    return payload
-
-
 def available_ingresses(repo_root: Path, target: str) -> list[IngressDefinition]:
-    inventory = load_target_inventory(repo_root, target)
+    inventory = load_host_inventory(repo_root, target)
     services = inventory.get("services")
     if not isinstance(services, dict):
         return []

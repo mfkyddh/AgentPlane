@@ -11,7 +11,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from agentplane.domain.repository.status import (
+from agentplane.domain.project.status import (
     _parse_phase_overview,
     _parse_phase_section_tasks,
     _parse_resume_entry,

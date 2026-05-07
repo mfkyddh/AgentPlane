@@ -14,10 +14,10 @@ Root SSH or password login is a break-glass exception, not the default onboardin
 ## Commands
 
 ```bash
-agentplane bootstrap inspect-local --repo-root <repo-root>
-agentplane bootstrap doctor --repo-root <repo-root>
-agentplane bootstrap init-secrets --repo-root <repo-root>
-agentplane bootstrap verify-secrets --repo-root <repo-root>
+agentplane infra bootstrap inspect-local --repo-root <repo-root>
+agentplane infra bootstrap doctor --repo-root <repo-root>
+agentplane infra bootstrap init-secrets --repo-root <repo-root>
+agentplane infra bootstrap verify-secrets --repo-root <repo-root>
 agentplane infra inventory <target> --repo-root <repo-root>
 agentplane infra audit <target> --repo-root <repo-root>
 agentplane infra remote bash <target> -- uname -a

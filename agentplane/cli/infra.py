@@ -28,7 +28,7 @@ from agentplane.cli.networks import (
 )
 from agentplane.cli.preflight import execute_remote_preflight
 from agentplane.cli.remote import execute_remote_bash
-from agentplane.cli.secrets import init_data_services, materialize_legacy_host_layout
+from agentplane.cli.secrets import copy_template_file, init_data_services, materialize_legacy_host_layout
 from agentplane.domain.infra.live_gate import (
     DEFAULT_APP,
     DEFAULT_WSL_PROJECTION_PROFILE,
@@ -39,6 +39,13 @@ from agentplane.domain.infra.live_gate import (
 from agentplane.domain.infra.health import check_infra_health
 from agentplane.domain.targets import SUPPORTED_INFRA_TARGETS
 from agentplane.runtime.wsl_bridge import normalize_repo_root_for_current_host
+from agentplane.runtime.bootstrap import (
+    bootstrap_directory_specs,
+    bootstrap_doctor_payload,
+    bootstrap_required_truth_specs,
+    inspect_local_bootstrap,
+    verify_bootstrap_truths,
+)
 
 FORMAL_INFRA_TARGETS = ("wsl", "prod0-main")
 
@@ -277,6 +284,12 @@ def add_infra_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     secrets_sync_parser.add_argument("--repo-root", default=".", help="仓库根目录")
     secrets_sync_parser.add_argument("--write", action="store_true", help="写入投影路径")
 
+    bootstrap_parser = infra_subparsers.add_parser("bootstrap", help="模板仓库 bootstrap 入口")
+    bootstrap_subparsers = bootstrap_parser.add_subparsers(dest="infra_bootstrap_action", required=True)
+    for action in ("inspect-local", "init-secrets", "verify-secrets", "doctor"):
+        parser = bootstrap_subparsers.add_parser(action, help=f"{action} bootstrap flow")
+        parser.add_argument("--repo-root", default=".", help="AgentPlane 仓库根目录")
+
 
 def _wrap(*, action: str, target: str, payload: dict[str, Any]) -> dict[str, Any]:
     return {
@@ -297,6 +310,45 @@ def _without_public_envelope(payload: dict[str, Any]) -> dict[str, Any]:
 
 def _normalize_repo_root(path: Path | str) -> Path:
     return normalize_repo_root_for_current_host(path)
+
+
+def _init_secrets(repo_root: Path) -> dict[str, Any]:
+    scaffold_dirs: set[str] = set()
+    files: list[dict[str, Any]] = []
+    for item in bootstrap_directory_specs(repo_root):
+        destination = Path(item["destination"])
+        scaffold_dirs.add(str(destination.parent))
+        target = item.get("target")
+        transform = None
+        if isinstance(target, str):
+            def transform(text, target=target):
+                return text.replace("<target>", target)
+        files.append(copy_template_file(Path(item["template"]), destination, transform=transform))
+    ssh_keys_dir = repo_root / "secrets" / "ssh" / "keys"
+    ssh_keys_dir.mkdir(parents=True, exist_ok=True)
+    scaffold_dirs.add(str(ssh_keys_dir))
+    for item in bootstrap_required_truth_specs(repo_root):
+        destination = Path(item["destination"])
+        scaffold_dirs.add(str(destination.parent))
+        files.append(copy_template_file(Path(item["template"]), destination))
+    return {"ok": True, "repo_root": str(repo_root), "directories": sorted(scaffold_dirs), "files": files}
+
+
+def _handle_bootstrap(args: argparse.Namespace, repo_root: Path) -> dict[str, Any]:
+    action = args.infra_bootstrap_action
+    if action == "inspect-local":
+        return _wrap(action="bootstrap.inspect-local", target="local", payload=inspect_local_bootstrap(repo_root))
+    if action == "init-secrets":
+        return _wrap(action="bootstrap.init-secrets", target="local", payload=_init_secrets(repo_root))
+    if action == "verify-secrets":
+        return _wrap(action="bootstrap.verify-secrets", target="local", payload=verify_bootstrap_truths(repo_root))
+    if action == "doctor":
+        return _wrap(
+            action="bootstrap.doctor",
+            target="local",
+            payload=bootstrap_doctor_payload(repo_root, secrets_status=verify_bootstrap_truths(repo_root)),
+        )
+    raise ValueError(f"Unsupported bootstrap action: {action}")
 
 
 def handle_infra_command(args: argparse.Namespace) -> dict[str, Any]:
@@ -544,5 +596,8 @@ def handle_infra_command(args: argparse.Namespace) -> dict[str, Any]:
             target=args.target,
             payload=_without_public_envelope(result),
         )
+
+    if args.infra_action == "bootstrap":
+        return _handle_bootstrap(args, repo_root)
 
     raise ValueError(f"Unsupported infra action: {args.infra_action}")
