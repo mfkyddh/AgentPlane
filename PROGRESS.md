@@ -2,13 +2,12 @@
 status: active
 owner: AgentPlane maintainers
 last_verified: 2026-05-07
-superseded_by: null
 audience: both
 ---
 
 # 主线追踪器
 
-> AgentPlane 唯一的任务真相源。所有工作归属于主线条件、分支任务或 backlog 三者之一。
+> 本文是 AgentPlane 的执行层文档，连接 [路线图](docs/core/roadmap.md)（往哪走）和日常工作（当前做什么）。路线图定义 Alpha → Beta → GA 的大方向，本文把当前阶段拆解为具体条件和进度。
 
 ---
 
@@ -41,14 +40,13 @@ audience: both
 
 | 场景 | 文档 | 状态 |
 |------|------|------|
-| 新用户入门 | [docs/getting-started.md](docs/getting-started.md) | 已有 |
-| 理解架构 | [docs/architecture.md](docs/architecture.md) | 已有 |
-| 接入第一台服务器 | [docs/tutorials/add-new-server.md](docs/tutorials/add-new-server.md) | 已有 |
-| 部署第一个应用 | [docs/tutorials/deploy-first-app.md](docs/tutorials/deploy-first-app.md) | 已有 |
-| 故障排查 | [docs/tutorials/troubleshoot-failed-deployment.md](docs/tutorials/troubleshoot-failed-deployment.md) | 已有 |
+| 新用户入门 | [入门指南](docs/getting-started.md) | ✓ 已重写 |
+| 理解架构 | [架构](docs/core/architecture.md) | ✓ 已重写 |
+| 查命令 | [命令参考](docs/command-reference.md) | ✓ 已重写 |
+| 了解规则 | [编码与协作规范](docs/conventions.md) | ✓ 已重写 |
+| 查术语 | [术语表](docs/glossary.md) | ✓ 已重写 |
 | 协作协议 | [AGENTS.md](AGENTS.md) | 已有 |
-| API/CLI 参考 | [docs/command-reference.md](docs/command-reference.md) | 已有 |
-| 常见问题 FAQ | 待评估 | 待评估 |
+| 常见问题 FAQ | — | 待评估 |
 
 ### 条件三：真实应用全生命周期验证
 
@@ -84,7 +82,7 @@ audience: both
 
 **约束**：不修改 Skill 代码，不新增功能，只记录过程。
 
-**状态**：进行中
+**状态**：已完成
 
 **记录**：
 
@@ -115,3 +113,11 @@ audience: both
 - **主线**：不做这个，"首次运行闭环"目标就无法达成
 - **分支**：做了有帮助，但不是当前阶段的必要条件
 - **backlog**：有价值，但当前阶段不需要
+
+---
+
+## 关联文档
+
+- [路线图](docs/core/roadmap.md) — Alpha → Beta → GA 大方向
+- [愿景](docs/core/vision.md) — 项目定位、目标用户
+- [编码与协作规范](docs/conventions.md) — 协作协议（会话开始读取本文）

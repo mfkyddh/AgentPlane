@@ -60,12 +60,11 @@ git clone --single-branch --depth 1 https://github.com/garrytan/gstack.git ~/.cl
 
 | 文档 | 用途 |
 |------|------|
-| [docs/core/architecture.md](docs/core/architecture.md) | 架构、控制面契约、投影模型、跨平台执行 |
-| [docs/tech-stack.md](docs/tech-stack.md) | 技术栈、依赖规则、容器约定 |
+| [docs/core/architecture.md](docs/core/architecture.md) | 架构、域、投影模型、CLI 接口 |
 | [docs/command-reference.md](docs/command-reference.md) | CLI 命令参考 |
-| [docs/webui.md](docs/webui.md) | WebUI 架构和 API |
 | [docs/getting-started.md](docs/getting-started.md) | 5 分钟上手 |
-| [docs/conventions.md](docs/conventions.md) | 编码与协作规范 |
+| [docs/conventions.md](docs/conventions.md) | 技术栈、编码规则、协作规范 |
+| [docs/maintainer-guide.md](docs/maintainer-guide.md) | 治理资产约束、Skill 同步门禁 |
 
 ## gstack (REQUIRED — global install)
 

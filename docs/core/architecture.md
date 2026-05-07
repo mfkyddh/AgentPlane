@@ -7,15 +7,19 @@ audience: both
 
 # AgentPlane 架构
 
-> 本文是 AgentPlane 架构的唯一正文真源。按照"从简单到复杂"的原则组织，让读者能够顺畅地理解整个架构。
+> 本文是 AgentPlane 架构的唯一正文真源。按照"从简单到复杂"的原则组织：先知道架构是什么，再理解为什么这样设计，最后看每个部分的细节。
 
 ---
 
 ## 快速理解
 
-### AgentPlane 是什么
+### 架构是什么
 
-**AgentPlane** 是给 AI Agent 用的运维控制面，让 AI 帮你安全地管理应用。
+AgentPlane 的架构是 **CLI-first、投影模型、五域分层**：
+
+- **CLI-first**：所有正式操作从 `agentplane ...` 进入，Agent 和人类用同一套命令
+- **投影模型**：数据分三层（台账 → 证据 → 摘要），从真源派生，只读
+- **五域分层**：职责分 5 个域（infra、service、app、ingress、project），每个域对应项目模型一层
 
 ### 怎么工作
 
@@ -23,120 +27,38 @@ audience: both
 人类说目标 → AI 匹配 Skill → CLI 执行操作 → 验证结果 → 写回投影
 ```
 
-1. 你说目标（"部署这个应用"）
-2. AI 找到对应的 Skill
-3. Skill 调用 CLI 执行操作
-4. CLI 验证结果并记录证据
-
-### 核心概念一览
+### 核心概念
 
 | 概念 | 是什么 | 为什么需要 |
 |------|--------|-----------|
-| **投影** | 从真源派生出的只读视图 | 把分散的信息聚合在一起，方便查看 |
+| **投影** | 从真源派生的只读视图 | 把分散的信息聚合在一起，方便查看 |
 | **真源** | 某一类事实的正式来源 | 确保数据的一致性和可靠性 |
-| **CLI** | 命令行界面 | 统一入口，Agent 和人类都可以使用 |
+| **域** | AgentPlane 的 5 个业务能力域 | 每个域对应项目模型的一层，职责分离 |
 | **Skill** | AI Agent 的能力入口 | 让 AI 理解人类意图，路由到 CLI |
-| **域** | AgentPlane 的 5 个业务能力域（infra、service、app、ingress、project） | 每个域对应项目模型的一层，职责分离 |
+
+> 术语定义见 [术语表](../glossary.md)。
 
 ---
 
-## 核心概念
+## 为什么是这个架构
 
-在深入了解架构之前，先理解几个核心概念。
+架构决策不是凭空选择——它们是 [原则](principles.md) 在工程中的落地。
 
-### 什么是投影？
+| 原则 | 架构决策 | 为什么这样对应 |
+|------|---------|---------------|
+| 安全（道） | 执行闭环：Plan → Apply → Verify → Record | 执行前有计划防止误操作，执行后有验证确认结果 |
+| 可追溯（道） | 三层投影：台账 → 证据 → 摘要 | 每一层都记录事实来源，出问题可以从摘要追溯到证据 |
+| 对 AI 友好（道） | Skill 路由到 CLI | AI 只需要选 Skill，不需要理解底层实现 |
+| 奥卡姆剃刀（法） | 5 个域，每个域对应项目模型一层 | 没有多余的域，职责不重叠 |
+| 证据优先（术） | Ledger 证据链 | 所有操作自动写入 Ledger，不需要人手记录 |
 
-**投影**（Projection）是从**真源**派生出的**只读视图**。
-
-就像数据库的视图一样，投影不存储原始数据，而是从真源计算得出。
-
-**为什么需要投影？**
-- 真源可能分散在多个地方（Git 配置、现场状态、Ledger 等）
-- 投影把这些信息聚合在一起，方便查看
-- 投影是只读的，不会修改真源
-
-**示例**：
-- 你想知道"这个服务器上有哪些服务" → 查看 Host Inventory
-- 你想知道"这个服务最近一次验证结果是什么" → 查看 Object Ledgers
-- 你想知道"这个应用当前状态是什么" → 查看 App Summary
-
-### 什么是真源？
-
-**真源**（Source of Truth）是某一类事实的正式来源。
-
-**AgentPlane 的真源**：
-- **Git 配置**：我们期望系统应该是什么样
-- **Live State**：系统实际是什么样
-- **Inventory**：我们记录的系统状态
-- **Ledger**：我们验证的结果
-
-**为什么需要真源？**
-- 确保数据的一致性和可靠性
-- 避免多个地方存储相同信息，导致不一致
-- 提供可追溯性，知道信息从哪里来
-
-**真源优先级**：
-```
-Live State（现场状态）> Inventory（台账）> Ledger（证据）> Runbook（文档）
-```
-
-Live State 优先级最高，因为它是"实际发生了什么"，而不是"我们希望发生什么"。
-
-### 什么是 CLI？
-
-**CLI**（Command-Line Interface）是命令行界面。
-
-**AgentPlane 的 CLI**：
-- 形态：`agentplane <domain> <surface> <verb> [flags]`
-- 所有正式操作必须从 CLI 进入
-- CLI 是 Agent 和人类的统一入口
-
-**为什么必须从 CLI 进入？**
-- 统一入口：Agent 和人类都使用同一套命令
-- 可审计：所有操作都有记录
-- 可验证：所有操作都有验证
-- 可回滚：所有操作都有证据
-
-**示例**：
-```bash
-# 搜索服务
-agentplane service search --target prod0-main
-
-# 验证应用
-agentplane app delivery verify --target prod0-main --app myapp
-
-# 部署应用
-agentplane app delivery deploy --target prod0-main --app myapp --dry-run
-```
-
-### 什么是 Skill？
-
-**Skill** 是 AI Agent 理解人类意图后选择的能力入口。
-
-**Skill 的职责**：
-- 路由到正式 `agentplane ...` CLI
-- 提示前置检查
-- 说明验证与回写
-
-**Skill 不做什么**：
-- 不执行第二套逻辑
-- 不直接拼 SSH、Docker 或 provider API
-
-**为什么需要 Skill？**
-- 让 AI 理解人类意图，而不是直接执行命令
-- 提供统一的入口，避免 AI 绕过 CLI
-- 支持前置检查，确保操作安全
-
-**示例**：
-- 你说："帮我部署这个应用"
-- AI 找到 Skill：`app-delivery-ops`
-- Skill 调用 CLI：`agentplane app delivery deploy --target prod0-main --app myapp --dry-run`
+**为什么不选其他架构？** 见 [决策记录 004](../decisions/004-architecture.md)（CLI-first vs API-first vs GUI-first）。
 
 ---
 
 ## 域
 
-**域**（Domain）是 AgentPlane 的职责划分。每个域对应项目模型中的一个管理层次——项目模型是"管什么"，域是"怎么管"。
+**域**（Domain）是 AgentPlane 的职责划分。项目模型是"管什么"，域是"怎么管"。
 
 ### 5 个业务能力域
 
@@ -148,15 +70,19 @@ agentplane app delivery deploy --target prod0-main --app myapp --dry-run
 | `ingress` | 公网入口（域名、SSL、路由） | 流量层：外部怎么访问 | App 的**对外访问** |
 | `project` | 项目治理（分组、聚合状态、项目级配置） | 组织层：怎么分组管理 | **Project** |
 
+> Target 的中文名为"目标环境"，术语定义见 [术语表](../glossary.md)。
+
 ### 域与项目模型的对应关系
 
-项目模型是"管什么"，域是"怎么管"。每一层项目模型都有对应的管理能力：
+项目模型定义了"管什么"（Project → App → Target），域定义了"怎么管"。每一层项目模型都有对应的域：
 
 ```
-Project ─────→ project 域（项目治理、聚合状态）
-  └── App ───→ app 域（交付生命周期）
-        └── Target ─→ infra 域（配置）+ service 域（运行时）
-              └── 公网入口 → ingress 域
+项目模型（管什么）              域（怎么管）
+─────────────────              ─────────────
+Project（项目）           ───→  project 域（项目治理、聚合状态）
+  └── App（应用）         ───→  app 域（交付生命周期）
+        └── Target（目标环境）→  infra 域（配置）+ service 域（运行时）
+              └── 公网入口  ──→  ingress 域
 ```
 
 ### 基础设施也是应用
@@ -180,7 +106,7 @@ project 聚合状态 ← 从 app 和 service 收集
 ```
 
 > `projection`（投影和验证）是所有域共用的横切机制，见"三层投影模型"章节。
-> `onepanel`（1Panel provider）是 provider 层的实现细节，见 [技术栈](tech-stack.md)。
+> `onepanel`（1Panel provider）是 provider 层的实现细节，见 [编码与协作规范](../conventions.md#技术栈基线)。
 
 ### 使用场景
 
@@ -196,7 +122,7 @@ project 聚合状态 ← 从 app 和 service 收集
 
 ## 三层投影模型
 
-投影是 AgentPlane 的核心数据模型，分为三层。
+投影是 AgentPlane 的核心数据模型，分为三层。这是"可追溯"（道）在数据层面的落地。
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -283,7 +209,7 @@ agentplane repo status --repo-root .
 
 ### 标准执行闭环
 
-所有操作遵循标准执行闭环：
+所有操作遵循标准执行闭环——这是"安全"（道）在流程层面的落地：
 
 ```
 Plan（计划）→ Apply（执行）→ Verify（验证）
@@ -578,11 +504,11 @@ CLI (argparse) → domain handlers → runtime → providers
 
 ## 关联文档
 
-- [愿景](vision.md) — 项目定位、目标用户、项目模型
-- [原则](principles.md) — 道法术三层原则体系
+- [愿景](vision.md) — 项目定位、目标用户、项目模型、设计约束
+- [原则](principles.md) — 道法术三层原则体系，架构决策的依据
 - [路线图](roadmap.md) — Alpha → Beta → GA 三阶段推进
-- [入门指南](getting-started.md) — 快速了解
-- [命令参考](command-reference.md) — 所有 CLI 命令
-- [技术栈](tech-stack.md) — 技术选型与跨平台规范
-- [WebUI](webui.md) — WebUI 架构和使用
-- [Maintainer 指南](maintainer-guide.md) — 治理资产约束和协作规则
+- [术语表](../glossary.md) — 术语定义
+- [入门指南](../getting-started.md) — 快速了解
+- [命令参考](../command-reference.md) — 所有 CLI 命令
+- [编码与协作规范](../conventions.md) — 技术栈、跨平台约束、编码规则
+- [Maintainer 指南](../maintainer-guide.md) — 治理资产约束和协作规则

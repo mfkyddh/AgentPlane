@@ -58,7 +58,7 @@ AgentPlane 是 Agent-first 控制面 CLI。所有操作通过 `agentplane <domai
 - 远程 Linux 走 `agentplane infra remote bash`，禁止手写多层 SSH
 - Python 用 `uv`，Node 用 `pnpm`，禁止 `UV_PROJECT_ENVIRONMENT` 指向平台路径
 
-> 完整规范：[docs/tech-stack.md](docs/tech-stack.md)
+> 完整规范：[docs/conventions.md](docs/conventions.md#技术栈基线)
 
 ## 安全约束
 
@@ -79,4 +79,4 @@ AgentPlane 是 Agent-first 控制面 CLI。所有操作通过 `agentplane <domai
 
 ## 文档索引
 
-完整地图见 [docs/README.md](docs/README.md)。最常用：[架构](docs/core/architecture.md) · [技术栈](docs/tech-stack.md) · [命令参考](docs/command-reference.md) · [WebUI](docs/webui.md) · [编码与协作规范](docs/conventions.md) · [Maintainer 指南](docs/maintainer-guide.md) · [Maintainer 指南](docs/maintainer-guide.md)
+完整地图见 [docs/README.md](docs/README.md)。最常用：[架构](docs/core/architecture.md) · [命令参考](docs/command-reference.md) · [编码与协作规范](docs/conventions.md) · [Maintainer 指南](docs/maintainer-guide.md)

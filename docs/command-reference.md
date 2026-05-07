@@ -1,6 +1,13 @@
-# AgentPlane 命令参考
+---
+status: active
+owner: AgentPlane maintainers
+last_verified: 2026-05-07
+audience: both
+---
 
-> 本文是所有 CLI 命令的统一参考。从 control-plane.md 提取并扩展。
+# 命令参考
+
+> 结论：所有正式操作通过 `agentplane <domain> <surface> <verb> [flags]` 进入。本文列出所有可用命令，按域组织。命令形态的详细说明见 [架构 > CLI 接口规范](core/architecture.md#cli-接口规范)。
 
 ---
 
@@ -10,9 +17,18 @@
 agentplane <domain> <surface> <verb> [flags]
 ```
 
+| 部分 | 说明 | 示例 |
+|------|------|------|
+| `<domain>` | 域 | `infra`、`service`、`app`、`ingress` |
+| `<surface>` | 对象面或工作流面 | `service`、`app delivery` |
+| `<verb>` | 动作 | `search`、`get`、`plan`、`apply`、`verify` |
+| `[flags]` | 可选参数 | `--target`、`--repo-root`、`--json` |
+
 ---
 
-## 基础设施 (infra)
+## infra 域：Target 配置
+
+管理 Target（目标环境）的主机、网络、Secrets。
 
 ```bash
 # 主机纳管、资产盘点
@@ -26,8 +42,6 @@ agentplane infra remote bash <target> -- uname -a
 
 # 网络检查、防火墙
 agentplane infra network audit <target> --repo-root <repo-root>
-
-# 防火墙规则管理
 agentplane infra network firewall plan <target> --repo-root <repo-root>
 agentplane infra network firewall apply <target> --repo-root <repo-root> --execute
 
@@ -45,7 +59,9 @@ agentplane infra health <target> --repo-root <repo-root>
 
 ---
 
-## 服务管理 (service)
+## service 域：运行时管理
+
+管理所有 Docker 容器的健康、重启、日志（包括基础设施容器和业务容器）。
 
 ```bash
 # 搜索服务
@@ -69,7 +85,9 @@ agentplane service public-endpoint verify --target <target> --name <service> --r
 
 ---
 
-## 应用交付 (app)
+## app 域：应用交付生命周期
+
+管理应用的 catalog、构建、部署、回滚。
 
 ### 应用对象 (app object)
 
@@ -136,7 +154,9 @@ agentplane app delivery doc-sync --target <target> --app <app> --repo-root <repo
 
 ---
 
-## 入口管理 (ingress)
+## ingress 域：公网入口
+
+管理域名、SSL、路由。
 
 ```bash
 # 搜索入口
@@ -160,7 +180,27 @@ agentplane ingress publish apply --target <target> --config-file <config-file> -
 
 ---
 
-## 投影管理 (projection)
+## project 域：项目治理
+
+管理项目分组、聚合状态、项目级配置。
+
+> project 域当前未实现，以下为规划中的命令。
+
+```bash
+# 查看项目整体状态
+agentplane project status --project <project>
+
+# 列出项目下的应用
+agentplane project apps list --project <project>
+```
+
+---
+
+## 工具命令
+
+以下命令不属于业务域，而是项目治理和调试工具。
+
+### 投影管理 (projection)
 
 ```bash
 # 运行时环境计划
@@ -181,9 +221,7 @@ agentplane projection fixture cleanup --target <target> --profile <profile> --re
 agentplane projection ledger refresh --target <target> --repo-root <repo-root> --write
 ```
 
----
-
-## 仓库治理 (repo)
+### 仓库治理 (repo)
 
 ```bash
 # 仓库状态
@@ -202,9 +240,7 @@ agentplane repo skills check --repo-root .
 agentplane repo privacy-scan --repo-root .
 ```
 
----
-
-## 引导 (bootstrap)
+### 引导 (bootstrap)
 
 ```bash
 # 本地检查
@@ -220,9 +256,7 @@ agentplane bootstrap init-secrets --repo-root .
 agentplane bootstrap verify-secrets --repo-root .
 ```
 
----
-
-## WebUI
+### WebUI
 
 ```bash
 # 启动 WebUI
@@ -232,9 +266,7 @@ agentplane web --host 127.0.0.1 --port 8080
 agentplane web --host 0.0.0.0 --port 8080 --token <your-token>
 ```
 
----
-
-## 测试
+### 测试
 
 ```bash
 # 快速测试
@@ -261,5 +293,7 @@ agentplane test full
 
 ## 关联文档
 
-- [架构](architecture.md) — 控制面核心合同
-- [技术栈](tech-stack.md) — 技术选型与跨平台规范
+- [架构](core/architecture.md) — 域、投影模型、CLI 接口规范
+- [愿景](core/vision.md) — 项目定位、项目模型
+- [编码与协作规范](conventions.md) — 技术栈、编码规则
+- [术语表](glossary.md) — 术语定义
