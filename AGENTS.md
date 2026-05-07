@@ -73,45 +73,8 @@ AgentPlane 是 Agent-first 控制面 CLI。所有操作通过 `agentplane <domai
 - 单人维护默认完成小任务后自动 commit、合入本地 `main`、推送 `origin main`
 - 禁止 `push --force` 到 main
 
----
-
-## 编码行为准则
-
-基于 [Karpathy Guidelines](https://x.com/karpathy/status/2015883857489522876)，减少常见 LLM 编码错误：
-
-### 1. 先思考再编码
-
-- 明确假设；不确定就问，不要猜测
-- 有多种解释时全部列出，不要默默选一种
-- 有更简单方案时主动提出；遇到不清楚的地方停下来，说明哪里不确定
-
-### 2. 简洁优先
-
-- 最少代码解决问题；不加未要求的功能
-- 单次使用的代码不做抽象
-- 不加没被要求的"灵活性"或"可配置性"
-- 不为不可能的场景写错误处理
-- 200 行能缩到 50 行就重写
-
-### 3. 精准改动
-
-- 只改必须改的；不"顺手改进"相邻代码
-- 匹配现有风格，即使你会写得不同
-- 发现无关死代码只提醒，不删除
-- 只清理自己改动造成的孤儿代码
-
-### 4. 目标驱动执行
-
-- 把任务转化为可验证的目标："加验证" → "写测试然后让它通过"
-- 多步任务先列计划：`步骤 → 验证方式`
-- 强成功标准让 AI 能独立循环；弱标准（"让它能跑"）需要反复确认
-
----
-
-## 反模式
-
-`scripts/` 当入口 → 用 `agentplane ...`；Skill 拼 SSH/Docker → 走 CLI；多层 `ssh bash -c` → `infra remote bash`；大批量单提交 → 按逻辑拆分；格式混功能 → 独立提交；平台变种 venv → 只用根 `.venv`。
+> 编码行为准则、反模式、哲学原则见 [docs/conventions.md](docs/conventions.md)。
 
 ## 文档索引
 
-完整地图见 [docs/README.md](docs/README.md)。最常用：[架构](docs/architecture.md) · [技术栈](docs/tech-stack.md) · [命令参考](docs/command-reference.md) · [WebUI](docs/webui.md)
+完整地图见 [docs/README.md](docs/README.md)。最常用：[架构](docs/architecture.md) · [技术栈](docs/tech-stack.md) · [命令参考](docs/command-reference.md) · [WebUI](docs/webui.md) · [编码与协作规范](docs/conventions.md)

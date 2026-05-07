@@ -11,6 +11,7 @@
 | 查找命令 | [命令参考](command-reference.md) |
 | 了解技术栈 | [技术栈](tech-stack.md) |
 | 使用 WebUI | [WebUI](webui.md) |
+| 编码规范 | [编码与协作规范](conventions.md) |
 | 部署应用 | [教程：部署第一个应用](tutorials/deploy-first-app.md) |
 | 排查问题 | [教程：排查部署失败](tutorials/troubleshoot-failed-deployment.md) |
 | 添加服务器 | [教程：添加新服务器](tutorials/add-new-server.md) |
@@ -24,6 +25,7 @@
 - [命令参考](command-reference.md) — 所有 CLI 命令
 - [WebUI](webui.md) — WebUI 架构和使用
 - [入门指南](getting-started.md) — 5 分钟上手
+- [编码与协作规范](conventions.md) — 编码行为准则、哲学原则、协作协议
 
 ---
 

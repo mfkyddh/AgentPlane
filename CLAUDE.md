@@ -1,57 +1,7 @@
 # CLAUDE.md
 
 > 本文档是 Claude Code 专属指令。通用 AI 规则见 [AGENTS.md](AGENTS.md)。
-> 本文档只包含 Claude 特有的协作协议、方法论集成和架构补充。
-
-## 协作协议
-
-**人类表达意图，AI 自主推进，所有工作回归主线。**
-
-**会话开始**：读取 `backlog.md`，确认主线进度，向人类报告当前位置。
-
-**需求处理**：收到任何需求后，先判断归属：
-- 直接服务主线（当前阶段目标）→ 合入主线，立即执行
-- 间接相关 → 创建分支任务，完成后回归主线
-- 完全无关 → 记录到 backlog，询问是否现在做
-
-**会话结束**：更新 `backlog.md`，标记完成项，记录进度。
-
-**主线**：当前阶段的唯一目标是完成三件事（见 backlog.md）。所有工作都应围绕主线推进。
-
-## 文档约定
-
-两层原则：`docs/` 给人看，`AGENTS.md` 给 AI 看。活跃文档需要 YAML frontmatter（`status`、`owner`、`last_verified`、`audience`）且必须被索引链接。
-
-## 求是 Skills 使用原则
-
-在以下场景必须主动调用对应的 qiushi-skill：
-
-| 场景 | 调用的 Skill | 触发信号 |
-|------|-------------|---------|
-| 做重大判断或决策前 | `qiushi-skill:investigation-first` | 信息不足、需要先摸清现状 |
-| 面对复杂问题不知从何入手 | `qiushi-skill:contradiction-analysis` | 多个因素冲突、主次不清 |
-| 完成阶段性工作后 | `qiushi-skill:criticism-self-criticism` | 阶段验收、需要审查质量 |
-| 面对长期复杂任务 | `qiushi-skill:protracted-strategy` | 无法速胜、需要分阶段推进 |
-| 多个任务争夺注意力 | `qiushi-skill:concentrate-forces` | 优先级过多、资源紧张 |
-| 需要收集多方意见 | `qiushi-skill:mass-line` | 需要整合多源信息 |
-| 从零起步、资源有限 | `qiushi-skill:spark-prairie-fire` | bootstrap、MVP、小团队起步 |
-| 多个目标需要平衡 | `qiushi-skill:overall-planning` | trade-offs、目标冲突 |
-| 提出方案需要验证 | `qiushi-skill:practice-cognition` | experiment、prototype、validate |
-
-优先原则：先用 `实事求是` 约束判断，再在明确适用时调用下游 skill。
-
-## 其他哲学原则
-
-以下不需要显式调用 skill，但在对应场景中主动应用：
-
-- **第一性原理** — 架构设计时从基本事实出发
-- **奥卡姆剃刀** — 如无必要，勿增实体
-- **费曼学习法** — 用简单语言解释复杂概念
-- **苏格拉底式提问** — 通过提问引导思考，而非直接给答案
-- **YAGNI** — 只实现当前需要的功能
-- **DRY** — 消除重复代码
-- **KISS** — 保持简单
-- **SOLID** — 遵循职责单一、开闭原则等
+> 编码行为准则、哲学原则、求是 Skills 见 [docs/conventions.md](docs/conventions.md)。
 
 ## GStack
 
@@ -115,6 +65,7 @@ git clone --single-branch --depth 1 https://github.com/garrytan/gstack.git ~/.cl
 | [docs/command-reference.md](docs/command-reference.md) | CLI 命令参考 |
 | [docs/webui.md](docs/webui.md) | WebUI 架构和 API |
 | [docs/getting-started.md](docs/getting-started.md) | 5 分钟上手 |
+| [docs/conventions.md](docs/conventions.md) | 编码与协作规范 |
 
 ## gstack (REQUIRED — global install)
 

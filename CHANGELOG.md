@@ -1,31 +1,26 @@
 ---
 status: active
 owner: AgentPlane maintainers
-last_verified: 2026-04-29
+last_verified: 2026-05-07
 superseded_by: null
 audience: both
 ---
 
 # Changelog
 
-All notable changes to AgentPlane are tracked here. The project follows Conventional Commits for individual changes and keeps this file as the human release summary.
+里程碑记录。详细变更见 `git log`。
 
-## Unreleased
+## 0.2.0 — 2026-05-07
 
-### Added
+- 文档体系重构：80+ 文件精简到 ~20 个活跃文档
+- 新增 WebUI（FastAPI + Vue 3 CDN）
+- 新增统一架构文档、技术栈文档、命令参考
 
-- Open source maturity roadmap and project positioning documents.
-- Architecture decision record index for long-lived technical choices.
-
-### Changed
-
-- Public documentation now states that AgentPlane is an alpha-stage CLI-first control plane template, not a finished hosted platform.
-
-## 0.1.0
+## 0.1.0 — 2026-04-29
 
 Initial alpha baseline.
 
-- CLI-first repository governance through `agentplane repo health-check` and `agentplane repo release-check`.
-- Documentation, testing, git, publication boundary, and open source readiness references.
-- Offline default test gate with explicit markers for live WSL, SSH, Docker, provider, and external app checks.
-
+- CLI-first 仓库治理：`agentplane repo health-check`、`agentplane repo release-check`
+- 离线默认测试门禁，显式标记 live WSL/SSH/Docker/provider 检查
+- Secrets 分离设计，secrets/ 被 .gitignore 保护
+- 18 个 Skill 覆盖 infra/service/app/ingress 场景
