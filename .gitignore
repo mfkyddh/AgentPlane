@@ -67,3 +67,4 @@ agentplane/cli/prod0_postgres_app_resource_audit.py
 agentplane/scripts/probe/probe_tencent_server.sh
 agentplane/scripts/remote/remote_prepare_prod0_openresty_host_certs.sh
 agentplane/scripts/remote/remote_verify_prod0_openresty_host_certs.sh
+.gstack/

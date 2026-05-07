@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgentPlane</title>
+  <script src="https://unpkg.com/vue@3.5.13/dist/vue.global.prod.js" crossorigin="anonymous"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #app { display: flex; height: 100vh; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      background: #16213e;
+      padding: 20px 0;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #2a2a4a;
+    }
+    .sidebar-brand {
+      padding: 0 20px 20px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #00d4aa;
+      border-bottom: 1px solid #2a2a4a;
+      margin-bottom: 10px;
+    }
+    .sidebar-nav { flex: 1; }
+    .nav-item {
+      padding: 12px 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #a0a0a0;
+      transition: all 0.2s;
+    }
+    .nav-item:hover { background: #1f2b47; color: #e0e0e0; }
+    .nav-item.active { background: #1f2b47; color: #00d4aa; border-left: 3px solid #00d4aa; }
+    .sidebar-footer {
+      padding: 15px 20px;
+      border-top: 1px solid #2a2a4a;
+      font-size: 12px;
+      color: #666;
+    }
+
+    /* Main content */
+    .main { flex: 1; overflow-y: auto; padding: 24px; }
+
+    /* Server cards grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .server-card {
+      background: #16213e;
+      border-radius: 8px;
+      padding: 16px;
+      position: relative;
+      border: 1px solid #2a2a4a;
+      transition: border-color 0.2s;
+    }
+    .server-card:hover { border-color: #00d4aa40; }
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 8px;
+    }
+    .status-dot.connected { background: #00d4aa; box-shadow: 0 0 6px #00d4aa80; }
+    .status-dot.unknown { background: #ffd93d; box-shadow: 0 0 6px #ffd93d80; }
+    .status-dot.error { background: #ff6b6b; box-shadow: 0 0 6px #ff6b6b80; }
+    .server-hostname { font-size: 16px; font-weight: bold; margin-bottom: 4px; }
+    .server-ip { font-size: 14px; color: #a0a0a0; margin-bottom: 4px; }
+    .server-meta { font-size: 12px; color: #666; }
+
+    /* App table */
+    .app-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #16213e;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .app-table th, .app-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #2a2a4a;
+    }
+    .app-table th {
+      background: #1f2b47;
+      font-weight: 600;
+      color: #a0a0a0;
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+    .app-table td { font-size: 14px; }
+    .app-url {
+      color: #4fc3f7;
+      text-decoration: none;
+      word-break: break-all;
+    }
+    .app-url:hover { text-decoration: underline; }
+    .control-plane-tag {
+      background: #2a2a4a;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    /* Chat */
+    .chat-container { display: flex; flex-direction: column; height: 100%; }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 0;
+    }
+    .message {
+      margin-bottom: 12px;
+      display: flex;
+    }
+    .message.user { justify-content: flex-end; }
+    .message.agent { justify-content: flex-start; }
+    .message-bubble {
+      max-width: 70%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .message.user .message-bubble {
+      background: #16213e;
+      border-bottom-right-radius: 4px;
+    }
+    .message.agent .message-bubble {
+      background: #1f2b47;
+      border-bottom-left-radius: 4px;
+    }
+    .message-time { font-size: 11px; color: #666; margin-top: 4px; }
+    .message.user .message-time { text-align: right; }
+
+    .chat-input-area {
+      border-top: 1px solid #2a2a4a;
+      padding: 12px 0;
+      display: flex;
+      gap: 8px;
+    }
+    .chat-input {
+      flex: 1;
+      background: #16213e;
+      border: 1px solid #2a2a4a;
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #e0e0e0;
+      font-size: 14px;
+      resize: none;
+      font-family: inherit;
+    }
+    .chat-input:focus { outline: none; border-color: #00d4aa; }
+    .chat-send {
+      background: #00d4aa;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      color: #1a1a2e;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .chat-send:hover { opacity: 0.9; }
+    .chat-send:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Typing indicator */
+    .typing { display: flex; gap: 4px; padding: 10px 14px; }
+    .typing-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #a0a0a0;
+      animation: bounce 1.4s infinite ease-in-out;
+    }
+    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+
+    /* Rejected message */
+    .message-rejected {
+      background: #2d2a1a;
+      border: 1px solid #ffd93d;
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #ffd93d;
+      font-size: 13px;
+      max-width: 70%;
+    }
+
+    /* Error message */
+    .message-error {
+      background: #2a1a1a;
+      border: 1px solid #ff6b6b;
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #ff6b6b;
+      font-size: 13px;
+      max-width: 70%;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: #a0a0a0;
+    }
+    .empty-state-icon { font-size: 32px; margin-bottom: 12px; }
+    .empty-state-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: #e0e0e0; }
+    .empty-state-hint {
+      font-size: 13px;
+      color: #666;
+      margin-top: 8px;
+    }
+    .empty-state-hint code {
+      background: #2a2a4a;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #4fc3f7;
+    }
+
+    /* Skeleton loading */
+    .skeleton {
+      background: linear-gradient(90deg, #1f2b47 25%, #2a3557 50%, #1f2b47 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 4px;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .skeleton-card {
+      background: #16213e;
+      border-radius: 8px;
+      padding: 16px;
+      border: 1px solid #2a2a4a;
+    }
+    .skeleton-line { height: 14px; margin-bottom: 8px; }
+    .skeleton-line.w60 { width: 60%; }
+    .skeleton-line.w40 { width: 40%; }
+    .skeleton-line.w80 { width: 80%; }
+
+    /* Error state with retry */
+    .error-state {
+      text-align: center;
+      padding: 48px 24px;
+    }
+    .error-state-icon { font-size: 32px; margin-bottom: 12px; }
+    .error-state-msg { color: #ff6b6b; margin-bottom: 16px; }
+    .retry-btn {
+      background: #2a2a4a;
+      border: 1px solid #ff6b6b40;
+      color: #ff6b6b;
+      padding: 8px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .retry-btn:hover { background: #3a3a5a; }
+
+    /* Section title */
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #e0e0e0;
+    }
+
+    /* Connection banner */
+    .connection-banner {
+      background: #2d2a1a;
+      color: #ffd93d;
+      text-align: center;
+      padding: 8px;
+      font-size: 13px;
+      position: fixed;
+      top: 0; left: 220px; right: 0;
+      z-index: 100;
+    }
+
+    /* Auth page */
+    .auth-page {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: #1a1a2e;
+    }
+    .auth-box {
+      background: #16213e;
+      padding: 40px;
+      border-radius: 12px;
+      width: 360px;
+      text-align: center;
+    }
+    .auth-box h2 { margin-bottom: 20px; color: #00d4aa; }
+    .auth-input {
+      width: 100%;
+      background: #1a1a2e;
+      border: 1px solid #2a2a4a;
+      border-radius: 8px;
+      padding: 12px;
+      color: #e0e0e0;
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+    .auth-input:focus { outline: none; border-color: #00d4aa; }
+    .auth-btn {
+      width: 100%;
+      background: #00d4aa;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      color: #1a1a2e;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .auth-error { color: #ff6b6b; font-size: 13px; margin-top: 10px; }
+
+    /* Chat welcome */
+    .chat-welcome {
+      text-align: center;
+      padding: 60px 24px;
+      color: #a0a0a0;
+    }
+    .chat-welcome h3 { color: #e0e0e0; margin-bottom: 12px; }
+    .chat-welcome p { font-size: 13px; line-height: 1.6; }
+    .chat-welcome code {
+      background: #2a2a4a;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #4fc3f7;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3a3a5a; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Auth page -->
+    <div v-if="needsAuth && !authenticated" class="auth-page">
+      <div class="auth-box">
+        <h2>AgentPlane</h2>
+        <input class="auth-input" type="password" v-model="authToken" placeholder="Enter access token"
+               @keyup.enter="submitAuth">
+        <button class="auth-btn" @click="submitAuth">Connect</button>
+        <div v-if="authError" class="auth-error">{{ authError }}</div>
+      </div>
+    </div>
+
+    <!-- Main app -->
+    <template v-else>
+      <!-- Connection banner -->
+      <div v-if="wsDisconnected" class="connection-banner">
+        Connection lost, reconnecting...
+      </div>
+
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-brand">AgentPlane</div>
+        <div class="sidebar-nav">
+          <div class="nav-item" :class="{active: view === 'dashboard'}" @click="view = 'dashboard'">
+            Dashboard
+          </div>
+          <div class="nav-item" :class="{active: view === 'chat'}" @click="view = 'chat'">
+            Chat
+          </div>
+        </div>
+        <div class="sidebar-footer">v0.1.0</div>
+      </div>
+
+      <!-- Main content -->
+      <div class="main">
+        <!-- Dashboard -->
+        <div v-if="view === 'dashboard'">
+          <!-- Loading skeleton -->
+          <template v-if="loading">
+            <div class="section-title">Servers</div>
+            <div class="cards-grid">
+              <div v-for="n in 2" :key="n" class="skeleton-card">
+                <div class="skeleton skeleton-line w60"></div>
+                <div class="skeleton skeleton-line w40"></div>
+                <div class="skeleton skeleton-line w80"></div>
+              </div>
+            </div>
+            <div class="section-title">Applications</div>
+            <div class="skeleton-card">
+              <div class="skeleton skeleton-line w80"></div>
+              <div class="skeleton skeleton-line w60"></div>
+            </div>
+          </template>
+
+          <!-- Error state -->
+          <div v-else-if="loadError" class="error-state">
+            <div class="error-state-icon">&#x26A0;</div>
+            <div class="error-state-msg">{{ loadError }}</div>
+            <button class="retry-btn" @click="fetchDashboard">Retry</button>
+          </div>
+
+          <!-- Dashboard content -->
+          <template v-else>
+            <div class="section-title">Servers</div>
+            <div v-if="hosts.length === 0" class="empty-state">
+              <div class="empty-state-icon">&#x1F5A5;</div>
+              <div class="empty-state-title">No servers yet</div>
+              <div class="empty-state-hint">
+                Run <code>agentplane infra inventory &lt;target&gt;</code> to register a server
+              </div>
+            </div>
+            <div v-else class="cards-grid">
+              <div v-for="host in hosts" :key="host.target" class="server-card">
+                <div>
+                  <span class="status-dot" :class="host.status"></span>
+                  <span class="server-hostname">{{ host.hostname }}</span>
+                </div>
+                <div class="server-ip">{{ host.ip || 'local' }}</div>
+                <div class="server-meta">{{ host.label }}</div>
+                <div v-if="host.last_seen" class="server-meta">
+                  Updated {{ formatRelativeTime(host.last_seen) }}
+                </div>
+              </div>
+            </div>
+
+            <div class="section-title">Applications</div>
+            <div v-if="apps.length === 0" class="empty-state">
+              <div class="empty-state-icon">&#x1F4E6;</div>
+              <div class="empty-state-title">No applications yet</div>
+              <div class="empty-state-hint">
+                Run <code>agentplane app object onboard &lt;target&gt; --app &lt;name&gt;</code> to onboard an app
+              </div>
+            </div>
+            <table v-else class="app-table">
+              <thead>
+                <tr>
+                  <th>App</th>
+                  <th>Target</th>
+                  <th>Control Plane</th>
+                  <th>Public URL</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="app in apps" :key="app.app + app.target">
+                  <td><strong>{{ app.app }}</strong></td>
+                  <td>{{ app.target }}</td>
+                  <td><span class="control-plane-tag">{{ app.control_plane || '-' }}</span></td>
+                  <td>
+                    <a v-if="app.public_url" :href="app.public_url" target="_blank" class="app-url">
+                      {{ app.public_url }}
+                    </a>
+                    <span v-else>-</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div v-if="operations.length > 0" style="margin-top: 32px;">
+              <div class="section-title">Recent Operations</div>
+              <table class="app-table">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Target</th>
+                    <th>Object</th>
+                    <th>Action</th>
+                    <th>Result</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="op in operations" :key="op.op_id">
+                    <td>{{ formatRelativeTime(op.timestamp) }}</td>
+                    <td>{{ op.target }}</td>
+                    <td>{{ op.object_type }}</td>
+                    <td>{{ op.action }}</td>
+                    <td>{{ op.result }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </template>
+        </div>
+
+        <!-- Chat -->
+        <div v-if="view === 'chat'" class="chat-container">
+          <div class="chat-messages" ref="chatMessagesEl">
+            <div v-if="chatMessages.length === 0" class="chat-welcome">
+              <h3>Agent Chat</h3>
+              <p>
+                Describe what you need in natural language.<br>
+                The agent will translate your request into commands.<br><br>
+                Example: <code>Check the status of sub2api on prod0-main</code><br>
+                Only read-only operations are allowed in WebUI.<br>
+                Destructive operations will be redirected to CLI.
+              </p>
+            </div>
+            <div v-for="(msg, i) in chatMessages" :key="i" class="message" :class="msg.role">
+              <div>
+                <div v-if="msg.rejected" class="message-rejected">{{ msg.text }}</div>
+                <div v-else-if="msg.error" class="message-error">{{ msg.text }}</div>
+                <div v-else class="message-bubble">{{ msg.text }}</div>
+                <div class="message-time">{{ msg.time }}</div>
+              </div>
+            </div>
+            <div v-if="agentTyping" class="message agent">
+              <div>
+                <div class="typing">
+                  <div class="typing-dot"></div>
+                  <div class="typing-dot"></div>
+                  <div class="typing-dot"></div>
+                </div>
+                <div class="message-time">Agent is processing...</div>
+              </div>
+            </div>
+          </div>
+          <div class="chat-input-area">
+            <textarea class="chat-input" v-model="chatInput"
+                      placeholder="Describe what you need, the agent will execute..."
+                      @keydown.enter.exact.prevent="sendMessage"
+                      rows="1"></textarea>
+            <button class="chat-send" @click="sendMessage" :disabled="!chatInput.trim() || agentTyping">
+              Send
+            </button>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <script>
+    const { createApp, ref, onMounted, nextTick, onUnmounted } = Vue;
+
+    createApp({
+      setup() {
+        const view = ref('dashboard');
+        const hosts = ref([]);
+        const apps = ref([]);
+        const operations = ref([]);
+        const loading = ref(true);
+        const loadError = ref('');
+        const chatMessages = ref([]);
+        const chatInput = ref('');
+        const agentTyping = ref(false);
+        const chatMessagesEl = ref(null);
+        const wsDisconnected = ref(false);
+        const needsAuth = ref(false);
+        const authenticated = ref(false);
+        const authToken = ref('');
+        const authError = ref('');
+
+        let ws = null;
+        let mtimePoller = null;
+        let lastMtime = 0;
+        let reconnectDelay = 1000;
+        const MAX_RECONNECT_DELAY = 30000;
+
+        function formatRelativeTime(ts) {
+          if (!ts) return '-';
+          try {
+            const d = new Date(ts);
+            const now = new Date();
+            const diffMs = now - d;
+            const diffMin = Math.floor(diffMs / 60000);
+            if (diffMin < 1) return 'just now';
+            if (diffMin < 60) return `${diffMin}m ago`;
+            const diffHr = Math.floor(diffMin / 60);
+            if (diffHr < 24) return `${diffHr}h ago`;
+            const diffDay = Math.floor(diffHr / 24);
+            return `${diffDay}d ago`;
+          } catch {
+            return ts;
+          }
+        }
+
+        function apiFetch(url) {
+          const headers = {};
+          if (authenticated.value && authToken.value) {
+            headers['Authorization'] = `Bearer ${authToken.value}`;
+          }
+          return fetch(url, { headers });
+        }
+
+        async function fetchDashboard() {
+          loadError.value = '';
+          try {
+            const [hostsRes, appsRes, opsRes] = await Promise.all([
+              apiFetch('/api/hosts'),
+              apiFetch('/api/apps'),
+              apiFetch('/api/operations'),
+            ]);
+            if (hostsRes.status === 401 || appsRes.status === 401 || opsRes.status === 401) {
+              authenticated.value = false;
+              needsAuth.value = true;
+              return;
+            }
+            if (!hostsRes.ok || !appsRes.ok || !opsRes.ok) {
+              throw new Error('API request failed');
+            }
+            hosts.value = (await hostsRes.json()).hosts || [];
+            apps.value = (await appsRes.json()).apps || [];
+            operations.value = (await opsRes.json()).operations || [];
+          } catch (e) {
+            loadError.value = `Failed to load data: ${e.message}`;
+          } finally {
+            loading.value = false;
+          }
+        }
+
+        async function checkMtime() {
+          try {
+            const res = await apiFetch('/api/mtime');
+            const data = await res.json();
+            if (data.mtime > lastMtime) {
+              lastMtime = data.mtime;
+              fetchDashboard();
+            }
+          } catch {
+            // ignore mtime check failures
+          }
+        }
+
+        function startMtimePolling() {
+          // Initial fetch
+          fetchDashboard();
+          // Poll mtime every 5 seconds
+          mtimePoller = setInterval(checkMtime, 5000);
+        }
+
+        function stopMtimePolling() {
+          if (mtimePoller) {
+            clearInterval(mtimePoller);
+            mtimePoller = null;
+          }
+        }
+
+        function connectWs() {
+          const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+          ws = new WebSocket(`${proto}//${location.host}/ws/chat`);
+
+          ws.onopen = () => {
+            wsDisconnected.value = false;
+            reconnectDelay = 1000;
+            // Send token if we have one (reconnect case or pre-filled)
+            if (authToken.value && needsAuth.value && !authenticated.value) {
+              ws.send(JSON.stringify({ type: 'auth', token: authToken.value }));
+            }
+          };
+
+          ws.onmessage = (event) => {
+            const msg = JSON.parse(event.data);
+
+            if (msg.type === 'auth_required') {
+              needsAuth.value = true;
+              // If user already entered token (e.g. reconnect), send it now
+              if (authToken.value) {
+                ws.send(JSON.stringify({ type: 'auth', token: authToken.value }));
+              }
+              return;
+            }
+
+            if (msg.type === 'auth') {
+              if (msg.payload?.status === 'ok') {
+                authenticated.value = true;
+                authError.value = '';
+                startMtimePolling();
+              } else {
+                authError.value = 'Invalid token';
+                ws.close();
+              }
+              return;
+            }
+
+            if (msg.type === 'chat_response' && msg.payload?.status === 'running') {
+              agentTyping.value = true;
+              return;
+            }
+
+            agentTyping.value = false;
+
+            if (msg.type === 'command_result') {
+              const output = msg.payload?.output || {};
+              const items = output.items || [];
+              let text = '';
+              if (items.length > 0) {
+                text = items.map(it => {
+                  const parts = [`${it.app} (${it.target})`];
+                  if (it.control_plane) parts.push(`control: ${it.control_plane}`);
+                  if (it.public_url) parts.push(it.public_url);
+                  return parts.join(' | ');
+                }).join('\n');
+              } else if (output.hosts) {
+                text = output.hosts.map(h =>
+                  `${h.hostname} (${h.target}): ${h.status} ${h.ip || 'local'}`
+                ).join('\n');
+              } else if (output.operations) {
+                text = output.operations.slice(0, 5).map(op =>
+                  `${op.object_type} ${op.action} -> ${op.result} (${op.target})`
+                ).join('\n');
+              } else {
+                text = JSON.stringify(output, null, 2);
+              }
+              chatMessages.value.push({
+                role: 'agent',
+                text: `> ${msg.payload?.command || 'result'}\n${text}`,
+                time: new Date().toLocaleTimeString(),
+              });
+            } else if (msg.type === 'command_rejected') {
+              chatMessages.value.push({
+                role: 'agent',
+                text: msg.payload?.reason || 'Destructive operation blocked',
+                rejected: true,
+                time: new Date().toLocaleTimeString(),
+              });
+            } else if (msg.type === 'error') {
+              chatMessages.value.push({
+                role: 'agent',
+                text: msg.payload?.reason || msg.payload?.message || 'Unknown error',
+                error: true,
+                time: new Date().toLocaleTimeString(),
+              });
+            }
+
+            nextTick(() => {
+              if (chatMessagesEl.value) {
+                chatMessagesEl.value.scrollTop = chatMessagesEl.value.scrollHeight;
+              }
+            });
+          };
+
+          ws.onclose = () => {
+            wsDisconnected.value = true;
+            const jitter = Math.random() * 1000;
+            setTimeout(connectWs, reconnectDelay + jitter);
+            reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY);
+          };
+
+          ws.onerror = () => {
+            wsDisconnected.value = true;
+          };
+        }
+
+        function sendMessage() {
+          const text = chatInput.value.trim();
+          if (!text || agentTyping.value) return;
+
+          chatMessages.value.push({
+            role: 'user',
+            text,
+            time: new Date().toLocaleTimeString(),
+          });
+          chatInput.value = '';
+
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'chat_message', text }));
+          }
+
+          nextTick(() => {
+            if (chatMessagesEl.value) {
+              chatMessagesEl.value.scrollTop = chatMessagesEl.value.scrollHeight;
+            }
+          });
+        }
+
+        function submitAuth() {
+          if (!authToken.value.trim()) {
+            authError.value = 'Please enter a token';
+            return;
+          }
+          authError.value = '';
+          // If ws is already open, send auth directly; otherwise reconnect
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'auth', token: authToken.value }));
+          } else {
+            connectWs();
+          }
+        }
+
+        onMounted(async () => {
+          // Check if server requires auth before connecting WebSocket
+          try {
+            const res = await fetch('/api/config');
+            const config = await res.json();
+            if (config.requires_auth) {
+              needsAuth.value = true;
+            } else {
+              authenticated.value = true;
+              startMtimePolling();
+            }
+          } catch {
+            authenticated.value = true;
+            startMtimePolling();
+          }
+          connectWs();
+        });
+
+        onUnmounted(() => {
+          stopMtimePolling();
+          if (ws) ws.close();
+        });
+
+        return {
+          view, hosts, apps, operations, loading, loadError,
+          chatMessages, chatInput, agentTyping, chatMessagesEl,
+          wsDisconnected, needsAuth, authenticated, authToken, authError,
+          formatRelativeTime, sendMessage, submitAuth, fetchDashboard,
+        };
+      },
+    }).mount('#app');
+  </script>
+</body>
+</html>
