@@ -15,6 +15,8 @@ audience: both
 - 文档体系重构：80+ 文件精简到 ~20 个活跃文档
 - 新增 WebUI（FastAPI + Vue 3 CDN）
 - 新增统一架构文档、技术栈文档、命令参考
+- 职责边界重构：AGENTS.md（AI 规则）/ CLAUDE.md（Claude 特有）/ conventions.md（共用规范）三文件分离
+- 启动人机协作实验框架：backlog.md 新增实验记录板块
 
 ## 0.1.0 — 2026-04-29
 
