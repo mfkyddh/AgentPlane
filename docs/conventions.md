@@ -77,7 +77,7 @@ audience: both
 
 优先原则：先用 `实事求是` 约束判断，再在明确适用时调用下游 skill。
 
-**原则驱动决策**：做架构、设计、原则相关判断时，必须参考 [principles.md](principles.md) 的道法术体系。具体来说：
+**原则驱动决策**：做架构、设计、原则相关判断时，必须参考 [principles.md](core/principles.md) 的道法术体系。具体来说：
 - **道层**：判断是否实事求是、是否抓住了主要矛盾
 - **法层**：判断是否做了调查研究、是否集中兵力、是否符合奥卡姆剃刀
 - **术层**：判断是否符合 CLI-first、Agent-first、证据优先、YAGNI、DRY、KISS
@@ -95,7 +95,7 @@ audience: both
 - **DRY** — 消除重复代码（术层）
 - **KISS** — 保持简单（术层）
 
-> 原则的完整体系见 [principles.md](principles.md)（道法术三层）。
+> 原则的完整体系见 [principles.md](core/principles.md)（道法术三层）。
 
 ---
 
@@ -170,5 +170,5 @@ audience: both
 
 - [AGENTS.md](../AGENTS.md) — AI 工作规范（引用本文）
 - [CLAUDE.md](../CLAUDE.md) — Claude 特有指令（引用本文）
-- [架构](architecture.md) — 技术架构
+- [架构](core/architecture.md) — 技术架构
 - [技术栈](tech-stack.md) — 技术选型与约束

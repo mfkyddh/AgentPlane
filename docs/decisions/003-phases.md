@@ -131,6 +131,6 @@ Alpha（当前）          Beta                   GA
 
 ## 关联文档
 
-- [愿景](../vision.md) — 项目愿景
-- [原则](../principles.md) — 哲学原则
-- [路线图](../roadmap.md) — 长期路线图
+- [愿景](../core/vision.md) — 项目愿景
+- [原则](../core/principles.md) — 哲学原则
+- [路线图](../core/roadmap.md) — 长期路线图

@@ -48,7 +48,7 @@ AgentPlane 是 Agent-first 控制面 CLI。所有操作通过 `agentplane <domai
 | 16 | **单人维护收尾**：小任务完成后必须自动 commit、合入本地 `main`、推送 `origin main` | 🔴 |
 | 17 | **提交前必须通过本地检查**：`git commit` 前通过 pre-commit，`git push` 前通过 pre-push | 🔴 |
 | 18 | **回答前声明 Skills**：回答问题时必须首先说明使用了哪些 skills | 🔴 |
-| 19 | **原则驱动决策**：做架构、设计、原则相关判断时，必须参考 [principles.md](docs/principles.md) 的道法术体系 | 🔴 |
+| 19 | **原则驱动决策**：做架构、设计、原则相关判断时，必须参考 [principles.md](docs/core/principles.md) 的道法术体系 | 🔴 |
 
 ---
 
@@ -79,4 +79,4 @@ AgentPlane 是 Agent-first 控制面 CLI。所有操作通过 `agentplane <domai
 
 ## 文档索引
 
-完整地图见 [docs/README.md](docs/README.md)。最常用：[架构](docs/architecture.md) · [技术栈](docs/tech-stack.md) · [命令参考](docs/command-reference.md) · [WebUI](docs/webui.md) · [编码与协作规范](docs/conventions.md) · [Maintainer 指南](docs/maintainer-guide.md) · [Maintainer 指南](docs/maintainer-guide.md)
+完整地图见 [docs/README.md](docs/README.md)。最常用：[架构](docs/core/architecture.md) · [技术栈](docs/tech-stack.md) · [命令参考](docs/command-reference.md) · [WebUI](docs/webui.md) · [编码与协作规范](docs/conventions.md) · [Maintainer 指南](docs/maintainer-guide.md) · [Maintainer 指南](docs/maintainer-guide.md)

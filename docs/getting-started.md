@@ -70,7 +70,7 @@ agentplane app object search --target <target> --repo-root .
 
 ## 下一步
 
-- [架构概览](architecture.md) — 理解三层投影模型
+- [架构概览](core/architecture.md) — 理解三层投影模型
 - [命令参考](command-reference.md) — 所有 CLI 命令
 - [部署第一个应用](tutorials/deploy-first-app.md) — 动手教程
 - [排查部署失败](tutorials/troubleshoot-failed-deployment.md) — 常见错误

@@ -147,7 +147,7 @@ AgentPlane 需要明确核心架构决策，确保技术方向一致。
 
 ## 关联文档
 
-- [愿景](../vision.md) — 项目愿景
-- [原则](../principles.md) — 哲学原则
-- [路线图](../roadmap.md) — 长期路线图
-- [架构](../architecture.md) — 架构详细说明
+- [愿景](../core/vision.md) — 项目愿景
+- [原则](../core/principles.md) — 哲学原则
+- [路线图](../core/roadmap.md) — 长期路线图
+- [架构](../core/architecture.md) — 架构详细说明

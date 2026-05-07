@@ -41,6 +41,6 @@ audience: maintainer
 
 ## 关联文档
 
-- [架构](architecture.md) — 技术架构
+- [架构](core/architecture.md) — 技术架构
 - [编码与协作规范](conventions.md) — 编码行为准则
-- [原则](principles.md) — 道法术三层原则体系
+- [原则](core/principles.md) — 道法术三层原则体系

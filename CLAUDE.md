@@ -60,7 +60,7 @@ git clone --single-branch --depth 1 https://github.com/garrytan/gstack.git ~/.cl
 
 | 文档 | 用途 |
 |------|------|
-| [docs/architecture.md](docs/architecture.md) | 架构、控制面契约、投影模型、跨平台执行 |
+| [docs/core/architecture.md](docs/core/architecture.md) | 架构、控制面契约、投影模型、跨平台执行 |
 | [docs/tech-stack.md](docs/tech-stack.md) | 技术栈、依赖规则、容器约定 |
 | [docs/command-reference.md](docs/command-reference.md) | CLI 命令参考 |
 | [docs/webui.md](docs/webui.md) | WebUI 架构和 API |

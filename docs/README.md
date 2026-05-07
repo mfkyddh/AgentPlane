@@ -7,7 +7,7 @@
 | 我想... | 去这里 |
 |---------|--------|
 | 快速上手 | [入门指南](getting-started.md) |
-| 理解架构 | [架构](architecture.md) |
+| 理解架构 | [架构](core/architecture.md) |
 | 查找命令 | [命令参考](command-reference.md) |
 | 了解技术栈 | [技术栈](tech-stack.md) |
 | 使用 WebUI | [WebUI](webui.md) |
@@ -18,22 +18,23 @@
 
 ---
 
-## 战略文档
+## 战略文档（项目根基）
 
-- [愿景](vision.md) — 项目定位、目标用户、项目模型、核心价值
-- [原则](principles.md) — 哲学基座、方法论、工程原则
-- [路线图](roadmap.md) — Alpha → Beta → GA 三阶段推进
+- [愿景](core/vision.md) — 项目定位、目标用户、项目模型、核心价值
+- [原则](core/principles.md) — 道法术三层原则体系
+- [路线图](core/roadmap.md) — Alpha → Beta → GA 三阶段推进
+- [架构](core/architecture.md) — 5 域模型、投影模型、CLI 合同、执行闭环
 - [决策记录](decisions/) — 关键决策追溯
 - [术语表](glossary.md) — 唯一术语真源
 
-## 核心文档
+## 战术文档（具体实现）
 
-- [架构](architecture.md) — 控制面合同、投影模型、跨平台执行、应用协作
 - [技术栈](tech-stack.md) — Python/uv/Docker Compose/跨平台约束
 - [命令参考](command-reference.md) — 所有 CLI 命令
 - [WebUI](webui.md) — WebUI 架构和使用
 - [入门指南](getting-started.md) — 5 分钟上手
-- [编码与协作规范](conventions.md) — 编码行为准则、哲学原则、协作协议
+- [编码与协作规范](conventions.md) — 编码行为准则、文档编写规范、协作协议
+- [Maintainer 指南](maintainer-guide.md) — 治理资产约束和协作规则
 
 ---
 

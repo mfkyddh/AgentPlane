@@ -173,6 +173,6 @@ audience: both
 
 ## 关联文档
 
-- [愿景](vision.md) — 用户对象与项目定位
-- [架构](architecture.md) — 控制面对象与任务入口的详细定义
+- [愿景](core/vision.md) — 用户对象与项目定位
+- [架构](core/architecture.md) — 控制面对象与任务入口的详细定义
 - [入门指南](getting-started.md) — 面向人类的概念解释
