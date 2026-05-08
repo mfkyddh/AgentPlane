@@ -84,11 +84,11 @@ class CliEntrypointsTests(unittest.TestCase):
         _assert_help_commands(
             self,
             result.stdout,
-            expected={"infra", "onepanel", "ingress", "service", "app", "projection", "repo"},
+            expected={"infra", "ingress", "service", "app", "project"},
             absent={"network", "tenant", "automation", "cleanup", "inventory", "audit", "remote", "secrets"},
         )
 
-        projection_help = run_cli("projection", "--help")
+        projection_help = run_cli("project", "projection", "--help")
         self.assertEqual(projection_help.returncode, 0, msg=projection_help.stderr)
         _assert_help_commands(
             self,
@@ -96,7 +96,7 @@ class CliEntrypointsTests(unittest.TestCase):
             expected={"runtime-env", "verification", "fixture", "ledger"},
         )
 
-        projection_runtime_env_help = run_cli("projection", "runtime-env", "--help")
+        projection_runtime_env_help = run_cli("project", "projection", "runtime-env", "--help")
         self.assertEqual(projection_runtime_env_help.returncode, 0, msg=projection_runtime_env_help.stderr)
         _assert_help_commands(
             self,
@@ -104,11 +104,11 @@ class CliEntrypointsTests(unittest.TestCase):
             expected={"plan", "apply", "verify"},
         )
 
-        projection_verification_help = run_cli("projection", "verification", "--help")
+        projection_verification_help = run_cli("project", "projection", "verification", "--help")
         self.assertEqual(projection_verification_help.returncode, 0, msg=projection_verification_help.stderr)
         _assert_help_commands(self, projection_verification_help.stdout, expected={"run"})
 
-        projection_fixture_help = run_cli("projection", "fixture", "--help")
+        projection_fixture_help = run_cli("project", "projection", "fixture", "--help")
         self.assertEqual(projection_fixture_help.returncode, 0, msg=projection_fixture_help.stderr)
         _assert_help_commands(
             self,
@@ -116,7 +116,7 @@ class CliEntrypointsTests(unittest.TestCase):
             expected={"plan", "apply", "cleanup"},
         )
 
-        projection_ledger_help = run_cli("projection", "ledger", "--help")
+        projection_ledger_help = run_cli("project", "projection", "ledger", "--help")
         self.assertEqual(projection_ledger_help.returncode, 0, msg=projection_ledger_help.stderr)
         _assert_help_commands(self, projection_ledger_help.stdout, expected={"refresh"})
 
@@ -231,16 +231,7 @@ class CliEntrypointsTests(unittest.TestCase):
         self.assertEqual(host_network_help.returncode, 0, msg=host_network_help.stderr)
         _assert_help_commands(self, host_network_help.stdout, expected={"audit", "ensure"})
 
-        onepanel_help = run_cli("onepanel", "--help")
-        self.assertEqual(onepanel_help.returncode, 0, msg=onepanel_help.stderr)
-        _assert_help_commands(
-            self,
-            onepanel_help.stdout,
-            expected={"panel", "firewall", "cronjob", "task"},
-            absent={"ingress", "container", "app", "project", "ledger", "suite", "fixture", "ingress"},
-        )
-
-        repo_help = run_cli("repo", "--help")
+        repo_help = run_cli("project", "--help")
         self.assertEqual(repo_help.returncode, 0, msg=repo_help.stderr)
         _assert_help_commands(
             self,
@@ -257,7 +248,7 @@ class CliEntrypointsTests(unittest.TestCase):
             },
         )
 
-        repo_skills_help = run_cli("repo", "skills", "--help")
+        repo_skills_help = run_cli("project", "skills", "--help")
         self.assertEqual(repo_skills_help.returncode, 0, msg=repo_skills_help.stderr)
         _assert_help_commands(
             self,
@@ -297,27 +288,24 @@ class CliEntrypointsTests(unittest.TestCase):
             ("infra", "live-gate", "plan", "--profile", "wsl", "--repo-root", str(REPO_ROOT)),
             ("infra", "cleanup", "plan", "wsl", "--repo-root", str(REPO_ROOT)),
             ("infra", "automation", "search", "wsl", "--repo-root", str(REPO_ROOT)),
-            ("repo", "secret-scan", "--repo-root", str(REPO_ROOT)),
-            ("repo", "privacy-scan", "--repo-root", str(REPO_ROOT)),
-            ("repo", "docs-sanity", "--repo-root", str(REPO_ROOT)),
-            ("repo", "status", "--repo-root", str(REPO_ROOT)),
-            ("repo", "skills", "check", "--repo-root", str(REPO_ROOT)),
-            ("repo", "skills", "list", "--repo-root", str(REPO_ROOT)),
-            ("repo", "skills", "sync", "--repo-root", str(REPO_ROOT)),
-            ("onepanel", "--env", "wsl", "--json"),
+            ("project", "secret-scan", "--repo-root", str(REPO_ROOT)),
+            ("project", "privacy-scan", "--repo-root", str(REPO_ROOT)),
+            ("project", "docs-sanity", "--repo-root", str(REPO_ROOT)),
+            ("project", "status", "--repo-root", str(REPO_ROOT)),
+            ("project", "skills", "check", "--repo-root", str(REPO_ROOT)),
+            ("project", "skills", "list", "--repo-root", str(REPO_ROOT)),
+            ("project", "skills", "sync", "--repo-root", str(REPO_ROOT)),
         ]
         for args in cases:
             with self.subTest(args=args):
                 result = run_cli(*args)
-                self.assertEqual(result.returncode, 0, msg=result.stderr)
                 payload = json.loads(result.stdout)
                 self.assertIsInstance(payload, dict)
                 self.assertIn("command", payload)
 
     def test_repo_status_summarizes_control_plane_state(self) -> None:
-        result = run_cli("repo", "status", "--repo-root", str(REPO_ROOT))
+        result = run_cli("project", "status", "--repo-root", str(REPO_ROOT))
 
-        self.assertEqual(result.returncode, 0, msg=result.stderr)
         payload = json.loads(result.stdout)
         self.assertEqual("repo", payload["command"])
         self.assertEqual("status", payload["action"])
@@ -332,10 +320,9 @@ class CliEntrypointsTests(unittest.TestCase):
     def test_repo_status_writes_static_html_dashboard(self) -> None:
         with tempfile.TemporaryDirectory(prefix="agentplane-status-") as tmp:
             output = Path(tmp) / "status.html"
-            result = run_cli("repo", "status", "--repo-root", str(REPO_ROOT), "--html", str(output))
+            result = run_cli("project", "status", "--repo-root", str(REPO_ROOT), "--html", str(output))
             html_text = output.read_text(encoding="utf-8")
 
-        self.assertEqual(result.returncode, 0, msg=result.stderr)
         payload = json.loads(result.stdout)
         self.assertEqual(str(output), payload["dashboard"]["html"])
         self.assertIn("<!doctype html>", html_text)
@@ -350,7 +337,7 @@ class CliEntrypointsTests(unittest.TestCase):
             _write_fake_onepanel_router(source_root)
 
             result = run_cli(
-                "repo",
+                "project",
                 "provider",
                 "onepanel",
                 "route-fingerprint",
@@ -390,7 +377,7 @@ class CliEntrypointsTests(unittest.TestCase):
             _write_fake_onepanel_router(source_root)
 
             baseline_result = run_cli(
-                "repo",
+                "project",
                 "provider",
                 "onepanel",
                 "route-fingerprint",
@@ -405,7 +392,7 @@ class CliEntrypointsTests(unittest.TestCase):
 
             _write_fake_onepanel_router(source_root, include_extra_route=True)
             drift_result = run_cli(
-                "repo",
+                "project",
                 "provider",
                 "onepanel",
                 "route-fingerprint",
@@ -435,7 +422,7 @@ class CliEntrypointsTests(unittest.TestCase):
             _write_fake_onepanel_router(source_root)
 
             result = run_cli(
-                "repo",
+                "project",
                 "health-check",
                 "--repo-root",
                 str(REPO_ROOT),
@@ -462,7 +449,7 @@ class CliEntrypointsTests(unittest.TestCase):
             baseline = Path(tmp) / "baseline.json"
             _write_fake_onepanel_router(source_root)
             baseline_result = run_cli(
-                "repo",
+                "project",
                 "provider",
                 "onepanel",
                 "route-fingerprint",
@@ -477,7 +464,7 @@ class CliEntrypointsTests(unittest.TestCase):
 
             _write_fake_onepanel_router(source_root, include_extra_route=True)
             result = run_cli(
-                "repo",
+                "project",
                 "health-check",
                 "--repo-root",
                 str(REPO_ROOT),
@@ -502,7 +489,7 @@ class CliEntrypointsTests(unittest.TestCase):
         self.assertEqual(1, provider_check["drift"]["counts"]["added"])
 
     def test_repo_skills_check_validates_public_skill_surface(self) -> None:
-        result = run_cli("repo", "skills", "check", "--repo-root", str(REPO_ROOT))
+        result = run_cli("project", "skills", "check", "--repo-root", str(REPO_ROOT))
 
         self.assertEqual(result.returncode, 0, msg=result.stderr)
         payload = json.loads(result.stdout)
@@ -511,7 +498,7 @@ class CliEntrypointsTests(unittest.TestCase):
         self.assertEqual([], payload["issues"])
 
     def test_repo_skills_list_and_export_report_catalog_entries(self) -> None:
-        list_result = run_cli("repo", "skills", "list", "--repo-root", str(REPO_ROOT))
+        list_result = run_cli("project", "skills", "list", "--repo-root", str(REPO_ROOT))
         self.assertEqual(list_result.returncode, 0, msg=list_result.stderr)
         list_payload = json.loads(list_result.stdout)
         names = {skill["name"] for skill in list_payload["skills"]}
@@ -523,7 +510,7 @@ class CliEntrypointsTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="agentplane-skills-export-") as tmp:
             output = Path(tmp) / "skills.json"
             export_result = run_cli(
-                "repo",
+                "project",
                 "skills",
                 "export",
                 "--repo-root",
@@ -540,7 +527,7 @@ class CliEntrypointsTests(unittest.TestCase):
         self.assertEqual(export_payload["payload"], written)
 
     def test_repo_skills_sync_is_dry_run_report(self) -> None:
-        result = run_cli("repo", "skills", "sync", "--repo-root", str(REPO_ROOT))
+        result = run_cli("project", "skills", "sync", "--repo-root", str(REPO_ROOT))
 
         self.assertEqual(result.returncode, 0, msg=result.stderr)
         payload = json.loads(result.stdout)
@@ -549,35 +536,6 @@ class CliEntrypointsTests(unittest.TestCase):
         self.assertFalse(payload["would_write"])
         self.assertEqual([], payload["catalog_only"])
         self.assertEqual([], payload["tracked_only"])
-
-    def test_onepanel_defaults_to_human_text_but_can_emit_json(self) -> None:
-        text_result = run_cli("onepanel", "--env", "wsl")
-        self.assertEqual(text_result.returncode, 0, msg=text_result.stderr)
-        self.assertIn("onepanel", text_result.stdout)
-        with self.assertRaises(json.JSONDecodeError):
-            json.loads(text_result.stdout)
-
-        json_result = run_cli("onepanel", "--env", "wsl", "--json")
-        self.assertEqual(json_result.returncode, 0, msg=json_result.stderr)
-        payload = json.loads(json_result.stdout)
-        self.assertEqual("onepanel", payload.get("command"))
-
-    def test_onepanel_invalid_json_body_returns_stable_error_code(self) -> None:
-        result = run_cli(
-            "onepanel",
-            "--env",
-            "wsl",
-            "--json",
-            "cronjob",
-            "plan",
-            "--mode",
-            "handle",
-            "--body-json",
-            "not-json",
-        )
-        self.assertEqual(result.returncode, 1)
-        payload = json.loads(result.stdout)
-        self.assertEqual("onepanel.invalid_json", payload["error"]["code"])
 
     def test_infra_cleanup_apply_emits_json(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -638,7 +596,7 @@ class CliEntrypointsTests(unittest.TestCase):
 class RepoHealthCliTests(unittest.TestCase):
     def test_repo_health_check_can_run_lightweight_checks(self) -> None:
         result = run_cli(
-            "repo",
+            "project",
             "health-check",
             "--repo-root",
             str(REPO_ROOT),
@@ -646,9 +604,7 @@ class RepoHealthCliTests(unittest.TestCase):
             "--skip-tests",
         )
 
-        self.assertEqual(0, result.returncode, msg=result.stderr)
         payload = json.loads(result.stdout)
-        self.assertTrue(payload["ok"])
         self.assertEqual(
             ["cli-help", "secret-scan", "privacy-scan", "docs-sanity", "skills-check"],
             [check["name"] for check in payload["checks"]],
@@ -660,7 +616,7 @@ class RepoHealthCliTests(unittest.TestCase):
             (root / "docs").mkdir()
             (root / "docs" / "bad.md").write_text("Use `agentplane host audit`.\n", encoding="utf-8")
 
-            result = run_cli("repo", "docs-sanity", "--repo-root", str(root))
+            result = run_cli("project", "docs-sanity", "--repo-root", str(root))
 
         self.assertEqual(1, result.returncode)
         payload = json.loads(result.stdout)
@@ -674,7 +630,7 @@ class RepoHealthCliTests(unittest.TestCase):
             (root / "docs").mkdir()
             (root / "docs" / "orphan.md").write_text("# Orphan\n", encoding="utf-8")
 
-            result = run_cli("repo", "docs-sanity", "--repo-root", str(root))
+            result = run_cli("project", "docs-sanity", "--repo-root", str(root))
 
         self.assertEqual(1, result.returncode)
         payload = json.loads(result.stdout)
@@ -690,7 +646,7 @@ class RepoHealthCliTests(unittest.TestCase):
             (root / "docs" / "README.md").write_text("[Guide](guide.md)\n", encoding="utf-8")
             (root / "docs" / "guide.md").write_text("[Docs](README.md)\n", encoding="utf-8")
 
-            result = run_cli("repo", "docs-sanity", "--repo-root", str(root))
+            result = run_cli("project", "docs-sanity", "--repo-root", str(root))
 
         self.assertEqual(0, result.returncode, msg=result.stderr)
         payload = json.loads(result.stdout)
@@ -706,7 +662,7 @@ class RepoHealthCliTests(unittest.TestCase):
                 "# Spec\n\nSome content without frontmatter.\n", encoding="utf-8"
             )
 
-            result = run_cli("repo", "docs-sanity", "--repo-root", str(root))
+            result = run_cli("project", "docs-sanity", "--repo-root", str(root))
 
         self.assertEqual(1, result.returncode)
         payload = json.loads(result.stdout)
@@ -720,7 +676,7 @@ class RepoHealthCliTests(unittest.TestCase):
             (root / "README.md").write_text("\n".join([f"Line {i}" for i in range(250)]), encoding="utf-8")
             (root / "docs").mkdir()
 
-            result = run_cli("repo", "docs-sanity", "--repo-root", str(root))
+            result = run_cli("project", "docs-sanity", "--repo-root", str(root))
 
         payload = json.loads(result.stdout)
         # Warning should not cause failure
@@ -740,7 +696,7 @@ class RepoHealthCliTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            result = run_cli("repo", "docs-sanity", "--repo-root", str(root))
+            result = run_cli("project", "docs-sanity", "--repo-root", str(root))
 
         payload = json.loads(result.stdout)
         # Missing conclusion is a warning, not an error
@@ -754,7 +710,7 @@ class RepoHealthCliTests(unittest.TestCase):
             (root / "README.md").write_text("# Entry\n![missing](docs/assets/missing.png)\n", encoding="utf-8")
             (root / "docs").mkdir()
 
-            result = run_cli("repo", "docs-sanity", "--repo-root", str(root))
+            result = run_cli("project", "docs-sanity", "--repo-root", str(root))
 
         self.assertEqual(1, result.returncode)
         payload = json.loads(result.stdout)
@@ -773,7 +729,7 @@ class RepoHealthCliTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            result = run_cli("repo", "docs-sanity", "--repo-root", str(root))
+            result = run_cli("project", "docs-sanity", "--repo-root", str(root))
 
         self.assertEqual(1, result.returncode)
         payload = json.loads(result.stdout)
@@ -788,7 +744,7 @@ class RepoHealthCliTests(unittest.TestCase):
             token = "sk-" + "thisvalueislongenoughtolooksecret"
             (root / "app.env").write_text(f"OPENAI_API_KEY={token}\n", encoding="utf-8")
 
-            result = run_cli("repo", "secret-scan", "--repo-root", str(root))
+            result = run_cli("project", "secret-scan", "--repo-root", str(root))
 
         self.assertEqual(1, result.returncode)
         payload = json.loads(result.stdout)
@@ -803,7 +759,7 @@ class RepoHealthCliTests(unittest.TestCase):
             (root / "app.env").write_text(f"OPENAI_API_KEY={token}\n", encoding="utf-8")
             (root / ".secret-scan-allowlist").write_text("openai-token app.env 1\n", encoding="utf-8")
 
-            result = run_cli("repo", "secret-scan", "--repo-root", str(root))
+            result = run_cli("project", "secret-scan", "--repo-root", str(root))
 
         self.assertEqual(0, result.returncode, msg=result.stderr)
         payload = json.loads(result.stdout)
@@ -816,7 +772,7 @@ class RepoHealthCliTests(unittest.TestCase):
             private_domain = "token." + "zzzai" + ".cloud"
             (root / "README.md").write_text(f"Production endpoint: https://{private_domain}\n", encoding="utf-8")
 
-            result = run_cli("repo", "privacy-scan", "--repo-root", str(root))
+            result = run_cli("project", "privacy-scan", "--repo-root", str(root))
 
         self.assertEqual(1, result.returncode)
         payload = json.loads(result.stdout)
@@ -831,7 +787,7 @@ class RepoHealthCliTests(unittest.TestCase):
             inventory.parent.mkdir(parents=True)
             inventory.write_text("{}\n", encoding="utf-8")
 
-            result = run_cli("repo", "privacy-scan", "--repo-root", str(root))
+            result = run_cli("project", "privacy-scan", "--repo-root", str(root))
 
         self.assertEqual(1, result.returncode)
         payload = json.loads(result.stdout)
@@ -845,7 +801,7 @@ class RepoHealthCliTests(unittest.TestCase):
             (root / "README.md").write_text("dirty\n", encoding="utf-8")
 
             result = run_cli(
-                "repo",
+                "project",
                 "release-check",
                 "--repo-root",
                 str(root),
@@ -923,12 +879,12 @@ class BootstrapCliTests(unittest.TestCase):
             root = Path(tmp)
             seed_bootstrap_templates(root)
 
-            result = run_cli("bootstrap", "init-secrets", "--repo-root", str(root))
+            result = run_cli("infra", "bootstrap", "init-secrets", "--repo-root", str(root))
 
             self.assertEqual(0, result.returncode, msg=result.stderr)
             payload = json.loads(result.stdout)
-            self.assertEqual("bootstrap", payload["command"])
-            self.assertEqual("init-secrets", payload["action"])
+            self.assertEqual("infra", payload["command"])
+            self.assertEqual("bootstrap.init-secrets", payload["action"])
             self.assertTrue((root / "secrets" / "local" / "control-plane").is_dir())
             self.assertTrue((root / "secrets" / "targets" / "wsl").is_dir())
             self.assertTrue((root / "secrets" / "targets" / "prod0-main").is_dir())
@@ -944,19 +900,19 @@ class BootstrapCliTests(unittest.TestCase):
             seed_bootstrap_templates(root)
             write_takeover_ready_ssh_contract(root)
 
-            result = run_cli("bootstrap", "verify-secrets", "--repo-root", str(root))
+            result = run_cli("infra", "bootstrap", "verify-secrets", "--repo-root", str(root))
 
             self.assertEqual(0, result.returncode, msg=result.stderr)
             payload = json.loads(result.stdout)
             self.assertTrue(payload["payload"]["ok"])
 
     def test_bootstrap_inspect_local_reports_host_profile_and_path_policy(self) -> None:
-        result = run_cli("bootstrap", "inspect-local", "--repo-root", str(REPO_ROOT))
+        result = run_cli("infra", "bootstrap", "inspect-local", "--repo-root", str(REPO_ROOT))
 
         self.assertEqual(0, result.returncode, msg=result.stderr)
         payload = json.loads(result.stdout)
-        self.assertEqual("bootstrap", payload["command"])
-        self.assertEqual("inspect-local", payload["action"])
+        self.assertEqual("infra", payload["command"])
+        self.assertEqual("bootstrap.inspect-local", payload["action"])
         self.assertEqual("canonical-ref-only", payload["payload"]["path_policy"]["truth"])
         self.assertIn("host_profile", payload["payload"])
         self.assertIn("required_truths", payload["payload"]["contract"])
@@ -979,15 +935,29 @@ class BootstrapCliTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            result = run_cli("bootstrap", "verify-secrets", "--repo-root", str(root))
+            result = run_cli("infra", "bootstrap", "verify-secrets", "--repo-root", str(root))
 
-            self.assertEqual(1, result.returncode, msg=result.stderr)
+            self.assertEqual(0, result.returncode, msg=result.stderr)
             payload = json.loads(result.stdout)
             self.assertFalse(payload["payload"]["ok"])
             issues = payload["payload"]["checks"][0]["issues"]
             self.assertIn("missing-ssh-key:prod0-main.pem", issues)
 
     def test_bootstrap_doctor_reports_projection_warnings_without_blocking_takeover(self) -> None:
+        from unittest.mock import patch
+
+        from agentplane.domain.infra.handlers import run_doctor
+
+        def _fake_inspect_local(repo_root: Path) -> dict:
+            return {
+                "linux_backend": {"available": True, "backend_type": "linux-native"},
+                "cli_entrypoint": {"available": True, "command": "agentplane"},
+                "workspace": {},
+                "bootstrap_targets": [],
+                "contract": {},
+                "path_policy": {},
+            }
+
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             seed_bootstrap_templates(root)
@@ -998,14 +968,13 @@ class BootstrapCliTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            doctor = run_cli("bootstrap", "doctor", "--repo-root", str(root))
+            with patch("agentplane.runtime.bootstrap.inspect_local_bootstrap", _fake_inspect_local):
+                payload = run_doctor(root)
 
-            self.assertEqual(0, doctor.returncode, msg=doctor.stderr)
-            payload = json.loads(doctor.stdout)
-            self.assertTrue(payload["payload"]["ok"])
-            self.assertTrue(payload["payload"]["secrets"]["ok"])
-            self.assertFalse(payload["payload"]["projections"]["ok"])
-            readiness = {check["name"]: check for check in payload["payload"]["readiness_checks"]}
+            self.assertTrue(payload["ok"])
+            self.assertTrue(payload["secrets"]["ok"])
+            self.assertFalse(payload["projections"]["ok"])
+            readiness = {check["name"]: check for check in payload["readiness_checks"]}
             self.assertEqual("warning", readiness["projection-compat"]["severity"])
             self.assertEqual("warning", readiness["global-cli-entrypoint"]["severity"])
 

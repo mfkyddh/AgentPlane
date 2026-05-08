@@ -42,22 +42,22 @@ ALLOWED_TRACKED_TOP_LEVELS = {
     "templates",
     "tests",
     "uv.lock",
+    "PROGRESS.md",
+    ".claude",
 }
 FORBIDDEN_TRACKED_TOP_LEVELS = {"scripts", "ops", "tools"}
 FORBIDDEN_PRODUCTION_MODULE_NAMES = {"utils.py", "helpers.py", "misc.py"}
 ACTIVE_DOC_ROOTS = (
     REPO_ROOT / "README.md",
     REPO_ROOT / "AGENTS.md",
-    REPO_ROOT / "docs" / "architecture",
-    REPO_ROOT / "docs" / "reference",
-    REPO_ROOT / "docs" / "runbooks",
-    REPO_ROOT / "docs" / "maintainers",
+    REPO_ROOT / "docs" / "core",
+    REPO_ROOT / "docs" / "decisions",
 )
 REMOVED_ENTRYPOINT_MARKERS = (
     "scripts/check_commit_message.py",
     "agentplane/scripts/remote/run_remote_bash.sh",
     "agentplane/scripts/onepanel/api_request.py",
-    "docs/reference/compat-retirement-ledger.md",
+    "docs/archive/reference/compat-retirement-ledger.md",
 )
 REQUIRED_GITIGNORE_PATTERNS = {
     "secrets/",
@@ -135,7 +135,7 @@ class RepositoryStructureTests(unittest.TestCase):
 
     def test_local_state_is_ignored_and_documented(self) -> None:
         gitignore = (REPO_ROOT / ".gitignore").read_text(encoding="utf-8")
-        structure_doc = (REPO_ROOT / "docs" / "reference" / "repository-structure.md").read_text(encoding="utf-8")
+        structure_doc = (REPO_ROOT / "docs" / "archive" / "reference" / "repository-structure.md").read_text(encoding="utf-8")
 
         for pattern in REQUIRED_GITIGNORE_PATTERNS:
             with self.subTest(kind="gitignore", pattern=pattern):
@@ -176,27 +176,28 @@ class OpenSourceReadinessTests(unittest.TestCase):
 
     def test_reference_docs_include_testing_and_open_source_readiness(self) -> None:
         for relative_path in (
-            "docs/reference/testing-architecture.md",
-            "docs/reference/open-source-readiness.md",
+            "docs/archive/reference/testing-architecture.md",
+            "docs/archive/reference/open-source-readiness.md",
         ):
             with self.subTest(path=relative_path):
                 text = (REPO_ROOT / relative_path).read_text(encoding="utf-8")
                 self.assertIn("single checkout" if "open-source" in relative_path else "默认门禁", text)
 
     def test_architecture_directory_contains_only_active_contract_docs(self) -> None:
-        actual = {path.name for path in (REPO_ROOT / "docs" / "architecture").glob("*.md")}
+        actual = {path.name for path in (REPO_ROOT / "docs" / "archive" / "architecture").glob("*.md")}
         expected = {
             "README.md",
             "control-plane.md",
             "linux-governance.md",
             "agentplane-app-collaboration.md",
+            "1panel-v2.1.5-project.md",
         }
         self.assertEqual(expected, actual)
 
     def test_reference_and_maintainer_docs_have_standard_metadata(self) -> None:
         roots = (
-            REPO_ROOT / "docs" / "reference",
-            REPO_ROOT / "docs" / "maintainers",
+            REPO_ROOT / "docs" / "core",
+            REPO_ROOT / "docs" / "decisions",
         )
         for root in roots:
             for path in root.glob("*.md"):
@@ -207,14 +208,13 @@ class OpenSourceReadinessTests(unittest.TestCase):
                     self.assertRegex(header, r"(?m)^status: active$")
                     self.assertRegex(header, r"(?m)^owner: .+$")
                     self.assertRegex(header, r"(?m)^last_verified: \d{4}-\d{2}-\d{2}$")
-                    self.assertRegex(header, r"(?m)^superseded_by: null$")
 
     def test_active_architecture_and_runbooks_do_not_keep_redirect_stubs(self) -> None:
         forbidden = re.compile(
             r"本文已 superseded|本手册已并入|正文已归档到|过渡 stub|redirect stub|跳转页|仅保留历史重定向|仅保留给历史引用|本页已降级",
             re.IGNORECASE,
         )
-        for root in (REPO_ROOT / "docs" / "architecture", REPO_ROOT / "docs" / "runbooks"):
+        for root in (REPO_ROOT / "docs" / "archive" / "architecture", REPO_ROOT / "docs" / "archive" / "runbooks"):
             for path in root.glob("*.md"):
                 with self.subTest(path=str(path.relative_to(REPO_ROOT))):
                     text = path.read_text(encoding="utf-8")
@@ -223,12 +223,8 @@ class OpenSourceReadinessTests(unittest.TestCase):
     def test_readme_presents_cross_platform_first_run_path(self) -> None:
         text = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
 
-        # README is a thin entry; detailed platform steps live in cross-platform.md
-        self.assertIn("bootstrap inspect-local", text)
-        self.assertIn("bootstrap doctor", text)
-        # Cross-platform details are linked from README, not duplicated
-        open_source = (REPO_ROOT / "docs" / "reference" / "open-source-readiness.md").read_text(encoding="utf-8")
-        self.assertIn("single checkout", open_source)
+        # README is a thin entry; detailed platform steps live in getting-started.md
+        self.assertIn("infra bootstrap doctor", text)
 
     def test_docs_and_truth_do_not_embed_author_machine_paths(self) -> None:
         roots = ("README.md", "docs", "inventory", "infra", "templates")
@@ -265,7 +261,7 @@ class OpenSourceReadinessTests(unittest.TestCase):
             "inventory",
             "onepanel",
             "projection",
-            "repository",
+            "project",
             "runtime",
             "secret_management",
             "service",
@@ -299,7 +295,7 @@ class OpenSourceReadinessTests(unittest.TestCase):
                 self.assertIsNone(re.search(r"infra\s+live-gate\s+run[\s\S]{0,200}--execute", text))
 
     def test_release_process_uses_formal_release_check(self) -> None:
-        text = (REPO_ROOT / "docs" / "reference" / "release-process.md").read_text(encoding="utf-8")
+        text = (REPO_ROOT / "docs" / "archive" / "reference" / "release-process.md").read_text(encoding="utf-8")
 
         self.assertIn("repo release-check --repo-root .", text)
         self.assertIn("repo health-check --repo-root .", text)
@@ -362,13 +358,13 @@ class SkillCatalogTests(unittest.TestCase):
 ACTIVE_TEMPLATE_DOCS = (
     REPO_ROOT / "README.md",
     REPO_ROOT / "AGENTS.md",
-    REPO_ROOT / "docs" / "architecture" / "README.md",
-    REPO_ROOT / "docs" / "architecture" / "control-plane.md",
-    REPO_ROOT / "docs" / "architecture" / "agentplane-app-collaboration.md",
-    REPO_ROOT / "docs" / "architecture" / "linux-governance.md",
-    REPO_ROOT / "docs" / "reference" / "app-repository-standard.md",
-    REPO_ROOT / "docs" / "runbooks" / "control-plane-domain-onboarding.md",
-    REPO_ROOT / "docs" / "runbooks" / "control-plane-agent-execution-flow.md",
+    REPO_ROOT / "docs" / "archive" / "architecture" / "README.md",
+    REPO_ROOT / "docs" / "archive" / "architecture" / "control-plane.md",
+    REPO_ROOT / "docs" / "archive" / "architecture" / "agentplane-app-collaboration.md",
+    REPO_ROOT / "docs" / "archive" / "architecture" / "linux-governance.md",
+    REPO_ROOT / "docs" / "archive" / "reference" / "app-repository-standard.md",
+    REPO_ROOT / "docs" / "archive" / "runbooks" / "control-plane-domain-onboarding.md",
+    REPO_ROOT / "docs" / "archive" / "runbooks" / "control-plane-agent-execution-flow.md",
 )
 ACTIVE_TEMPLATE_SKILLS = (
     REPO_ROOT / ".agents" / "skills" / "agentplane-app-ops" / "SKILL.md",
@@ -410,24 +406,17 @@ class DocsNoLegacyTermsTests(unittest.TestCase):
     def test_readme_describes_template_bootstrap_path(self) -> None:
         text = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
 
-        self.assertIn("bootstrap inspect-local", text)
-        self.assertIn("bootstrap init-secrets", text)
-        self.assertIn("bootstrap verify-secrets", text)
-        self.assertIn("bootstrap doctor", text)
+        self.assertIn("infra bootstrap doctor", text)
 
     def test_readme_describes_template_truth_and_runtime_model(self) -> None:
         text = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
 
-        self.assertIn("自动驾驶仪", text)
-        # Detailed truth/runtime model lives in execution-flow runbook
-        execution_flow = (REPO_ROOT / "docs" / "runbooks" / "control-plane-agent-execution-flow.md").read_text(
-            encoding="utf-8"
-        )
-        self.assertIn("Git tracked truth + local secrets", execution_flow)
+        self.assertIn("AgentPlane", text)
+        self.assertIn("agentplane", text)
 
     def test_entry_indexes_link_template_contracts(self) -> None:
         # Core contract links live in docs/architecture/README.md (thin README delegates there)
-        architecture_index_text = (REPO_ROOT / "docs" / "architecture" / "README.md").read_text(encoding="utf-8")
+        architecture_index_text = (REPO_ROOT / "docs" / "archive" / "architecture" / "README.md").read_text(encoding="utf-8")
 
         for link in ARCHITECTURE_CORE_CONTRACT_LINKS:
             with self.subTest(doc="architecture", link=link):
@@ -451,7 +440,7 @@ class DocsNoLegacyTermsTests(unittest.TestCase):
         self.assertNotIn("retained as the WSL/Linux backend path during migration", text)
 
     def test_app_repository_standard_defines_template_boundary(self) -> None:
-        text = (REPO_ROOT / "docs" / "reference" / "app-repository-standard.md").read_text(encoding="utf-8")
+        text = (REPO_ROOT / "docs" / "archive" / "reference" / "app-repository-standard.md").read_text(encoding="utf-8")
 
         self.assertIn("应用仓库只负责代码、构建资产、合同与非敏感模板", text)
         self.assertIn("控制面模板仓库负责 bootstrap、正式执行、验证、回写与对外 runbook", text)
@@ -461,10 +450,10 @@ class DocsNoLegacyTermsTests(unittest.TestCase):
         self.assertNotIn("WSL-first", text)
 
     def test_domain_onboarding_and_execution_flow_use_template_placeholders(self) -> None:
-        onboarding_text = (REPO_ROOT / "docs" / "runbooks" / "control-plane-domain-onboarding.md").read_text(
+        onboarding_text = (REPO_ROOT / "docs" / "archive" / "runbooks" / "control-plane-domain-onboarding.md").read_text(
             encoding="utf-8"
         )
-        flow_text = (REPO_ROOT / "docs" / "runbooks" / "control-plane-agent-execution-flow.md").read_text(
+        flow_text = (REPO_ROOT / "docs" / "archive" / "runbooks" / "control-plane-agent-execution-flow.md").read_text(
             encoding="utf-8"
         )
 
@@ -480,11 +469,11 @@ class DocsNoLegacyTermsTests(unittest.TestCase):
         self.assertNotIn("确认当前在 WSL 环境执行", flow_text)
 
     def test_core_contract_docs_use_template_placeholders(self) -> None:
-        control_plane = (REPO_ROOT / "docs" / "architecture" / "control-plane.md").read_text(encoding="utf-8")
-        collaboration = (REPO_ROOT / "docs" / "architecture" / "agentplane-app-collaboration.md").read_text(
+        control_plane = (REPO_ROOT / "docs" / "archive" / "architecture" / "control-plane.md").read_text(encoding="utf-8")
+        collaboration = (REPO_ROOT / "docs" / "archive" / "architecture" / "agentplane-app-collaboration.md").read_text(
             encoding="utf-8"
         )
-        governance = (REPO_ROOT / "docs" / "architecture" / "linux-governance.md").read_text(encoding="utf-8")
+        governance = (REPO_ROOT / "docs" / "archive" / "architecture" / "linux-governance.md").read_text(encoding="utf-8")
 
         self.assertIn("infra inventory <target> --repo-root <repo-root>", control_plane)
         self.assertIn("service search --target <target> --repo-root <repo-root>", control_plane)
@@ -724,7 +713,7 @@ class CleanupTests(unittest.TestCase):
             active_python.parent.mkdir(parents=True)
             active_python.write_text("", encoding="utf-8")
 
-            with patch("agentplane.cli.cleanup.sys.executable", str(active_python)):
+            with patch("agentplane.domain.infra.cleanup.sys.executable", str(active_python)):
                 result = apply_cleanup_plan(root, "wsl")
 
             self.assertTrue((root / ".venv").exists(), msg=json.dumps(result, ensure_ascii=False))

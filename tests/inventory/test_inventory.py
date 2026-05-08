@@ -17,7 +17,7 @@ pytestmark = pytest.mark.e2e
 
 class InventoryGenerationTests(unittest.TestCase):
     def test_focused_acceptance_commands_are_documented_as_readonly_or_dry_run(self) -> None:
-        versioning_doc = (REPO_ROOT / "docs" / "reference" / "app-delivery-versioning.md").read_text(encoding="utf-8")
+        versioning_doc = (REPO_ROOT / "docs" / "archive" / "reference" / "app-delivery-versioning.md").read_text(encoding="utf-8")
         self.assertIn("Focused Acceptance", versioning_doc)
         self.assertIn("focused acceptance", versioning_doc)
         self.assertIn("infra automation search wsl", versioning_doc)
@@ -39,12 +39,12 @@ class InventoryGenerationTests(unittest.TestCase):
 
     def test_phase4_lane12_projection_ledger_refresh_acceptance_defaults_to_readonly(self) -> None:
         result = run_cli(
-            "projection", "ledger", "refresh", "--target", "wsl", "--repo-root", str(REPO_ROOT), cwd=REPO_ROOT
+            "project", "projection", "ledger", "refresh", "--target", "wsl", "--repo-root", str(REPO_ROOT), cwd=REPO_ROOT
         )
         self.assertEqual(result.returncode, 0, msg=result.stderr)
 
         payload = json.loads(result.stdout)
-        self.assertEqual("projection", payload.get("command"))
+        self.assertEqual("project", payload.get("command"))
         self.assertEqual("ledger.refresh", payload.get("action"))
         self.assertEqual("wsl", payload.get("target"))
         self.assertIn("ledger_root", payload)
@@ -127,9 +127,9 @@ class InventoryGenerationTests(unittest.TestCase):
             ]
 
             with (
-                patch("agentplane.cli.inventory._wsl_backend_type", return_value="linux-native"),
+                patch("agentplane.domain.infra.inventory._wsl_backend_type", return_value="linux-native"),
                 patch(
-                    "agentplane.cli.inventory._docker_container_rows",
+                    "agentplane.domain.infra.inventory._docker_container_rows",
                     return_value=rows,
                 ),
             ):

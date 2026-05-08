@@ -21,7 +21,7 @@ ERROR_ID_CONTRACT_INVALID_INGRESS = "app.delivery.contract.invalid_ingress"
 ERROR_ID_CONTRACT_INVALID_DEPENDENCY = "app.delivery.contract.invalid_dependency"
 ERROR_ID_CONTRACT_INVALID_ROLLBACK = "app.delivery.contract.invalid_rollback"
 ERROR_ID_CONTRACT_INVALID_DATA_MOUNT = "app.delivery.contract.invalid_data_mount"
-APP_DELIVERY_CONTRACT_SCHEMA_V2 = "docs/reference/schemas/app-delivery-contract-v2.schema.json"
+APP_DELIVERY_CONTRACT_SCHEMA_V2 = "docs/archive/reference/schemas/app-delivery-contract-v2.schema.json"
 COMMON_REQUIRED_CONTRACT_FIELDS = (
     "app_id",
     "runtime.container_name",

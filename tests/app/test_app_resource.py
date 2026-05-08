@@ -198,23 +198,27 @@ class AppResourceCliTests(unittest.TestCase):
             self.assertTrue(payload["payload"]["projection"]["found"])
 
     def test_app_resource_verify_reports_projection_drift(self) -> None:
+        from unittest.mock import patch
+
+        from agentplane.domain.app.resource_handlers import verify_app_resource
+
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory(root, projection_drift=True)
             write_registry(root)
             write_resource_secrets(root)
 
-            result = run_cli(
-                "app", "resource", "verify", "--target", "prod0-main", "--app", "sub2api", "--repo-root", str(root)
-            )
+            with patch("agentplane.domain.app.resource_handlers._live_database_evidence", return_value=None):
+                payload = verify_app_resource(root, "prod0-main", "sub2api")
 
-            self.assertEqual(result.returncode, 1, msg=result.stdout)
-            payload = json.loads(result.stdout)
-            self.assertEqual("resource.verify", payload["action"])
-            self.assertFalse(payload["payload"]["ok"])
-            self.assertEqual(["inventory_projection"], payload["payload"]["failures"])
+            self.assertFalse(payload["ok"])
+            self.assertEqual(["inventory_projection"], payload["failures"])
 
     def test_app_resource_verify_ignores_legacy_tenant_truth_fields(self) -> None:
+        from unittest.mock import patch
+
+        from agentplane.domain.app.resource_handlers import verify_app_resource
+
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory(root)
@@ -231,16 +235,13 @@ class AppResourceCliTests(unittest.TestCase):
             registry_file.write_text(json.dumps(registry_payload, ensure_ascii=False, indent=2), encoding="utf-8")
             write_resource_secrets(root)
 
-            verify = run_cli(
-                "app", "resource", "verify", "--target", "prod0-main", "--app", "sub2api", "--repo-root", str(root)
-            )
+            with patch("agentplane.domain.app.resource_handlers._live_database_evidence", return_value=None):
+                verify_payload = verify_app_resource(root, "prod0-main", "sub2api")
             search = run_cli("app", "resource", "search", "--target", "prod0-main", "--repo-root", str(root))
 
-            self.assertEqual(verify.returncode, 0, msg=verify.stderr)
-            verify_payload = json.loads(verify.stdout)
-            self.assertTrue(verify_payload["payload"]["ok"])
-            self.assertEqual("sub2api", verify_payload["payload"]["resource"]["owner_app"])
-            expected_projection = verify_payload["payload"]["checks"]["inventory_projection"]["expected"]
+            self.assertTrue(verify_payload["ok"])
+            self.assertEqual("sub2api", verify_payload["resource"]["owner_app"])
+            expected_projection = verify_payload["checks"]["inventory_projection"]["expected"]
             self.assertEqual(1, expected_projection["redis"]["db"])
             self.assertEqual("sub2api:", expected_projection["redis"]["key_prefix"])
 
@@ -357,6 +358,8 @@ class AppResourceObjectCliTests(unittest.TestCase):
             )
 
     def test_resource_verify_reports_projection_drift(self) -> None:
+        from unittest.mock import patch
+
         from agentplane.domain.app.resource_handlers import verify_app_resource
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -365,7 +368,8 @@ class AppResourceObjectCliTests(unittest.TestCase):
             write_registry(root)
             write_resource_secrets(root)
 
-            payload = verify_app_resource(root, "prod0-main", "sub2api")
+            with patch("agentplane.domain.app.resource_handlers._live_database_evidence", return_value=None):
+                payload = verify_app_resource(root, "prod0-main", "sub2api")
 
             self.assertFalse(payload["ok"])
             self.assertTrue(payload["checks"]["secret_files"]["ok"])
@@ -373,6 +377,8 @@ class AppResourceObjectCliTests(unittest.TestCase):
             self.assertEqual(["inventory_projection"], payload["failures"])
 
     def test_resource_verify_separates_ledger_fields_and_observation(self) -> None:
+        from unittest.mock import patch
+
         from agentplane.domain.app.resource_handlers import verify_app_resource
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -381,7 +387,8 @@ class AppResourceObjectCliTests(unittest.TestCase):
             write_registry(root)
             write_resource_secrets(root)
 
-            payload = verify_app_resource(root, "prod0-main", "sub2api")
+            with patch("agentplane.domain.app.resource_handlers._live_database_evidence", return_value=None):
+                payload = verify_app_resource(root, "prod0-main", "sub2api")
 
             self.assertTrue(payload["ok"])
             self.assertEqual("targets/prod0-main/app-resources/sub2api", payload["canonical_ref"])
@@ -393,6 +400,8 @@ class AppResourceObjectCliTests(unittest.TestCase):
             self.assertIn("secret_files", payload["verification_fields"])
 
     def test_resource_verify_reports_secret_scope_and_missing_file_findings(self) -> None:
+        from unittest.mock import patch
+
         from agentplane.domain.app.resource_handlers import verify_app_resource
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -406,7 +415,8 @@ class AppResourceObjectCliTests(unittest.TestCase):
             )
             write_resource_secrets(root, include_redis=False)
 
-            payload = verify_app_resource(root, "prod0-main", "sub2api")
+            with patch("agentplane.domain.app.resource_handlers._live_database_evidence", return_value=None):
+                payload = verify_app_resource(root, "prod0-main", "sub2api")
 
             self.assertFalse(payload["ok"])
             self.assertFalse(payload["checks"]["secret_files"]["ok"])

@@ -136,7 +136,7 @@ class RepoSnapshotContractsTests(unittest.TestCase):
 
     def test_active_runbooks_use_internal_remote_example_paths(self) -> None:
         active_runbooks = [
-            "docs/runbooks/powershell-wsl-remote-bash.md",
+            "docs/archive/runbooks/powershell-wsl-remote-bash.md",
         ]
 
         for relative_path in active_runbooks:
@@ -145,12 +145,12 @@ class RepoSnapshotContractsTests(unittest.TestCase):
                 self.assertIn("agentplane/scripts/internal/remote/example.sh", text)
                 self.assertNotIn("agentplane/scripts/remote/example.sh", text)
 
-        powershell_runbook = (REPO_ROOT / "docs/runbooks/powershell-wsl-remote-bash.md").read_text(encoding="utf-8")
+        powershell_runbook = (REPO_ROOT / "docs/archive/runbooks/powershell-wsl-remote-bash.md").read_text(encoding="utf-8")
         self.assertIn("agentplane/scripts/internal/remote/example-arg.sh", powershell_runbook)
         self.assertNotIn("agentplane/scripts/remote/example-arg.sh", powershell_runbook)
 
     def test_naming_registry_declares_phase1_hard_contract(self) -> None:
-        text = (REPO_ROOT / "docs/reference/control-plane-naming-registry.md").read_text(encoding="utf-8")
+        text = (REPO_ROOT / "docs/archive/reference/control-plane-naming-registry.md").read_text(encoding="utf-8")
 
         self.assertIn("仅适用于正式 app contract 对象", text)
         self.assertIn("`^[a-z0-9]+(?:-[a-z0-9]+)*$`", text)
@@ -196,7 +196,7 @@ class RepoSnapshotContractsTests(unittest.TestCase):
             "inventory/servers/prod0-main/inventory.json",
             "inventory/servers/wsl/inventory.json",
             "inventory/state-snapshot.md",
-            "docs/runbooks/prod0-main-governance.md",
+            "docs/archive/runbooks/prod0-main-governance.md",
             "infra/compose/sub2api/docker-compose.prod0.yml",
             "templates/services/sub2api.prod0.env.example",
         ]
@@ -206,7 +206,7 @@ class RepoSnapshotContractsTests(unittest.TestCase):
 
     def test_removed_compatibility_entrypoints_stay_absent(self) -> None:
         removed_paths = [
-            "docs/reference/compat-retirement-ledger.md",
+            "docs/archive/reference/compat-retirement-ledger.md",
             "scripts/check_commit_message.py",
             "scripts/batch_rename.py",
             "scripts/batch_rename_docs.py",

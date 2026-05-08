@@ -6,6 +6,7 @@ from typing import Any
 SENSITIVE_KEY_MARKERS = (
     "KEY",
     "PASSWORD",
+    "PASSWD",
     "SECRET",
     "TOKEN",
     "DSN",

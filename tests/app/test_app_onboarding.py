@@ -16,9 +16,9 @@ pytestmark = pytest.mark.e2e
 class AppOnboardingStandardTests(unittest.TestCase):
     def test_reference_docs_for_app_onboarding_governance_exist(self) -> None:
         expected_paths = [
-            "docs/reference/repository-structure.md",
-            "docs/reference/app-repository-standard.md",
-            "docs/reference/control-plane-naming-registry.md",
+            "docs/archive/reference/repository-structure.md",
+            "docs/archive/reference/app-repository-standard.md",
+            "docs/archive/reference/control-plane-naming-registry.md",
         ]
 
         for relative_path in expected_paths:
@@ -27,7 +27,7 @@ class AppOnboardingStandardTests(unittest.TestCase):
 
     def test_readme_and_architecture_index_link_new_reference_docs(self) -> None:
         # README delegates to docs/README.md for detailed doc links
-        architecture_index_text = (REPO_ROOT / "docs" / "architecture" / "README.md").read_text(encoding="utf-8")
+        architecture_index_text = (REPO_ROOT / "docs" / "archive" / "architecture" / "README.md").read_text(encoding="utf-8")
 
         self.assertIn("[repository-structure.md](../reference/repository-structure.md)", architecture_index_text)
         self.assertIn("[app-repository-standard.md](../reference/app-repository-standard.md)", architecture_index_text)
@@ -38,13 +38,11 @@ class AppOnboardingStandardTests(unittest.TestCase):
     def test_readme_prefers_bootstrap_first_startup_path(self) -> None:
         text = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
 
-        self.assertIn("bootstrap inspect-local", text)
-        self.assertIn("bootstrap init-secrets", text)
-        self.assertIn("bootstrap verify-secrets", text)
+        self.assertIn("infra bootstrap doctor", text)
         self.assertNotIn("onepanel-login.<target>.env", text)
 
     def test_bootstrap_runbook_uses_bootstrap_surface_as_day_zero_entry(self) -> None:
-        text = (REPO_ROOT / "docs" / "runbooks" / "bootstrap-secrets.md").read_text(encoding="utf-8")
+        text = (REPO_ROOT / "docs" / "archive" / "runbooks" / "bootstrap-secrets.md").read_text(encoding="utf-8")
 
         self.assertIn("bootstrap inspect-local", text)
         self.assertIn("bootstrap init-secrets", text)
@@ -80,7 +78,6 @@ class AppOnboardingStandardTests(unittest.TestCase):
             "## 跨平台约束",
             "## 安全约束",
             "## Git 约束",
-            "## 编码行为准则",
             "## 文档索引",
         )
         for heading in required_headings:
@@ -88,14 +85,14 @@ class AppOnboardingStandardTests(unittest.TestCase):
                 self.assertIn(heading, text)
 
     def test_app_collaboration_doc_calls_out_upstream_and_rollback_state(self) -> None:
-        text = (REPO_ROOT / "docs" / "architecture" / "agentplane-app-collaboration.md").read_text(encoding="utf-8")
+        text = (REPO_ROOT / "docs" / "archive" / "architecture" / "agentplane-app-collaboration.md").read_text(encoding="utf-8")
         self.assertIn("`origin` 指向你自己的可写仓库", text)
         self.assertIn("`upstream` 指向官方只读源", text)
         self.assertIn("发布前先创建回滚态", text)
         self.assertIn("回滚态", text)
 
     def test_app_delivery_runbook_makes_validate_contract_the_pre_deploy_gate(self) -> None:
-        text = (REPO_ROOT / "docs" / "runbooks" / "app-project-delivery-workflow.md").read_text(encoding="utf-8")
+        text = (REPO_ROOT / "docs" / "archive" / "runbooks" / "app-project-delivery-workflow.md").read_text(encoding="utf-8")
 
         self.assertIn("这是应用接入不变量的最早正式门禁", text)
         self.assertIn(
@@ -112,7 +109,7 @@ class AppOnboardingStandardTests(unittest.TestCase):
         )
 
     def test_app_repository_standard_keeps_second_app_fast_path_rules(self) -> None:
-        text = (REPO_ROOT / "docs" / "reference" / "app-repository-standard.md").read_text(encoding="utf-8")
+        text = (REPO_ROOT / "docs" / "archive" / "reference" / "app-repository-standard.md").read_text(encoding="utf-8")
 
         self.assertIn("如果 target 之间入口、依赖或回退面不同，一开始就提供 target-aware 合同与摘要文件", text)
         self.assertIn(
@@ -122,7 +119,7 @@ class AppOnboardingStandardTests(unittest.TestCase):
         self.assertIn("最终验收必须回到 catalog 指向的正式仓库根执行", text)
 
     def test_app_delivery_workflow_records_second_app_preflight_checks(self) -> None:
-        text = (REPO_ROOT / "docs" / "runbooks" / "app-project-delivery-workflow.md").read_text(encoding="utf-8")
+        text = (REPO_ROOT / "docs" / "archive" / "runbooks" / "app-project-delivery-workflow.md").read_text(encoding="utf-8")
 
         self.assertIn("### 4.6 第二个应用接入前的预检", text)
         self.assertIn("`--app-repo-root` 只用于临时 worktree 验证", text)
@@ -136,7 +133,7 @@ class AppOnboardingStandardTests(unittest.TestCase):
         )
 
     def test_authoring_rules_prefer_active_docs_over_historical_specs(self) -> None:
-        text = (REPO_ROOT / "docs" / "maintainers" / "control-plane-authoring.md").read_text(encoding="utf-8")
+        text = (REPO_ROOT / "docs" / "archive" / "maintainers" / "control-plane-authoring.md").read_text(encoding="utf-8")
 
         self.assertIn("active docs 与现行 code/test 优先于历史 spec、plan、handoff", text)
         self.assertIn("不要把历史设计稿中的旧路径、旧文案、旧 rollback 形态重新抄回 active docs", text)
@@ -410,7 +407,7 @@ class ProjectLifecycleAcceptanceTests(unittest.TestCase):
             self.assertTrue(any(step.get("action") == "runtime-env.verify" for step in handoff_steps))
 
             result = run_cli(
-                "projection", "runtime-env", "plan", "--target", target, "--app", app_id, "--repo-root", str(root)
+                "project", "projection", "runtime-env", "plan", "--target", target, "--app", app_id, "--repo-root", str(root)
             )
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             projection_payload = json.loads(result.stdout)

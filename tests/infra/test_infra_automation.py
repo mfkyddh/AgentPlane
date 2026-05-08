@@ -10,14 +10,17 @@ from unittest.mock import MagicMock, patch
 import pytest
 from agentplane.cli import infra_automation
 from agentplane.cli.audit import audit_filesystem
+from agentplane.domain.infra.automation import AUTOMATION_DEFINITIONS, InfraAutomationDefinition
 from agentplane.cli.preflight import (
     PreflightCheck,
     PreflightReport,
+    execute_remote_preflight,
+)
+from agentplane.domain.infra.preflight import (
     _check_ssh_config_exists,
     _check_ssh_key_permissions,
     _check_ssh_reachable,
     _check_wsl_available,
-    execute_remote_preflight,
 )
 from agentplane.runtime.host_profile import HostProfile
 from agentplane.ssh import SshTarget, resolve_ssh_config_path, resolve_ssh_target
@@ -227,8 +230,8 @@ class InfraAutomationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory(root)
-            original = infra_automation.AUTOMATION_DEFINITIONS["wsl-zzz-skills-sync"]
-            infra_automation.AUTOMATION_DEFINITIONS["wsl-zzz-skills-sync"] = infra_automation.InfraAutomationDefinition(
+            original = AUTOMATION_DEFINITIONS["wsl-zzz-skills-sync"]
+            AUTOMATION_DEFINITIONS["wsl-zzz-skills-sync"] = InfraAutomationDefinition(
                 name="wsl-zzz-skills-sync",
                 runner=lambda repo_root, automation: {
                     "status": "ok_no_changes",
@@ -245,7 +248,7 @@ class InfraAutomationTests(unittest.TestCase):
                     execute=True,
                 )
             finally:
-                infra_automation.AUTOMATION_DEFINITIONS["wsl-zzz-skills-sync"] = original
+                AUTOMATION_DEFINITIONS["wsl-zzz-skills-sync"] = original
 
             self.assertTrue(payload["ok"])
             self.assertEqual("run", payload["operation"])
@@ -274,7 +277,7 @@ class InfraAutomationTests(unittest.TestCase):
 
 
 class TestCheckWslAvailable:
-    @patch("agentplane.cli.preflight.subprocess.run")
+    @patch("agentplane.domain.infra.preflight.subprocess.run")
     def test_wsl_ok(self, mock_run: MagicMock) -> None:
         mock_run.return_value.returncode = 0
         mock_run.return_value.stdout = "ok\n"
@@ -283,7 +286,7 @@ class TestCheckWslAvailable:
         assert check.status == "ok"
         assert "WSL is running" in check.message
 
-    @patch("agentplane.cli.preflight.subprocess.run")
+    @patch("agentplane.domain.infra.preflight.subprocess.run")
     def test_wsl_failed(self, mock_run: MagicMock) -> None:
         mock_run.return_value.returncode = 1
         mock_run.return_value.stdout = ""
@@ -291,7 +294,7 @@ class TestCheckWslAvailable:
         check = _check_wsl_available()
         assert check.status == "failed"
 
-    @patch("agentplane.cli.preflight.subprocess.run", side_effect=FileNotFoundError)
+    @patch("agentplane.domain.infra.preflight.subprocess.run", side_effect=FileNotFoundError)
     def test_wsl_not_found(self, _mock: MagicMock) -> None:
         check = _check_wsl_available()
         assert check.status == "failed"
@@ -356,7 +359,7 @@ class TestCheckSshKeyPermissions:
 
 
 class TestCheckSshReachable:
-    @patch("agentplane.cli.preflight.subprocess.run")
+    @patch("agentplane.domain.infra.preflight.subprocess.run")
     def test_ssh_ok(self, mock_run: MagicMock) -> None:
         mock_run.return_value.returncode = 0
         mock_run.return_value.stdout = "ok\n"
@@ -367,7 +370,7 @@ class TestCheckSshReachable:
         check = _check_ssh_reachable(ssh_target)
         assert check.status == "ok"
 
-    @patch("agentplane.cli.preflight.subprocess.run")
+    @patch("agentplane.domain.infra.preflight.subprocess.run")
     def test_ssh_auth_failure(self, mock_run: MagicMock) -> None:
         mock_run.return_value.returncode = 255
         mock_run.return_value.stdout = ""
@@ -379,7 +382,7 @@ class TestCheckSshReachable:
         assert check.status == "failed"
         assert "authentication failed" in check.message.lower()
 
-    @patch("agentplane.cli.preflight.subprocess.run")
+    @patch("agentplane.domain.infra.preflight.subprocess.run")
     def test_ssh_network_failure(self, mock_run: MagicMock) -> None:
         mock_run.return_value.returncode = 255
         mock_run.return_value.stdout = ""
@@ -393,22 +396,22 @@ class TestCheckSshReachable:
 
 
 class TestExecuteRemotePreflight:
-    @patch("agentplane.cli.preflight.detect_host_profile")
-    @patch("agentplane.cli.preflight.TargetResolver")
+    @patch("agentplane.domain.infra.preflight.detect_host_profile")
+    @patch("agentplane.domain.infra.preflight.TargetResolver")
     def test_local_wsl_preflight(self, mock_resolver_cls: MagicMock, mock_detect: MagicMock) -> None:
         mock_detect.return_value = MagicMock()
         mock_resolver = MagicMock()
         mock_resolver.resolve.return_value = MagicMock(is_local=True, execution_backend="windows-wsl")
         mock_resolver_cls.return_value = mock_resolver
 
-        with patch("agentplane.cli.preflight._check_wsl_available", return_value=PreflightCheck("wsl", "ok", "ok")):
+        with patch("agentplane.domain.infra.preflight._check_wsl_available", return_value=PreflightCheck("wsl", "ok", "ok")):
             report = execute_remote_preflight("/fake/repo", "wsl")
         assert report.overall == "ok"
         assert report.target == "wsl"
 
-    @patch("agentplane.cli.preflight.detect_host_profile")
-    @patch("agentplane.cli.preflight.TargetResolver")
-    @patch("agentplane.cli.preflight.resolve_ssh_target")
+    @patch("agentplane.domain.infra.preflight.detect_host_profile")
+    @patch("agentplane.domain.infra.preflight.TargetResolver")
+    @patch("agentplane.domain.infra.preflight.resolve_ssh_target")
     def test_remote_preflight(
         self, mock_resolve_ssh: MagicMock, mock_resolver_cls: MagicMock, mock_detect: MagicMock
     ) -> None:
@@ -421,13 +424,13 @@ class TestExecuteRemotePreflight:
         mock_resolve_ssh.return_value = ssh_target
 
         with patch(
-            "agentplane.cli.preflight._check_ssh_config_exists", return_value=PreflightCheck("config", "ok", "ok")
+            "agentplane.domain.infra.preflight._check_ssh_config_exists", return_value=PreflightCheck("config", "ok", "ok")
         ):
             with patch(
-                "agentplane.cli.preflight._check_ssh_key_permissions", return_value=PreflightCheck("key", "ok", "ok")
+                "agentplane.domain.infra.preflight._check_ssh_key_permissions", return_value=PreflightCheck("key", "ok", "ok")
             ):
                 with patch(
-                    "agentplane.cli.preflight._check_ssh_reachable", return_value=PreflightCheck("ssh", "ok", "ok")
+                    "agentplane.domain.infra.preflight._check_ssh_reachable", return_value=PreflightCheck("ssh", "ok", "ok")
                 ):
                     report = execute_remote_preflight("/fake/repo", "prod0-main")
         assert report.overall == "ok"
@@ -676,9 +679,7 @@ class WslAuditTests(unittest.TestCase):
 CORE_TEMPLATE_ENTRY_DOCS = (
     REPO_ROOT / "README.md",
     REPO_ROOT / "AGENTS.md",
-    REPO_ROOT / "docs" / "architecture" / "linux-governance.md",
-    REPO_ROOT / "docs" / "reference" / "app-repository-standard.md",
-    REPO_ROOT / "docs" / "runbooks" / "control-plane-agent-execution-flow.md",
+    REPO_ROOT / "docs" / "conventions.md",
 )
 FORBIDDEN_WINDOWS_SHELL_TERMS = (
     "powershell.exe",
@@ -708,7 +709,7 @@ class WslFirstDocsTests(unittest.TestCase):
         self.assertIn("远程 Linux 走 `agentplane infra remote bash`", text)
 
     def test_linux_governance_declares_backend_role_not_wsl_first_entry(self) -> None:
-        text = (REPO_ROOT / "docs" / "architecture" / "linux-governance.md").read_text(encoding="utf-8")
+        text = (REPO_ROOT / "docs" / "archive" / "architecture" / "linux-governance.md").read_text(encoding="utf-8")
 
         self.assertIn("本页只定义 Linux / WSL backend 约束，不改变宿主入口选择。", text)
         self.assertIn("host-entry-first, backend-aware", text)
@@ -719,7 +720,7 @@ class WslFirstDocsTests(unittest.TestCase):
     def test_readme_and_flow_promote_backend_split_instead_of_wsl_first(self) -> None:
         # README is a thin entry; backend-aware routing details live in AGENTS.md + cross-platform.md
         agents_text = (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")
-        flow_text = (REPO_ROOT / "docs" / "runbooks" / "control-plane-agent-execution-flow.md").read_text(
+        flow_text = (REPO_ROOT / "docs" / "archive" / "runbooks" / "control-plane-agent-execution-flow.md").read_text(
             encoding="utf-8"
         )
 
