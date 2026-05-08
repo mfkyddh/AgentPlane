@@ -32,7 +32,7 @@ from agentplane.domain.app.resource_state import (
     registry_secret_file,
 )
 from agentplane.domain.app.versioning import recommended_versions
-from agentplane.domain.networks import ensure_managed_bridge_networks
+from agentplane.domain.infra.networks import ensure_managed_bridge_networks
 from agentplane.domain.targets import PRODUCTION_TARGETS, is_production_target, remote_compose_filename, target_alias
 from agentplane.providers.gateway import default_provider_gateway
 from agentplane.runtime.backends import build_backend_runner

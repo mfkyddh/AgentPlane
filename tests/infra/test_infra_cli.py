@@ -12,7 +12,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 from agentplane.cli.inventory import generate_inventory_snapshot
-from agentplane.domain import networks as network_domain
+from agentplane.domain.infra import networks as network_domain
 from agentplane.runtime.host_profile import HostProfile
 from agentplane.runtime.platform import HostPlatform
 from agentplane.runtime.wsl_bridge import inspect_local_host
@@ -361,7 +361,7 @@ class HostCliTests(unittest.TestCase):
                     }
                 return {"ok": False, "stdout": ""}
 
-            with patch("agentplane.domain.networks._remote_step", side_effect=fake_remote_step):
+            with patch("agentplane.domain.infra.networks._remote_step", side_effect=fake_remote_step):
                 payload = network_domain.audit_managed_bridge_networks(root, "prod0-main")
 
             network = payload["networks"][0]
@@ -441,7 +441,7 @@ class HostCliTests(unittest.TestCase):
                 target="prod0-main",
                 repo_root=str(root),
             )
-            with patch("agentplane.domain.networks._remote_step", side_effect=fake_remote_step):
+            with patch("agentplane.domain.infra.networks._remote_step", side_effect=fake_remote_step):
                 payload = handle_infra_command(args)
 
             self.assertEqual({"command", "action", "target", "payload"}, set(payload))

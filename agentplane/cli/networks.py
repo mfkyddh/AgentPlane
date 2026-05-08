@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from agentplane.domain.networks import (
+from agentplane.domain.infra.networks import (
     SUPPORTED_NETWORK_TARGETS,
     apply_firewall_operation,
     audit_firewall_rules,

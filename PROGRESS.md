@@ -1,80 +1,73 @@
 ---
 status: active
 owner: AgentPlane maintainers
-last_verified: 2026-05-07
+last_verified: 2026-05-08
 audience: both
 ---
 
-# 主线追踪器
+# 进度追踪器
 
-> 本文是 AgentPlane 的执行层文档，连接 [路线图](docs/core/roadmap.md)（往哪走）和日常工作（当前做什么）。路线图定义 Alpha → Beta → GA 的大方向，本文把当前阶段拆解为具体条件和进度。
+> 连接 [路线图](docs/core/roadmap.md)（往哪走）和日常工作（当前做什么）。
 
 ---
 
-## 主线：让 AI 能通过 Skill 完成首次运行闭环
+## 当前阶段目标
 
-当前阶段唯一目标：**开源用户单 checkout 后，能让 AI 通过 Skill 完成首次运行闭环。**
+**开源用户单 checkout 后，能让 AI 通过 Skill 完成首次运行闭环。**
 
-### 条件一：核心 Skill 测试覆盖
+---
 
-| Skill | 状态 | 说明 |
-|-------|------|------|
-| agentplane-infra-ops | 待评估 | 对应 tests/infra_* |
-| agentplane-app-ops | 待评估 | 对应 tests/app_* |
-| agentplane-service-ops | 待评估 | 对应 tests/service* |
-| agentplane-ingress-ops | 待评估 | 对应 tests/ingress* |
-| agentplane-projection-ops | 待评估 | 对应 tests/projection* |
-| agentplane-repo-ops | 待评估 | 对应 tests/repo_* |
-| app-delivery-ops | 待评估 | 对应 tests/app_delivery* |
-| docker-service-setup | 待评估 | workflow skill |
-| host-onboarding-ops | 待评估 | workflow skill |
-| site-migration-ops | 已完成 | 23 tests |
-| tencent-cloud-service-migration | 已完成 | 12 tests |
-| nginxui-letsencrypt | 已完成 | 12 tests |
-| toolchain-setup | 待评估 | workflow skill |
-| openclaw-ops | 待评估 | workflow skill |
+## 主线条件
 
-### 条件二：文档覆盖目标用户场景
+> 必须全部满足，才能达成阶段目标。
 
-目标用户：个人开发者、小团队（2-10 人）、开源维护者、自托管服务维护者
-
-| 场景 | 文档 | 状态 |
-|------|------|------|
-| 新用户入门 | [入门指南](docs/getting-started.md) | ✓ 已重写 |
-| 理解架构 | [架构](docs/core/architecture.md) | ✓ 已重写 |
-| 查命令 | [命令参考](docs/command-reference.md) | ✓ 已重写 |
-| 了解规则 | [编码与协作规范](docs/conventions.md) | ✓ 已重写 |
-| 查术语 | [术语表](docs/glossary.md) | ✓ 已重写 |
-| 协作协议 | [AGENTS.md](AGENTS.md) | 已有 |
-| 常见问题 FAQ | — | 待评估 |
-
-### 条件三：真实应用全生命周期验证
-
-| 步骤 | 状态 | 说明 |
-|------|------|------|
-| 选择目标应用 | 已完成 | sub2api（WSL + prod0-main 双环境） |
-| onboard 应用 | 已完成 | WSL + prod0-main 均已 onboard 进 catalog |
-| 构建和部署 | 已完成 | WSL: compose up; prod0-main: candidate precheck + cutover |
-| 验证和证据 | 已完成 | health check 通过，operation ledger 已记录 |
-| 文档化过程 | 进行中 | 遇到并修复了 catalog repo_root 和 WSL 路径转换问题 |
+| # | 条件 | 状态 | 说明 |
+|---|------|------|------|
+| C1 | 核心 Skill 测试覆盖 | 待开始 | 14 个 skill，3 个已完成，11 个待评估 |
+| C2 | 文档覆盖目标用户场景 | ✓ 完成 | 5 份核心文档已重写 |
+| C3 | 真实应用全生命周期验证 | 收尾中 | sub2api 双环境验证通过，文档化待完成 |
 
 ---
 
 ## 分支任务
 
-临时任务，完成后必须回归主线。每个分支任务必须标注它服务的主线条件。
+> 临时任务，完成后必须回归主线。每个任务标注服务的主线条件。
 
-| ID | 任务 | 状态 | 服务条件 | 说明 |
-|----|------|------|----------|------|
-| B1 | 1Panel 适配与扩展 | 进行中 | 条件二、Beta M5 | M1-M5 已完成，详见 git log |
-| B2 | 5 域模型重构 + 测试修复 | 已完成 | 条件一 | Layer 0-3 + infra 域迁移 + 87 测试修复，742 passed (d37ba26..44613e9) |
-| B3 | git post-commit hook 自动记录进度 | 已完成 | — | 每次 commit 自动追加分支任务行到 PROGRESS.md |
+| ID | 任务 | 状态 | 服务 | 说明 |
+|----|------|------|------|------|
+| B1 | 1Panel 适配与扩展 | 进行中 | C2 | M1-M5 已完成，详见 git log |
 
 ---
 
-## 人机协作实验
+## 想法池
 
-> 每次实验记录：人类说了什么、AI 中途问了什么、结果如何。积累数据，优化表达协议。
+> 未经评估的灵感、需求、问题。定期清理：转为分支任务或丢弃。
+
+| ID | 想法 | 来源 | 日期 | 处置 |
+|----|------|------|------|------|
+| — | （暂无） | — | — | — |
+
+---
+
+## 完成归档
+
+> 已完成的重要工作，按时间倒序。保留上下文，不占主视图。
+
+| ID | 任务 | 完成日期 | 服务 | 关键成果 |
+|----|------|----------|------|----------|
+| B6 | optimize CLAUDE.md and AGENTS.md | 2026-05-08 | — | e460e17 |
+| B5 | add session init rule to read AGENTS.md | 2026-05-08 | — | 749059d |
+| B4 | add mandatory thinking transparency rule | 2026-05-08 | — | a8e458d |
+| B3 | git post-commit hook 自动记录进度 | 2026-05-08 | — | 每次 commit 自动追加进度 |
+| B2 | 5 域模型重构 | 2026-05-07 | C1 | 70 文件，3379+/3817-。Layer 0-3 对齐，infra 域从 cli/ 迁移到 domain/，app 域移除 wrapper，87 测试修复，742 passed |
+| — | 文档体系重构 | 2026-05-07 | C2 | 80+ 文件 → ~20 活跃文档。3 层模型，核心文档重写（愿景/原则/路线图/架构），5 份用户文档 |
+| — | WebUI 初始版本 | 2026-05-06 | — | dashboard + REST API + agent chat，9bed54e |
+
+---
+
+## 实验记录
+
+> 人机协作实验，独立追踪。记录人类输入、AI 执行、结果、发现。
 
 ### 实验 #1 — site-migration-ops 完整闭环
 
@@ -82,39 +75,28 @@ audience: both
 
 **验收**：AI 跑完 plan → apply → verify → ledger 全流程，人类中途确认次数 ≤ 3。
 
-**约束**：不修改 Skill 代码，不新增功能，只记录过程。
+**状态**：✓ 完成
 
-**状态**：已完成
+| 日期 | 人类输入 | AI 执行步骤 | 结果 | 介入次数 | 发现 |
+|------|---------|------------|------|---------|------|
+| 2026-05-07 | "启动" | ① 跑测试 23/23 ② search ingress ③ verify 失败→修复编码 bug ④ verify 失败→重构为本地签名+SSH ⑤ verify 成功 | 成功 | 0 | 测试用 mock 不暴露平台问题；真实验证发现架构缺陷并修复 |
 
-**记录**：
-
-| 日期 | 人类输入 | AI 执行步骤 | 结果 | 人类介入次数 | 发现 |
-|------|---------|------------|------|-------------|------|
-| 2026-05-07 | "启动" | ① 跑测试 23/23 通过 ② search 3 个 ingress ③ verify 失败（编码 bug）→ 修复 ④ verify 失败（远程缺文件）→ 重构为本地签名+SSH 执行 ⑤ verify 成功 | 成功 | 0 | 测试用 mock 不暴露平台问题；真实验证发现了架构缺陷并修复 |
-
-**发现详情**：
-
-1. 测试 23/23 全绿，但全部使用 mock，不连接真实 1Panel API
-2. `ingress search` 正常工作，能读取 inventory
-3. `ingress verify` 第一次失败：Windows gbk 编码问题 → 修复（4 处 `subprocess.run` 加 `encoding='utf-8'`）
-4. `ingress verify` 第二次失败：远程服务器缺少 `signed_request.py` → 架构重构：移除远程脚本依赖，改为本地签名 + SSH 内联执行
-5. 重构后 `ingress verify` 成功：4 次 API 调用全部通过 SSH 正常工作
-
-**结论**：实验 #1 完整跑通了 plan → verify 闭环。AI 独立发现了 2 个 bug 并修复，人类介入 0 次。
+**关键发现**：
+1. 测试全绿但全部 mock，不连真实 API
+2. Windows gbk 编码问题（4 处 subprocess.run）
+3. 远程脚本依赖架构缺陷 → 重构为本地签名+SSH 内联执行
 
 ---
 
-## Backlog
+## 状态说明
 
-暂无条目。
-
----
-
-## 判断标准
-
-- **主线**：不做这个，"首次运行闭环"目标就无法达成
-- **分支**：做了有帮助，但不是当前阶段的必要条件
-- **backlog**：有价值，但当前阶段不需要
+| 状态 | 含义 |
+|------|------|
+| 待开始 | 尚未评估或启动 |
+| 进行中 | 正在执行 |
+| 收尾中 | 主体完成，待验证或文档化 |
+| ✓ 完成 | 全部完成并验证 |
+| 搁置 | 暂停，有明确原因 |
 
 ---
 
@@ -122,4 +104,4 @@ audience: both
 
 - [路线图](docs/core/roadmap.md) — Alpha → Beta → GA 大方向
 - [愿景](docs/core/vision.md) — 项目定位、目标用户
-- [编码与协作规范](docs/conventions.md) — 协作协议（会话开始读取本文）
+- [编码与协作规范](docs/conventions.md) — 协作协议

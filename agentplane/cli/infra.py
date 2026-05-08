@@ -17,7 +17,7 @@ from agentplane.cli.infra_automation import (
     verify_infra_automation,
 )
 from agentplane.cli.inventory import generate_inventory_snapshot
-from agentplane.cli.local_infra import add_local_infra_parser, handle_local_infra_command
+from agentplane.domain.infra.local import add_local_infra_parser, handle_local_infra_command
 from agentplane.cli.networks import (
     SUPPORTED_NETWORK_TARGETS,
     apply_firewall_operation,
