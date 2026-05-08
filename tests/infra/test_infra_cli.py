@@ -17,6 +17,7 @@ from agentplane.runtime.host_profile import HostProfile
 from agentplane.runtime.platform import HostPlatform
 from agentplane.runtime.wsl_bridge import inspect_local_host
 from tests.support.cli import run_agentplane_cli as run_cli
+from tests.support.constants import CONTAINER_SUB2API, CONTAINER_POSTGRES
 from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
@@ -270,7 +271,7 @@ class HostCliTests(unittest.TestCase):
                                 "driver": "bridge",
                                 "subnet": "172.19.0.0/16",
                                 "gateway_ip": "172.19.0.1/16",
-                                "required_for": ["sub2api-prod"],
+                                "required_for": [CONTAINER_SUB2API],
                             }
                         ],
                     },
@@ -345,7 +346,7 @@ class HostCliTests(unittest.TestCase):
                                 "Id": "66f7da1be943bc160d7df638561fe15ccc1ceea6912e9c753dd40d087e23d8b3",
                                 "Driver": "bridge",
                                 "IPAM": {"Config": [{"Subnet": "172.19.0.0/16", "Gateway": "172.19.0.1"}]},
-                                "Containers": {"sub2api": {"Name": "sub2api-prod"}},
+                                "Containers": {"sub2api": {"Name": CONTAINER_SUB2API}},
                             }
                         ),
                     }
@@ -384,7 +385,7 @@ class HostCliTests(unittest.TestCase):
                                 "driver": "bridge",
                                 "subnet": "172.19.0.0/16",
                                 "gateway_ip": "172.19.0.1/16",
-                                "required_for": ["sub2api-prod"],
+                                "required_for": [CONTAINER_SUB2API],
                             }
                         ],
                     },
@@ -407,7 +408,7 @@ class HostCliTests(unittest.TestCase):
                                 "Id": "66f7da1be943bc160d7df638561fe15ccc1ceea6912e9c753dd40d087e23d8b3",
                                 "Driver": "bridge",
                                 "IPAM": {"Config": [{"Subnet": "172.19.0.0/16", "Gateway": "172.19.0.1"}]},
-                                "Containers": {"sub2api": {"Name": "sub2api-prod"}},
+                                "Containers": {"sub2api": {"Name": CONTAINER_SUB2API}},
                             }
                         ),
                     }
@@ -866,7 +867,7 @@ class RemoteCliTests(unittest.TestCase):
                 "--script-file",
                 str(script_file),
                 "--",
-                "postgres18-prod",
+                CONTAINER_POSTGRES,
                 "value with spaces",
             )
 
@@ -886,13 +887,13 @@ class RemoteCliTests(unittest.TestCase):
         )
         self.assertEqual("root@prod0-main", inner.get("connection_target"))
         self.assertEqual(
-            "bash -s -- postgres18-prod 'value with spaces'",
+            f"bash -s -- {CONTAINER_POSTGRES} 'value with spaces'",
             inner.get("remote_command"),
         )
         self.assertEqual(
             expected_ssh_stdin_argv(
                 MAIN_REPO_ROOT / "secrets" / "ssh" / "config",
-                "bash -s -- postgres18-prod 'value with spaces'",
+                f"bash -s -- {CONTAINER_POSTGRES} 'value with spaces'",
             ),
             inner.get("ssh_argv"),
         )

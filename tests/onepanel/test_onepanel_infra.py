@@ -29,6 +29,7 @@ from agentplane.scripts.onepanel.fixture_manager import (
     resolve_suite_targets,
 )
 from agentplane.scripts.onepanel.verification import run_verification_suite
+from tests.support.constants import CONTAINER_OPENRESTY, CONTAINER_SUB2API, FAKE_HOST_BINDING
 from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
@@ -134,7 +135,7 @@ class CreatingPanelExecutor(FakePanelExecutor):
                             "alias": "token",
                             "primaryDomain": "token.example.org",
                             "status": "Running",
-                            "proxy": "http://127.0.0.1:18080",
+                            "proxy": f"http://{FAKE_HOST_BINDING}",
                         }
                     ]
                 }
@@ -184,7 +185,7 @@ class OnePanelPublicIngressTests(unittest.TestCase):
                         "ONEPANEL_WEBSITE_ALIAS=1panel",
                         "ONEPANEL_WEBSITE_PROXY=http://127.0.0.1:2096",
                         "ONEPANEL_CERT_DIR=/data/1panel/www/certs/1panel-example-org",
-                        "ONEPANEL_CERT_RELOAD_SHELL=docker exec 1panel-openresty-prod nginx -t && docker exec 1panel-openresty-prod nginx -s reload",
+                        f"ONEPANEL_CERT_RELOAD_SHELL=docker exec {CONTAINER_OPENRESTY} nginx -t && docker exec {CONTAINER_OPENRESTY} nginx -s reload",
                         "ONEPANEL_HTTPS_PORTS=443,8443",
                     ]
                 ),
@@ -316,7 +317,7 @@ class OnePanelPublicIngressTests(unittest.TestCase):
             cert_description="prod0-main 1Panel public ingress",
             cert_key_type="2048",
             cert_auto_renew=True,
-            cert_reload_shell="docker exec 1panel-openresty-prod nginx -t && docker exec 1panel-openresty-prod nginx -s reload",
+            cert_reload_shell=f"docker exec {CONTAINER_OPENRESTY} nginx -t && docker exec {CONTAINER_OPENRESTY} nginx -s reload",
             https_http_config="HTTPAlso",
             https_ports=[443],
         )
@@ -350,7 +351,7 @@ class OnePanelPublicIngressTests(unittest.TestCase):
             website_alias="token",
             website_type="proxy",
             website_group_id=1,
-            website_proxy="http://127.0.0.1:18080",
+            website_proxy=f"http://{FAKE_HOST_BINDING}",
             website_remark="prod0-main sub2api public ingress",
             website_ipv6=True,
             cert_primary_domain="token.example.org",
@@ -359,7 +360,7 @@ class OnePanelPublicIngressTests(unittest.TestCase):
             cert_description="prod0-main sub2api public ingress",
             cert_key_type="2048",
             cert_auto_renew=True,
-            cert_reload_shell="docker exec 1panel-openresty-prod nginx -t && docker exec 1panel-openresty-prod nginx -s reload",
+            cert_reload_shell=f"docker exec {CONTAINER_OPENRESTY} nginx -t && docker exec {CONTAINER_OPENRESTY} nginx -s reload",
             https_http_config="HTTPAlso",
             https_ports=[443],
         )
@@ -686,13 +687,13 @@ class FakeExecutor:
         if path == "/api/v2/websites/search":
             return {"items": [{"id": 4, "alias": "token", "primaryDomain": "token.example.org"}]}
         if path == "/api/v2/websites/4":
-            return {"id": 4, "alias": "token", "proxy": "http://127.0.0.1:18080"}
+            return {"id": 4, "alias": "token", "proxy": f"http://{FAKE_HOST_BINDING}"}
         if path == "/api/v2/websites/4/https":
             return {"enable": True}
         if path == "/api/v2/containers/info":
-            return {"name": "sub2api-prod", "state": "running"}
+            return {"name": CONTAINER_SUB2API, "state": "running"}
         if path == "/api/v2/containers/compose/search":
-            return {"items": [{"name": "sub2api-prod", "status": "running", "runningCount": 1}]}
+            return {"items": [{"name": CONTAINER_SUB2API, "status": "running", "runningCount": 1}]}
         if path == "/api/v2/cronjobs/load/info":
             return {"id": 2, "status": "Enable"}
         if path == "/api/v2/hosts/firewall/base":
@@ -735,8 +736,8 @@ class OnePanelVerificationSuiteTests(unittest.TestCase):
             executor,
             profile="wsl-fixture",
             website_alias="token",
-            container_name="sub2api-prod",
-            project_name="sub2api-prod",
+            container_name=CONTAINER_SUB2API,
+            project_name=CONTAINER_SUB2API,
             cronjob_id=2,
             app_name="new-api",
         )

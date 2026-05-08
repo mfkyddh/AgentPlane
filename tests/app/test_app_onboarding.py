@@ -8,6 +8,12 @@ from pathlib import Path
 import pytest
 from agentplane.domain.app.resource_paths import app_resource_secret_dir, app_resource_secret_relative
 from tests.support.cli import run_agentplane_cli as run_cli
+from tests.support.constants import (
+    CONTAINER_POSTGRES,
+    CONTAINER_REDIS,
+    FAKE_CONTAINER_PORT,
+    FAKE_HOST_BINDING,
+)
 from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
@@ -176,8 +182,8 @@ def _target_fixture_profile(target: str) -> dict[str, str]:
     return {
         "compose_file": f"docker-compose.{compose_suffix}.yml",
         "container_suffix": "prod",
-        "postgres_container": "postgres18-prod",
-        "redis_container": "redis7-prod",
+        "postgres_container": CONTAINER_POSTGRES,
+        "redis_container": CONTAINER_REDIS,
         "ssh_alias": target,
         "data_suffix": data_suffix,
         "public_url": "https://{app_id}.example.invalid:8443",
@@ -202,7 +208,7 @@ def _fixture_contract(app_id: str, *, target: str) -> dict[str, object]:
             "container_port": 3000,
             "healthcheck": {"path": "/healthz"},
             "env_template": f"templates/services/{app_id}.{target}.env.example",
-            "host_binding": "127.0.0.1:18080",
+            "host_binding": FAKE_HOST_BINDING,
         },
         "infra": {
             "depends_on_containers": [profile["postgres_container"], profile["redis_container"]],
@@ -263,7 +269,7 @@ def _write_minimal_repo_fixture(root: Path, *, app_id: str, target: str) -> Path
                 "    image: placeholder",
                 f"    container_name: {app_id}-{profile['container_suffix']}",
                 "    ports:",
-                "      - 127.0.0.1:18080:3000",
+                f"      - {FAKE_HOST_BINDING}:3000",
                 "    networks:",
                 "      - zqf_network",
                 "",

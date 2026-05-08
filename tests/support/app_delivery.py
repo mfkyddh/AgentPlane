@@ -14,6 +14,23 @@ from agentplane.domain.app.runtime import _secrets_root  # noqa: F401
 from agentplane.runtime.host_profile import HostProfile  # noqa: F401
 from tests.support.app_delivery_cli import run_app_delivery_cli, run_cli  # noqa: F401
 from tests.support.app_resources import resource_relative, resource_root
+from tests.support.constants import (
+    APP_ID_SUB2API,
+    CONTAINER_MINIO,
+    CONTAINER_POSTGRES,
+    CONTAINER_REDIS,
+    CONTAINER_SUB2API,
+    DOMAIN_TOKEN,
+    FAKE_CONTAINER_PORT,
+    FAKE_HEALTHCHECK_PATH,
+    FAKE_HOST_BINDING,
+    PG_DATABASE_PROD,
+    PG_USER_PROD,
+    REDIS_DB,
+    REDIS_KEY_PREFIX,
+    TARGET_PROD,
+    TARGET_WSL,
+)
 from tests.support.paths import REPO_ROOT  # noqa: F401
 
 ERROR_ID_TENANT_RESOURCES_REQUIRED = "app.resource.resources_required"
@@ -87,7 +104,7 @@ def managed_bridge_networks_payload(*, required_for: list[str] | None = None) ->
             "driver": "bridge",
             "subnet": "172.19.0.0/16",
             "gateway_ip": "172.19.0.1/16",
-            "required_for": required_for or ["sub2api-prod"],
+            "required_for": required_for or [CONTAINER_SUB2API],
         }
     ]
 
@@ -96,9 +113,9 @@ def write_inventory(root: Path, *, include_managed_bridge_networks: bool = False
     payload = {
         "ssh": {"aliases": ["prod0-main"], "user": "root"},
         "services": {
-            "postgres": {"container_name": "postgres18-prod"},
-            "redis": {"container_name": "redis7-prod"},
-            "minio": {"container_name": "minio-prod"},
+            "postgres": {"container_name": CONTAINER_POSTGRES},
+            "redis": {"container_name": CONTAINER_REDIS},
+            "minio": {"container_name": CONTAINER_MINIO},
         },
     }
     if include_managed_bridge_networks:
@@ -148,7 +165,7 @@ def delivery_contract_sections(
 def write_contract(
     root: Path,
     *,
-    dependency: str = "redis7-prod",
+    dependency: str = CONTAINER_REDIS,
     dependencies: list[str] | None = None,
     include_container_name: bool = True,
     schema_version: int | None = 1,
@@ -165,17 +182,17 @@ def write_contract(
     contract_file = root / "contract.yaml"
     runtime: dict[str, object] = {
         "kind": runtime_kind,
-        "container_port": 8080,
-        "host_binding": "127.0.0.1:18080",
-        "healthcheck": {"path": "/health", "expected_status": 200},
+        "container_port": FAKE_CONTAINER_PORT,
+        "host_binding": FAKE_HOST_BINDING,
+        "healthcheck": {"path": FAKE_HEALTHCHECK_PATH, "expected_status": 200},
         "env_template": "deploy/.env.example",
     }
     if include_container_name:
-        runtime["container_name"] = "sub2api-prod"
+        runtime["container_name"] = CONTAINER_SUB2API
 
     resolved_dependencies: list[str]
     if dependencies is None:
-        resolved_dependencies = ["postgres18-prod", dependency]
+        resolved_dependencies = [CONTAINER_POSTGRES, dependency]
     else:
         resolved_dependencies = list(dependencies)
     infra: dict[str, object] = {"depends_on_containers": resolved_dependencies}
@@ -183,7 +200,7 @@ def write_contract(
         infra["tenant_resources"] = tenant_resources
 
     contract: dict[str, object] = {
-        "app_id": "sub2api",
+        "app_id": APP_ID_SUB2API,
         "runtime": runtime,
         "infra": infra,
         "ingress": {
@@ -193,22 +210,22 @@ def write_contract(
             else [
                 {
                     "alias": "token",
-                    "domain": "token.example.net",
-                    "public_url": "https://token.example.net:8443",
+                    "domain": DOMAIN_TOKEN,
+                    "public_url": f"https://{DOMAIN_TOKEN}:8443",
                     "website_object": "token",
                 }
             ],
         },
         "data": {"mounts": [{"host_path": "/data/sub2api/data", "container_path": "/app/data"}]},
-        "rollback": {"previous_control_plane": {"kind": "systemd", "service_name": "sub2api"}},
+        "rollback": {"previous_control_plane": {"kind": "systemd", "service_name": APP_ID_SUB2API}},
         "docs": docs_config or {"app_summary_file": "docs/AGENTPLANE_DEPLOYMENT.md"},
-        "inventory": {"service_key": "sub2api"},
+        "inventory": {"service_key": APP_ID_SUB2API},
     }
     contract.update(
         delivery_contract_sections(
             schema_version=schema_version,
             build_command=build_command,
-            image_name="sub2api-prod",
+            image_name=CONTAINER_SUB2API,
             package_command=package_command,
             packaging_backend=packaging_backend,
             artifact_output_path=artifact_output_path,
@@ -219,11 +236,11 @@ def write_contract(
     contract_file.write_text(yaml.safe_dump(contract, sort_keys=False, allow_unicode=False), encoding="utf-8")
     write_app_catalog_entry(
         _catalog_repo_root(root),
-        app="sub2api",
+        app=APP_ID_SUB2API,
         repo_name=root.name,
         app_root=root,
-        service_key="sub2api",
-        contracts={"prod0-main": contract_file.name, "wsl": contract_file.name},
+        service_key=APP_ID_SUB2API,
+        contracts={TARGET_PROD: contract_file.name, TARGET_WSL: contract_file.name},
     )
     return contract_file
 
@@ -237,7 +254,7 @@ def _target_contract_relpath(target: str) -> str:
 def write_target_contract(
     app_root: Path,
     *,
-    target: str = "prod0-main",
+    target: str = TARGET_PROD,
     schema_version: int | None = 1,
     tenant_resources: dict[str, object] | None = None,
     env_template: str = "deploy/.env.example",
@@ -251,34 +268,34 @@ def write_target_contract(
     contract_file.parent.mkdir(parents=True, exist_ok=True)
     runtime: dict[str, object] = {
         "kind": "compose",
-        "container_port": 8080,
-        "host_binding": "127.0.0.1:18080",
-        "healthcheck": {"path": "/health", "expected_status": 200},
+        "container_port": FAKE_CONTAINER_PORT,
+        "host_binding": FAKE_HOST_BINDING,
+        "healthcheck": {"path": FAKE_HEALTHCHECK_PATH, "expected_status": 200},
         "env_template": env_template,
     }
-    if target == "wsl":
+    if target == TARGET_WSL:
         runtime["container_name"] = "sub2api-dev"
     else:
-        runtime["container_name"] = "sub2api-prod"
+        runtime["container_name"] = CONTAINER_SUB2API
 
-    depends = ["postgres18-dev"] if target == "wsl" else ["postgres18-prod", "redis7-prod"]
+    depends = ["postgres18-dev"] if target == TARGET_WSL else [CONTAINER_POSTGRES, CONTAINER_REDIS]
     infra: dict[str, object] = {"depends_on_containers": depends}
     if tenant_resources is not None:
         infra["tenant_resources"] = tenant_resources
 
     contract: dict[str, object] = {
-        "app_id": "sub2api",
+        "app_id": APP_ID_SUB2API,
         "runtime": runtime,
         "infra": infra,
         "ingress": {
-            "mode": "internal" if target == "wsl" else "public",
+            "mode": "internal" if target == TARGET_WSL else "public",
             "public_sites": []
-            if target == "wsl"
+            if target == TARGET_WSL
             else [
                 {
                     "alias": "token",
-                    "domain": "token.example.net",
-                    "public_url": "https://token.example.net:8443",
+                    "domain": DOMAIN_TOKEN,
+                    "public_url": f"https://{DOMAIN_TOKEN}:8443",
                     "website_object": "token",
                 }
             ],
@@ -286,13 +303,13 @@ def write_target_contract(
         "data": {"mounts": [{"host_path": "/data/sub2api/data", "container_path": "/app/data"}]},
         "rollback": {"previous_control_plane": {"kind": "none", "note": "worktree override test"}},
         "docs": docs_config or {"app_summary_file": "docs/AGENTPLANE_DEPLOYMENT.md"},
-        "inventory": {"service_key": "sub2api"},
+        "inventory": {"service_key": APP_ID_SUB2API},
     }
     contract.update(
         delivery_contract_sections(
             schema_version=schema_version,
             build_command=build_command,
-            image_name="sub2api-prod",
+            image_name=CONTAINER_SUB2API,
             package_command=package_command,
             packaging_backend=packaging_backend,
             artifact_output_path=artifact_output_path,
@@ -304,7 +321,7 @@ def write_target_contract(
     return contract_file
 
 
-def write_app_resource_registry(root: Path, payload: dict[str, object], target: str = "prod0-main") -> Path:
+def write_app_resource_registry(root: Path, payload: dict[str, object], target: str = TARGET_PROD) -> Path:
     registry_file = root / "inventory" / "servers" / target / "app-resources.json"
     registry_file.parent.mkdir(parents=True, exist_ok=True)
     registry_file.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -319,9 +336,9 @@ def write_compose_template(root: Path) -> Path:
             {
                 "services": {
                     "sub2api": {
-                        "image": "sub2api-prod:latest",
-                        "container_name": "sub2api-prod",
-                        "ports": ["127.0.0.1:18080:8080"],
+                        "image": f"{CONTAINER_SUB2API}:latest",
+                        "container_name": CONTAINER_SUB2API,
+                        "ports": [f"{FAKE_HOST_BINDING}:{FAKE_CONTAINER_PORT}"],
                         "environment": {},
                         "networks": ["zqf_network"],
                     }
@@ -365,7 +382,7 @@ def write_internal_worker_compose_template(root: Path) -> Path:
 def write_sampleapi_contract(
     root: Path,
     *,
-    target: str = "prod0-main",
+    target: str = TARGET_PROD,
     include_minio: bool = False,
     rollback_entry: dict[str, object] | None = None,
     schema_version: int | None = 1,
@@ -375,8 +392,8 @@ def write_sampleapi_contract(
     artifact_output_path: str = "dist/oplinux",
 ) -> Path:
     contract_file = root / "sampleapi-contract.yaml"
-    if target == "wsl":
-        target_alias = "wsl"
+    if target == TARGET_WSL:
+        target_alias = TARGET_WSL
         postgres_database = "sampleapi_wsl"
         postgres_user = "sampleapi_wsl"
         minio_bucket = "wsl-sampleapi"
@@ -431,9 +448,9 @@ def write_sampleapi_contract(
             "secret_file": resource_relative(target, "sampleapi", "minio"),
         }
 
-    depends_on_containers = ["postgres18-prod", "redis7-prod"]
+    depends_on_containers = [CONTAINER_POSTGRES, CONTAINER_REDIS]
     if include_minio:
-        depends_on_containers.append("minio-prod")
+        depends_on_containers.append(CONTAINER_MINIO)
 
     contract = {
         "app_id": "sampleapi",
@@ -482,7 +499,7 @@ def write_sampleapi_contract(
     if schema_version is not None:
         contract["schema_version"] = schema_version
     contract_file.write_text(yaml.safe_dump(contract, sort_keys=False, allow_unicode=False), encoding="utf-8")
-    contracts = {"prod0-main": contract_file.name, "wsl": contract_file.name}
+    contracts = {TARGET_PROD: contract_file.name, TARGET_WSL: contract_file.name}
     write_app_catalog_entry(
         _catalog_repo_root(root),
         app="sampleapi",
@@ -494,10 +511,10 @@ def write_sampleapi_contract(
     return contract_file
 
 
-def write_sampleapi_tenant_files(root: Path, *, target: str = "prod0-main", include_minio: bool = False) -> None:
+def write_sampleapi_tenant_files(root: Path, *, target: str = TARGET_PROD, include_minio: bool = False) -> None:
     tenant_root = resource_root(root, target, "sampleapi")
     tenant_root.mkdir(parents=True, exist_ok=True)
-    if target == "wsl":
+    if target == TARGET_WSL:
         postgres_database = "sampleapi_wsl"
         postgres_user = "sampleapi_wsl"
         minio_bucket = "wsl-sampleapi"
@@ -563,10 +580,10 @@ def write_sampleapi_compose_templates(root: Path) -> None:
 
 def baseline_app_resource_registry_payload() -> dict[str, object]:
     return {
-        "sub2api": {
-            "owner_app": "sub2api",
-            "postgres": {"database": "sub2api_prod0", "user": "sub2api_prod0"},
-            "redis": {"db": 1, "key_prefix": "sub2api:"},
+        APP_ID_SUB2API: {
+            "owner_app": APP_ID_SUB2API,
+            "postgres": {"database": PG_DATABASE_PROD, "user": PG_USER_PROD},
+            "redis": {"db": REDIS_DB, "key_prefix": REDIS_KEY_PREFIX},
             "minio": {
                 "bucket": "prod0-sub2api",
                 "access_key": "sub2api_prod0",
@@ -583,23 +600,23 @@ def baseline_app_resource_registry_payload() -> dict[str, object]:
     }
 
 
-def baseline_tenant_resources(*, target: str = "prod0-main", include_minio: bool = False) -> dict[str, object]:
-    if target == "wsl":
+def baseline_tenant_resources(*, target: str = TARGET_PROD, include_minio: bool = False) -> dict[str, object]:
+    if target == TARGET_WSL:
         postgres_database = "sub2api_wsl"
         postgres_user = "sub2api_wsl"
         redis_key_prefix = "sub2api:wsl:"
         minio_bucket = "wsl-sub2api"
         minio_access_key = "sub2api_wsl"
         minio_policy_name = "wsl-sub2api-rw"
-        secret_target = "wsl"
+        secret_target = TARGET_WSL
     else:
-        postgres_database = "sub2api_prod0"
-        postgres_user = "sub2api_prod0"
-        redis_key_prefix = "sub2api:"
+        postgres_database = PG_DATABASE_PROD
+        postgres_user = PG_USER_PROD
+        redis_key_prefix = REDIS_KEY_PREFIX
         minio_bucket = "prod0-sub2api"
-        minio_access_key = "sub2api_prod0"
+        minio_access_key = PG_USER_PROD
         minio_policy_name = "prod0-sub2api-rw"
-        secret_target = "prod0-main"
+        secret_target = TARGET_PROD
     resources: dict[str, object] = {
         "postgres": {
             "required": True,
@@ -627,21 +644,21 @@ def baseline_tenant_resources(*, target: str = "prod0-main", include_minio: bool
     return resources
 
 
-def write_tenant_secret_files(root: Path, *, target: str = "prod0-main", include_minio: bool = False) -> None:
-    tenant_root = resource_root(root, target, "sub2api")
+def write_tenant_secret_files(root: Path, *, target: str = TARGET_PROD, include_minio: bool = False) -> None:
+    tenant_root = resource_root(root, target, APP_ID_SUB2API)
     tenant_root.mkdir(parents=True, exist_ok=True)
-    if target == "wsl":
+    if target == TARGET_WSL:
         postgres_database = "sub2api_wsl"
         postgres_user = "sub2api_wsl"
         redis_key_prefix = "sub2api:wsl:"
         minio_bucket = "wsl-sub2api"
         minio_access_key = "sub2api_wsl"
     else:
-        postgres_database = "sub2api_prod0"
-        postgres_user = "sub2api_prod0"
-        redis_key_prefix = "sub2api:"
+        postgres_database = PG_DATABASE_PROD
+        postgres_user = PG_USER_PROD
+        redis_key_prefix = REDIS_KEY_PREFIX
         minio_bucket = "prod0-sub2api"
-        minio_access_key = "sub2api_prod0"
+        minio_access_key = PG_USER_PROD
     (tenant_root / "postgres.env").write_text(
         f"PGDATABASE={postgres_database}\nPGUSER={postgres_user}\n",
         encoding="utf-8",

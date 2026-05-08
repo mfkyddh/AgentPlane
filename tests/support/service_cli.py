@@ -5,6 +5,15 @@ from pathlib import Path
 from unittest.mock import patch
 
 from tests.support.cli import run_agentplane_cli
+from tests.support.constants import (
+    CONTAINER_MINIO,
+    CONTAINER_OPENRESTY,
+    CONTAINER_POSTGRES,
+    CONTAINER_REDIS,
+    DOMAIN_RELAY,
+    IP_CLOUDFLARE_RECORD,
+    TARGET_PROD,
+)
 from tests.support.paths import REPO_ROOT
 
 run_cli = run_agentplane_cli
@@ -144,36 +153,36 @@ exit 0
 
 
 def write_inventory(root: Path) -> None:
-    (root / "inventory" / "servers" / "prod0-main").mkdir(parents=True, exist_ok=True)
-    (root / "inventory" / "servers" / "prod0-main" / "inventory.json").write_text(
+    (root / "inventory" / "servers" / TARGET_PROD).mkdir(parents=True, exist_ok=True)
+    (root / "inventory" / "servers" / TARGET_PROD / "inventory.json").write_text(
         json.dumps(
             {
-                "ssh": {"aliases": ["prod0-main"], "user": "root"},
+                "ssh": {"aliases": [TARGET_PROD], "user": "root"},
                 "services": {
                     "postgres": {
                         "image": "postgres:18.3",
-                        "container_name": "postgres18-prod",
+                        "container_name": CONTAINER_POSTGRES,
                         "status": "running",
                         "host_binding": "0.0.0.0:5432",
                         "data_dir": "/data/postgres/data",
                     },
                     "redis": {
                         "image": "redis:7.4.7",
-                        "container_name": "redis7-prod",
+                        "container_name": CONTAINER_REDIS,
                         "status": "running",
                         "host_binding": "0.0.0.0:6379",
                         "data_dir": "/data/redis/data",
                     },
                     "minio": {
                         "image": "minio/minio:RELEASE.2025-04-22T22-12-26Z",
-                        "container_name": "minio-prod",
+                        "container_name": CONTAINER_MINIO,
                         "status": "running",
                         "host_bindings": ["0.0.0.0:9000", "0.0.0.0:9001"],
                         "data_dir": "/data/minio/data",
                         "config_dir": "/data/minio/config",
                     },
                     "onepanel_openresty": {
-                        "container_name": "1panel-openresty-prod",
+                        "container_name": CONTAINER_OPENRESTY,
                         "status": "running",
                         "network_mode": "infra",
                         "listen_ports": [8443],
@@ -195,7 +204,7 @@ def write_inventory(root: Path) -> None:
                         "host_binding": "0.0.0.0:24443",
                         "runtime_root": "/data/relay-trojan",
                         "public_endpoint": {
-                            "domain": "relay.example.org",
+                            "domain": DOMAIN_RELAY,
                             "port": 24443,
                             "protocol": "trojan",
                             "transport": "tcp+tls",
@@ -204,7 +213,7 @@ def write_inventory(root: Path) -> None:
                                 "provider": "cloudflare",
                                 "zone_name": "example.org",
                                 "record_type": "A",
-                                "record_content": "198.51.100.20",
+                                "record_content": IP_CLOUDFLARE_RECORD,
                                 "proxied": False,
                             },
                             "certificate": {
@@ -217,7 +226,7 @@ def write_inventory(root: Path) -> None:
                         "client_profile": {
                             "format": "clash-local-profile",
                             "node_name": "Prod2|Relay",
-                            "sni": "relay.example.org",
+                            "sni": DOMAIN_RELAY,
                         },
                     },
                     "relay-trojan-host": {
@@ -250,7 +259,7 @@ def write_inventory(root: Path) -> None:
         encoding="utf-8",
     )
     (root / "secrets" / "ssh").mkdir(parents=True, exist_ok=True)
-    (root / "secrets" / "ssh" / "config").write_text("Host prod0-main\n", encoding="utf-8")
+    (root / "secrets" / "ssh" / "config").write_text(f"Host {TARGET_PROD}\n", encoding="utf-8")
 
 
 class _FakeCloudflareClient:
@@ -262,7 +271,7 @@ class _FakeCloudflareClient:
             "id": "rec-1",
             "name": record_name,
             "type": record_type,
-            "content": "198.51.100.20",
+            "content": IP_CLOUDFLARE_RECORD,
             "proxied": False,
         }
 

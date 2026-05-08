@@ -16,6 +16,7 @@ from agentplane.domain.ingress.lifecycle import (
 )
 from agentplane.domain.ingress.models import IngressDefinition
 from tests.support.cli import run_agentplane_cli as run_cli
+from tests.support.constants import DOMAIN_TOKEN, FAKE_HOST_BINDING, TARGET_PROD
 
 pytestmark = pytest.mark.e2e
 
@@ -33,7 +34,7 @@ def write_inventory(root: Path) -> None:
                             "alias": "token",
                             "primary_domain": "token.example.org",
                             "public_url": "https://token.example.org",
-                            "proxy": "http://127.0.0.1:18080",
+                            "proxy": f"http://{FAKE_HOST_BINDING}",
                             "config_file": "/data/1panel/www/conf.d/token.conf",
                             "ssl_id": 3,
                             "status": "Running",
@@ -97,7 +98,7 @@ class FakeWebsiteExecutor:
                 "id": 9,
                 "alias": "token",
                 "primaryDomain": "token.example.org",
-                "proxy": "http://127.0.0.1:18080",
+                "proxy": f"http://{FAKE_HOST_BINDING}",
                 "status": "Running",
             }
         if path == "/api/v2/websites/9/https":
@@ -149,7 +150,7 @@ class WebsiteCliTests(unittest.TestCase):
                         "alias": "token",
                         "primary_domain": "token.example.org",
                         "public_url": "https://token.example.org",
-                        "proxy": "http://127.0.0.1:18080",
+                        "proxy": f"http://{FAKE_HOST_BINDING}",
                         "status": "Running",
                         "config_file": "/data/1panel/www/conf.d/token.conf",
                         "ssl_id": 3,
@@ -171,7 +172,7 @@ class WebsiteCliTests(unittest.TestCase):
                     "id": 7,
                     "alias": "token",
                     "primaryDomain": "token.example.org",
-                    "proxy": "http://127.0.0.1:18080",
+                    "proxy": f"http://{FAKE_HOST_BINDING}",
                     "status": "Running",
                 },
                 https={"enable": True, "httpsPort": "443", "SSL": {"id": 3}},
@@ -301,13 +302,13 @@ def write_publish_files(root: Path) -> tuple[Path, Path]:
     config_file.write_text(
         "\n".join(
             [
-                "PUBLIC_INGRESS_DOMAIN=token.example.net",
+                f"PUBLIC_INGRESS_DOMAIN={DOMAIN_TOKEN}",
                 "PUBLIC_INGRESS_ZONE_NAME=example.net",
                 "PUBLIC_INGRESS_RECORD_CONTENT=1.2.3.4",
                 "ONEPANEL_DNS_ACCOUNT_NAME=cloudflare-example",
                 "ONEPANEL_DNS_ACCOUNT_EMAIL=admin@example.net",
                 "ONEPANEL_WEBSITE_ALIAS=token",
-                "ONEPANEL_WEBSITE_PROXY=http://127.0.0.1:18080",
+                f"ONEPANEL_WEBSITE_PROXY=http://{FAKE_HOST_BINDING}",
                 "ONEPANEL_CERT_DIR=/data/1panel/www/certs/token-example-net",
                 "ONEPANEL_CERT_RELOAD_SHELL=echo reload",
             ]
@@ -363,7 +364,7 @@ class WebsitePublishCliTests(unittest.TestCase):
             with patch(
                 "agentplane.cli.ingress.plan_public_ingress",
                 return_value={
-                    "domain": "token.example.net",
+                    "domain": DOMAIN_TOKEN,
                     "steps": [{"kind": "cloudflare_dns"}],
                     "execute_required": True,
                 },
@@ -372,8 +373,8 @@ class WebsitePublishCliTests(unittest.TestCase):
 
         self.assertEqual("ingress", payload["command"])
         self.assertEqual("publish.plan", payload["action"])
-        self.assertEqual("prod0-main", payload["target"])
-        self.assertEqual("token.example.net", payload["payload"]["domain"])
+        self.assertEqual(TARGET_PROD, payload["target"])
+        self.assertEqual(DOMAIN_TOKEN, payload["payload"]["domain"])
         self.assertTrue(payload["payload"]["execute_required"])
 
     def test_ingress_publish_apply_runs_post_verify(self) -> None:

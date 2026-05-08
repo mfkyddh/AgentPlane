@@ -124,10 +124,10 @@ P1 阶段阻塞。
 """
 
 
-def _write_workbook(content: str) -> Path:
+def _write_workbook(content: str, root: Path | None = None) -> Path:
     """Write *content* to a temp workbook and return the repo root."""
-    tmp = tempfile.mkdtemp()
-    root = Path(tmp)
+    if root is None:
+        root = Path(tempfile.mkdtemp())
     wb_dir = root / "docs" / "maintainers"
     wb_dir.mkdir(parents=True)
     (wb_dir / "agentplane-roadmap-workbook.md").write_text(content, encoding="utf-8")
@@ -204,8 +204,8 @@ class TestParseWorkbookLastVerified:
 
 
 class TestWorkbookStatus:
-    def test_returns_ok_with_current_phase_and_next_task(self) -> None:
-        result = _workbook_status(_write_workbook(SAMPLE_WORKBOOK))
+    def test_returns_ok_with_current_phase_and_next_task(self, tmp_path: Path) -> None:
+        result = _workbook_status(_write_workbook(SAMPLE_WORKBOOK, tmp_path))
         assert result["ok"] is True
         assert result["current_phase"]["id"] == "P1"
         assert result["current_phase"]["name"] == "Beta"
@@ -217,7 +217,7 @@ class TestWorkbookStatus:
         assert result["source"]["path"] == "docs/maintainers/agentplane-roadmap-workbook.md"
         assert result["source"]["last_verified"] == "2026-04-29"
 
-    def test_returns_null_next_task_for_planned_phase(self) -> None:
+    def test_returns_null_next_task_for_planned_phase(self, tmp_path: Path) -> None:
         planned_wb = """\
 ---
 status: active
@@ -243,31 +243,30 @@ last_verified: 2026-04-29
 
 P1 待讨论。
 """
-        result = _workbook_status(_write_workbook(planned_wb))
+        result = _workbook_status(_write_workbook(planned_wb, tmp_path))
         assert result["ok"] is True
         assert result["current_phase"]["status"] == "planned"
         assert result["current_phase"]["gate"] == "pending"
         assert result["next_task"] is None
 
-    def test_returns_null_current_phase_when_all_done(self) -> None:
-        result = _workbook_status(_write_workbook(ALL_DONE_WORKBOOK))
+    def test_returns_null_current_phase_when_all_done(self, tmp_path: Path) -> None:
+        result = _workbook_status(_write_workbook(ALL_DONE_WORKBOOK, tmp_path))
         assert result["ok"] is True
         assert result["current_phase"] is None
         assert result["next_task"] is None
 
-    def test_returns_error_when_workbook_missing(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            result = _workbook_status(Path(tmp))
+    def test_returns_error_when_workbook_missing(self, tmp_path: Path) -> None:
+        result = _workbook_status(tmp_path)
         assert result["ok"] is False
         assert "not found" in result["error"].lower()
 
-    def test_returns_error_when_no_phase_table(self) -> None:
-        result = _workbook_status(_write_workbook("---\nstatus: active\n---\n\n# No phases here\n"))
+    def test_returns_error_when_no_phase_table(self, tmp_path: Path) -> None:
+        result = _workbook_status(_write_workbook("---\nstatus: active\n---\n\n# No phases here\n", tmp_path))
         assert result["ok"] is False
         assert "no phase overview" in result["error"].lower()
 
-    def test_blocked_phase_shows_gate_pending(self) -> None:
-        result = _workbook_status(_write_workbook(BLOCKED_WORKBOOK))
+    def test_blocked_phase_shows_gate_pending(self, tmp_path: Path) -> None:
+        result = _workbook_status(_write_workbook(BLOCKED_WORKBOOK, tmp_path))
         assert result["ok"] is True
         assert result["current_phase"]["status"] == "blocked"
         assert result["current_phase"]["gate"] == "pending"

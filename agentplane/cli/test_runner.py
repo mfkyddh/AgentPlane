@@ -87,6 +87,7 @@ def handle_test_command(args: argparse.Namespace) -> int:
 
     elif tier == "fast":
         cmd.extend(["-m", _marker_expr("unit or integration")])
+        cmd.extend(["--cov", "--cov-report=term-missing"])
         n = workers or 0
         if n > 0:
             cmd.extend(["-n", str(n)])

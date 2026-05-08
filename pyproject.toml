@@ -45,6 +45,7 @@ dev = [
   "pygments>=2.20.0",
   "pre-commit>=4.2.0",
   "pytest>=9.0.3",
+  "pytest-cov>=6.0",
   "pytest-xdist>=3.8.0",
   "ruff>=0.8.0",
 ]
@@ -78,6 +79,7 @@ source = ["agentplane"]
 [tool.coverage.report]
 show_missing = true
 skip_covered = false
+fail_under = 25
 
 [tool.hatch.build.targets.wheel]
 packages = ["agentplane"]
