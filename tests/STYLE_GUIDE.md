@@ -308,4 +308,4 @@ echo '{{"container": "{CONTAINER_SUB2API}"}}'
 ## 关联文档
 
 - [编码与协作规范](../docs/conventions.md) — 技术栈、编码规则
-- [测试健康检查脚本](../scripts/test_health.py) — 自动化健康报告
+- [测试健康检查脚本](test_health.py) — 自动化健康报告

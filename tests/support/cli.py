@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import sys
@@ -52,3 +53,11 @@ def run_agentplane_cli(
         capture_output=True,
         check=False,
     )
+
+
+def run_cli_json(*args: str) -> dict:
+    """Run CLI and parse JSON output. Raises AssertionError on non-zero exit."""
+    result = run_agentplane_cli(*args)
+    if result.returncode != 0:
+        raise AssertionError(result.stderr)
+    return json.loads(result.stdout)

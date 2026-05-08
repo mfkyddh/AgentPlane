@@ -58,7 +58,7 @@ repos:
       # Test health report (runs before push)
       - id: test-health
         name: "Test health report"
-        entry: python scripts/test_health.py
+        entry: python tests/support/test_health.py
         language: system
         stages: [pre-push]
         pass_filenames: false

@@ -16,57 +16,12 @@ from agentplane.domain.infra import networks as network_domain
 from agentplane.runtime.host_profile import HostProfile
 from agentplane.runtime.platform import HostPlatform
 from agentplane.runtime.wsl_bridge import inspect_local_host
-from tests.support.cli import run_agentplane_cli as run_cli
+from tests.support.cli import run_agentplane_cli as run_cli, run_cli_json
 from tests.support.constants import CONTAINER_SUB2API, CONTAINER_POSTGRES
-from tests.support.fake_scripts import write_fake_command
+from tests.support.fake_scripts import write_fake_bridge_network_ssh, write_fake_command
 from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
-
-
-def write_fake_bridge_network_ssh(bin_dir: Path) -> None:
-    write_fake_command(
-        bin_dir,
-        "ssh",
-        """#!/usr/bin/env bash
-set -euo pipefail
-printf 'ssh %s\\n' "$*" >> "$FAKE_CMD_LOG"
-cmd="$*"
-state_dir="${FAKE_NETWORK_STATE_DIR:?}"
-bridge="br-66f7da1be943"
-if [[ "$cmd" == *"docker network inspect zqf_network --format"* ]]; then
-  cat <<'JSON'
-{"Name":"zqf_network","Id":"66f7da1be943bc160d7df638561fe15ccc1ceea6912e9c753dd40d087e23d8b3","Driver":"bridge","IPAM":{"Config":[{"Subnet":"172.19.0.0/16","Gateway":"172.19.0.1"}]},"Containers":{"sub2api":{"Name":"sub2api-prod"}}}
-JSON
-  exit 0
-fi
-if [[ "$cmd" == *"ip -json -4 addr show dev ${bridge}"* ]]; then
-  if [[ -f "${state_dir}/gateway_present" ]]; then
-    echo '[{"ifname":"br-66f7da1be943","addr_info":[{"local":"172.19.0.1","prefixlen":16}]}]'
-  else
-    echo '[{"ifname":"br-66f7da1be943","addr_info":[]}]'
-  fi
-  exit 0
-fi
-if [[ "$cmd" == *"ip -json route show 172.19.0.0/16"* ]]; then
-  if [[ -f "${state_dir}/route_present" ]]; then
-    echo '[{"dst":"172.19.0.0/16","dev":"br-66f7da1be943","prefsrc":"172.19.0.1"}]'
-  else
-    echo '[]'
-  fi
-  exit 0
-fi
-if [[ "$cmd" == *"ip addr add 172.19.0.1/16 dev ${bridge}"* ]]; then
-  touch "${state_dir}/gateway_present"
-  exit 0
-fi
-if [[ "$cmd" == *"ip route replace 172.19.0.0/16 dev ${bridge} src 172.19.0.1"* ]]; then
-  touch "${state_dir}/route_present"
-  exit 0
-fi
-exit 0
-""",
-    )
 
 
 class HostCliTests(unittest.TestCase):
@@ -569,12 +524,5 @@ class HostCliTests(unittest.TestCase):
 # ======================================================================
 # From: test_local_host_cli.py
 # ======================================================================
-
-
-def run_cli_json(*args: str) -> dict:
-    result = run_cli(*args)
-    if result.returncode != 0:
-        raise AssertionError(result.stderr)
-    return json.loads(result.stdout)
 
 

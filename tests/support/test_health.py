@@ -3,7 +3,7 @@
 Run monthly or before major releases to detect test rot early.
 
 Usage:
-    python scripts/test_health.py [--json]
+    python tests/support/test_health.py [--json]
 
 Exit codes:
     0 - All checks passed
@@ -17,8 +17,7 @@ import re
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-TESTS_DIR = REPO_ROOT / "tests"
+from tests.support.paths import REPO_ROOT, TESTS_ROOT as TESTS_DIR
 
 # Thresholds from tests/STYLE_GUIDE.md
 FILE_SIZE_WARN = 400
