@@ -14,6 +14,10 @@ from agentplane.domain.app.runtime import _secrets_root  # noqa: F401
 from agentplane.runtime.host_profile import HostProfile  # noqa: F401
 from tests.support.app_delivery_cli import run_app_delivery_cli, run_cli  # noqa: F401
 from tests.support.app_resources import resource_relative, resource_root
+from tests.support.fake_scripts import (  # noqa: F401
+    write_fake_bridge_network_ssh as _write_fake_bridge_network_ssh,
+    write_fake_command as _write_fake_command,
+)
 from tests.support.constants import (
     APP_ID_SUB2API,
     CONTAINER_MINIO,
@@ -707,65 +711,9 @@ def init_git_repo_with_tag(root: Path, tag: str) -> str:
     return sha
 
 
-def write_fake_command(bin_dir: Path, name: str, body: str) -> None:
-    script = bin_dir / name
-    script.write_text(body, encoding="utf-8")
-    script.chmod(0o755)
-
-
-def write_fake_bridge_network_ssh(bin_dir: Path) -> None:
-    write_fake_command(
-        bin_dir,
-        "ssh",
-        """#!/usr/bin/env bash
-set -euo pipefail
-printf 'ssh %s\\n' "$*" >> "$FAKE_CMD_LOG"
-cmd="$*"
-state_dir="${FAKE_NETWORK_STATE_DIR:?}"
-bridge="br-66f7da1be943"
-if [[ "$cmd" == *"docker network inspect zqf_network --format"* ]]; then
-  cat <<'JSON'
-{"Name":"zqf_network","Id":"66f7da1be943bc160d7df638561fe15ccc1ceea6912e9c753dd40d087e23d8b3","Driver":"bridge","IPAM":{"Config":[{"Subnet":"172.19.0.0/16","Gateway":"172.19.0.1"}]},"Containers":{"sub2api":{"Name":"sub2api-prod"}}}
-JSON
-  exit 0
-fi
-if [[ "$cmd" == *"ip -json -4 addr show dev ${bridge}"* ]]; then
-  if [[ -f "${state_dir}/gateway_present" ]]; then
-    echo '[{"ifname":"br-66f7da1be943","addr_info":[{"local":"172.19.0.1","prefixlen":16}]}]'
-  else
-    echo '[{"ifname":"br-66f7da1be943","addr_info":[]}]'
-  fi
-  exit 0
-fi
-if [[ "$cmd" == *"ip -json route show 172.19.0.0/16"* ]]; then
-  if [[ -f "${state_dir}/route_present" ]]; then
-    echo '[{"dst":"172.19.0.0/16","dev":"br-66f7da1be943","prefsrc":"172.19.0.1"}]'
-  else
-    echo '[]'
-  fi
-  exit 0
-fi
-if [[ "$cmd" == *"ip addr add 172.19.0.1/16 dev ${bridge}"* ]]; then
-  touch "${state_dir}/gateway_present"
-  exit 0
-fi
-if [[ "$cmd" == *"ip route replace 172.19.0.0/16 dev ${bridge} src 172.19.0.1"* ]]; then
-  touch "${state_dir}/route_present"
-  exit 0
-fi
-if [[ "$cmd" == *"docker inspect sub2api-prod"* ]]; then
-  cat <<'JSON'
-[{"Config":{"Env":["DATABASE_PASSWORD=db-secret","REDIS_PASSWORD=redis-secret","SERVER_PORT=8080"]}}]
-JSON
-  exit 0
-fi
-if [[ "$cmd" == *"curl -fsS http://127.0.0.1:18080/health"* ]]; then
-  echo '{"status":"ok"}'
-  exit 0
-fi
-exit 0
-""",
-    )
+# Re-export from shared module for backward compatibility
+write_fake_command = _write_fake_command
+write_fake_bridge_network_ssh = _write_fake_bridge_network_ssh
 
 
 __all__ = [name for name in globals() if not name.startswith("__")]

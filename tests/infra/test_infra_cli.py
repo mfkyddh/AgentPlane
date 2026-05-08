@@ -18,15 +18,10 @@ from agentplane.runtime.platform import HostPlatform
 from agentplane.runtime.wsl_bridge import inspect_local_host
 from tests.support.cli import run_agentplane_cli as run_cli
 from tests.support.constants import CONTAINER_SUB2API, CONTAINER_POSTGRES
+from tests.support.fake_scripts import write_fake_command
 from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
-
-
-def write_fake_command(bin_dir: Path, name: str, body: str) -> None:
-    script = bin_dir / name
-    script.write_text(body, encoding="utf-8")
-    script.chmod(0o755)
 
 
 def write_fake_bridge_network_ssh(bin_dir: Path) -> None:
