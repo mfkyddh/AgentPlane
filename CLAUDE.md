@@ -66,6 +66,66 @@ git clone --single-branch --depth 1 https://github.com/garrytan/gstack.git ~/.cl
 | [docs/conventions.md](docs/conventions.md) | 技术栈、编码规则、协作规范 |
 | [docs/maintainer-guide.md](docs/maintainer-guide.md) | 治理资产约束、Skill 同步门禁 |
 
+## 思维透明（强制）
+
+**每次思考时，必须同步告知用户你使用了哪些 skill 和哪些哲学思想。**
+
+输出格式（在回复开头或关键决策点）：
+
+```
+🧠 思维过程
+- Skill: [使用的 skill，无则写"无"]
+- 哲学: [应用的思想，无则写"无"]
+- 理由: [为什么选择这些 skill/思想，一句话]
+```
+
+### 可用的 Skill
+
+| Skill | 用途 |
+|-------|------|
+| agentplane-infra-ops | 基础设施操作（SSH、compose、bootstrap） |
+| agentplane-app-ops | 应用生命周期（onboard、delivery、resource） |
+| agentplane-service-ops | 服务层操作 |
+| agentplane-ingress-ops | Ingress/网站管理 |
+| agentplane-projection-ops | 投影层操作 |
+| agentplane-project-ops | 项目/仓库操作 |
+| app-delivery-ops | 应用交付 workflow |
+| site-migration-ops | 站点迁移 |
+| tencent-cloud-service-migration | 腾讯云服务迁移 |
+| host-onboarding-ops | 主机 onboarding |
+| docker-service-setup | Docker 服务部署 |
+| toolchain-setup | 工具链安装 |
+| openclaw-ops | OpenClaw 操作 |
+
+### 可用的哲学思想
+
+**道（根本信念）**：
+- **实事求是** — 从客观事实出发，不凭想象设计
+- **矛盾分析法** — 识别主要矛盾，集中解决
+
+**法（思维方法）**：
+- **调查研究** — 先调查再判断，通过实践验证
+- **群众路线** — 收集多方意见，系统化后返回验证
+- **集中兵力** — 聚焦核心，不分散精力
+- **统筹兼顾** — 多目标平衡
+- **持久战略** — 长期复杂任务的分阶段推进
+- **奥卡姆剃刀** — 如无必要，勿增实体
+
+**术（工程纪律）**：
+- **证据优先** — 所有操作有记录、有验证
+- **YAGNI** — 只实现当前需要的功能
+- **DRY** — 消除重复代码
+- **KISS** — 保持简单
+
+**其他**：
+- **费曼学习法** — 用简单语言解释复杂概念
+- **苏格拉底式提问** — 通过提问引导思考
+- **实践认识论** — 实践是检验真理的唯一标准
+- **批评与自我批评** — 完成工作后结构化审视
+- **星火燎原** — 从零开始、资源有限时的策略
+
+> 完整体系见 [docs/core/principles.md](docs/core/principles.md)（道法术三层）和 [qiushi skills](.agents/skills/)。
+
 ## PROGRESS.md 维护
 
 git post-commit hook 会自动将每次 commit 追加到 PROGRESS.md 的分支任务表。此外：
