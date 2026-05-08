@@ -38,6 +38,7 @@
 
 - [术语表](glossary.md) — 唯一术语真源
 - [决策记录](decisions/) — 关键决策追溯
+- [Runbooks](runbooks/) — 操作手册和验证记录
 
 ## 执行层（当前进度）
 

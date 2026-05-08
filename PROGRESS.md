@@ -23,9 +23,9 @@ audience: both
 
 | # | 条件 | 状态 | 说明 |
 |---|------|------|------|
-| C1 | 核心 Skill 测试覆盖 | 待开始 | 14 个 skill，3 个已完成，11 个待评估 |
+| C1 | 核心 Skill 测试覆盖 | 进行中 | 14 个 skill，4 个已完成（+1），10 个待评估 |
 | C2 | 文档覆盖目标用户场景 | ✓ 完成 | 5 份核心文档已重写 |
-| C3 | 真实应用全生命周期验证 | 收尾中 | sub2api 双环境验证通过，文档化待完成 |
+| C3 | 真实应用全生命周期验证 | ✓ 完成 | sub2api 双环境验证通过，文档化已完成 |
 
 ---
 
@@ -55,10 +55,13 @@ audience: both
 
 | ID | 任务 | 完成日期 | 服务 | 关键成果 |
 |----|------|----------|------|----------|
+| B3 | agentplane-infra-ops 测试覆盖 | 2026-05-08 | C1 | 13 tests，覆盖 automation/local/network 命令，7485c54 |
+| B2 | 5 域模型重构完成 | 2026-05-08 | C1 | 4 文件迁移到 domain/infra/，100% 完成，1f0e670 |
 | B6 | optimize CLAUDE.md and AGENTS.md | 2026-05-08 | — | e460e17 |
 | B5 | add session init rule to read AGENTS.md | 2026-05-08 | — | 749059d |
 | B4 | add mandatory thinking transparency rule | 2026-05-08 | — | a8e458d |
 | B3 | git post-commit hook 自动记录进度 | 2026-05-08 | — | 每次 commit 自动追加进度 |
+| — | sub2api 双环境验证文档化 | 2026-05-08 | C3 | runbook 模板，docs/runbooks/sub2api-dual-env-verification.md |
 | B2 | 5 域模型重构 | 2026-05-07 | C1 | 70 文件，3379+/3817-。Layer 0-3 对齐，infra 域从 cli/ 迁移到 domain/，app 域移除 wrapper，87 测试修复，742 passed |
 | — | 文档体系重构 | 2026-05-07 | C2 | 80+ 文件 → ~20 活跃文档。3 层模型，核心文档重写（愿景/原则/路线图/架构），5 份用户文档 |
 | — | WebUI 初始版本 | 2026-05-06 | — | dashboard + REST API + agent chat，9bed54e |
