@@ -66,6 +66,15 @@ git clone --single-branch --depth 1 https://github.com/garrytan/gstack.git ~/.cl
 | [docs/conventions.md](docs/conventions.md) | 技术栈、编码规则、协作规范 |
 | [docs/maintainer-guide.md](docs/maintainer-guide.md) | 治理资产约束、Skill 同步门禁 |
 
+## PROGRESS.md 维护
+
+git post-commit hook 会自动将每次 commit 追加到 PROGRESS.md 的分支任务表。此外：
+
+- **重要工作完成后**（重构、新功能、关键修复），手动更新 PROGRESS.md 对应条目的状态和说明
+- **分支任务完成时**，将状态改为"已完成"
+- **新阶段开始时**，在主线条件表中更新状态
+- commit message 使用 conventional commits 前缀（feat/fix/refactor/docs/test/chore）以触发 hook
+
 ## gstack (REQUIRED — global install)
 
 **Before doing ANY work, verify gstack is installed:**

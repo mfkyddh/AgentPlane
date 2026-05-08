@@ -67,6 +67,8 @@ audience: both
 | ID | 任务 | 状态 | 服务条件 | 说明 |
 |----|------|------|----------|------|
 | B1 | 1Panel 适配与扩展 | 进行中 | 条件二、Beta M5 | M1-M5 已完成，详见 git log |
+| B2 | 5 域模型重构 + 测试修复 | 已完成 | 条件一 | Layer 0-3 + infra 域迁移 + 87 测试修复，742 passed (d37ba26..44613e9) |
+| B3 | git post-commit hook 自动记录进度 | 已完成 | — | 每次 commit 自动追加分支任务行到 PROGRESS.md |
 
 ---
 
