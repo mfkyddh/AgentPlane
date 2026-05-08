@@ -3,6 +3,10 @@
 > 本文档是 Claude Code 专属指令。通用 AI 规则见 [AGENTS.md](AGENTS.md)。
 > 编码行为准则、哲学原则、求是 Skills 见 [docs/conventions.md](docs/conventions.md)。
 
+## 会话初始化
+
+每次会话开始时，先读 [AGENTS.md](AGENTS.md) 中的规则，再开始工作。
+
 ## GStack
 
 使用 `/browse` skill 进行所有网页浏览，**不要使用** `mcp__claude-in-chrome__*` 工具。
