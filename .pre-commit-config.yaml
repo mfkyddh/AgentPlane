@@ -45,3 +45,20 @@ repos:
         language: system
         stages: [pre-push]
         pass_filenames: false
+
+      # Test file size guard (runs during commit)
+      - id: test-file-size
+        name: "Test file size guard"
+        entry: >-
+          python -c "import sys; [sys.exit(1) for f in sys.argv[1:] if open(f,encoding='utf-8').read().count(chr(10)) > 500 and print(f'FAIL: {f} exceeds 500 lines')]"
+        language: system
+        files: '^tests/.*test_.*\.py$'
+        stages: [commit]
+
+      # Test health report (runs before push)
+      - id: test-health
+        name: "Test health report"
+        entry: python scripts/test_health.py
+        language: system
+        stages: [pre-push]
+        pass_filenames: false

@@ -1,7 +1,7 @@
 ---
 status: active
 owner: AgentPlane maintainers
-last_verified: 2026-05-07
+last_verified: 2026-05-08
 audience: both
 ---
 
@@ -56,6 +56,59 @@ audience: both
 | 文档 | Markdown | reference 放规则，runbook 放操作 |
 | 容器 | Docker Compose v2：`docker compose` | 不使用旧式 `docker-compose` |
 | 正式执行 | `agentplane ...` | 所有正式操作从统一 CLI 进入 |
+
+---
+
+## 测试工程
+
+> 详细规范见 [tests/STYLE_GUIDE.md](../tests/STYLE_GUIDE.md)。本节定义工程层面的强制规则。
+
+### 测试金字塔
+
+| 层级 | 标记 | 占比目标 | 耗时 |
+|------|------|---------|------|
+| unit | `@pytest.mark.unit` | 60% | <10ms |
+| integration | `@pytest.mark.integration` | 30% | <100ms |
+| e2e | `@pytest.mark.e2e` | 10% | >1s |
+
+### 规模红线
+
+| 维度 | 上限 | 处理 |
+|------|------|------|
+| 单测试文件 | 500 行 | 拆分 |
+| 单测试类 | 30 方法 | 拆分 |
+| 单 support 模块 | 400 行 | 拆分职责 |
+| 单 conftest.py | 100 行 | 重新组织 |
+
+超限的 PR 不予合并。
+
+### 覆盖率门禁
+
+`fail_under` 阶梯提升，每次提升必须同步补充测试：
+
+| 阶段 | 阈值 | 时间 |
+|------|------|------|
+| Alpha | 25% | 当前 |
+| +1 月 | 35% | — |
+| +3 月 | 50% | — |
+| GA | 70% | — |
+
+### 常量管理
+
+- **fixture 输入值**（IP、域名、端口、容器名）→ `tests/support/constants.py`
+- **断言期望值** → 留在测试内
+- **bash heredoc 内的值** → 硬编码（Python 常量无法在 heredoc 中解析）
+
+### 防腐化机制
+
+| 层级 | 机制 | 频率 |
+|------|------|------|
+| 写入时 | STYLE_GUIDE.md + 模板 | 每次写新测试 |
+| 提交时 | pre-commit hook（行数、ruff） | 每次 commit |
+| 合并时 | CI 门禁（覆盖率、规模） | 每次 PR |
+| 定期 | `scripts/test_health.py` | 每月 |
+
+**自动化 > 人工审查 > 文档规范**。规范写了会忘，自动化才能持久。
 
 ---
 
@@ -316,3 +369,4 @@ audience: both
 - [原则](core/principles.md) — 道法术三层原则体系
 - [架构](core/architecture.md) — 技术架构
 - [术语表](glossary.md) — 术语定义
+- [测试风格指南](../tests/STYLE_GUIDE.md) — 测试编写规范、规模红线、防腐化清单
