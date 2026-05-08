@@ -23,7 +23,7 @@ audience: both
 
 | # | 条件 | 状态 | 说明 |
 |---|------|------|------|
-| C1 | 核心 Skill 测试覆盖 | 进行中 | 14 个 skill，4 个已完成（+1），10 个待评估 |
+| C1 | 核心 Skill 测试覆盖 | 进行中 | 16 个 Skill 已评估：13 高覆盖，2 中覆盖，1 低覆盖（toolchain-setup），2 无 CLI 命令 |
 | C2 | 文档覆盖目标用户场景 | ✓ 完成 | 5 份核心文档已重写 |
 | C3 | 真实应用全生命周期验证 | ✓ 完成 | sub2api 双环境验证通过，文档化已完成 |
 
@@ -36,6 +36,12 @@ audience: both
 | ID | 任务 | 状态 | 服务 | 说明 |
 |----|------|------|------|------|
 | B1 | 1Panel 适配与扩展 | 进行中 | C2 | M1-M5 已完成，详见 git log |
+| B2 | complete sub2api dual-environment verification runbook | 已完成 | — | 2fd8711 (2026-05-08) |
+| B3 | Phase A - 测试基础设施标准化 | 已完成 | — | 8c9aa4b (2026-05-08) |
+| B4 | extract shared fake script templates (Phase B3) | 已完成 | — | 0205217 (2026-05-08) |
+| B5 | add subdirectory conftest.py fixtures (Phase B4) | 已完成 | — | dc1563e (2026-05-08) |
+| B6 | split test_app_delivery.py into 7 files (Phase B1) | 已完成 | — | 280275d (2026-05-08) |
+| B7 | split remaining large test files (Phase B2) | 已完成 | — | c3ac009 (2026-05-08) |
 
 ---
 
@@ -55,6 +61,7 @@ audience: both
 
 | ID | 任务 | 完成日期 | 服务 | 关键成果 |
 |----|------|----------|------|----------|
+| B8 | 测试体系重构 | 2026-05-08 | C1 | Phase A-D：常量池、覆盖率阈值、风格指南、fake 脚本提取、conftest、大文件拆分（3189 行→7 文件）、755 tests passed, 28.76% coverage |
 | B3 | agentplane-infra-ops 测试覆盖 | 2026-05-08 | C1 | 13 tests，覆盖 automation/local/network 命令，7485c54 |
 | B2 | 5 域模型重构完成 | 2026-05-08 | C1 | 4 文件迁移到 domain/infra/，100% 完成，1f0e670 |
 | B6 | optimize CLAUDE.md and AGENTS.md | 2026-05-08 | — | e460e17 |
