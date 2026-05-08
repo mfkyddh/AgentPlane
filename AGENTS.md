@@ -47,8 +47,7 @@ AgentPlane 是 Agent-first 控制面 CLI。所有操作通过 `agentplane <domai
 | 15 | **Skill 同步**：正式能力变更必须同步 `.agents/skills` 或说明无需更新 | 🔴 |
 | 16 | **单人维护收尾**：小任务完成后必须自动 commit、合入本地 `main`、推送 `origin main` | 🔴 |
 | 17 | **提交前必须通过本地检查**：`git commit` 前通过 pre-commit，`git push` 前通过 pre-push | 🔴 |
-| 18 | **回答前声明 Skills**：回答问题时必须首先说明使用了哪些 skills | 🔴 |
-| 19 | **原则驱动决策**：做架构、设计、原则相关判断时，必须参考 [principles.md](docs/core/principles.md) 的道法术体系 | 🔴 |
+| 18 | **原则驱动决策**：做架构、设计、原则相关判断时，必须参考 [principles.md](docs/core/principles.md) 的道法术体系 | 🔴 |
 
 ---
 
