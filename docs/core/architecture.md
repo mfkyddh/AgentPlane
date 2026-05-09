@@ -108,6 +108,22 @@ project 聚合状态 ← 从 app 和 service 收集
 > `projection`（投影和验证）是所有域共用的横切机制，见"三层投影模型"章节。
 > `onepanel`（1Panel provider）是 provider 层的实现细节，见 [编码与协作规范](../conventions.md#技术栈基线)。
 
+### Provider 抽象层
+
+域层通过 `ProviderProtocol`（`agentplane/providers/protocol.py`）与基础设施交互，不直接依赖具体 provider 实现。
+
+```
+域层代码 → ProviderProtocol（13 方法，≤15 上限）
+                ├── OnePanelAdapter → OnePanelProviderGateway（1Panel 实现）
+                └── StubProvider（测试桩，证明协议可替换性）
+```
+
+**设计约束**：
+- 方法数 ≤ 15（超限即触发 abort）
+- 无 provider 特定命名（不用 `onepanel_*` 前缀）
+- 参数使用原始类型或域中性对象
+- 契约测试覆盖所有实现（`tests/contracts/`）
+
 ### 使用场景
 
 | 你想做什么 | 使用哪个域 | 示例命令 |

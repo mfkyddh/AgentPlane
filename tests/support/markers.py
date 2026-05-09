@@ -18,6 +18,32 @@ class MarkerRule:
 
 
 MARKER_RULES: tuple[MarkerRule, ...] = (
+    # Golden tests — one per core module, proves basic functionality
+    MarkerRule(
+        markers=("golden",),
+        test_names=frozenset(
+            {
+                # app: lifecycle planning
+                "test_onboarding_plan_allows_required_operations",
+                # infra: inventory CLI wrapper
+                "test_infra_inventory_wraps_inventory_payload",
+                # ingress: website search
+                "test_ingress_search_lists_declared_public_ingresses",
+                # inventory: snapshot generation
+                "test_inventory_command_outputs_wsl_snapshot",
+                # project: naming contract
+                "test_naming_registry_declares_phase1_hard_contract",
+                # projection: runtime env plan
+                "test_runtime_env_plan_returns_target_env_file_without_writing",
+                # runtime: batch execution
+                "test_backend_runner_execute_batch_runs_serially",
+                # service: managed service search
+                "test_service_search_lists_formal_managed_services",
+                # contracts: provider protocol compatibility
+                "test_stub_is_protocol_compatible",
+            }
+        ),
+    ),
     MarkerRule(
         markers=("live_gate",),
         filenames=frozenset({"test_infra_live_gate.py"}),

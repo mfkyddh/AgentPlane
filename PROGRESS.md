@@ -58,6 +58,12 @@ audience: both
 | B21 | Phase 2+3 — streaming docker transfer, error structuring, ADRs | 已完成 | — | eccd659 (2026-05-09) |
 | B22 | verify prepare-commit-msg auto-stages PROGRESS.md | 已完成 | — | pending (2026-05-09) |
 | B23 | debug prepare-commit-msg execution | 已完成 | — | pending (2026-05-09) |
+| B24 | clean up test marker file | 已完成 | — | pending (2026-05-09) |
+| B25 | foundation-replan Phase 2.1: Provider Protocol + adapter + stub | 已完成 | — | protocol.py (13 methods), onepanel_adapter.py, stub_provider.py, 28 contract tests |
+| B26 | foundation-replan Phase 2.2: Projection contract tests | 已完成 | — | 10 projection tests (idempotency, shape, consistency) |
+| B27 | foundation-replan Phase 3.1: Golden test system | 已完成 | — | pytest -m golden, 9 tests, 1.27s |
+| B28 | foundation-replan Phase 3.2: Doc-code alignment | 已完成 | — | architecture.md updated, 7 doc-contract tests |
+| B29 | foundation-replan Phase 3.3: CLI consistency | 已完成 | — | 5 CLI registration tests |
 
 ---
 
