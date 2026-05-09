@@ -36,7 +36,7 @@ from agentplane.domain.infra.networks import ensure_managed_bridge_networks
 from agentplane.domain.targets import PRODUCTION_TARGETS, is_production_target, remote_compose_filename, target_alias
 from agentplane.providers.gateway import default_provider_gateway
 from agentplane.runtime.backends import build_backend_runner
-from agentplane.runtime.execution import CommandRunner, ExecutionBindings, ExecutionPlan
+from agentplane.runtime.execution import CommandRunner, CommandSpec
 from agentplane.runtime.host_profile import detect_host_profile
 from agentplane.runtime.operations import append_operation_ledger, next_operation_id
 from agentplane.runtime.redaction import redact_execution_payload
@@ -69,23 +69,15 @@ def _run_linux_backend_command(
     else:
         raise ValueError(f"暂不支持本地执行 packaging.backend={backend!r}")
     runner = build_backend_runner()
-    plan = ExecutionPlan(
+    spec = CommandSpec(
         backend_type=execution_backend,  # type: ignore[arg-type]
-        cwd_ref="app.cwd",
         argv=("bash", "-lc", command),
-        env_refs=("app.env",),
-        input_refs=(),
-        expected_outputs=(),
+        cwd=cwd,
+        env=env,
         capabilities=("bash",),
         timeout=1800,
     )
-    result = runner.execute(
-        plan,
-        bindings=ExecutionBindings(
-            cwd_values={"app.cwd": cwd},
-            env_values={"app.env": env},
-        ),
-    )
+    result = runner.execute_spec(spec)
     return CompletedProcess(
         args=list(result.argv),
         returncode=result.returncode,
@@ -523,23 +515,15 @@ def _execute_step(
 ) -> dict[str, Any]:
     if backend_type is not None:
         runner = build_backend_runner()
-        plan = ExecutionPlan(
+        spec = CommandSpec(
             backend_type=backend_type,  # type: ignore[arg-type]
-            cwd_ref="step.cwd" if cwd is not None else "",
             argv=tuple(str(item) for item in argv),
-            env_refs=("step.env",) if env else (),
-            input_refs=(),
-            expected_outputs=(),
+            cwd=cwd,
+            env=env or {},
             capabilities=capabilities or ((str(argv[0]),) if argv else ()),
             timeout=timeout,
         )
-        result = runner.execute(
-            plan,
-            bindings=ExecutionBindings(
-                cwd_values={"step.cwd": cwd} if cwd is not None else {},
-                env_values={"step.env": env or {}},
-            ),
-        )
+        result = runner.execute_spec(spec)
         return redact_execution_payload(result.to_payload())
     result = _run(argv, cwd=cwd, env=env)
     return redact_execution_payload(

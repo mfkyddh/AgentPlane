@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any, Iterable, Literal, Mapping
 
 from agentplane.runtime.backends import build_backend_runner
-from agentplane.runtime.execution import CommandRunner, ExecutionBindings, ExecutionPlan
+from agentplane.runtime.execution import CommandRunner, CommandSpec
 from agentplane.runtime.host_profile import detect_host_profile
 from agentplane.runtime.platform import HostPlatform, detect_host_platform
 from agentplane.runtime.redaction import redact_execution_payload
@@ -191,20 +191,14 @@ def assert_live_gate_checkout(
 
 def _run_step_with_backend(step: LiveGateStep) -> dict[str, Any]:
     host_profile = detect_host_profile()
-    plan = ExecutionPlan(
+    spec = CommandSpec(
         backend_type=host_profile.linux_backend,
-        cwd_ref="repo_root",
         argv=step.argv,
-        env_refs=(),
-        input_refs=(),
-        expected_outputs=(),
+        cwd=step.cwd,
         capabilities=step.capabilities,
         timeout=step.timeout,
     )
-    result = build_backend_runner().execute(
-        plan,
-        bindings=ExecutionBindings(cwd_values={"repo_root": step.cwd}),
-    )
+    result = build_backend_runner().execute_spec(spec)
     payload = {
         "key": step.key,
         "execution": step.execution,

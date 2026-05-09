@@ -17,7 +17,7 @@ from agentplane.domain.app.lifecycle import (
     run_delivery_post_actions,
 )
 from agentplane.runtime.backends import build_backend_runner
-from agentplane.runtime.execution import PlannedExecutionStep, shell_join
+from agentplane.runtime.execution import CommandStep, shell_join
 from agentplane.runtime.host_profile import detect_host_profile
 from agentplane.runtime.redaction import redact_execution_payload
 
@@ -147,28 +147,28 @@ def _candidate_runtime_material(
     }
 
 
-def _render_execution_steps(steps: list[PlannedExecutionStep]) -> list[dict[str, Any]]:
+def _render_execution_steps(steps: list[CommandStep]) -> list[dict[str, Any]]:
     runner = build_backend_runner()
     rendered_steps: list[dict[str, Any]] = []
     for step in steps:
-        display_override = step.bindings.metadata.get("display_override")
+        display_override = step.spec.metadata.get("display_override")
         try:
-            rendered = runner.render(step.plan, bindings=step.bindings)
+            rendered = runner.render_spec(step.spec)
             backend_payload = rendered.to_payload()
         except ValueError as exc:
-            if step.plan.backend_type != "windows-wsl":
+            if step.spec.backend_type != "windows-wsl":
                 raise
             backend_payload = {
-                "backend_type": step.plan.backend_type,
-                "argv": list(step.plan.argv),
+                "backend_type": step.spec.backend_type,
+                "argv": list(step.spec.argv),
                 "display_command": display_override
                 if isinstance(display_override, str) and display_override
-                else shell_join(step.plan.argv),
+                else shell_join(step.spec.argv),
                 "cwd": None,
                 "env": {},
-                "expects_stdin": bool(step.plan.input_refs),
-                "expected_outputs": list(step.plan.expected_outputs),
-                "capabilities": list(step.plan.capabilities),
+                "expects_stdin": step.spec.stdin_text is not None,
+                "expected_outputs": list(step.spec.expected_outputs),
+                "capabilities": list(step.spec.capabilities),
                 "blocked": True,
                 "reason": str(exc),
             }
@@ -177,18 +177,18 @@ def _render_execution_steps(steps: list[PlannedExecutionStep]) -> list[dict[str,
         rendered_steps.append(
             {
                 "key": step.key,
-                "plan": step.plan.to_payload(),
+                "plan": step.spec.to_payload(),
                 "backend": backend_payload,
             }
         )
     return rendered_steps
 
 
-def _execute_steps(steps: list[PlannedExecutionStep], *, stop_on_failure: bool) -> list[dict[str, Any]]:
+def _execute_steps(steps: list[CommandStep], *, stop_on_failure: bool) -> list[dict[str, Any]]:
     runner = build_backend_runner()
     results: list[dict[str, Any]] = []
     for step in steps:
-        result = runner.execute(step.plan, bindings=step.bindings)
+        result = runner.execute_spec(step.spec)
         results.append({"key": step.key, **redact_execution_payload(result.to_payload())})
         if stop_on_failure and not result.ok:
             break
@@ -206,7 +206,7 @@ def _transition_step_to_execution(
     target: str,
     key: str,
     transition_step: tuple[list[str], str] | None,
-) -> PlannedExecutionStep | None:
+) -> CommandStep | None:
     if transition_step is None:
         return None
     argv, _display = transition_step
@@ -237,7 +237,7 @@ def _transition_step_to_execution(
 
 def _candidate_precheck_steps(
     app_cli: Any, repo_root: Path, *, target: str, material: dict[str, Any]
-) -> dict[str, list[PlannedExecutionStep]]:
+) -> dict[str, list[CommandStep]]:
     ssh_target = app_cli._target_ssh_target(repo_root, target)
     local_env = Path(material["local_env"])
     remote_tmp_env = f"/tmp/{local_env.name}"
@@ -337,7 +337,7 @@ def _plan_wsl_deploy_steps(
     repo_root: Path,
     target: str,
     image_ref: str | None,
-) -> tuple[list[PlannedExecutionStep], dict[str, Any]]:
+) -> tuple[list[CommandStep], dict[str, Any]]:
     rendered = app_cli.render_runtime(contract, repo_root=repo_root, target=target, image_ref=image_ref)
     compose_path = Path(rendered["compose_file"])
     step = plan_local_backend_step(
@@ -359,7 +359,7 @@ def _plan_remote_deploy_steps(
     target: str,
     image_ref: str | None,
     rendered_compose_path: Path | None = None,
-) -> tuple[list[PlannedExecutionStep], dict[str, Any]]:
+) -> tuple[list[CommandStep], dict[str, Any]]:
     rendered = app_cli.render_runtime(contract, repo_root=repo_root, target=target, image_ref=image_ref)
     ssh_target = app_cli._target_ssh_target(repo_root, target)
     env_path = Path(app_cli._service_env_path(repo_root, str(contract["app_id"]), target))
@@ -440,7 +440,7 @@ def _plan_delivery_verify_steps(
     repo_root: Path,
     target: str,
     include_public: bool,
-) -> tuple[list[PlannedExecutionStep], str]:
+) -> tuple[list[CommandStep], str]:
     container_name = app_cli._runtime_container_name(str(contract["app_id"]), contract["runtime"], target=target)
     if target == "wsl":
         healthcheck_url = app_cli._healthcheck_url(contract, target=target)
@@ -503,7 +503,7 @@ def _plan_delivery_rollback_steps(
     *,
     repo_root: Path,
     target: str,
-) -> tuple[list[PlannedExecutionStep], dict[str, Any]]:
+) -> tuple[list[CommandStep], dict[str, Any]]:
     rollback_entry = contract["rollback"]["previous_control_plane"]
     if target == "wsl" or rollback_entry.get("kind") == "none":
         return [], rollback_entry
@@ -848,7 +848,7 @@ def deploy_for_app(
             )
             rendered_steps = _render_execution_steps(execution_steps)
             payload["execution_steps"] = rendered_steps
-            payload["backend_type"] = execution_steps[0].plan.backend_type
+            payload["backend_type"] = execution_steps[0].spec.backend_type
             payload["commands"] = [step["backend"]["display_command"] for step in rendered_steps]
         if payload.get("ok", False) and (dry_run or execute):
             payload["post_actions"] = _run_delivery_post_actions(
@@ -1128,7 +1128,7 @@ def verify_delivery_for_app(
         )
         execution_steps = _render_execution_steps(steps)
         payload["execution_steps"] = execution_steps
-        payload["backend_type"] = steps[0].plan.backend_type if steps else None
+        payload["backend_type"] = steps[0].spec.backend_type if steps else None
         payload["commands"] = [step["backend"]["display_command"] for step in execution_steps]
     return {"command": "app", "action": "verify", "target": target, "payload": payload}
 
@@ -1153,7 +1153,7 @@ def rollback_for_app(
         )
         execution_steps = _render_execution_steps(steps)
         payload["execution_steps"] = execution_steps
-        payload["backend_type"] = steps[0].plan.backend_type if steps else None
+        payload["backend_type"] = steps[0].spec.backend_type if steps else None
         if steps:
             payload["commands"] = [step["backend"]["display_command"] for step in execution_steps]
     payload["rollback_state"] = {

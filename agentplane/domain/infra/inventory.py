@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from agentplane.runtime.backends import build_backend_runner
-from agentplane.runtime.execution import ExecutionBindings, ExecutionPlan
+from agentplane.runtime.execution import CommandSpec
 from agentplane.runtime.host_profile import HostProfile, detect_host_profile
 from agentplane.runtime.target_resolver import TargetResolver
 
@@ -178,22 +178,15 @@ def _wsl_snapshot_via_backend(
     runner: Any | None = None,
 ) -> dict[str, Any]:
     effective_runner = runner or build_backend_runner()
-    plan = ExecutionPlan(
+    spec = CommandSpec(
         backend_type=backend_type,  # type: ignore[arg-type]
-        cwd_ref="workspace.control_root",
         argv=("python3", "-c", _WSL_SNAPSHOT_SCRIPT),
-        env_refs=(),
-        input_refs=(),
+        cwd=repo_root,
         expected_outputs=("snapshot-json",),
         capabilities=("python3",),
         timeout=300,
     )
-    result = effective_runner.execute(
-        plan,
-        bindings=ExecutionBindings(
-            cwd_values={"workspace.control_root": repo_root},
-        ),
-    )
+    result = effective_runner.execute_spec(spec)
     if not result.ok:
         raise ValueError(result.stdout or result.stderr or "failed to collect wsl inventory via backend runner")
     payload = json.loads(result.stdout)

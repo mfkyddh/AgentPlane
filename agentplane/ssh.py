@@ -1,10 +1,15 @@
 from __future__ import annotations
 
 import argparse
+import atexit
 import json
 import os
 import shlex
-from dataclasses import dataclass
+import socket
+import subprocess
+import threading
+import time
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from agentplane.runtime.secret_resolver import SecretResolver
@@ -31,6 +36,7 @@ class SshTarget:
     os_family: str = "linux"
     environment: str = "production"
     allocate_tty: bool = False
+    connection_pool: SSHConnectionPool | None = field(default=None, repr=False)
 
     def _tty_flag(self) -> str:
         return "-t" if self.allocate_tty else "-T"
@@ -63,10 +69,17 @@ class SshTarget:
             effective.extend(argv)
         return self.wrap_argv(effective)
 
+    def _pool_control_args(self) -> list[str]:
+        if self.connection_pool is not None:
+            self.connection_pool.ensure_connection(self.alias)
+            return ["-o", "ControlMaster=auto"]
+        return []
+
     def ssh_args_for_bash_stdin(self, argv: list[str] | None = None) -> list[str]:
         return [
             "ssh",
             self._tty_flag(),
+            *self._pool_control_args(),
             "-F",
             str(self.config_path),
             self.connection_target,
@@ -76,11 +89,17 @@ class SshTarget:
     def local_ssh_args_for_bash_stdin(self, argv: list[str] | None = None) -> list[str]:
         return _local_backend_argv(self.ssh_args_for_bash_stdin(argv))
 
+    def _display_pool_args(self) -> list[str]:
+        if self.connection_pool is not None:
+            return ["-o", "ControlMaster=auto"]
+        return []
+
     def display_ssh_bash_stdin(self, argv: list[str] | None = None) -> str:
         return " ".join(
             [
                 "ssh",
                 self._tty_flag(),
+                *self._display_pool_args(),
                 "-F",
                 shlex.quote(str(self.config_path)),
                 shlex.quote(self.connection_target),
@@ -89,13 +108,13 @@ class SshTarget:
         )
 
     def ssh_args_for_argv(self, argv: list[str]) -> list[str]:
-        return ["ssh", self._tty_flag(), "-F", str(self.config_path), self.connection_target, self.wrap_argv(argv)]
+        return ["ssh", self._tty_flag(), *self._pool_control_args(), "-F", str(self.config_path), self.connection_target, self.wrap_argv(argv)]
 
     def local_ssh_args_for_argv(self, argv: list[str]) -> list[str]:
         return _local_backend_argv(self.ssh_args_for_argv(argv))
 
     def ssh_args_for_shell(self, command: str) -> list[str]:
-        return ["ssh", self._tty_flag(), "-F", str(self.config_path), self.connection_target, self.wrap_shell(command)]
+        return ["ssh", self._tty_flag(), *self._pool_control_args(), "-F", str(self.config_path), self.connection_target, self.wrap_shell(command)]
 
     def local_ssh_args_for_shell(self, command: str) -> list[str]:
         return _local_backend_argv(self.ssh_args_for_shell(command))
@@ -105,6 +124,7 @@ class SshTarget:
             [
                 "ssh",
                 self._tty_flag(),
+                *self._display_pool_args(),
                 "-F",
                 shlex.quote(str(self.config_path)),
                 shlex.quote(self.connection_target),
@@ -117,6 +137,7 @@ class SshTarget:
             [
                 "ssh",
                 self._tty_flag(),
+                *self._display_pool_args(),
                 "-F",
                 shlex.quote(str(self.config_path)),
                 shlex.quote(self.connection_target),
@@ -128,7 +149,7 @@ class SshTarget:
         return f"{self.connection_target}:{remote_path}"
 
     def scp_args(self, local_path: str, remote_path: str) -> list[str]:
-        return ["scp", "-F", str(self.config_path), str(local_path), self.scp_destination(remote_path)]
+        return ["scp", *self._pool_control_args(), "-F", str(self.config_path), str(local_path), self.scp_destination(remote_path)]
 
     def local_scp_args(self, local_path: str, remote_path: str) -> list[str]:
         return _local_backend_argv(self.scp_args(local_path, remote_path))
@@ -137,12 +158,129 @@ class SshTarget:
         return " ".join(
             [
                 "scp",
+                *self._display_pool_args(),
                 "-F",
                 shlex.quote(str(self.config_path)),
                 shlex.quote(local_path),
                 shlex.quote(self.scp_destination(remote_path)),
             ]
         )
+
+
+class SSHConnectionPool:
+    """SSH connection pool using ControlMaster for connection reuse."""
+
+    def __init__(self, config_path: Path, persist_timeout: int = 600):
+        self._config_path = config_path
+        self._persist_timeout = persist_timeout
+        self._initialized: set[str] = set()
+        self._lock = threading.Lock()
+
+    def ensure_connection(self, alias: str) -> None:
+        with self._lock:
+            if alias in self._initialized:
+                return
+            subprocess.run(
+                [
+                    "ssh",
+                    "-o", "ControlMaster=yes",
+                    "-o", f"ControlPersist={self._persist_timeout}s",
+                    "-F", str(self._config_path),
+                    alias,
+                    "true",
+                ],
+                check=True,
+                capture_output=True,
+            )
+            self._initialized.add(alias)
+
+    def ssh_args(self, alias: str, command: str) -> list[str]:
+        self.ensure_connection(alias)
+        return [
+            "ssh",
+            "-o", "ControlMaster=auto",
+            "-F", str(self._config_path),
+            alias,
+            command,
+        ]
+
+    def tunnel_args(self, alias: str, local_port: int, remote_port: int) -> list[str]:
+        self.ensure_connection(alias)
+        return [
+            "ssh",
+            "-o", "ControlMaster=auto",
+            "-L", f"{local_port}:127.0.0.1:{remote_port}",
+            "-F", str(self._config_path),
+            "-N",
+            alias,
+        ]
+
+    def scp_args(self, alias: str, local_path: str, remote_path: str) -> list[str]:
+        self.ensure_connection(alias)
+        return [
+            "scp",
+            "-o", "ControlMaster=auto",
+            "-F", str(self._config_path),
+            local_path,
+            f"{alias}:{remote_path}",
+        ]
+
+
+class RemoteAPIClient:
+    """SSH port-forwarding HTTP client for remote 1Panel API access."""
+
+    def __init__(self, pool: SSHConnectionPool, alias: str, remote_port: int = 9999):
+        self._pool = pool
+        self._alias = alias
+        self._remote_port = remote_port
+        self._local_port: int | None = None
+        self._tunnel_process: subprocess.Popen[bytes] | None = None
+        atexit.register(self.close)
+
+    def _find_free_port(self) -> int:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind(("", 0))
+            return s.getsockname()[1]
+
+    def _probe_port(self, port: int, timeout: float = 5.0, interval: float = 0.1) -> bool:
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            try:
+                with socket.create_connection(("127.0.0.1", port), timeout=1):
+                    return True
+            except OSError:
+                time.sleep(interval)
+        return False
+
+    def _ensure_tunnel(self) -> int:
+        if self._tunnel_process and self._tunnel_process.poll() is None:
+            return self._local_port  # type: ignore[return-value]
+        self._local_port = self._find_free_port()
+        self._tunnel_process = subprocess.Popen(
+            self._pool.tunnel_args(self._alias, self._local_port, self._remote_port),
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        if not self._probe_port(self._local_port):
+            self.close()
+            raise ConnectionError(f"SSH tunnel to {self._alias}:{self._remote_port} failed to open")
+        return self._local_port  # type: ignore[return-value]
+
+    @property
+    def local_port(self) -> int:
+        port = self._ensure_tunnel()
+        return port  # type: ignore[return-value]
+
+    def close(self) -> None:
+        if self._tunnel_process and self._tunnel_process.poll() is None:
+            self._tunnel_process.terminate()
+            self._tunnel_process.wait(timeout=5)
+
+    def __enter__(self) -> RemoteAPIClient:
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        self.close()
 
 
 def resolve_ssh_config_path(repo_root: Path) -> Path:

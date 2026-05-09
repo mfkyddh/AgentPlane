@@ -154,6 +154,115 @@ class TestSshTargetMethods:
         assert "bash -s" in display
 
 
+class TestSSHConnectionPool:
+    def test_ensure_connection_calls_ssh_once(self) -> None:
+        from agentplane.ssh import SSHConnectionPool
+
+        pool = SSHConnectionPool(config_path=Path("/tmp/cfg"))
+        with patch("agentplane.ssh.subprocess.run") as mock_run:
+            pool.ensure_connection("myhost")
+            pool.ensure_connection("myhost")
+        mock_run.assert_called_once()
+        call_args = mock_run.call_args[0][0]
+        assert "ControlMaster=yes" in call_args
+        assert "ControlPersist=600s" in call_args
+
+    def test_ensure_connection_custom_timeout(self) -> None:
+        from agentplane.ssh import SSHConnectionPool
+
+        pool = SSHConnectionPool(config_path=Path("/tmp/cfg"), persist_timeout=300)
+        with patch("agentplane.ssh.subprocess.run") as mock_run:
+            pool.ensure_connection("myhost")
+        call_args = mock_run.call_args[0][0]
+        assert "ControlPersist=300s" in call_args
+
+    def test_ssh_args_includes_control_master(self) -> None:
+        from agentplane.ssh import SSHConnectionPool
+
+        pool = SSHConnectionPool(config_path=Path("/tmp/cfg"))
+        with patch("agentplane.ssh.subprocess.run"):
+            args = pool.ssh_args("myhost", "ls")
+        assert "ControlMaster=auto" in args
+        assert "ls" in args
+
+    def test_tunnel_args_includes_port_forward(self) -> None:
+        from agentplane.ssh import SSHConnectionPool
+
+        pool = SSHConnectionPool(config_path=Path("/tmp/cfg"))
+        with patch("agentplane.ssh.subprocess.run"):
+            args = pool.tunnel_args("myhost", 8080, 9999)
+        assert "-L" in args
+        assert "8080:127.0.0.1:9999" in args
+        assert "-N" in args
+
+    def test_scp_args_includes_control_master(self) -> None:
+        from agentplane.ssh import SSHConnectionPool
+
+        pool = SSHConnectionPool(config_path=Path("/tmp/cfg"))
+        with patch("agentplane.ssh.subprocess.run"):
+            args = pool.scp_args("myhost", "/local", "/remote")
+        assert "ControlMaster=auto" in args
+        assert "/local" in args
+        assert "myhost:/remote" in args
+
+    def test_ensure_connection_different_aliases(self) -> None:
+        from agentplane.ssh import SSHConnectionPool
+
+        pool = SSHConnectionPool(config_path=Path("/tmp/cfg"))
+        with patch("agentplane.ssh.subprocess.run") as mock_run:
+            pool.ensure_connection("host1")
+            pool.ensure_connection("host2")
+        assert mock_run.call_count == 2
+
+    def test_ensure_connection_propagates_failure(self) -> None:
+        import subprocess
+
+        from agentplane.ssh import SSHConnectionPool
+
+        pool = SSHConnectionPool(config_path=Path("/tmp/cfg"))
+        with patch("agentplane.ssh.subprocess.run", side_effect=subprocess.CalledProcessError(1, "ssh")):
+            with pytest.raises(subprocess.CalledProcessError):
+                pool.ensure_connection("badhost")
+        # Should not be marked as initialized on failure
+        assert "badhost" not in pool._initialized
+
+
+class TestSshTargetWithPool:
+    def test_ssh_args_for_shell_with_pool(self) -> None:
+        from agentplane.ssh import SSHConnectionPool, SshTarget
+
+        pool = SSHConnectionPool(config_path=Path("/tmp/cfg"))
+        with patch("agentplane.ssh.subprocess.run"):
+            target = SshTarget(alias="myhost", config_path=Path("/tmp/cfg"), connection_pool=pool)
+            args = target.ssh_args_for_shell("ls")
+        assert "ControlMaster=auto" in args
+
+    def test_ssh_args_for_shell_without_pool(self) -> None:
+        from agentplane.ssh import SshTarget
+
+        target = SshTarget(alias="myhost", config_path=Path("/tmp/cfg"))
+        args = target.ssh_args_for_shell("ls")
+        assert "ControlMaster=auto" not in args
+
+    def test_scp_args_with_pool(self) -> None:
+        from agentplane.ssh import SSHConnectionPool, SshTarget
+
+        pool = SSHConnectionPool(config_path=Path("/tmp/cfg"))
+        with patch("agentplane.ssh.subprocess.run"):
+            target = SshTarget(alias="myhost", config_path=Path("/tmp/cfg"), connection_pool=pool)
+            args = target.scp_args("/local", "/remote")
+        assert "ControlMaster=auto" in args
+
+    def test_display_ssh_command_with_pool(self) -> None:
+        from agentplane.ssh import SSHConnectionPool, SshTarget
+
+        pool = SSHConnectionPool(config_path=Path("/tmp/cfg"))
+        with patch("agentplane.ssh.subprocess.run"):
+            target = SshTarget(alias="myhost", config_path=Path("/tmp/cfg"), connection_pool=pool)
+            display = target.display_ssh_command("ls")
+        assert "ControlMaster=auto" in display
+
+
 class TestLocalBackendArgv:
     def test_local_backend_argv_wsl_disabled(self) -> None:
         from agentplane.ssh import _local_backend_argv

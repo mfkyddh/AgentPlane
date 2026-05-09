@@ -4,6 +4,7 @@ import shlex
 
 from agentplane.runtime.backends.registry import register_backend
 from agentplane.runtime.execution import (
+    CommandSpec,
     ExecutionBindings,
     ExecutionPlan,
     RenderedExecution,
@@ -38,5 +39,24 @@ class WindowsWslBackend:
             stdin_text=stdin_text,
             expected_outputs=plan.expected_outputs,
             capabilities=plan.capabilities,
+            metadata={"linux_command": linux_command},
+        )
+
+    def render_spec(self, spec: CommandSpec) -> RenderedExecution:
+        posix_cwd = windows_path_to_wsl_posix(spec.cwd)
+        require_local_executable("wsl.exe")
+        linux_command = env_prefixed_command(spec.argv, spec.env)
+        if posix_cwd:
+            linux_command = f"cd {shlex.quote(posix_cwd)} && {linux_command}"
+        argv = ("wsl.exe", "-e", "bash", "-lc", linux_command)
+        return RenderedExecution(
+            backend_type=self.backend_type,
+            argv=argv,
+            display_command=shell_join(argv),
+            cwd=None,
+            env={},
+            stdin_text=spec.stdin_text,
+            expected_outputs=spec.expected_outputs,
+            capabilities=spec.capabilities,
             metadata={"linux_command": linux_command},
         )

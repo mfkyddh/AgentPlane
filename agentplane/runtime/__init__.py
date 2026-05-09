@@ -1,5 +1,8 @@
 from .execution import (
     BackendType,
+    CommandSpec,
+    CommandStep,
+    ConcurrentExecutor,
     ExecutionBindings,
     ExecutionPlan,
     ExecutionResult,
@@ -18,6 +21,9 @@ __all__ = [
     "HostPlatform",
     "LinuxBackend",
     "BackendType",
+    "CommandSpec",
+    "CommandStep",
+    "ConcurrentExecutor",
     "ExecutionBindings",
     "ExecutionPlan",
     "ExecutionResult",

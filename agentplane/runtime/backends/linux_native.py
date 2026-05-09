@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from agentplane.runtime.backends.registry import register_backend
 from agentplane.runtime.execution import (
+    CommandSpec,
     ExecutionBindings,
     ExecutionPlan,
     RenderedExecution,
@@ -29,4 +30,18 @@ class LinuxNativeBackend:
             stdin_text=stdin_text,
             expected_outputs=plan.expected_outputs,
             capabilities=plan.capabilities,
+        )
+
+    def render_spec(self, spec: CommandSpec) -> RenderedExecution:
+        require_local_executable(spec.argv[0])
+        display_command = shell_join(spec.argv)
+        return RenderedExecution(
+            backend_type=self.backend_type,
+            argv=spec.argv,
+            display_command=display_command,
+            cwd=spec.cwd,
+            env=spec.env,
+            stdin_text=spec.stdin_text,
+            expected_outputs=spec.expected_outputs,
+            capabilities=spec.capabilities,
         )

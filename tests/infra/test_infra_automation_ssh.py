@@ -215,10 +215,10 @@ class WslAuditTests(unittest.TestCase):
 
             class _FakeRunner:
                 def __init__(self) -> None:
-                    self.plan = None
+                    self.spec = None
 
-                def execute(self, plan, *, bindings=None):
-                    self.plan = plan
+                def execute_spec(self, spec):
+                    self.spec = spec
                     return SimpleNamespace(ok=True, stdout="[]", stderr="")
 
             runner = _FakeRunner()
@@ -230,7 +230,7 @@ class WslAuditTests(unittest.TestCase):
             )
 
             self.assertEqual("backend-exec", result["path_check_mode"])
-            self.assertEqual("windows-wsl", runner.plan.backend_type)
+            self.assertEqual("windows-wsl", runner.spec.backend_type)
 
     def test_detects_legacy_compose_entrypoints_and_env_files(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

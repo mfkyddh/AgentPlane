@@ -60,10 +60,10 @@ class HostCliTests(unittest.TestCase):
 
         class _FakeRunner:
             def __init__(self) -> None:
-                self.plan = None
+                self.spec = None
 
-            def execute(self, plan, *, bindings=None):
-                self.plan = plan
+            def execute_spec(self, spec):
+                self.spec = spec
                 return SimpleNamespace(ok=True, stdout=json.dumps(fake_snapshot), stderr="")
 
         runner = _FakeRunner()
@@ -75,7 +75,7 @@ class HostCliTests(unittest.TestCase):
         )
 
         self.assertEqual("windows-wsl", payload["backend_type"])
-        self.assertEqual("windows-wsl", runner.plan.backend_type)
+        self.assertEqual("windows-wsl", runner.spec.backend_type)
         self.assertEqual(fake_snapshot, payload["payload"])
 
     def test_infra_local_inspect_wraps_payload(self) -> None:

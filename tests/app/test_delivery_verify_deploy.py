@@ -115,14 +115,14 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
             contract = app_runtime.validate_contract(contract_file, repo_root=root, target="wsl")
 
             class _FakeExecutionResult:
-                def __init__(self, plan) -> None:
-                    self.plan = plan
+                def __init__(self, spec) -> None:
+                    self.spec = spec
                     self.ok = True
 
                 def to_payload(self) -> dict[str, object]:
                     return {
-                        "backend_type": self.plan.backend_type,
-                        "argv": list(self.plan.argv),
+                        "backend_type": self.spec.backend_type,
+                        "argv": list(self.spec.argv),
                         "display": "wsl.exe -e bash -lc docker compose",
                         "cwd": None,
                         "returncode": 0,
@@ -133,11 +133,11 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
 
             class _FakeRunner:
                 def __init__(self) -> None:
-                    self.plan = None
+                    self.spec = None
 
-                def execute(self, plan, *, bindings=None):
-                    self.plan = plan
-                    return _FakeExecutionResult(plan)
+                def execute_spec(self, spec):
+                    self.spec = spec
+                    return _FakeExecutionResult(spec)
 
             runner = _FakeRunner()
             with (
@@ -156,7 +156,7 @@ class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
                     execute=True,
                 )
 
-            self.assertEqual("windows-wsl", runner.plan.backend_type)
+            self.assertEqual("windows-wsl", runner.spec.backend_type)
             self.assertEqual("windows-wsl", payload["backend_type"])
             self.assertEqual("windows-wsl", payload["results"][0]["backend_type"])
             self.assertEqual(["docker", "compose"], payload["results"][0]["argv"][:2])

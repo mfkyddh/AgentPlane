@@ -48,7 +48,7 @@ from agentplane.domain.service.lifecycle import (
     plan_service_registry_offboard,
     plan_service_registry_onboard,
 )
-from agentplane.runtime.execution import ExecutionBindings, ExecutionPlan, PlannedExecutionStep, shell_join
+from agentplane.runtime.execution import CommandSpec, CommandStep, shell_join
 from agentplane.ssh import SshTarget
 
 
@@ -77,25 +77,18 @@ def plan_local_backend_step(
     expected_outputs: tuple[str, ...] = (),
     timeout: int = 300,
     display_command: str | None = None,
-) -> PlannedExecutionStep:
-    env_refs = ("step.env",) if env else ()
-    input_refs = ("step.stdin",) if stdin_text is not None else ()
-    return PlannedExecutionStep(
+) -> CommandStep:
+    return CommandStep(
         key=key,
-        plan=ExecutionPlan(
+        spec=CommandSpec(
             backend_type=backend_type,  # type: ignore[arg-type]
-            cwd_ref="step.cwd",
             argv=argv,
-            env_refs=env_refs,
-            input_refs=input_refs,
+            cwd=cwd,
+            env=env or {},
+            stdin_text=stdin_text,
             expected_outputs=expected_outputs,
             capabilities=capabilities,
             timeout=timeout,
-        ),
-        bindings=ExecutionBindings(
-            cwd_values={"step.cwd": cwd},
-            env_values={"step.env": env or {}},
-            input_values={"step.stdin": stdin_text or ""},
             metadata={"display_override": display_command or shell_join(argv)},
         ),
     )
@@ -112,25 +105,21 @@ def plan_remote_shell_step(
     capabilities: tuple[str, ...] = (),
     expected_outputs: tuple[str, ...] = (),
     timeout: int = 300,
-) -> PlannedExecutionStep:
-    env_refs = ("step.env",) if env else ()
-    cwd_values = {"step.cwd": cwd} if cwd is not None else {}
-    return PlannedExecutionStep(
+) -> CommandStep:
+    metadata: dict[str, Any] = {"transport": "shell", "ssh_target": ssh_target}
+    if shell_command is not None:
+        metadata["shell_command"] = shell_command
+    return CommandStep(
         key=key,
-        plan=ExecutionPlan(
+        spec=CommandSpec(
             backend_type="ssh-linux",
-            cwd_ref="step.cwd" if cwd is not None else "",
             argv=argv,
-            env_refs=env_refs,
-            input_refs=(),
+            cwd=cwd,
+            env=env or {},
             expected_outputs=expected_outputs,
             capabilities=capabilities,
             timeout=timeout,
-        ),
-        bindings=ExecutionBindings(
-            cwd_values=cwd_values,
-            env_values={"step.env": env or {}},
-            metadata={"transport": "shell", "ssh_target": ssh_target, "shell_command": shell_command},
+            metadata=metadata,
         ),
     )
 
@@ -144,21 +133,16 @@ def plan_remote_bash_stdin_step(
     capabilities: tuple[str, ...] = (),
     expected_outputs: tuple[str, ...] = (),
     timeout: int = 300,
-) -> PlannedExecutionStep:
-    return PlannedExecutionStep(
+) -> CommandStep:
+    return CommandStep(
         key=key,
-        plan=ExecutionPlan(
+        spec=CommandSpec(
             backend_type="ssh-linux",
-            cwd_ref="",
             argv=argv,
-            env_refs=(),
-            input_refs=("step.stdin",),
+            stdin_text=stdin_text,
             expected_outputs=expected_outputs,
             capabilities=capabilities,
             timeout=timeout,
-        ),
-        bindings=ExecutionBindings(
-            input_values={"step.stdin": stdin_text},
             metadata={"transport": "bash-stdin", "ssh_target": ssh_target},
         ),
     )
@@ -172,26 +156,21 @@ def plan_remote_copy_step(
     remote_path: str,
     expected_outputs: tuple[str, ...] = (),
     timeout: int = 300,
-) -> PlannedExecutionStep:
-    return PlannedExecutionStep(
+) -> CommandStep:
+    return CommandStep(
         key=key,
-        plan=ExecutionPlan(
+        spec=CommandSpec(
             backend_type="ssh-linux",
-            cwd_ref="",
             argv=("scp", str(local_path), remote_path),
-            env_refs=(),
-            input_refs=(),
             expected_outputs=expected_outputs,
             capabilities=("scp",),
             timeout=timeout,
-        ),
-        bindings=ExecutionBindings(
             metadata={
                 "transport": "copy-to-remote",
                 "ssh_target": ssh_target,
                 "local_path": local_path,
                 "remote_path": remote_path,
-            }
+            },
         ),
     )
 

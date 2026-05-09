@@ -6,6 +6,7 @@ import shlex
 import shutil
 import subprocess
 import threading
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Literal, Mapping
@@ -58,6 +59,51 @@ class ExecutionPlan:
             "capabilities": list(self.capabilities),
             "timeout": self.timeout,
         }
+
+
+@dataclass(frozen=True)
+class CommandSpec:
+    """Unified command specification, replaces ExecutionPlan + ExecutionBindings."""
+
+    backend_type: BackendType
+    argv: tuple[str, ...]
+    cwd: Path | str | None = None
+    env: Mapping[str, str] = field(default_factory=dict)
+    stdin_text: str | None = None
+    timeout: int = 120
+    expected_outputs: tuple[str, ...] = ()
+    capabilities: tuple[str, ...] = ()
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def to_payload(self) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "backend_type": self.backend_type,
+            "argv": list(self.argv),
+            "cwd": None if self.cwd is None else str(self.cwd),
+            "env": dict(self.env),
+            "expects_stdin": self.stdin_text is not None,
+            "expected_outputs": list(self.expected_outputs),
+            "capabilities": list(self.capabilities),
+            "timeout": self.timeout,
+        }
+        if self.metadata:
+            serializable: dict[str, Any] = {}
+            for key, value in self.metadata.items():
+                if isinstance(value, (str, int, float, bool, type(None))):
+                    serializable[key] = value
+                elif isinstance(value, Path):
+                    serializable[key] = str(value)
+            if serializable:
+                payload["metadata"] = serializable
+        return payload
+
+
+@dataclass(frozen=True)
+class CommandStep:
+    """A named execution step with a CommandSpec."""
+
+    key: str
+    spec: CommandSpec
 
 
 @dataclass(frozen=True)
@@ -218,6 +264,26 @@ class BackendRunner:
     def __init__(self, backends: Mapping[BackendType, Any]) -> None:
         self._backends = dict(backends)
 
+    def render_spec(self, spec: CommandSpec) -> RenderedExecution:
+        try:
+            backend = self._backends[spec.backend_type]
+        except KeyError as exc:
+            raise ValueError(f"unsupported backend type: {spec.backend_type}") from exc
+        return backend.render_spec(spec)
+
+    def execute_spec(self, spec: CommandSpec) -> ExecutionResult:
+        rendered = self.render_spec(spec)
+        return self._run_rendered(rendered, timeout=spec.timeout)
+
+    def execute_spec_stream(
+        self,
+        spec: CommandSpec,
+        *,
+        on_chunk: Callable[[StreamChunk], None] | None = None,
+    ) -> ExecutionResult:
+        rendered = self.render_spec(spec)
+        return self._run_rendered_stream(rendered, timeout=spec.timeout, on_chunk=on_chunk)
+
     def render(self, plan: ExecutionPlan, *, bindings: ExecutionBindings | None = None) -> RenderedExecution:
         effective_bindings = bindings or ExecutionBindings()
         try:
@@ -228,6 +294,34 @@ class BackendRunner:
 
     def execute(self, plan: ExecutionPlan, *, bindings: ExecutionBindings | None = None) -> ExecutionResult:
         rendered = self.render(plan, bindings=bindings)
+        return self._run_rendered(rendered, timeout=plan.timeout)
+
+    def execute_batch(
+        self,
+        plan: ExecutionPlan,
+        *,
+        bindings_list: list[ExecutionBindings],
+        on_each: Callable[[ExecutionResult], None] | None = None,
+    ) -> list[ExecutionResult]:
+        results: list[ExecutionResult] = []
+        for bindings in bindings_list:
+            result = self.execute(plan, bindings=bindings)
+            results.append(result)
+            if on_each is not None:
+                on_each(result)
+        return results
+
+    def execute_stream(
+        self,
+        plan: ExecutionPlan,
+        *,
+        bindings: ExecutionBindings | None = None,
+        on_chunk: Callable[[StreamChunk], None] | None = None,
+    ) -> ExecutionResult:
+        rendered = self.render(plan, bindings=bindings)
+        return self._run_rendered_stream(rendered, timeout=plan.timeout, on_chunk=on_chunk)
+
+    def _run_rendered(self, rendered: RenderedExecution, *, timeout: int) -> ExecutionResult:
         binary_stdin = (
             rendered.backend_type in {"ssh-linux", "windows-wsl"}
             and os.name == "nt"
@@ -243,7 +337,7 @@ class BackendRunner:
                     text=False,
                     capture_output=True,
                     check=False,
-                    timeout=plan.timeout if plan.timeout > 0 else None,
+                    timeout=timeout if timeout > 0 else None,
                 )
                 stdout = (
                     completed.stdout.decode("utf-8", errors="replace")
@@ -266,7 +360,7 @@ class BackendRunner:
                     errors="replace",
                     capture_output=True,
                     check=False,
-                    timeout=plan.timeout if plan.timeout > 0 else None,
+                    timeout=timeout if timeout > 0 else None,
                 )
                 stdout = completed.stdout
                 stderr = completed.stderr
@@ -282,7 +376,7 @@ class BackendRunner:
                 ok=False,
                 error=ExecutionError(
                     category="timeout",
-                    message=f"Command timed out after {plan.timeout}s: {rendered.display_command}",
+                    message=f"Command timed out after {timeout}s: {rendered.display_command}",
                     retryable=True,
                     escalation="auto",
                 ),
@@ -347,29 +441,13 @@ class BackendRunner:
             ok=True,
         )
 
-    def execute_batch(
+    def _run_rendered_stream(
         self,
-        plan: ExecutionPlan,
+        rendered: RenderedExecution,
         *,
-        bindings_list: list[ExecutionBindings],
-        on_each: Callable[[ExecutionResult], None] | None = None,
-    ) -> list[ExecutionResult]:
-        results: list[ExecutionResult] = []
-        for bindings in bindings_list:
-            result = self.execute(plan, bindings=bindings)
-            results.append(result)
-            if on_each is not None:
-                on_each(result)
-        return results
-
-    def execute_stream(
-        self,
-        plan: ExecutionPlan,
-        *,
-        bindings: ExecutionBindings | None = None,
+        timeout: int,
         on_chunk: Callable[[StreamChunk], None] | None = None,
     ) -> ExecutionResult:
-        rendered = self.render(plan, bindings=bindings)
         binary_stdin = (
             rendered.backend_type in {"ssh-linux", "windows-wsl"}
             and os.name == "nt"
@@ -539,3 +617,36 @@ class CommandRunner:
         if value is None:
             return None
         return str(value)
+
+
+class ConcurrentExecutor:
+    """Execute multiple CommandSpecs in parallel via ThreadPoolExecutor."""
+
+    def __init__(self, runner: BackendRunner, max_workers: int = 4) -> None:
+        self._runner = runner
+        self._max_workers = max_workers
+        self._executor: ThreadPoolExecutor | None = None
+
+    def _get_executor(self) -> ThreadPoolExecutor:
+        if self._executor is None:
+            self._executor = ThreadPoolExecutor(max_workers=self._max_workers)
+        return self._executor
+
+    def execute(self, spec: CommandSpec) -> ExecutionResult:
+        return self._runner.execute_spec(spec)
+
+    def execute_parallel(self, specs: list[CommandSpec]) -> list[ExecutionResult]:
+        executor = self._get_executor()
+        futures = [executor.submit(self.execute, spec) for spec in specs]
+        return [f.result() for f in futures]
+
+    def shutdown(self, wait: bool = True) -> None:
+        if self._executor is not None:
+            self._executor.shutdown(wait=wait)
+            self._executor = None
+
+    def __enter__(self) -> ConcurrentExecutor:
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        self.shutdown()

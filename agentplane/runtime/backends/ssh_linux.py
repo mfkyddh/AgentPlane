@@ -6,6 +6,7 @@ from pathlib import Path
 
 from agentplane.runtime.backends.registry import register_backend
 from agentplane.runtime.execution import (
+    CommandSpec,
     ExecutionBindings,
     ExecutionPlan,
     RenderedExecution,
@@ -82,6 +83,69 @@ class SshLinuxBackend:
             stdin_text=stdin_text,
             expected_outputs=plan.expected_outputs,
             capabilities=plan.capabilities,
+            metadata=metadata,
+        )
+
+    def render_spec(self, spec: CommandSpec) -> RenderedExecution:
+        transport = str(spec.metadata.get("transport") or "shell")
+        ssh_target = spec.metadata.get("ssh_target")
+        if not isinstance(ssh_target, SshTarget):
+            raise ValueError("ssh-linux backend requires ssh_target metadata")
+
+        if transport == "copy-to-remote":
+            require_local_executable("wsl.exe" if os.name == "nt" else "scp")
+            local_path = self._require_path(spec.metadata.get("local_path"), field="local_path")
+            remote_path = self._require_str(spec.metadata.get("remote_path"), field="remote_path")
+            argv = tuple(ssh_target.local_scp_args(str(local_path), remote_path))
+            display = ssh_target.display_scp_command(str(local_path), remote_path)
+            metadata = {
+                "transport": transport,
+                "connection_target": ssh_target.connection_target,
+                "ssh_config": str(ssh_target.config_path),
+            }
+            return RenderedExecution(
+                backend_type=self.backend_type,
+                argv=argv,
+                display_command=display,
+                cwd=None,
+                env={},
+                stdin_text=None,
+                expected_outputs=spec.expected_outputs,
+                capabilities=spec.capabilities,
+                metadata=metadata,
+            )
+
+        require_local_executable("wsl.exe" if os.name == "nt" else "ssh")
+        if transport == "bash-stdin":
+            remote_args = list(spec.argv)
+            argv = tuple(ssh_target.local_ssh_args_for_bash_stdin(remote_args))
+            remote_command = ssh_target.wrap_bash_stdin(remote_args)
+            display = ssh_target.display_ssh_bash_stdin(remote_args)
+        else:
+            shell_command = spec.metadata.get("shell_command")
+            if isinstance(shell_command, str) and shell_command:
+                remote_command = shell_command
+            else:
+                remote_command = env_prefixed_command(spec.argv, spec.env)
+            if spec.cwd is not None:
+                remote_command = f"cd {shlex.quote(str(spec.cwd))} && {remote_command}"
+            argv = tuple(ssh_target.local_ssh_args_for_shell(remote_command))
+            display = ssh_target.display_ssh_command(remote_command)
+        metadata = {
+            "transport": transport,
+            "connection_target": ssh_target.connection_target,
+            "ssh_config": str(ssh_target.config_path),
+            "remote_command": remote_command,
+        }
+        return RenderedExecution(
+            backend_type=self.backend_type,
+            argv=argv,
+            display_command=display,
+            cwd=None,
+            env={},
+            stdin_text=spec.stdin_text,
+            expected_outputs=spec.expected_outputs,
+            capabilities=spec.capabilities,
             metadata=metadata,
         )
 

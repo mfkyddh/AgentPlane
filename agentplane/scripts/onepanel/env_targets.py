@@ -11,7 +11,7 @@ from pathlib import Path
 
 from agentplane.runtime.platform import LinuxBackend, default_linux_backend
 from agentplane.runtime.workspace import resolve_workspace_from_repo
-from agentplane.ssh import SshTarget
+from agentplane.ssh import SSHConnectionPool, SshTarget
 
 from .client import OnePanelConfig, load_config
 
@@ -40,6 +40,8 @@ class TargetConfig:
     ssh_requires_sudo: bool = False
     linux_backend: LinuxBackend | None = None
     tunnel_port: int | None = None
+    connection_pool: SSHConnectionPool | None = None
+    remote_port: int = 9999
 
     def build_ssh_target(self) -> SshTarget:
         if not self.ssh_alias or not self.ssh_config:
@@ -50,6 +52,7 @@ class TargetConfig:
             user=self.ssh_user,
             os_family="linux",
             environment="production",
+            connection_pool=self.connection_pool,
         )
 
 
