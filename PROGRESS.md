@@ -56,6 +56,7 @@ audience: both
 | B19 | Alpha exit — lint 清零 + 128 new tests + coverage提升 | 已完成 | — | 4738a2a (2026-05-09) |
 | B20 | Phase 1 execution chain optimization | 已完成 | — | 49795f9 (2026-05-09) |
 | B21 | Phase 2+3 — streaming docker transfer, error structuring, ADRs | 已完成 | — | eccd659 (2026-05-09) |
+| B22 | verify prepare-commit-msg auto-stages PROGRESS.md | 已完成 | — | pending (2026-05-09) |
 
 ---
 
