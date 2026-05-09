@@ -8,12 +8,6 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 import pytest
-from agentplane.domain.ingress.lifecycle import (
-    apply_ingress_truth_offboard,
-    apply_ingress_truth_onboard,
-    plan_ingress_truth_offboard,
-    plan_ingress_truth_onboard,
-)
 from agentplane.domain.ingress.models import IngressDefinition
 from tests.support.cli import run_agentplane_cli as run_cli
 from tests.support.constants import (
@@ -23,7 +17,6 @@ from tests.support.constants import (
     FAKE_HOST_BINDING,
     FAKE_PROXY_8080,
     FAKE_PROXY_18080,
-    TARGET_PROD,
 )
 
 pytestmark = pytest.mark.e2e
@@ -362,34 +355,3 @@ class WebsiteCliTests(unittest.TestCase):
             )
             self.assertEqual("token", persisted_inventory["services"]["public_ingresses"][0]["alias"])
             self.assertEqual(1, persisted_inventory["object_ledgers"]["counts"]["websites"])
-
-
-# ======================================================================
-# From: test_ingress_publish_cli.py
-# ======================================================================
-
-
-def write_publish_files(root: Path) -> tuple[Path, Path]:
-    config_file = root / "publish.env"
-    config_file.write_text(
-        "\n".join(
-            [
-                f"PUBLIC_INGRESS_DOMAIN={DOMAIN_TOKEN}",
-                "PUBLIC_INGRESS_ZONE_NAME=example.net",
-                "PUBLIC_INGRESS_RECORD_CONTENT=1.2.3.4",
-                "ONEPANEL_DNS_ACCOUNT_NAME=cloudflare-example",
-                "ONEPANEL_DNS_ACCOUNT_EMAIL=admin@example.net",
-                "ONEPANEL_WEBSITE_ALIAS=token",
-                f"ONEPANEL_WEBSITE_PROXY=http://{FAKE_HOST_BINDING}",
-                "ONEPANEL_CERT_DIR=/data/1panel/www/certs/token-example-net",
-                "ONEPANEL_CERT_RELOAD_SHELL=echo reload",
-            ]
-        ),
-        encoding="utf-8",
-    )
-    cloudflare_env_file = root / "cloudflare.env"
-    cloudflare_env_file.write_text(
-        "export CLOUDFLARE_API_TOKEN=test-token\nexport CLOUDFLARE_ACCOUNT_ID=test-account\n",
-        encoding="utf-8",
-    )
-    return config_file, cloudflare_env_file

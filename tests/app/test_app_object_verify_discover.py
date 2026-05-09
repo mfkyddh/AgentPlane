@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib
 import json
 import tempfile
 import unittest
@@ -9,9 +8,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 import pytest
-from agentplane.domain.app.models import AppCatalogEntry
-from agentplane.domain.app.truth_lifecycle import offboard_catalog_entry, onboard_catalog_entry
-from tests.support.app_object import REPO_ROOT, run_cli, write_inventory_with_app
+from tests.support.app_object import run_cli, write_inventory_with_app
 
 pytestmark = pytest.mark.e2e
 

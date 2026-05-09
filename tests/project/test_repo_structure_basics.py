@@ -1,21 +1,12 @@
 from __future__ import annotations
 
-import json
-import os
 import re
 import subprocess
-import sys
-import tempfile
 import tomllib
 import unittest
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
-from agentplane.cli.cleanup import apply_cleanup_plan, build_cleanup_plan
-from agentplane.domain.app.catalog import load_app_catalog, write_app_catalog
-from agentplane.domain.app.models import AppCatalogEntry
-from agentplane.runtime.path_policy import assert_canonical_ref, is_host_specific_path
 from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
@@ -398,16 +389,6 @@ FORBIDDEN_TEMPLATE_DEFAULTS = (
     "separate checkout",
     "separate checkouts",
 )
-
-
-def collect_active_docs() -> str:
-    return "\n".join(path.read_text(encoding="utf-8") for path in ACTIVE_TEMPLATE_DOCS)
-
-
-def collect_active_template_surface() -> str:
-    files = (*ACTIVE_TEMPLATE_DOCS, *ACTIVE_TEMPLATE_SKILLS)
-    return "\n".join(path.read_text(encoding="utf-8") for path in files)
-
 
 
 # ======================================================================

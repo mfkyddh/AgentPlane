@@ -6,7 +6,6 @@ from typing import Any
 
 from agentplane.cli.audit import audit_filesystem
 from agentplane.cli.cleanup import SUPPORTED_CLEANUP_TARGETS, apply_cleanup_plan, build_cleanup_plan
-from agentplane.cli.operations import append_operation_ledger, next_operation_id
 from agentplane.cli.infra_automation import (
     SUPPORTED_AUTOMATION_OPERATIONS,
     SUPPORTED_AUTOMATION_TARGETS,
@@ -17,7 +16,6 @@ from agentplane.cli.infra_automation import (
     verify_infra_automation,
 )
 from agentplane.cli.inventory import generate_inventory_snapshot
-from agentplane.domain.infra.local import add_local_infra_parser, handle_local_infra_command
 from agentplane.cli.networks import (
     SUPPORTED_NETWORK_TARGETS,
     apply_firewall_operation,
@@ -30,6 +28,7 @@ from agentplane.cli.preflight import execute_remote_preflight
 from agentplane.cli.remote import execute_remote_bash
 from agentplane.cli.secrets import init_data_services, materialize_legacy_host_layout
 from agentplane.domain.infra.handlers import init_secrets, run_doctor, run_inspect_local, run_verify_secrets
+from agentplane.domain.infra.health import check_infra_health
 from agentplane.domain.infra.live_gate import (
     DEFAULT_APP,
     DEFAULT_WSL_PROJECTION_PROFILE,
@@ -37,7 +36,7 @@ from agentplane.domain.infra.live_gate import (
     plan_live_gate,
     run_live_gate,
 )
-from agentplane.domain.infra.health import check_infra_health
+from agentplane.domain.infra.local import add_local_infra_parser, handle_local_infra_command
 from agentplane.domain.targets import SUPPORTED_INFRA_TARGETS
 from agentplane.runtime.wsl_bridge import normalize_repo_root_for_current_host
 

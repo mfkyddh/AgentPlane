@@ -4,7 +4,6 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
 import yaml
@@ -27,7 +26,6 @@ from tests.support.app_delivery_targets import (
     write_tenant_secret_files as write_delivery_tenant_secret_files,
 )
 from tests.support.app_resources import resource_relative, resource_root
-from tests.support.cli import run_agentplane_cli as run_cli
 
 pytestmark = pytest.mark.e2e
 

@@ -8,10 +8,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-import yaml
-from agentplane.adapters.service import docker_runtime
-from agentplane.domain.service import lifecycle as service_lifecycle
-from agentplane.domain.service.models import ServiceDefinition
+from tests.support.constants import DOMAIN_RELAY
 from tests.support.service_cli import (
     _FakeCloudflareClient,
     run_cli,
@@ -19,8 +16,6 @@ from tests.support.service_cli import (
     write_fake_service_ssh,
     write_inventory,
 )
-
-from tests.support.constants import DOMAIN_RELAY
 
 pytestmark = pytest.mark.e2e
 

@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
 import sys
 import time
 from dataclasses import dataclass
@@ -13,7 +12,6 @@ from pathlib import Path
 from typing import Any
 
 from agentplane.adapters.cloudflare import CloudflareClient, load_shell_env_file
-from agentplane.scripts.onepanel.client import load_config, send_signed_request
 from agentplane.scripts.onepanel.env_targets import TargetConfig, get_target
 from agentplane.scripts.onepanel.executor import TargetExecutor
 

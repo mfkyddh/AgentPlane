@@ -4,27 +4,22 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
 from agentplane.cli import infra_automation
-from agentplane.cli.audit import audit_filesystem
-from agentplane.domain.infra.automation import AUTOMATION_DEFINITIONS, InfraAutomationDefinition
 from agentplane.cli.preflight import (
     PreflightCheck,
     PreflightReport,
     execute_remote_preflight,
 )
+from agentplane.domain.infra.automation import AUTOMATION_DEFINITIONS, InfraAutomationDefinition
 from agentplane.domain.infra.preflight import (
     _check_ssh_config_exists,
     _check_ssh_key_permissions,
     _check_ssh_reachable,
     _check_wsl_available,
 )
-from agentplane.runtime.host_profile import HostProfile
-from agentplane.ssh import SshTarget, resolve_ssh_config_path, resolve_ssh_target
-from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
 def write_inventory(root: Path) -> None:
@@ -112,40 +107,6 @@ class FakeExecutor:
             self.handled_ids.append(cronjob_id)
             return {"id": cronjob_id}
         raise AssertionError(f"unexpected path: {path}")
-
-
-def write_inventory(root: Path) -> None:
-    inventory_file = root / "inventory" / "servers" / "wsl" / "inventory.json"
-    inventory_file.parent.mkdir(parents=True, exist_ok=True)
-    inventory_file.write_text(
-        json.dumps(
-            {
-                "automations": [
-                    {
-                        "name": "wsl-zzz-skills-sync",
-                        "controller": "1panel-cronjob",
-                        "spec": "0 */2 * * *",
-                        "cwd": "<repo-root>",
-                        "command": "uv run python -m agentplane.cli infra automation apply wsl --name wsl-zzz-skills-sync --operation run --execute",
-                        "source_root": "external/codex-skills",
-                        "target_repo": "external/zzz-skills",
-                        "target_branch": "main",
-                    },
-                    {
-                        "name": "wsl-agentplane-secrets-backup",
-                        "controller": "1panel-cronjob",
-                        "spec": "0 */5 * * *",
-                        "cwd": "<repo-root>",
-                        "command": "uv run python -m agentplane.cli infra automation apply wsl --name wsl-agentplane-secrets-backup --operation run --execute",
-                        "env_file": "secrets/services/secrets-backup.r2.wsl.env",
-                    },
-                ]
-            },
-            ensure_ascii=False,
-            indent=2,
-        ),
-        encoding="utf-8",
-    )
 
 
 class InfraAutomationTests(unittest.TestCase):

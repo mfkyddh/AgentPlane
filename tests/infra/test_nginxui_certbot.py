@@ -17,10 +17,9 @@ from pathlib import Path, PurePosixPath
 from unittest.mock import MagicMock, patch
 
 import pytest
-from agentplane.adapters.cloudflare import CloudflareClient, CloudflareError, load_shell_env_file, parse_bool
+from agentplane.adapters.cloudflare import CloudflareClient, CloudflareError, load_shell_env_file
 from agentplane.scripts.internal.ensure_cloudflare_dns_record import ensure_cloudflare_dns_record
-from tests.support.constants import DOMAIN_MIGRATED, DOMAIN_NGINX, DOMAIN_TOKEN, DOMAIN_TOKEN_ORG
-
+from tests.support.constants import DOMAIN_NGINX, DOMAIN_TOKEN
 
 # ---------------------------------------------------------------------------
 # Certbot command construction

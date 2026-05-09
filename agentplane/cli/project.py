@@ -9,6 +9,11 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+from agentplane.domain.app.projection.runtime_env import (
+    apply_runtime_env_projection,
+    plan_runtime_env_projection,
+    verify_runtime_env_projection,
+)
 from agentplane.domain.project.doc_layer import run_doc_layer_check
 from agentplane.domain.project.docs_sanity import run_docs_sanity
 from agentplane.domain.project.onepanel_provider import (
@@ -27,11 +32,6 @@ from agentplane.domain.project.skills import (
     write_skill_export,
 )
 from agentplane.domain.project.status import build_repo_status, write_status_html
-from agentplane.domain.app.projection.runtime_env import (
-    apply_runtime_env_projection,
-    plan_runtime_env_projection,
-    verify_runtime_env_projection,
-)
 from agentplane.domain.targets import SUPPORTED_RUNTIME_ENV_TARGETS
 from agentplane.providers.onepanel_fixtures import (
     apply_fixture,

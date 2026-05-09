@@ -1,19 +1,14 @@
 from __future__ import annotations
 
 import argparse
-import json
-import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
-from tempfile import TemporaryDirectory
-from unittest import mock
 from unittest.mock import patch
 
 import pytest
 from agentplane.scripts.onepanel import (
-    env_targets,  # type: ignore  # noqa: E402
     public_ingress,  # type: ignore  # noqa: E402
 )
 from agentplane.scripts.onepanel.compose_policy import (  # type: ignore  # noqa: E402
@@ -21,15 +16,13 @@ from agentplane.scripts.onepanel.compose_policy import (  # type: ignore  # noqa
     normalize_compose_for_app,
     requires_host_network,
 )
-from agentplane.scripts.onepanel.fixture_manager import (
-    apply_fixture,
-    cleanup_fixture,
-    plan_fixture,
-    resolve_fixture_spec,
-    resolve_suite_targets,
+from tests.support.constants import (
+    CONTAINER_OPENRESTY,
+    DOMAIN_1PANEL_ORG,
+    DOMAIN_TOKEN_ORG,
+    FAKE_HOST_BINDING,
+    FAKE_PROXY_2096,
 )
-from agentplane.scripts.onepanel.verification import run_verification_suite
-from tests.support.constants import CONTAINER_OPENRESTY, CONTAINER_SUB2API, DOMAIN_1PANEL_ORG, DOMAIN_TOKEN_ORG, FAKE_HOST_BINDING, FAKE_PROXY_2096
 from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e

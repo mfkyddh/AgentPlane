@@ -5,23 +5,10 @@ import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
-from agentplane.cli import infra_automation
 from agentplane.cli.audit import audit_filesystem
-from agentplane.domain.infra.automation import AUTOMATION_DEFINITIONS, InfraAutomationDefinition
-from agentplane.cli.preflight import (
-    PreflightCheck,
-    PreflightReport,
-    execute_remote_preflight,
-)
-from agentplane.domain.infra.preflight import (
-    _check_ssh_config_exists,
-    _check_ssh_key_permissions,
-    _check_ssh_reachable,
-    _check_wsl_available,
-)
 from agentplane.runtime.host_profile import HostProfile
 from agentplane.ssh import SshTarget, resolve_ssh_config_path, resolve_ssh_target
 from tests.support.paths import REPO_ROOT

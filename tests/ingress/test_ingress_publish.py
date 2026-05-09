@@ -16,7 +16,15 @@ from agentplane.domain.ingress.lifecycle import (
 )
 from agentplane.domain.ingress.models import IngressDefinition
 from tests.support.cli import run_agentplane_cli as run_cli
-from tests.support.constants import DOMAIN_LANE5, DOMAIN_OLD, DOMAIN_TOKEN, DOMAIN_TOKEN_ORG, FAKE_HOST_BINDING, FAKE_PROXY_8080, TARGET_PROD
+from tests.support.constants import (
+    DOMAIN_LANE5,
+    DOMAIN_OLD,
+    DOMAIN_TOKEN,
+    DOMAIN_TOKEN_ORG,
+    FAKE_HOST_BINDING,
+    FAKE_PROXY_8080,
+    TARGET_PROD,
+)
 
 pytestmark = pytest.mark.e2e
 

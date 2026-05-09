@@ -10,17 +10,17 @@ from unittest.mock import patch
 import pytest
 import yaml
 from agentplane.adapters.service import docker_runtime
-from agentplane.domain.service import lifecycle as service_lifecycle
 from agentplane.domain.service.models import ServiceDefinition
+from tests.support.constants import (
+    DOMAIN_A,
+    DOMAIN_B,
+    DOMAIN_RELAY,
+)
 from tests.support.service_cli import (
-    _FakeCloudflareClient,
     run_cli,
-    run_cli_inline,
     write_fake_service_ssh,
     write_inventory,
 )
-
-from tests.support.constants import DOMAIN_A, DOMAIN_B, DOMAIN_MIGRATED, DOMAIN_NGINX, DOMAIN_PROXY, DOMAIN_RELAY, DOMAIN_TOKEN, DOMAIN_TOKEN_ORG
 
 pytestmark = pytest.mark.e2e
 

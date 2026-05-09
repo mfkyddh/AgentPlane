@@ -17,7 +17,8 @@ import re
 import sys
 from pathlib import Path
 
-from tests.support.paths import REPO_ROOT, TESTS_ROOT as TESTS_DIR
+from tests.support.paths import REPO_ROOT
+from tests.support.paths import TESTS_ROOT as TESTS_DIR
 
 # Thresholds from tests/STYLE_GUIDE.md
 FILE_SIZE_WARN = 400

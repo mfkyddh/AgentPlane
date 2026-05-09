@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import re
 import subprocess
 import tempfile
@@ -8,8 +7,6 @@ import unittest
 from pathlib import Path
 
 import pytest
-from tests.support.cli import run_agentplane_cli as run_cli
-from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
 

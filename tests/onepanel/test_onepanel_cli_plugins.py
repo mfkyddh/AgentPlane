@@ -1,32 +1,16 @@
 from __future__ import annotations
 
-import json
 import subprocess
 import unittest
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 import yaml
-from agentplane.domain.infra.onepanel import (
-    handle_cronjob_action,
-    handle_firewall_action,
-    handle_panel_action,
-    handle_task_action,
-    onepanel_skeleton,
-)
 from agentplane.scripts.onepanel.object_api import (
-    FakeLikeExecutorProtocol,
     build_app_install_params,
-    get_panel_summary,
-    load_firewall_base,
     plan_app_install,
-    plan_firewall_operation,
     plan_installed_app_operation,
-    search_cronjobs,
-    search_firewall_rules,
 )
-from tests.support.cli import run_agentplane_cli as run_cli
 from tests.support.paths import REPO_ROOT
 
 CATALOG_FILE = REPO_ROOT / ".agents" / "skills" / "catalog.yaml"

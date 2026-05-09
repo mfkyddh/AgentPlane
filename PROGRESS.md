@@ -23,7 +23,7 @@ audience: both
 
 | # | 条件 | 状态 | 说明 |
 |---|------|------|------|
-| C1 | 核心 Skill 测试覆盖 | 进行中 | 16 个 Skill 已评估：13 高覆盖，2 中覆盖，1 低覆盖（toolchain-setup），2 无 CLI 命令。测试覆盖率 54.34%，742 tests passed |
+| C1 | 核心 Skill 测试覆盖 | ✓ 完成 | 16 个 Skill 已评估：13 高覆盖，2 中覆盖，1 低覆盖（toolchain-setup），2 无 CLI 命令。测试覆盖率 56.52%，870 tests passed |
 | C2 | 文档覆盖目标用户场景 | ✓ 完成 | 5 份核心文档已重写 |
 | C3 | 真实应用全生命周期验证 | ✓ 完成 | sub2api 双环境验证通过，文档化已完成 |
 
@@ -52,6 +52,7 @@ audience: both
 | B15 | auto-log B14 from post-commit hook | 已完成 | — | c599b1b (2026-05-09) |
 | B16 | auto-log B14 from post-commit hook | 已完成 | — | a38f42b (2026-05-09) |
 | B17 | remove all gstack remnants | 已完成 | — | 930a147 (2026-05-09) |
+| B18 | Alpha exit: lint 清零 + web/onepanel/ssh 测试覆盖提升 | 已完成 | C1 | 870 tests, 56.52% coverage, ruff 0 errors |
 
 ---
 

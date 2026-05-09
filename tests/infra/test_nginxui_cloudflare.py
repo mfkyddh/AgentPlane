@@ -12,9 +12,8 @@ All tests use mocks for external I/O (network, SSH, filesystem).
 
 from __future__ import annotations
 
-import json
-from pathlib import Path, PurePosixPath
-from unittest.mock import MagicMock, patch
+from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 from agentplane.adapters.cloudflare import CloudflareClient, CloudflareError, load_shell_env_file, parse_bool

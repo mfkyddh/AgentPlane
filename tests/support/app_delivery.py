@@ -14,10 +14,6 @@ from agentplane.domain.app.runtime import _secrets_root  # noqa: F401
 from agentplane.runtime.host_profile import HostProfile  # noqa: F401
 from tests.support.app_delivery_cli import run_app_delivery_cli, run_cli  # noqa: F401
 from tests.support.app_resources import resource_relative, resource_root
-from tests.support.fake_scripts import (  # noqa: F401
-    write_fake_bridge_network_ssh as _write_fake_bridge_network_ssh,
-    write_fake_command as _write_fake_command,
-)
 from tests.support.constants import (
     APP_ID_SUB2API,
     CONTAINER_MINIO,
@@ -37,6 +33,12 @@ from tests.support.constants import (
     REDIS_KEY_PREFIX,
     TARGET_PROD,
     TARGET_WSL,
+)
+from tests.support.fake_scripts import (  # noqa: F401
+    write_fake_bridge_network_ssh as _write_fake_bridge_network_ssh,
+)
+from tests.support.fake_scripts import (
+    write_fake_command as _write_fake_command,
 )
 from tests.support.paths import REPO_ROOT  # noqa: F401
 

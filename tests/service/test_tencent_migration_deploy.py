@@ -18,7 +18,6 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 from tests.support.paths import REPO_ROOT

@@ -21,6 +21,7 @@ web = [
 dev = [
     { name = "build" },
     { name = "coverage" },
+    { name = "httpx" },
     { name = "pip-audit" },
     { name = "pre-commit" },
     { name = "pygments" },
@@ -43,6 +44,7 @@ provides-extras = ["web"]
 dev = [
     { name = "build", specifier = ">=1.4.4" },
     { name = "coverage", extras = ["toml"], specifier = ">=7.13.5" },
+    { name = "httpx", specifier = ">=0.28.1" },
     { name = "pip-audit", specifier = ">=2.10.0" },
     { name = "pre-commit", specifier = ">=4.2.0" },
     { name = "pygments", specifier = ">=2.20.0" },

@@ -11,7 +11,6 @@ from tests.support.cli import run_agentplane_cli as run_cli
 from tests.support.constants import (
     CONTAINER_POSTGRES,
     CONTAINER_REDIS,
-    FAKE_CONTAINER_PORT,
     FAKE_HOST_BINDING,
     FAKE_PROXY_18080,
 )

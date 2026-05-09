@@ -11,9 +11,6 @@ from __future__ import annotations
 
 import json
 import unittest
-from pathlib import Path
-from types import SimpleNamespace
-from unittest.mock import Mock, patch
 
 import pytest
 from tests.support.cli import run_agentplane_cli as run_cli

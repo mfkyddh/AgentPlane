@@ -20,8 +20,6 @@ import pytest
 from agentplane.domain.ingress.lifecycle import (
     apply_ingress_truth_offboard,
     apply_ingress_truth_onboard,
-    plan_ingress_truth_offboard,
-    plan_ingress_truth_onboard,
 )
 from agentplane.domain.ingress.models import IngressDefinition
 from tests.support.constants import (
@@ -30,7 +28,6 @@ from tests.support.constants import (
     DOMAIN_OTHER,
     FAKE_PROXY_8080,
     FAKE_PROXY_9090,
-    TARGET_PROD,
 )
 
 pytestmark = [pytest.mark.unit]

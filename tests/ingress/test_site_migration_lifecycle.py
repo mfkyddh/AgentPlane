@@ -31,7 +31,6 @@ from tests.support.constants import (
     DOMAIN_TEST,
     FAKE_PROXY_8080,
     FAKE_PROXY_9090,
-    TARGET_PROD,
 )
 
 pytestmark = [pytest.mark.unit]

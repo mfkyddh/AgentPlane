@@ -3,25 +3,16 @@ from __future__ import annotations
 import json
 import os
 import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
-from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 import pytest
-from agentplane.cli.inventory import generate_inventory_snapshot
-from agentplane.domain.infra import networks as network_domain
-from agentplane.runtime.host_profile import HostProfile
-from agentplane.runtime.platform import HostPlatform
-from agentplane.runtime.wsl_bridge import inspect_local_host
 from tests.support.cli import run_agentplane_cli as run_cli
-from tests.support.constants import CONTAINER_SUB2API, CONTAINER_POSTGRES
-from tests.support.fake_scripts import write_fake_bridge_network_ssh
+from tests.support.constants import CONTAINER_POSTGRES
 from tests.support.paths import REPO_ROOT
-
-from tests.support.ssh_helpers import MAIN_REPO_ROOT, common_repo_root, expected_ssh_stdin_argv
+from tests.support.ssh_helpers import MAIN_REPO_ROOT, expected_ssh_stdin_argv
 
 pytestmark = pytest.mark.e2e
 

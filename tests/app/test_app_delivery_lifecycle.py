@@ -7,8 +7,7 @@ from pathlib import Path
 
 import pytest
 import yaml
-
-from tests.support.constants import (FAKE_HOST_BINDING, FAKE_PROXY_18080)
+from tests.support.constants import FAKE_HOST_BINDING, FAKE_PROXY_18080
 
 pytestmark = pytest.mark.e2e
 

@@ -283,7 +283,11 @@ def audit_firewall_rules(
     executor: object | None = None,
     env_file: str | None = None,
 ) -> dict[str, Any]:
-    from agentplane.providers.onepanel_objects import load_firewall_base, onepanel_target_executor, search_firewall_rules
+    from agentplane.providers.onepanel_objects import (
+        load_firewall_base,
+        onepanel_target_executor,
+        search_firewall_rules,
+    )
 
     if target not in SUPPORTED_NETWORK_TARGETS:
         raise ValueError(f"unsupported network target: {target}")
@@ -355,6 +359,8 @@ def plan_firewall_operation(
     from agentplane.providers.onepanel_objects import (
         load_firewall_base,
         onepanel_target_executor,
+    )
+    from agentplane.providers.onepanel_objects import (
         plan_firewall_operation as plan_firewall_op,
     )
 
