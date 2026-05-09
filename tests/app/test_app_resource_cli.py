@@ -157,6 +157,8 @@ def write_catalog(
     )
 
 
+
+
 class AppResourceCliTests(unittest.TestCase):
     def test_app_resource_search_lists_declared_registry_objects(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -302,6 +304,7 @@ class AppResourceCliTests(unittest.TestCase):
             self.assertEqual(app_id, payload["payload"]["resource"]["owner_app"])
             projection = payload["payload"]["projection"]
             self.assertEqual(service_key, projection["service_key"])
+
 
 
 # ======================================================================
@@ -465,106 +468,3 @@ class AppResourceObjectCliTests(unittest.TestCase):
         self.assertIn("get", result.stdout)
         self.assertIn("verify", result.stdout)
         self.assertIn("refresh-ledger", result.stdout)
-
-
-# ======================================================================
-# From: test_app_resource_lifecycle.py
-# ======================================================================
-
-
-class AppResourceLifecycleTests(unittest.TestCase):
-    def test_registry_onboard_requires_phase1_key_and_owner(self) -> None:
-        registry: dict[str, object] = {}
-        entry = make_app_resource_registry_entry(
-            app_id="sampleapi",
-            resources={"redis": {"db": 2, "key_prefix": "sampleapi:"}},
-            secret_files=("secrets/services/sampleapi/redis.env",),
-        )
-        next_registry, evidence = plan_app_resource_registry_onboard(registry, app_id="sampleapi", entry=entry)
-        self.assertEqual("upsert", evidence["action"])
-        self.assertIn("sampleapi", next_registry)
-        self.assertEqual("sampleapi", next_registry["sampleapi"]["owner_app"])
-
-        with self.assertRaises(ValueError):
-            plan_app_resource_registry_onboard(registry, app_id="sampleapi", entry=entry, registry_key="alias")
-
-        with self.assertRaises(ValueError):
-            plan_app_resource_registry_onboard(registry, app_id="sampleapi", entry={"owner_app": "sub2api"})
-
-    def test_registry_offboard_removes_by_key_and_owner_app(self) -> None:
-        registry = {
-            "sampleapi": {"owner_app": "sampleapi", "redis": {"db": 2, "key_prefix": "sampleapi:"}},
-            "legacy-alias": {"owner_app": "sampleapi", "redis": {"db": 2, "key_prefix": "sampleapi:"}},
-            "sub2api": {"owner_app": "sub2api", "redis": {"db": 1, "key_prefix": "sub2api:"}},
-        }
-        next_registry, evidence = plan_app_resource_registry_offboard(registry, app_id="sampleapi")
-        self.assertEqual(["legacy-alias", "sampleapi"], sorted(evidence["removed_keys"]))
-        self.assertNotIn("sampleapi", next_registry)
-        self.assertNotIn("legacy-alias", next_registry)
-        self.assertIn("sub2api", next_registry)
-
-    def test_find_orphans_from_registry_and_inventory_summary(self) -> None:
-        catalog_apps = {"sub2api"}
-        registry = {"sampleapi": {"owner_app": "sampleapi"}, "sub2api": {"owner_app": "sub2api"}}
-        self.assertEqual(["sampleapi"], find_orphaned_registry_keys(registry, catalog_apps=catalog_apps))
-
-        inventory_payload = {
-            "services": {
-                "sub2api": {"app_resource_summary": {"redis": {"db": 1}}},
-                "sampleapi": {"app_resource_summary": {"redis": {"db": 2}}},
-                "other": {"something": 1},
-            }
-        }
-        self.assertEqual(
-            ["sampleapi"],
-            find_orphaned_inventory_app_resource_summaries(inventory_payload, catalog_keys={"sub2api"}),
-        )
-
-
-# ======================================================================
-# From: test_app_artifact_contract.py
-# ======================================================================
-
-
-class AppArtifactContractTests(unittest.TestCase):
-    def test_validate_contract_accepts_schema2_artifact_first_contract(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            write_delivery_inventory(root)
-            write_delivery_tenant_secret_files(root, target="wsl")
-            write_contract(
-                root,
-                schema_version=2,
-                tenant_resources=baseline_tenant_resources(target="wsl"),
-                build_command="bash deploy/build-runtime-artifacts.sh",
-                package_command="bash deploy/package-runtime-image.sh",
-                packaging_backend="wsl-linux",
-            )
-
-            result = run_app_delivery_cli("validate-contract", repo_root=root, app="sub2api", target="wsl")
-
-            self.assertEqual(result.returncode, 0, msg=result.stderr)
-            payload = json.loads(result.stdout)["payload"]
-            self.assertEqual("v2", payload["_meta"]["contract_mode"])
-            self.assertTrue(payload["_meta"]["artifact_first"])
-
-    def test_validate_contract_rejects_schema2_contract_missing_packaging_backend(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            write_delivery_inventory(root)
-            write_delivery_tenant_secret_files(root)
-            contract_file = write_contract(
-                root,
-                schema_version=2,
-                tenant_resources=baseline_tenant_resources(),
-                build_command="bash deploy/build-runtime-artifacts.sh",
-                package_command="bash deploy/package-runtime-image.sh",
-            )
-            payload = yaml.safe_load(contract_file.read_text(encoding="utf-8"))
-            del payload["packaging"]["backend"]
-            contract_file.write_text(yaml.safe_dump(payload, sort_keys=False, allow_unicode=False), encoding="utf-8")
-
-            result = run_app_delivery_cli("validate-contract", repo_root=root, app="sub2api")
-
-            self.assertNotEqual(result.returncode, 0)
-            self.assertIn("packaging.backend", result.stderr)

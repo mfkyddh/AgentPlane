@@ -43,6 +43,8 @@ audience: both
 | B6 | split test_app_delivery.py into 7 files (Phase B1) | 已完成 | — | 280275d (2026-05-08) |
 | B7 | split remaining large test files (Phase B2) | 已完成 | — | c3ac009 (2026-05-08) |
 | B8 | Phase C-D - PROGRESS 更新 + 并行优化 | 已完成 | — | c9eaec7 (2026-05-08) |
+| B9 | codify test standards and add health check automation | 已完成 | — | 08aecd4 (2026-05-08) |
+| B10 | extract duplicate helpers to shared modules (P1) | 已完成 | — | 929a857 (2026-05-08) |
 
 ---
 

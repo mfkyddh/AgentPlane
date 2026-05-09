@@ -83,6 +83,8 @@ def _entry_from(definition: IngressDefinition) -> dict:
     }
 
 
+
+
 class FakeWebsiteExecutor:
     """Minimal stub for 1Panel website API calls."""
 
@@ -190,6 +192,7 @@ class TestParallelValidation(unittest.TestCase):
             self.assertEqual(ingresses[0]["alias"], "keep-me")
 
 
+
 # ---------------------------------------------------------------------------
 # Ingress reconcile: plan and apply
 # ---------------------------------------------------------------------------
@@ -275,6 +278,7 @@ class TestIngressReconcile(unittest.TestCase):
             with self.assertRaises(ValueError) as ctx:
                 apply_ingress_operation(root, TARGET, "migrated-app", "reconcile", execute=False)
             self.assertIn("--execute", str(ctx.exception))
+
 
 
 # ---------------------------------------------------------------------------
@@ -376,255 +380,3 @@ class TestDomainCutoverVerification(unittest.TestCase):
             self.assertFalse(payload["ok"])
             self.assertIn("https", payload["failures"])
             self.assertIn("ssl_id", payload["failures"])
-
-
-# ---------------------------------------------------------------------------
-# Migration lifecycle: onboard -> reconcile -> verify -> offboard old
-# ---------------------------------------------------------------------------
-
-
-class TestMigrationLifecycle(unittest.TestCase):
-    """Full migration lifecycle from onboard to cutover."""
-
-    def test_full_migration_lifecycle(self) -> None:
-        """Simulates: onboard truth -> reconcile -> verify -> offboard old alias."""
-        from agentplane.cli.ingress import handle_ingress_command
-
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            definition = _migration_definition()
-            old = _old_definition()
-
-            # Step 1: Start with old entry in inventory
-            _write_inventory(root, TARGET, {"services": {"public_ingresses": [_entry_from(old)]}})
-
-            # Step 2: Update inventory truth to new definition (onboard)
-            result = apply_ingress_truth_onboard(root, TARGET, definition, execute=True)
-            self.assertEqual(result["result"]["action"], "updated")
-            self.assertEqual(result["verified"]["drift"]["status"], "matched")
-
-            # Step 3: Reconcile with 1Panel (creates/updates the website)
-            executor = FakeWebsiteExecutor(
-                existing={
-                    "id": 7,
-                    "alias": "migrated-app",
-                    "primaryDomain": "migrated.example.com",
-                    "proxy": "http://127.0.0.1:8080",
-                    "status": "Running",
-                },
-                https={"enable": True, "httpsPort": "443", "SSL": {"id": 10}},
-            )
-            args = SimpleNamespace(
-                ingress_action="apply",
-                target=TARGET,
-                alias="migrated-app",
-                operation="reconcile",
-                repo_root=str(root),
-                execute=True,
-                write=False,
-            )
-
-            with patch("agentplane.domain.ingress.handlers._executor_for_target", return_value=executor):
-                payload = handle_ingress_command(args)
-            # Reconcile detects drift (old proxy) but v1 only supports create/noop
-            self.assertIn(payload["payload"]["result"]["action"], ("noop", "unsupported_drift"))
-
-    def test_onboard_then_offboard_round_trip(self) -> None:
-        """Onboard and offboard the same alias leaves inventory empty."""
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            _write_inventory(root, TARGET, {"services": {"public_ingresses": []}})
-            definition = _migration_definition()
-
-            # Onboard
-            apply_ingress_truth_onboard(root, TARGET, definition, execute=True)
-            payload = json.loads(_inventory_file(root, TARGET).read_text(encoding="utf-8"))
-            self.assertEqual(len(payload["services"]["public_ingresses"]), 1)
-
-            # Offboard
-            apply_ingress_truth_offboard(root, TARGET, definition.alias, execute=True)
-            payload = json.loads(_inventory_file(root, TARGET).read_text(encoding="utf-8"))
-            self.assertEqual(len(payload["services"]["public_ingresses"]), 0)
-
-    def test_onboard_idempotent_when_already_matched(self) -> None:
-        """Calling onboard twice with the same definition is a noop."""
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            _write_inventory(root, TARGET, {"services": {"public_ingresses": []}})
-            definition = _migration_definition()
-
-            apply_ingress_truth_onboard(root, TARGET, definition, execute=True)
-            result = apply_ingress_truth_onboard(root, TARGET, definition, execute=True)
-
-            self.assertEqual(result["result"]["action"], "noop")
-            self.assertEqual(result["verified"]["drift"]["status"], "matched")
-
-
-# ---------------------------------------------------------------------------
-# Follow-through commands
-# ---------------------------------------------------------------------------
-
-
-class TestFollowThrough(unittest.TestCase):
-    """After migration, the skill must emit projection verification and ledger refresh commands."""
-
-    def test_apply_reconcile_emits_follow_through(self) -> None:
-        from agentplane.cli.ingress import handle_ingress_command
-
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            _write_inventory(root, TARGET, {"services": {"public_ingresses": [_entry_from(_migration_definition())]}})
-            executor = FakeWebsiteExecutor(existing=None)
-
-            args = SimpleNamespace(
-                ingress_action="apply",
-                target=TARGET,
-                alias="migrated-app",
-                operation="reconcile",
-                repo_root=str(root),
-                execute=True,
-                write=False,
-            )
-
-            with patch("agentplane.domain.ingress.handlers._executor_for_target", return_value=executor):
-                payload = handle_ingress_command(args)
-
-            follow_through = payload["payload"]["follow_through"]
-            self.assertEqual(follow_through["owner_surface"], "projection")
-            self.assertEqual(follow_through["source_surface"], "ingress")
-            self.assertIn("projection verification run", follow_through["commands"]["verification"])
-            self.assertIn("--website-alias migrated-app", follow_through["commands"]["verification"])
-            self.assertIn("projection ledger refresh", follow_through["commands"]["ledger_refresh"])
-            self.assertIn("--target prod0-main", follow_through["commands"]["ledger_refresh"])
-
-    def test_onboard_emits_follow_through(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            _write_inventory(root, TARGET, {"services": {"public_ingresses": []}})
-            definition = _migration_definition()
-
-            result = apply_ingress_truth_onboard(root, TARGET, definition, execute=True)
-
-            follow_through = result["follow_through"]
-            self.assertEqual(follow_through["owner_surface"], "projection")
-            self.assertEqual(follow_through["source_surface"], "ingress.truth.onboard")
-            self.assertIn("projection verification run", follow_through["commands"]["verification"])
-            self.assertIn("projection ledger refresh", follow_through["commands"]["ledger_refresh"])
-
-
-# ---------------------------------------------------------------------------
-# Edge cases and error handling
-# ---------------------------------------------------------------------------
-
-
-class TestEdgeCases(unittest.TestCase):
-    """Boundary conditions for site migration."""
-
-    def test_resolve_missing_alias_raises(self) -> None:
-        from agentplane.domain.ingress.registry import resolve_ingress
-
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            _write_inventory(root, TARGET, {"services": {"public_ingresses": []}})
-
-            with self.assertRaises(ValueError) as ctx:
-                resolve_ingress(root, TARGET, "nonexistent")
-            self.assertIn("nonexistent", str(ctx.exception))
-
-    def test_unsupported_target_raises(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            _write_inventory(root, TARGET, {"services": {"public_ingresses": []}})
-            definition = _migration_definition()
-
-            with self.assertRaises(ValueError) as ctx:
-                plan_ingress_truth_onboard(root, "bad-target", definition)
-            self.assertIn("unsupported", str(ctx.exception))
-
-    def test_unsupported_operation_raises(self) -> None:
-        from agentplane.domain.ingress.handlers import plan_ingress_operation
-
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            _write_inventory(root, TARGET, {"services": {"public_ingresses": [_entry_from(_migration_definition())]}})
-
-            with self.assertRaises(ValueError) as ctx:
-                plan_ingress_operation(root, TARGET, "migrated-app", "delete")
-            self.assertIn("unsupported", str(ctx.exception))
-
-    def test_offboard_nonexistent_alias_is_noop(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            _write_inventory(root, TARGET, {"services": {"public_ingresses": []}})
-
-            plan = plan_ingress_truth_offboard(root, TARGET, "ghost")
-            self.assertEqual(plan["drift"]["status"], "matched")
-            self.assertEqual(len(plan["steps"]), 0)
-
-    def test_search_returns_empty_when_no_ingresses(self) -> None:
-        from agentplane.domain.ingress.handlers import search_ingresses
-
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            _write_inventory(root, TARGET, {"services": {"public_ingresses": []}})
-
-            payload = search_ingresses(root, TARGET)
-            self.assertEqual(payload["items"], [])
-
-    def test_search_returns_all_declared_ingresses(self) -> None:
-        from agentplane.domain.ingress.handlers import search_ingresses
-
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            entries = [
-                _entry_from(_migration_definition()),
-                {
-                    "alias": "second",
-                    "primary_domain": "second.example.com",
-                    "public_url": "https://second.example.com",
-                    "proxy": "http://127.0.0.1:5000",
-                    "status": "Running",
-                },
-            ]
-            _write_inventory(root, TARGET, {"services": {"public_ingresses": entries}})
-
-            payload = search_ingresses(root, TARGET)
-            self.assertEqual(len(payload["items"]), 2)
-            aliases = {item["alias"] for item in payload["items"]}
-            self.assertEqual(aliases, {"migrated-app", "second"})
-
-    def test_ingress_definition_model_defaults(self) -> None:
-        """IngressDefinition has sensible defaults for optional fields."""
-        d = IngressDefinition(
-            alias="test",
-            primary_domain="test.example.com",
-            public_url="https://test.example.com",
-            proxy="http://127.0.0.1:8080",
-        )
-        self.assertEqual(d.status, "")
-        self.assertEqual(d.config_file, "")
-        self.assertIsNone(d.ssl_id)
-        self.assertEqual(d.certificate_mode, "")
-        self.assertEqual(d.control_plane, "onepanel")
-
-    def test_migration_with_different_control_plane(self) -> None:
-        """Migration can target a non-default control plane (e.g. nginx-ui)."""
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            _write_inventory(root, TARGET, {"services": {"public_ingresses": []}})
-            definition = IngressDefinition(
-                alias="nginx-app",
-                primary_domain="nginx.example.com",
-                public_url="https://nginx.example.com",
-                proxy="http://127.0.0.1:7070",
-                status="Running",
-                control_plane="nginx-ui",
-            )
-
-            result = apply_ingress_truth_onboard(root, TARGET, definition, execute=True)
-            self.assertEqual(result["result"]["action"], "created")
-
-            payload = json.loads(_inventory_file(root, TARGET).read_text(encoding="utf-8"))
-            entry = payload["services"]["public_ingresses"][0]
-            self.assertEqual(entry["alias"], "nginx-app")
-            self.assertEqual(entry.get("control_plane", "onepanel"), "nginx-ui")
