@@ -51,6 +51,7 @@ audience: both
 | B14 | add .omc/ to gitignore, remove stale GStack docs, update progress | 已完成 | — | ae15c22 (2026-05-09) |
 | B15 | auto-log B14 from post-commit hook | 已完成 | — | c599b1b (2026-05-09) |
 | B16 | auto-log B14 from post-commit hook | 已完成 | — | a38f42b (2026-05-09) |
+| B17 | remove all gstack remnants | 已完成 | — | 930a147 (2026-05-09) |
 
 ---
 
