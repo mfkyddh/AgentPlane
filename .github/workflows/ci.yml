@@ -45,16 +45,16 @@ jobs:
         run: uv run python -m agentplane.cli test fast --tb=short
 
       - name: Run documentation sanity gate
-        run: uv run python -m agentplane.cli repo docs-sanity --repo-root .
+        run: uv run python -m agentplane.cli project docs-sanity --repo-root .
 
       - name: Run skills sync check
-        run: uv run python -m agentplane.cli repo skills check --repo-root .
+        run: uv run python -m agentplane.cli project skills check --repo-root .
 
       - name: Run secret scan
-        run: uv run python -m agentplane.cli repo secret-scan --repo-root .
+        run: uv run python -m agentplane.cli project secret-scan --repo-root .
 
       - name: Run privacy scan
-        run: uv run python -m agentplane.cli repo privacy-scan --repo-root .
+        run: uv run python -m agentplane.cli project privacy-scan --repo-root .
 
   release-gate:
     name: Release gate
@@ -81,4 +81,4 @@ jobs:
         run: uv run python -m agentplane.domain.project.commit_message --range-env COMMIT_RANGE
 
       - name: Run release check
-        run: uv run python -m agentplane.cli repo release-check --repo-root .
+        run: uv run python -m agentplane.cli project release-check --repo-root .

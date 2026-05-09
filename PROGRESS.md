@@ -65,6 +65,7 @@ audience: both
 | B28 | foundation-replan Phase 3.2: Doc-code alignment | 已完成 | — | architecture.md updated, 7 doc-contract tests |
 | B29 | foundation-replan Phase 3.3: CLI consistency | 已完成 | — | 5 CLI registration tests |
 | B30 | foundation-replan Phase 2-3 — provider abstraction, projection contracts, golden tests, doc alignment | 已完成 | — | pending (2026-05-09) |
+| B31 | correct commit_message module path in CI workflow | 已完成 | — | pending (2026-05-09) |
 
 ---
 
