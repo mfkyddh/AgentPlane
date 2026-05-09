@@ -23,7 +23,7 @@ audience: both
 
 | # | 条件 | 状态 | 说明 |
 |---|------|------|------|
-| C1 | 核心 Skill 测试覆盖 | 进行中 | 16 个 Skill 已评估：13 高覆盖，2 中覆盖，1 低覆盖（toolchain-setup），2 无 CLI 命令 |
+| C1 | 核心 Skill 测试覆盖 | 进行中 | 16 个 Skill 已评估：13 高覆盖，2 中覆盖，1 低覆盖（toolchain-setup），2 无 CLI 命令。测试覆盖率 54.34%，742 tests passed |
 | C2 | 文档覆盖目标用户场景 | ✓ 完成 | 5 份核心文档已重写 |
 | C3 | 真实应用全生命周期验证 | ✓ 完成 | sub2api 双环境验证通过，文档化已完成 |
 
@@ -45,6 +45,8 @@ audience: both
 | B8 | Phase C-D - PROGRESS 更新 + 并行优化 | 已完成 | — | c9eaec7 (2026-05-08) |
 | B9 | codify test standards and add health check automation | 已完成 | — | 08aecd4 (2026-05-08) |
 | B10 | extract duplicate helpers to shared modules (P1) | 已完成 | — | 929a857 (2026-05-08) |
+| B11 | split 18 oversized test files into 42 focused files (P2) | 已完成 | — | 722d10e (2026-05-09) |
+| B12 | migrate hardcoded IP/domain values to shared constants (P3) | 已完成 | — | 0156883 (2026-05-09) |
 
 ---
 
@@ -64,7 +66,7 @@ audience: both
 
 | ID | 任务 | 完成日期 | 服务 | 关键成果 |
 |----|------|----------|------|----------|
-| B8 | 测试体系重构 | 2026-05-08 | C1 | Phase A-D：常量池、覆盖率阈值、风格指南、fake 脚本提取、conftest、大文件拆分（3189 行→7 文件）、755 tests passed, 28.76% coverage |
+| B8 | 测试体系重构 | 2026-05-08 | C1 | Phase A-D：常量池、覆盖率阈值、风格指南、fake 脚本提取、conftest、大文件拆分（3189 行→7 文件）、755 tests passed, 28.76% coverage。P1-P3 追加：消除重复 helper、拆分 18 个超大文件为 42 个、硬编码常量迁移、742 tests passed, 54.34% coverage |
 | B3 | agentplane-infra-ops 测试覆盖 | 2026-05-08 | C1 | 13 tests，覆盖 automation/local/network 命令，7485c54 |
 | B2 | 5 域模型重构完成 | 2026-05-08 | C1 | 4 文件迁移到 domain/infra/，100% 完成，1f0e670 |
 | B6 | optimize CLAUDE.md and AGENTS.md | 2026-05-08 | — | e460e17 |
