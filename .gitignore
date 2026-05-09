@@ -25,6 +25,7 @@ secrets/
 .claude/
 plans/
 tmp/
+.omc/
 
 # Python and Node runtime caches.
 __pycache__/

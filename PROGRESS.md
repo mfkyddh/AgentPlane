@@ -47,6 +47,7 @@ audience: both
 | B10 | extract duplicate helpers to shared modules (P1) | 已完成 | — | 929a857 (2026-05-08) |
 | B11 | split 18 oversized test files into 42 focused files (P2) | 已完成 | — | 722d10e (2026-05-09) |
 | B12 | migrate hardcoded IP/domain values to shared constants (P3) | 已完成 | — | 0156883 (2026-05-09) |
+| B13 | update PROGRESS.md with P1-P3 completion and coverage stats | 已完成 | — | 50ada43 (2026-05-09) |
 
 ---
 

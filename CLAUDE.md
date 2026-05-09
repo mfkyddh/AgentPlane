@@ -7,20 +7,6 @@
 
 每次会话开始时，先读 [AGENTS.md](AGENTS.md) 中的规则，再开始工作。
 
-## GStack
-
-使用 `/browse` skill 进行所有网页浏览，**不要使用** `mcp__claude-in-chrome__*` 工具。
-
-首次使用需要安装：`git clone --depth 1 https://github.com/garrytan/gstack.git ~/.claude/skills/gstack && cd ~/.claude/skills/gstack && ./setup`
-
-**Before doing ANY work, verify gstack is installed:**
-
-```bash
-test -d ~/.claude/skills/gstack/bin && echo "GSTACK_OK" || echo "GSTACK_MISSING"
-```
-
-If GSTACK_MISSING: STOP. Do not proceed. Tell the user to install it, then restart.
-
 ## 关键文档
 
 | 文档 | 用途 |
@@ -48,7 +34,6 @@ If GSTACK_MISSING: STOP. Do not proceed. Tell the user to install it, then resta
 | 代码审查 | /review |
 | 视觉打磨 | /design-review |
 | 发布/部署 | /ship 或 /land-and-deploy |
-| 网页浏览 | /browse |
 
 领域 Skill（`.agents/skills/`）：agentplane-infra-ops、agentplane-app-ops、agentplane-service-ops、agentplane-ingress-ops、agentplane-projection-ops、agentplane-project-ops、app-delivery-ops、site-migration-ops 等。完整列表见 `.agents/skills/` 目录。
 
