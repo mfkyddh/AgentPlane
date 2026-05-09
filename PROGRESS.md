@@ -54,6 +54,7 @@ audience: both
 | B17 | remove all gstack remnants | 已完成 | — | 930a147 (2026-05-09) |
 | B18 | Alpha exit: lint 清零 + web/onepanel/ssh 测试覆盖提升 | 已完成 | C1 | 870 tests, 56.52% coverage, ruff 0 errors |
 | B19 | Alpha exit — lint 清零 + 128 new tests + coverage提升 | 已完成 | — | 4738a2a (2026-05-09) |
+| B20 | Phase 1 execution chain optimization | 已完成 | — | 49795f9 (2026-05-09) |
 
 ---
 
