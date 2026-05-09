@@ -528,3 +528,4 @@ CLI (argparse) → domain handlers → runtime → providers
 - [命令参考](../command-reference.md) — 所有 CLI 命令
 - [编码与协作规范](../conventions.md) — 技术栈、跨平台约束、编码规则
 - [Maintainer 指南](../maintainer-guide.md) — 治理资产约束和协作规则
+- [sub2api 双环境验证 Runbook](../runbooks/sub2api-dual-env-verification.md) — 真实应用全生命周期验证模板

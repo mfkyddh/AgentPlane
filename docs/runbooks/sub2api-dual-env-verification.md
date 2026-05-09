@@ -2,6 +2,7 @@
 status: active
 owner: AgentPlane maintainers
 last_verified: 2026-05-08
+superseded_by: null
 audience: both
 ---
 
