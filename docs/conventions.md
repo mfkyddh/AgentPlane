@@ -348,6 +348,17 @@ audience: both
 
 ---
 
+## 文档治理
+
+| 机制 | 做法 |
+|------|------|
+| ADR 前置 | 重大技术决策必须先写 ADR（`docs/decisions/`），再写代码 |
+| 文档与代码同步 | 架构变更时，必须同步更新 `architecture.md` 和 `conventions.md` |
+| 定期审查 | 每月检查一次文档与代码的一致性 |
+| frontmatter 门禁 | 所有 active 文档必须有 `last_verified` 字段，超过 90 天未验证的标记为 stale |
+
+---
+
 ## 协作协议
 
 **人类表达意图，AI 自主推进，所有工作回归主线。**

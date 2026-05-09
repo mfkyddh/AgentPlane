@@ -17,6 +17,7 @@ from agentplane.domain.app.lifecycle import (
     run_delivery_post_actions,
 )
 from agentplane.runtime.backends import build_backend_runner
+from agentplane.runtime.backends.ssh_linux import stream_docker_image
 from agentplane.runtime.execution import CommandStep, shell_join
 from agentplane.runtime.host_profile import detect_host_profile
 from agentplane.runtime.redaction import redact_execution_payload
@@ -937,6 +938,11 @@ def deploy_for_app(
             *verify_plan["commands"],
             *rollback_plan["commands"],
         ]
+        effective_image_ref = image_ref or candidate_material.get("image_ref")
+        if effective_image_ref:
+            ssh_tgt = app_cli._target_ssh_target(repo_root, target)
+            stream_cmd = f"docker save {shlex.quote(effective_image_ref)} | ssh {ssh_tgt.connection_target} docker load"
+            cutover_plan["commands"].insert(0, stream_cmd)
         cutover_plan["post_actions"] = _run_delivery_post_actions(
             repo_root,
             target=target,
@@ -956,6 +962,15 @@ def deploy_for_app(
         return {"command": "app", "action": "deploy", "target": target, "payload": payload}
 
     app_cli._production_network_preflight(repo_root, target)
+
+    # Streaming image transfer: docker save | ssh docker load
+    effective_image_ref = image_ref or candidate_material.get("image_ref")
+    if effective_image_ref:
+        ssh_target = app_cli._target_ssh_target(repo_root, target)
+        stream_result = stream_docker_image(effective_image_ref, ssh_target)
+        if not stream_result.ok:
+            raise ValueError(f"流式镜像传输失败: {stream_result.stderr}")
+
     local_env = Path(candidate_material["local_env"])
     if not local_env.is_file():
         raise ValueError(f"缺少运行时 env 文件: {local_env}")

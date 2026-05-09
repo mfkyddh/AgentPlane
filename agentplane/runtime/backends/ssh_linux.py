@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import shlex
+import subprocess
 from pathlib import Path
 
 from agentplane.runtime.backends.registry import register_backend
@@ -9,6 +10,7 @@ from agentplane.runtime.execution import (
     CommandSpec,
     ExecutionBindings,
     ExecutionPlan,
+    ExecutionResult,
     RenderedExecution,
     env_prefixed_command,
     require_local_executable,
@@ -162,3 +164,32 @@ class SshLinuxBackend:
         if isinstance(value, str) and value:
             return value
         raise ValueError(f"ssh-linux backend requires {field} metadata")
+
+
+def stream_docker_image(image: str, ssh_target: SshTarget) -> ExecutionResult:
+    """Pipe docker save directly to ssh docker load, avoiding intermediate tar files."""
+    save_cmd = ["docker", "save", image]
+    ssh_args = ssh_target.local_ssh_args_for_argv(["docker", "load"])
+    display = f"docker save {shlex.quote(image)} | ssh {ssh_target.connection_target} docker load"
+
+    save_proc = subprocess.Popen(save_cmd, stdout=subprocess.PIPE)
+    load_proc = subprocess.Popen(ssh_args, stdin=save_proc.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    save_proc.stdout.close()
+    load_stdout, load_stderr = load_proc.communicate()
+    save_proc.wait()
+
+    returncode = max(save_proc.returncode or 0, load_proc.returncode or 0)
+    stderr = load_stderr.decode("utf-8", errors="replace") if load_stderr else ""
+    if save_proc.returncode != 0:
+        stderr = f"docker save failed (exit {save_proc.returncode})" + (f"\n{stderr}" if stderr else "")
+
+    return ExecutionResult(
+        backend_type="ssh-linux",
+        argv=tuple(ssh_args),
+        display_command=display,
+        cwd=None,
+        returncode=returncode,
+        stdout="",
+        stderr=stderr,
+        ok=returncode == 0,
+    )

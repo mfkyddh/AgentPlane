@@ -36,6 +36,7 @@ from agentplane.domain.infra.networks import ensure_managed_bridge_networks
 from agentplane.domain.targets import PRODUCTION_TARGETS, is_production_target, remote_compose_filename, target_alias
 from agentplane.providers.gateway import default_provider_gateway
 from agentplane.runtime.backends import build_backend_runner
+from agentplane.runtime.backends.ssh_linux import stream_docker_image
 from agentplane.runtime.execution import CommandRunner, CommandSpec
 from agentplane.runtime.host_profile import detect_host_profile
 from agentplane.runtime.operations import append_operation_ledger, next_operation_id
@@ -784,9 +785,7 @@ def ship_image(
         }
     ssh_target = _target_ssh_target(repo_root, target)
     commands = {
-        "save": f"docker save -o {shlex.quote(str(archive_path))} {shlex.quote(effective_image)}",
-        "scp": ssh_target.display_scp_command(str(archive_path), f"/tmp/{archive_path.name}"),
-        "load": ssh_target.display_ssh_command(f"docker load -i /tmp/{archive_path.name}"),
+        "stream": f"docker save {shlex.quote(effective_image)} | ssh {ssh_target.connection_target} docker load",
     }
     if dry_run:
         operation = _record_app_operation(
@@ -806,16 +805,9 @@ def ship_image(
             "dry_run": True,
         }
 
-    archive_path.parent.mkdir(parents=True, exist_ok=True)
-    result = _run(["docker", "save", "-o", str(archive_path), effective_image])
-    if result.returncode != 0:
-        raise ValueError(result.stdout or result.stderr or "docker save 失败")
-    result = _run(ssh_target.local_scp_args(str(archive_path), f"/tmp/{archive_path.name}"))
-    if result.returncode != 0:
-        raise ValueError(result.stdout or result.stderr or "scp 镜像失败")
-    result = _run(ssh_target.local_ssh_args_for_shell(f"docker load -i /tmp/{archive_path.name}"))
-    if result.returncode != 0:
-        raise ValueError(result.stdout or result.stderr or "远端 docker load 失败")
+    result = stream_docker_image(effective_image, ssh_target)
+    if not result.ok:
+        raise ValueError(result.stderr or "流式 docker 传输失败")
     operation = _record_app_operation(
         repo_root,
         action="ship-image",

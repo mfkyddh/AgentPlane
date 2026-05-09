@@ -188,14 +188,21 @@ class ExecutionError:
     message: str
     retryable: bool
     escalation: EscalationLevel
+    hint: str | None = None
+    diagnostic: dict[str, Any] = field(default_factory=dict)
 
     def to_payload(self) -> dict[str, Any]:
-        return {
+        payload: dict[str, Any] = {
             "category": self.category,
             "message": self.message,
             "retryable": self.retryable,
             "escalation": self.escalation,
         }
+        if self.hint:
+            payload["hint"] = self.hint
+        if self.diagnostic:
+            payload["diagnostic"] = dict(self.diagnostic)
+        return payload
 
 
 def _classify_error(returncode: int, stderr: str) -> ExecutionError:
@@ -206,6 +213,8 @@ def _classify_error(returncode: int, stderr: str) -> ExecutionError:
             message=f"Authentication or permission failure (exit {returncode}): {stderr.strip()}",
             retryable=False,
             escalation="human",
+            hint="检查 SSH 密钥或 API 凭证是否正确配置",
+            diagnostic={"returncode": returncode, "stderr_tail": stderr.strip()[-500:]},
         )
     if any(
         token in stderr_lower
@@ -216,6 +225,26 @@ def _classify_error(returncode: int, stderr: str) -> ExecutionError:
             message=f"Network failure (exit {returncode}): {stderr.strip()}",
             retryable=True,
             escalation="auto",
+            hint="检查目标主机是否可达、SSH 端口是否开放",
+            diagnostic={"returncode": returncode, "stderr_tail": stderr.strip()[-500:]},
+        )
+    if any(token in stderr_lower for token in ("connection timed out", "timed out", "timeout")):
+        return ExecutionError(
+            category="timeout",
+            message=f"Operation timed out (exit {returncode}): {stderr.strip()}",
+            retryable=True,
+            escalation="auto",
+            hint="操作超时，可能是网络延迟或命令执行时间过长",
+            diagnostic={"returncode": returncode, "stderr_tail": stderr.strip()[-500:]},
+        )
+    if any(token in stderr_lower for token in ("could not resolve hostname", "ssh: connect to host", "no route to host")):
+        return ExecutionError(
+            category="backend_unavailable",
+            message=f"SSH connection failed (exit {returncode}): {stderr.strip()}",
+            retryable=True,
+            escalation="auto",
+            hint="检查 SSH 配置和目标主机状态",
+            diagnostic={"returncode": returncode, "stderr_tail": stderr.strip()[-500:]},
         )
     if any(token in stderr_lower for token in ("command not found", "no such file or directory", "not found")):
         return ExecutionError(
@@ -223,12 +252,16 @@ def _classify_error(returncode: int, stderr: str) -> ExecutionError:
             message=f"Command not found or invalid (exit {returncode}): {stderr.strip()}",
             retryable=False,
             escalation="none",
+            hint="检查命令路径和依赖是否已安装",
+            diagnostic={"returncode": returncode, "stderr_tail": stderr.strip()[-500:]},
         )
     return ExecutionError(
         category="command",
         message=f"Command failed with exit code {returncode}: {stderr.strip()}",
-        retryable=returncode == 1,  # exit 1 often signals soft/config errors
+        retryable=returncode == 1,
         escalation="none",
+        hint="查看 stderr 输出定位具体错误",
+        diagnostic={"returncode": returncode, "stderr_tail": stderr.strip()[-500:]},
     )
 
 

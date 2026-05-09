@@ -1,7 +1,7 @@
 ---
 status: active
 owner: AgentPlane maintainers
-last_verified: 2026-05-07
+last_verified: 2026-05-09
 audience: human
 layer: strategy
 ---
@@ -20,6 +20,12 @@ layer: strategy
 | [002](002-boundary.md) | 项目边界 | 接受 | 2026-04-30 |
 | [003](003-phases.md) | 阶段划分 | 接受 | 2026-04-30 |
 | [004](004-architecture.md) | 架构演进 | 接受 | 2026-04-30 |
+| [005](005-domain-model.md) | 领域模型 | 接受 | 2026-04-30 |
+| [006](006-ssh-pooling.md) | SSH 连接池化 | 接受 | 2026-05-09 |
+| [007](007-local-build.md) | 本地构建 + 流式传输 | 接受 | 2026-05-09 |
+| [008](008-1panel-role.md) | 1Panel 可替换定位 | 接受 | 2026-05-09 |
+| [009](009-execution-layers.md) | CommandSpec 统一数据类 | 接受 | 2026-05-09 |
+| [010](010-technical-direction.md) | 技术方向声明 | 接受 | 2026-05-09 |
 
 ---
 
