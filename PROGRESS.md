@@ -53,6 +53,7 @@ audience: both
 | B16 | auto-log B14 from post-commit hook | 已完成 | — | a38f42b (2026-05-09) |
 | B17 | remove all gstack remnants | 已完成 | — | 930a147 (2026-05-09) |
 | B18 | Alpha exit: lint 清零 + web/onepanel/ssh 测试覆盖提升 | 已完成 | C1 | 870 tests, 56.52% coverage, ruff 0 errors |
+| B19 | Alpha exit — lint 清零 + 128 new tests + coverage提升 | 已完成 | — | 4738a2a (2026-05-09) |
 
 ---
 
