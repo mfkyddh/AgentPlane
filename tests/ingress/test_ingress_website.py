@@ -16,7 +16,15 @@ from agentplane.domain.ingress.lifecycle import (
 )
 from agentplane.domain.ingress.models import IngressDefinition
 from tests.support.cli import run_agentplane_cli as run_cli
-from tests.support.constants import DOMAIN_TOKEN, FAKE_HOST_BINDING, TARGET_PROD
+from tests.support.constants import (
+    DOMAIN_LANE5,
+    DOMAIN_TOKEN,
+    DOMAIN_TOKEN_ORG,
+    FAKE_HOST_BINDING,
+    FAKE_PROXY_8080,
+    FAKE_PROXY_18080,
+    TARGET_PROD,
+)
 
 pytestmark = pytest.mark.e2e
 
@@ -32,8 +40,8 @@ def write_inventory(root: Path) -> None:
                     "public_ingresses": [
                         {
                             "alias": "token",
-                            "primary_domain": "token.example.org",
-                            "public_url": "https://token.example.org",
+                            "primary_domain": DOMAIN_TOKEN_ORG,
+                            "public_url": f"https://{DOMAIN_TOKEN_ORG}",
                             "proxy": f"http://{FAKE_HOST_BINDING}",
                             "config_file": "/data/1panel/www/conf.d/token.conf",
                             "ssl_id": 3,
@@ -90,9 +98,9 @@ def _write_inventory(tmp_path: Path, target: str, payload: dict) -> Path:
 def _definition() -> IngressDefinition:
     return IngressDefinition(
         alias="lane5",
-        primary_domain="lane5.example.com",
-        public_url="https://lane5.example.com",
-        proxy="http://127.0.0.1:8080",
+        primary_domain=DOMAIN_LANE5,
+        public_url=f"https://{DOMAIN_LANE5}",
+        proxy=FAKE_PROXY_8080,
         status="Running",
         config_file="/data/lane5/www/conf.d/lane5.conf",
         ssl_id=77,
@@ -125,7 +133,7 @@ class FakeWebsiteExecutor:
         self.requests: list[tuple[str, str, dict[str, object] | None]] = []
         self._existing = existing
         self._https = https or {}
-        self._ssl_detail = ssl_detail or {"id": 3, "status": "ready", "primaryDomain": "token.example.org"}
+        self._ssl_detail = ssl_detail or {"id": 3, "status": "ready", "primaryDomain": DOMAIN_TOKEN_ORG}
         self._openresty_status = openresty_status or {"id": 3, "name": "openresty", "status": "Running"}
         self._created = False
 
@@ -136,8 +144,8 @@ class FakeWebsiteExecutor:
                 return {"items": []}
             website_id = 9 if self._existing is None else int(self._existing["id"])
             alias = "token" if self._existing is None else str(self._existing["alias"])
-            primary_domain = "token.example.org" if self._existing is None else str(self._existing["primaryDomain"])
-            proxy = "http://127.0.0.1:18080" if self._existing is None else str(self._existing["proxy"])
+            primary_domain = DOMAIN_TOKEN_ORG if self._existing is None else str(self._existing["primaryDomain"])
+            proxy = FAKE_PROXY_18080 if self._existing is None else str(self._existing["proxy"])
             return {
                 "items": [
                     {
@@ -161,7 +169,7 @@ class FakeWebsiteExecutor:
             return {
                 "id": 9,
                 "alias": "token",
-                "primaryDomain": "token.example.org",
+                "primaryDomain": DOMAIN_TOKEN_ORG,
                 "proxy": f"http://{FAKE_HOST_BINDING}",
                 "status": "Running",
             }
@@ -212,8 +220,8 @@ class WebsiteCliTests(unittest.TestCase):
                 [
                     {
                         "alias": "token",
-                        "primary_domain": "token.example.org",
-                        "public_url": "https://token.example.org",
+                        "primary_domain": DOMAIN_TOKEN_ORG,
+                        "public_url": f"https://{DOMAIN_TOKEN_ORG}",
                         "proxy": f"http://{FAKE_HOST_BINDING}",
                         "status": "Running",
                         "config_file": "/data/1panel/www/conf.d/token.conf",
@@ -235,7 +243,7 @@ class WebsiteCliTests(unittest.TestCase):
                 existing={
                     "id": 7,
                     "alias": "token",
-                    "primaryDomain": "token.example.org",
+                    "primaryDomain": DOMAIN_TOKEN_ORG,
                     "proxy": f"http://{FAKE_HOST_BINDING}",
                     "status": "Running",
                 },
@@ -246,7 +254,7 @@ class WebsiteCliTests(unittest.TestCase):
                 payload = get_ingress(root, "prod0-main", "token")
 
             self.assertEqual("token", payload["ingress"]["alias"])
-            self.assertEqual("token.example.org", payload["ingress"]["primary_domain"])
+            self.assertEqual(DOMAIN_TOKEN_ORG, payload["ingress"]["primary_domain"])
             self.assertEqual(7, payload["live"]["ingress"]["id"])
             self.assertTrue(payload["live"]["https"]["enable"])
 
@@ -260,12 +268,12 @@ class WebsiteCliTests(unittest.TestCase):
                 existing={
                     "id": 7,
                     "alias": "token",
-                    "primaryDomain": "token.example.org",
+                    "primaryDomain": DOMAIN_TOKEN_ORG,
                     "proxy": "http://127.0.0.1:19090",
                     "status": "Running",
                 },
                 https={"enable": False, "httpsPort": "", "SSL": {"id": 99}},
-                ssl_detail={"id": 99, "status": "ready", "primaryDomain": "token.example.org"},
+                ssl_detail={"id": 99, "status": "ready", "primaryDomain": DOMAIN_TOKEN_ORG},
                 openresty_status={"id": 3, "name": "openresty", "status": "Running"},
             )
 

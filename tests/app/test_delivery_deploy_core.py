@@ -42,6 +42,8 @@ from tests.support.app_delivery_targets import (
 )
 from tests.support.app_resources import resource_relative, resource_root
 
+from tests.support.constants import FAKE_PROXY_18080, FAKE_PROXY_3000
+
 pytestmark = pytest.mark.e2e
 
 
@@ -272,7 +274,7 @@ class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
             log_text = log_file.read_text(encoding="utf-8")
             self.assertIn("docker network inspect zqf_network", log_text)
             self.assertIn("docker inspect sub2api-prod", log_text)
-            self.assertIn("http://127.0.0.1:18080/health", log_text)
+            self.assertIn(f"{FAKE_PROXY_18080}/health", log_text)
             self.assertIn("https://token.example.net:8443/health", log_text)
             self.assertIn("https://token.example.net:8443/", log_text)
 

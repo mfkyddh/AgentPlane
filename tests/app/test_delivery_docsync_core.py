@@ -42,6 +42,8 @@ from tests.support.app_delivery_targets import (
 )
 from tests.support.app_resources import resource_relative, resource_root
 
+from tests.support.constants import (FAKE_HOST_BINDING, FAKE_PROXY_3000)
+
 pytestmark = pytest.mark.e2e
 
 
@@ -143,7 +145,7 @@ class TestAppDeliveryDocSyncCliTests(unittest.TestCase):
                 "control_plane": "compose",
                 "container_name": "sub2api-prod",
                 "depends_on_containers": ["postgres18-prod", "redis7-prod"],
-                "host_binding": "127.0.0.1:18080",
+                "host_binding": FAKE_HOST_BINDING,
                 "public_url": "https://token.example.net:8443",
                 "rollback_entry": {"kind": "systemd", "service_name": "sub2api"},
                 "app_resource_summary": {
@@ -229,7 +231,7 @@ class TestAppDeliveryDocSyncCliTests(unittest.TestCase):
                 "container_name": "sampleapi-dev",
                 "depends_on_containers": ["postgres18-dev", "redis7-dev"],
                 "host_binding": "0.0.0.0:3000",
-                "public_url": "http://127.0.0.1:3000",
+                "public_url": FAKE_PROXY_3000,
                 "rollback_entry": {"kind": "none", "note": "dev only"},
                 "app_resource_summary": {
                     "postgres": {

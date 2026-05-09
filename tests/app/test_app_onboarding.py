@@ -13,6 +13,7 @@ from tests.support.constants import (
     CONTAINER_REDIS,
     FAKE_CONTAINER_PORT,
     FAKE_HOST_BINDING,
+    FAKE_PROXY_18080,
 )
 from tests.support.paths import REPO_ROOT
 
@@ -175,7 +176,7 @@ def _target_fixture_profile(target: str) -> dict[str, str]:
             "redis_container": "redis7-dev",
             "ssh_alias": "wsl",
             "data_suffix": "wsl",
-            "public_url": "http://127.0.0.1:18080",
+            "public_url": FAKE_PROXY_18080,
         }
     data_suffix = target.split("-", 1)[0]
     compose_suffix = data_suffix
@@ -296,7 +297,7 @@ def _write_minimal_repo_fixture(root: Path, *, app_id: str, target: str) -> Path
                         "alias": app_id,
                         "primary_domain": f"{app_id}.example.invalid",
                         "public_url": profile["public_url"].format(app_id=app_id),
-                        "proxy": "http://127.0.0.1:18080",
+                        "proxy": FAKE_PROXY_18080,
                         "config_file": f"/data/1panel/www/conf.d/{app_id}.conf",
                         "ssl_id": 1,
                         "status": "Running",

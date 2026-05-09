@@ -29,7 +29,7 @@ from agentplane.scripts.onepanel.fixture_manager import (
     resolve_suite_targets,
 )
 from agentplane.scripts.onepanel.verification import run_verification_suite
-from tests.support.constants import CONTAINER_OPENRESTY, CONTAINER_SUB2API, FAKE_HOST_BINDING
+from tests.support.constants import CONTAINER_OPENRESTY, CONTAINER_SUB2API, DOMAIN_1PANEL_ORG, DOMAIN_TOKEN_ORG, FAKE_HOST_BINDING, FAKE_PROXY_2096
 from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
@@ -74,7 +74,7 @@ class FakePanelExecutor:
                 "items": [
                     {
                         "id": 3,
-                        "primaryDomain": "1panel.example.org",
+                        "primaryDomain": DOMAIN_1PANEL_ORG,
                         "status": "ready",
                         "dir": "/data/1panel/www/certs/1panel-example-org",
                         "autoRenew": True,
@@ -87,9 +87,9 @@ class FakePanelExecutor:
                     {
                         "id": 4,
                         "alias": "1panel",
-                        "primaryDomain": "1panel.example.org",
+                        "primaryDomain": DOMAIN_1PANEL_ORG,
                         "status": "Running",
-                        "proxy": "http://127.0.0.1:2096",
+                        "proxy": FAKE_PROXY_2096,
                     }
                 ]
             }
@@ -119,7 +119,7 @@ class CreatingPanelExecutor(FakePanelExecutor):
                 "items": [
                     {
                         "id": 3,
-                        "primaryDomain": "token.example.org",
+                        "primaryDomain": DOMAIN_TOKEN_ORG,
                         "status": "ready",
                         "dir": "/data/1panel/www/certs/token-example-org",
                         "autoRenew": True,
@@ -133,7 +133,7 @@ class CreatingPanelExecutor(FakePanelExecutor):
                         {
                             "id": 5,
                             "alias": "token",
-                            "primaryDomain": "token.example.org",
+                            "primaryDomain": DOMAIN_TOKEN_ORG,
                             "status": "Running",
                             "proxy": f"http://{FAKE_HOST_BINDING}",
                         }
@@ -194,7 +194,7 @@ class OnePanelPublicIngressTests(unittest.TestCase):
 
             config = public_ingress.PublicIngressConfig.from_env_file(env_file)
 
-            self.assertEqual("1panel.example.org", config.domain)
+            self.assertEqual(DOMAIN_1PANEL_ORG, config.domain)
             self.assertTrue(config.record_proxied)
             self.assertEqual([443, 8443], config.https_ports)
             self.assertEqual("cloudflare-example", config.dns_account_name)
@@ -208,7 +208,7 @@ class OnePanelPublicIngressTests(unittest.TestCase):
                     "success": True,
                     "result": {
                         "id": "record-1",
-                        "name": "1panel.example.org",
+                        "name": DOMAIN_1PANEL_ORG,
                         "content": "198.51.100.20",
                         "proxied": True,
                     },
@@ -218,7 +218,7 @@ class OnePanelPublicIngressTests(unittest.TestCase):
 
         result = client.ensure_dns_record(
             zone_name="example.org",
-            record_name="1panel.example.org",
+            record_name=DOMAIN_1PANEL_ORG,
             record_type="A",
             content="198.51.100.20",
             proxied=True,
@@ -294,7 +294,7 @@ class OnePanelPublicIngressTests(unittest.TestCase):
 
     def test_manager_noops_when_everything_already_exists(self) -> None:
         config = public_ingress.PublicIngressConfig(
-            domain="1panel.example.org",
+            domain=DOMAIN_1PANEL_ORG,
             zone_name="example.org",
             record_type="A",
             record_content="198.51.100.20",
@@ -308,10 +308,10 @@ class OnePanelPublicIngressTests(unittest.TestCase):
             website_alias="1panel",
             website_type="proxy",
             website_group_id=1,
-            website_proxy="http://127.0.0.1:2096",
+            website_proxy=FAKE_PROXY_2096,
             website_remark="prod0-main 1Panel public ingress",
             website_ipv6=True,
-            cert_primary_domain="1panel.example.org",
+            cert_primary_domain=DOMAIN_1PANEL_ORG,
             cert_other_domains="",
             cert_dir="/data/1panel/www/certs/1panel-example-org",
             cert_description="prod0-main 1Panel public ingress",
@@ -337,7 +337,7 @@ class OnePanelPublicIngressTests(unittest.TestCase):
 
     def test_manager_creates_new_proxy_website_with_app_type_new(self) -> None:
         config = public_ingress.PublicIngressConfig(
-            domain="token.example.org",
+            domain=DOMAIN_TOKEN_ORG,
             zone_name="example.org",
             record_type="A",
             record_content="198.51.100.20",
@@ -354,7 +354,7 @@ class OnePanelPublicIngressTests(unittest.TestCase):
             website_proxy=f"http://{FAKE_HOST_BINDING}",
             website_remark="prod0-main sub2api public ingress",
             website_ipv6=True,
-            cert_primary_domain="token.example.org",
+            cert_primary_domain=DOMAIN_TOKEN_ORG,
             cert_other_domains="",
             cert_dir="/data/1panel/www/certs/token-example-org",
             cert_description="prod0-main sub2api public ingress",
@@ -380,7 +380,7 @@ class OnePanelPublicIngressTests(unittest.TestCase):
         )
         self.assertEqual("new", create_request["appType"])
         self.assertEqual("proxy", create_request["type"])
-        self.assertEqual([{"domain": "token.example.org", "port": 80, "ssl": False}], create_request["domains"])
+        self.assertEqual([{"domain": DOMAIN_TOKEN_ORG, "port": 80, "ssl": False}], create_request["domains"])
         self.assertEqual(5, result["ingress"]["id"])
 
 

@@ -24,10 +24,13 @@ from tests.support.constants import (
     CONTAINER_POSTGRES,
     CONTAINER_REDIS,
     CONTAINER_SUB2API,
+    DOMAIN_SAMPLEAPI,
     DOMAIN_TOKEN,
+    FAKE_BINDING_3000,
     FAKE_CONTAINER_PORT,
     FAKE_HEALTHCHECK_PATH,
     FAKE_HOST_BINDING,
+    FAKE_PROXY_3000,
     PG_DATABASE_PROD,
     PG_USER_PROD,
     REDIS_DB,
@@ -404,7 +407,7 @@ def write_sampleapi_contract(
         minio_access_key = "sampleapi_wsl"
         minio_policy_name = "wsl-sampleapi-rw"
         domain = "sampleapi.local"
-        public_url = "http://127.0.0.1:3000"
+        public_url = FAKE_PROXY_3000
         docs_path = "docs/AGENTPLANE_DEPLOYMENT.wsl.md"
         previous_control_plane = rollback_entry or {
             "kind": "none",
@@ -417,8 +420,8 @@ def write_sampleapi_contract(
         minio_bucket = "prod0-sampleapi"
         minio_access_key = "sampleapi_prod0"
         minio_policy_name = "prod0-sampleapi-rw"
-        domain = "sampleapi.example.net"
-        public_url = "https://sampleapi.example.net:8443"
+        domain = DOMAIN_SAMPLEAPI
+        public_url = f"https://{DOMAIN_SAMPLEAPI}:8443"
         docs_path = "docs/AGENTPLANE_DEPLOYMENT.md"
         previous_control_plane = rollback_entry or {
             "kind": "1panel-app",
@@ -462,7 +465,7 @@ def write_sampleapi_contract(
             "kind": "compose",
             "container_name": "sampleapi-prod",
             "container_port": 3000,
-            "host_binding": "0.0.0.0:3000" if target == "wsl" else "127.0.0.1:3000",
+            "host_binding": "0.0.0.0:3000" if target == "wsl" else FAKE_BINDING_3000,
             "healthcheck": {"path": "/api/status", "expected_status": 200},
             "env_template": f"deploy/prod/sampleapi-{target_alias}.env.example",
         },
@@ -557,7 +560,7 @@ def write_sampleapi_compose_templates(root: Path) -> None:
                 "container_name": "sampleapi-prod",
                 "command": ["--log-dir", "/app/logs"],
                 "env_file": ["../../../secrets/services/sampleapi.prod0.env"],
-                "ports": ["127.0.0.1:3000:3000"],
+                "ports": [f"{FAKE_BINDING_3000}:3000"],
                 "volumes": ["/data/sampleapi/data:/data", "/data/sampleapi/logs:/app/logs"],
                 "networks": ["zqf_network"],
             }

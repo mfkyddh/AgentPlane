@@ -20,6 +20,8 @@ from tests.support.service_cli import (
     write_inventory,
 )
 
+from tests.support.constants import DOMAIN_A, DOMAIN_B, DOMAIN_MIGRATED, DOMAIN_NGINX, DOMAIN_PROXY, DOMAIN_RELAY, DOMAIN_TOKEN, DOMAIN_TOKEN_ORG
+
 pytestmark = pytest.mark.e2e
 
 
@@ -219,7 +221,7 @@ class ServiceCliTests(unittest.TestCase):
             declared = payload["payload"]["service"]["declared"]
             self.assertEqual("0.0.0.0:24443", declared["host_binding"])
             endpoint = declared["public_endpoint"]
-            self.assertEqual("relay.example.org", endpoint["domain"])
+            self.assertEqual(DOMAIN_RELAY, endpoint["domain"])
 
             verify_result = run_cli(
                 "service",
@@ -279,7 +281,7 @@ class ServiceCliTests(unittest.TestCase):
                             {
                                 "name": "旧节点A",
                                 "type": "ss",
-                                "server": "a.example.com",
+                                "server": DOMAIN_A,
                                 "port": 443,
                                 "cipher": "aes-128-gcm",
                                 "password": "x",
@@ -287,7 +289,7 @@ class ServiceCliTests(unittest.TestCase):
                             {
                                 "name": "旧节点B",
                                 "type": "ss",
-                                "server": "b.example.com",
+                                "server": DOMAIN_B,
                                 "port": 443,
                                 "cipher": "aes-128-gcm",
                                 "password": "y",
@@ -339,13 +341,13 @@ class ServiceCliTests(unittest.TestCase):
             self.assertEqual("service", payload["command"])
             self.assertEqual("materialize", payload["action"])
             self.assertEqual("clash-local-profile", payload["payload"]["artifact"])
-            self.assertEqual("relay.example.org", payload["payload"]["resolved"]["server"])
+            self.assertEqual(DOMAIN_RELAY, payload["payload"]["resolved"]["server"])
             self.assertEqual(24443, payload["payload"]["resolved"]["port"])
             self.assertEqual("Prod2|Relay", payload["payload"]["resolved"]["node_name"])
 
             rendered = yaml.safe_load(output_file.read_text(encoding="utf-8"))
             self.assertEqual("Prod2|Relay", rendered["proxies"][0]["name"])
-            self.assertEqual("relay.example.org", rendered["proxies"][0]["server"])
+            self.assertEqual(DOMAIN_RELAY, rendered["proxies"][0]["server"])
             self.assertEqual(["Prod2|Relay", "直接连接"], rendered["proxy-groups"][0]["proxies"])
             self.assertEqual(
                 ["DOMAIN-SUFFIX,example.org,DIRECT", "DOMAIN-SUFFIX,openai.com,GPT", "MATCH,国外流量"],

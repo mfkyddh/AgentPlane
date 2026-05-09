@@ -42,6 +42,8 @@ from tests.support.app_delivery_targets import (
 )
 from tests.support.app_resources import resource_relative, resource_root
 
+from tests.support.constants import (FAKE_BINDING_18081)
+
 pytestmark = pytest.mark.e2e
 
 
@@ -239,7 +241,7 @@ class TestAppDeliveryValidateCliTests(unittest.TestCase):
             payload["artifact"]["image_name"] = "sample-register-v2-prod"
             payload["runtime"]["container_name"] = "sample-register-v2-prod"
             payload["runtime"]["container_port"] = 18081
-            payload["runtime"]["host_binding"] = "127.0.0.1:18081"
+            payload["runtime"]["host_binding"] = FAKE_BINDING_18081
             payload["runtime"]["healthcheck"] = {"path": "/healthz", "expected_status": 200}
             payload["data"]["mounts"] = [{"host_path": "/data/sample-register-v2/data", "container_path": "/data"}]
             payload["inventory"]["service_key"] = "sample-register-v2"

@@ -20,6 +20,8 @@ from tests.support.service_cli import (
     write_inventory,
 )
 
+from tests.support.constants import DOMAIN_RELAY
+
 pytestmark = pytest.mark.e2e
 
 
@@ -100,7 +102,7 @@ class ServicePublicEndpointCliTests(unittest.TestCase):
             self.assertEqual("reconcile", plan_payload["payload"]["operation"])
             step = plan_payload["payload"]["steps"][0]
             self.assertIn("ensure_cloudflare_dns_record.py", step["display"])
-            self.assertIn("relay.example.org", step["display"])
+            self.assertIn(DOMAIN_RELAY, step["display"])
 
             bin_dir = root / "bin"
             bin_dir.mkdir(parents=True, exist_ok=True)

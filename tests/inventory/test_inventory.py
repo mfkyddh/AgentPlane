@@ -12,6 +12,8 @@ from agentplane.scripts.onepanel.ledger import _tenant_rows
 from tests.support.cli import run_agentplane_cli as run_cli
 from tests.support.paths import REPO_ROOT
 
+from tests.support.constants import DOMAIN_TOKEN
+
 pytestmark = pytest.mark.e2e
 
 

@@ -42,6 +42,8 @@ from tests.support.app_delivery_targets import (
 )
 from tests.support.app_resources import resource_relative, resource_root
 
+from tests.support.constants import (FAKE_BINDING_18081, FAKE_PROXY_18081, FAKE_PROXY_3000)
+
 pytestmark = pytest.mark.e2e
 
 
@@ -122,7 +124,7 @@ class TestAppDeliveryInventoryCliTests(unittest.TestCase):
             self.assertEqual(["postgres18-dev", "redis7-dev"], app_entry["depends_on_containers"])
             self.assertEqual([str(root / "secrets" / "services" / "sampleapi.wsl.env")], app_entry["config_files"])
             self.assertEqual("0.0.0.0:3000", app_entry["host_binding"])
-            self.assertEqual("http://127.0.0.1:3000", app_entry["public_url"])
+            self.assertEqual(FAKE_PROXY_3000, app_entry["public_url"])
             self.assertEqual(["zqf_network"], app_entry["docker_networks"])
             self.assertEqual("sampleapi_wsl", app_entry["app_resource_summary"]["postgres"]["database"])
             self.assertEqual("sampleapi:wsl:", app_entry["app_resource_summary"]["redis"]["key_prefix"])
@@ -246,7 +248,7 @@ class TestAppDeliveryInventoryCliTests(unittest.TestCase):
             payload["artifact"]["image_name"] = "sample-register-v2-prod"
             payload["runtime"]["container_name"] = "sample-register-v2-prod"
             payload["runtime"]["container_port"] = 18081
-            payload["runtime"]["host_binding"] = "127.0.0.1:18081"
+            payload["runtime"]["host_binding"] = FAKE_BINDING_18081
             payload["runtime"]["config_files"] = ["/opt/agentplane/secrets/services/sample-register-v2.prod0.env"]
             payload["runtime"]["healthcheck"] = {"path": "/healthz", "expected_status": 200}
             payload["data"]["mounts"] = [{"host_path": "/data/sample-register-v2/data", "container_path": "/data"}]
@@ -261,7 +263,7 @@ class TestAppDeliveryInventoryCliTests(unittest.TestCase):
             inventory_payload["services"]["chatgpt-register-wsl"] = {
                 "control_plane": "compose",
                 "container_name": "sample-register-v2-wsl",
-                "public_url": "http://127.0.0.1:18081",
+                "public_url": FAKE_PROXY_18081,
             }
             inventory_file.write_text(json.dumps(inventory_payload, ensure_ascii=False, indent=2), encoding="utf-8")
 

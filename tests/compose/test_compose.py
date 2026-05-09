@@ -12,6 +12,7 @@ import pytest
 import yaml
 from agentplane.domain.service.materialize import render_clash_local_profile
 from agentplane.scripts.internal import ensure_cloudflare_dns_record  # type: ignore  # noqa: E402
+from tests.support.constants import DOMAIN_A, DOMAIN_B, DOMAIN_RELAY, DOMAIN_RELAY_COM
 from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
@@ -74,7 +75,7 @@ class RelayTrojanDnsCliTests(unittest.TestCase):
                         "--zone-name",
                         "example.org",
                         "--record-name",
-                        "relay.example.org",
+                        DOMAIN_RELAY,
                         "--record-content",
                         "198.51.100.20",
                     ]
@@ -84,7 +85,7 @@ class RelayTrojanDnsCliTests(unittest.TestCase):
         payload = json.loads(stdout.getvalue())
         self.assertTrue(payload["ok"])
         self.assertEqual("example.org", payload["zone_name"])
-        self.assertEqual("relay.example.org", payload["record_name"])
+        self.assertEqual(DOMAIN_RELAY, payload["record_name"])
         self.assertEqual("A", payload["record_type"])
         self.assertEqual("198.51.100.20", payload["record_content"])
         self.assertFalse(payload["proxied"])
@@ -107,7 +108,7 @@ class RelayTrojanDnsCliTests(unittest.TestCase):
                         "--zone-name",
                         "example.com",
                         "--record-name",
-                        "relay.example.com",
+                        DOMAIN_RELAY_COM,
                         "--record-type",
                         "AAAA",
                         "--record-content",
@@ -120,7 +121,7 @@ class RelayTrojanDnsCliTests(unittest.TestCase):
         self.assertEqual(0, exit_code)
         payload = json.loads(stdout.getvalue())
         self.assertEqual("example.com", payload["zone_name"])
-        self.assertEqual("relay.example.com", payload["record_name"])
+        self.assertEqual(DOMAIN_RELAY_COM, payload["record_name"])
         self.assertEqual("AAAA", payload["record_type"])
         self.assertEqual("2001:db8::1", payload["record_content"])
         self.assertTrue(payload["proxied"])
@@ -140,7 +141,7 @@ class RelayTrojanProfileRendererTests(unittest.TestCase):
                 {
                     "name": "旧节点A",
                     "type": "ss",
-                    "server": "a.example.com",
+                    "server": DOMAIN_A,
                     "port": 443,
                     "cipher": "aes-128-gcm",
                     "password": "x",
@@ -148,7 +149,7 @@ class RelayTrojanProfileRendererTests(unittest.TestCase):
                 {
                     "name": "旧节点B",
                     "type": "ss",
-                    "server": "b.example.com",
+                    "server": DOMAIN_B,
                     "port": 443,
                     "cipher": "aes-128-gcm",
                     "password": "y",
@@ -172,20 +173,20 @@ class RelayTrojanProfileRendererTests(unittest.TestCase):
             source,
             merge_template=merge,
             node_name="Prod2|Relay",
-            server="relay.example.org",
+            server=DOMAIN_RELAY,
             port=24443,
             password="test-password",
-            sni="relay.example.org",
+            sni=DOMAIN_RELAY,
         )
 
         self.assertEqual(
             {
                 "name": "Prod2|Relay",
                 "type": "trojan",
-                "server": "relay.example.org",
+                "server": DOMAIN_RELAY,
                 "port": 24443,
                 "password": "test-password",
-                "sni": "relay.example.org",
+                "sni": DOMAIN_RELAY,
                 "udp": True,
                 "skip-cert-verify": False,
             },

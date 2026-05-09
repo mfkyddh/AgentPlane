@@ -24,6 +24,15 @@ from agentplane.domain.ingress.lifecycle import (
     plan_ingress_truth_onboard,
 )
 from agentplane.domain.ingress.models import IngressDefinition
+from tests.support.constants import (
+    DOMAIN_MIGRATED,
+    DOMAIN_NGINX_COM,
+    DOMAIN_SECOND,
+    DOMAIN_TEST,
+    FAKE_PROXY_8080,
+    FAKE_PROXY_9090,
+    TARGET_PROD,
+)
 
 pytestmark = [pytest.mark.unit]
 
@@ -44,8 +53,8 @@ class FakeWebsiteExecutor:
                 return {"items": []}
             website_id = 9 if self._existing is None else int(self._existing["id"])
             alias = "migrated-app" if self._existing is None else str(self._existing["alias"])
-            primary_domain = "migrated.example.com" if self._existing is None else str(self._existing["primaryDomain"])
-            proxy = "http://127.0.0.1:9090" if self._existing is None else str(self._existing["proxy"])
+            primary_domain = DOMAIN_MIGRATED if self._existing is None else str(self._existing["primaryDomain"])
+            proxy = FAKE_PROXY_9090 if self._existing is None else str(self._existing["proxy"])
             return {
                 "items": [
                     {
@@ -69,8 +78,8 @@ class FakeWebsiteExecutor:
             return {
                 "id": 9,
                 "alias": "migrated-app",
-                "primaryDomain": "migrated.example.com",
-                "proxy": "http://127.0.0.1:9090",
+                "primaryDomain": DOMAIN_MIGRATED,
+                "proxy": FAKE_PROXY_9090,
                 "status": "Running",
             }
         if path == "/api/v2/websites/9/https":
@@ -103,9 +112,9 @@ def _migration_definition() -> IngressDefinition:
     """A representative definition for a site being migrated."""
     return IngressDefinition(
         alias="migrated-app",
-        primary_domain="migrated.example.com",
-        public_url="https://migrated.example.com",
-        proxy="http://127.0.0.1:9090",
+        primary_domain=DOMAIN_MIGRATED,
+        public_url=f"https://{DOMAIN_MIGRATED}",
+        proxy=FAKE_PROXY_9090,
         status="Running",
         config_file="/data/1panel/www/conf.d/migrated-app.conf",
         ssl_id=42,
@@ -116,9 +125,9 @@ def _old_definition() -> IngressDefinition:
     """The existing entry before migration (different proxy / ssl)."""
     return IngressDefinition(
         alias="migrated-app",
-        primary_domain="migrated.example.com",
-        public_url="https://migrated.example.com",
-        proxy="http://127.0.0.1:8080",
+        primary_domain=DOMAIN_MIGRATED,
+        public_url=f"https://{DOMAIN_MIGRATED}",
+        proxy=FAKE_PROXY_8080,
         status="Running",
         config_file="/data/1panel/www/conf.d/migrated-app.conf",
         ssl_id=10,
@@ -169,8 +178,8 @@ class TestMigrationLifecycle(unittest.TestCase):
                 existing={
                     "id": 7,
                     "alias": "migrated-app",
-                    "primaryDomain": "migrated.example.com",
-                    "proxy": "http://127.0.0.1:8080",
+                    "primaryDomain": DOMAIN_MIGRATED,
+                    "proxy": FAKE_PROXY_8080,
                     "status": "Running",
                 },
                 https={"enable": True, "httpsPort": "443", "SSL": {"id": 10}},
@@ -343,8 +352,8 @@ class TestEdgeCases(unittest.TestCase):
                 _entry_from(_migration_definition()),
                 {
                     "alias": "second",
-                    "primary_domain": "second.example.com",
-                    "public_url": "https://second.example.com",
+                    "primary_domain": DOMAIN_SECOND,
+                    "public_url": f"https://{DOMAIN_SECOND}",
                     "proxy": "http://127.0.0.1:5000",
                     "status": "Running",
                 },
@@ -360,9 +369,9 @@ class TestEdgeCases(unittest.TestCase):
         """IngressDefinition has sensible defaults for optional fields."""
         d = IngressDefinition(
             alias="test",
-            primary_domain="test.example.com",
-            public_url="https://test.example.com",
-            proxy="http://127.0.0.1:8080",
+            primary_domain=DOMAIN_TEST,
+            public_url=f"https://{DOMAIN_SECOND}",
+            proxy=FAKE_PROXY_8080,
         )
         self.assertEqual(d.status, "")
         self.assertEqual(d.config_file, "")
@@ -377,8 +386,8 @@ class TestEdgeCases(unittest.TestCase):
             _write_inventory(root, TARGET, {"services": {"public_ingresses": []}})
             definition = IngressDefinition(
                 alias="nginx-app",
-                primary_domain="nginx.example.com",
-                public_url="https://nginx.example.com",
+                primary_domain=DOMAIN_NGINX_COM,
+                public_url=f"https://{DOMAIN_NGINX_COM}",
                 proxy="http://127.0.0.1:7070",
                 status="Running",
                 control_plane="nginx-ui",

@@ -8,6 +8,8 @@ from pathlib import Path
 import pytest
 import yaml
 
+from tests.support.constants import (FAKE_HOST_BINDING, FAKE_PROXY_18080)
+
 pytestmark = pytest.mark.e2e
 
 
@@ -29,7 +31,7 @@ def _write_contract(app_root: Path, *, app_id: str, container_name: str | None =
             "kind": "compose",
             "container_name": container_name or f"{app_id}-dev",
             "container_port": 8080,
-            "host_binding": "127.0.0.1:18080",
+            "host_binding": FAKE_HOST_BINDING,
             "healthcheck": {"path": "/health", "expected_status": 200},
             "env_template": "deploy/.env.example",
         },
@@ -40,7 +42,7 @@ def _write_contract(app_root: Path, *, app_id: str, container_name: str | None =
                 {
                     "alias": "app",
                     "domain": "demo.local",
-                    "public_url": "http://127.0.0.1:18080",
+                    "public_url": FAKE_PROXY_18080,
                     "website_object": "demo",
                 }
             ],

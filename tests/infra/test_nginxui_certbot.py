@@ -19,6 +19,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from agentplane.adapters.cloudflare import CloudflareClient, CloudflareError, load_shell_env_file, parse_bool
 from agentplane.scripts.internal.ensure_cloudflare_dns_record import ensure_cloudflare_dns_record
+from tests.support.constants import DOMAIN_MIGRATED, DOMAIN_NGINX, DOMAIN_TOKEN, DOMAIN_TOKEN_ORG
 
 
 # ---------------------------------------------------------------------------
@@ -60,7 +61,7 @@ class TestCertbotCommandConstruction:
     @pytest.mark.unit
     def test_dry_run_command_shape(self) -> None:
         """The Skill specifies --dry-run should precede the real request."""
-        domains = ["example.net", "nginx.example.net", "token.example.net"]
+        domains = ["example.net", DOMAIN_NGINX, DOMAIN_TOKEN]
         args = list(self.CERTBOT_BASE_ARGS)
         args.extend(["--dry-run", "-n", "--agree-tos", "-m", "admin@example.net"])
         for domain in domains:
@@ -75,7 +76,7 @@ class TestCertbotCommandConstruction:
     @pytest.mark.unit
     def test_real_run_omits_dry_run_flag(self) -> None:
         """After dry-run succeeds, the real command should not include --dry-run."""
-        domains = ["example.net", "nginx.example.net", "token.example.net"]
+        domains = ["example.net", DOMAIN_NGINX, DOMAIN_TOKEN]
         args = list(self.CERTBOT_BASE_ARGS)
         args.extend(["-n", "--agree-tos", "-m", "admin@example.net"])
         for domain in domains:
@@ -251,7 +252,7 @@ class TestDns01CertIssuanceScenario:
             assert zone_id == "zone-1"
 
         # Step 7-8: Certbot command (dry-run then real)
-        domains = ["example.net", "nginx.example.net", "token.example.net"]
+        domains = ["example.net", DOMAIN_NGINX, DOMAIN_TOKEN]
         base_cmd = [
             "docker",
             "run",

@@ -19,6 +19,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from agentplane.adapters.cloudflare import CloudflareClient, CloudflareError, load_shell_env_file, parse_bool
 from agentplane.scripts.internal.ensure_cloudflare_dns_record import ensure_cloudflare_dns_record
+from tests.support.constants import DOMAIN_MISSING, DOMAIN_NGINX, DOMAIN_PROXY, DOMAIN_TOKEN
 
 # ---------------------------------------------------------------------------
 # load_shell_env_file
@@ -177,13 +178,13 @@ class TestCloudflareClientDnsRecord:
             patch.object(client, "get_zone_id", return_value="zone-1"),
             patch.object(client, "request", return_value={"success": True, "result": []}),
         ):
-            result = client.find_dns_record(zone_name="example.net", record_name="missing.example.net", record_type="A")
+            result = client.find_dns_record(zone_name="example.net", record_name=DOMAIN_MISSING, record_type="A")
         assert result is None
 
     @pytest.mark.unit
     def test_ensure_dns_record_creates_when_missing(self) -> None:
         client = CloudflareClient("test-token")
-        created_record = {"id": "rec-new", "name": "nginx.example.net", "type": "A", "content": "203.0.113.20"}
+        created_record = {"id": "rec-new", "name": DOMAIN_NGINX, "type": "A", "content": "203.0.113.20"}
         with (
             patch.object(client, "get_zone_id", return_value="zone-1"),
             patch.object(
@@ -197,7 +198,7 @@ class TestCloudflareClientDnsRecord:
         ):
             result = client.ensure_dns_record(
                 zone_name="example.net",
-                record_name="nginx.example.net",
+                record_name=DOMAIN_NGINX,
                 record_type="A",
                 content="203.0.113.20",
                 proxied=False,
@@ -289,14 +290,14 @@ class TestEnsureCloudflareDnsRecordScript:
             result = ensure_cloudflare_dns_record(
                 cloudflare_env_file=env_file,
                 zone_name="example.net",
-                record_name="nginx.example.net",
+                record_name=DOMAIN_NGINX,
                 record_type="A",
                 record_content="203.0.113.20",
                 proxied=False,
             )
         assert result["ok"] is True
         assert result["zone_name"] == "example.net"
-        assert result["record_name"] == "nginx.example.net"
+        assert result["record_name"] == DOMAIN_NGINX
         assert result["action"] == "created"
         assert result["changed"] is True
 
@@ -313,17 +314,17 @@ class TestEnsureCloudflareDnsRecordScript:
             ensure_cloudflare_dns_record(
                 cloudflare_env_file=env_file,
                 zone_name="example.net",
-                record_name="token.example.net",
+                record_name=DOMAIN_TOKEN,
                 record_type="CNAME",
-                record_content="proxy.example.com",
+                record_content=DOMAIN_PROXY,
                 proxied=True,
             )
         MockClient.assert_called_once_with("cf-abc")
         MockClient.return_value.ensure_dns_record.assert_called_once_with(
             zone_name="example.net",
-            record_name="token.example.net",
+            record_name=DOMAIN_TOKEN,
             record_type="CNAME",
-            content="proxy.example.com",
+            content=DOMAIN_PROXY,
             proxied=True,
         )
 
@@ -401,14 +402,14 @@ class TestSkillDomainValidation:
     @pytest.mark.unit
     def test_multi_domain_cert_command(self) -> None:
         """The Skill issues certs for multiple subdomains in one call."""
-        domains = ["example.net", "nginx.example.net", "token.example.net"]
+        domains = ["example.net", DOMAIN_NGINX, DOMAIN_TOKEN]
         cmd_parts = []
         for d in domains:
             cmd_parts.extend(["-d", d])
         assert cmd_parts.count("-d") == 3
         assert "example.net" in cmd_parts
-        assert "nginx.example.net" in cmd_parts
-        assert "token.example.net" in cmd_parts
+        assert DOMAIN_NGINX in cmd_parts
+        assert DOMAIN_TOKEN in cmd_parts
 
     @pytest.mark.unit
     def test_nginx_container_name_convention(self) -> None:

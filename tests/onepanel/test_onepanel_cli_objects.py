@@ -29,6 +29,8 @@ from agentplane.scripts.onepanel.object_api import (
 from tests.support.cli import run_agentplane_cli as run_cli
 from tests.support.paths import REPO_ROOT
 
+from tests.support.constants import DOMAIN_1PANEL, DOMAIN_MIGRATED, DOMAIN_NGINX, DOMAIN_PANEL_NET, DOMAIN_PROXY, DOMAIN_TOKEN_ORG
+
 pytestmark = pytest.mark.e2e
 
 
@@ -39,7 +41,7 @@ class FakeExecutor(FakeLikeExecutorProtocol):
     def api_request(self, method: str, path: str, body: dict[str, object] | None = None) -> object:
         self.calls.append((method, path, body))
         if path == "/api/v2/core/settings/search":
-            return {"systemVersion": "v2.1.7", "bindDomain": "1panel.example.com", "apiKey": "panel-secret-key"}
+            return {"systemVersion": "v2.1.7", "bindDomain": DOMAIN_1PANEL, "apiKey": "panel-secret-key"}
         if path == "/api/v2/core/settings/update":
             return {"ok": True}
         if path == "/api/v2/cronjobs/search":
@@ -160,7 +162,7 @@ class OnePanelObjectCliHandlerTests(unittest.TestCase):
                 "env": "wsl",
                 "onepanel_panel_action": "apply",
                 "key": "bindDomain",
-                "value": "panel.example.net",
+                "value": DOMAIN_PANEL_NET,
                 "execute": True,
             },
         )()
@@ -172,7 +174,7 @@ class OnePanelObjectCliHandlerTests(unittest.TestCase):
         self.assertEqual("apply", payload["action"])
         self.assertTrue(payload["payload"]["verified"]["ok"])
         self.assertIn(
-            ("POST", "/api/v2/core/settings/update", {"key": "bindDomain", "value": "panel.example.net"}),
+            ("POST", "/api/v2/core/settings/update", {"key": "bindDomain", "value": DOMAIN_PANEL_NET}),
             executor.calls,
         )
 

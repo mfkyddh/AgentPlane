@@ -29,7 +29,7 @@ from agentplane.scripts.onepanel.fixture_manager import (
     resolve_suite_targets,
 )
 from agentplane.scripts.onepanel.verification import run_verification_suite
-from tests.support.constants import CONTAINER_OPENRESTY, CONTAINER_SUB2API, FAKE_HOST_BINDING
+from tests.support.constants import CONTAINER_OPENRESTY, CONTAINER_SUB2API, DOMAIN_1PANEL, DOMAIN_TOKEN_ORG, FAKE_HOST_BINDING
 from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.e2e
@@ -55,12 +55,12 @@ class FakeExecutor:
         if path == "/api/v2/core/settings/search":
             return {
                 "systemVersion": "v2.1.7",
-                "bindDomain": "1panel.example.com",
+                "bindDomain": DOMAIN_1PANEL,
                 "apiKey": "raw-panel-api-key",
                 "proxyPasswd": "raw-proxy-password",
             }
         if path == "/api/v2/websites/search":
-            return {"items": [{"id": 4, "alias": "token", "primaryDomain": "token.example.org"}]}
+            return {"items": [{"id": 4, "alias": "token", "primaryDomain": DOMAIN_TOKEN_ORG}]}
         if path == "/api/v2/websites/4":
             return {"id": 4, "alias": "token", "proxy": f"http://{FAKE_HOST_BINDING}"}
         if path == "/api/v2/websites/4/https":

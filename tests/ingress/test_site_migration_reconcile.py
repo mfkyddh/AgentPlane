@@ -24,6 +24,14 @@ from agentplane.domain.ingress.lifecycle import (
     plan_ingress_truth_onboard,
 )
 from agentplane.domain.ingress.models import IngressDefinition
+from tests.support.constants import (
+    DOMAIN_KEEP,
+    DOMAIN_MIGRATED,
+    DOMAIN_OTHER,
+    FAKE_PROXY_8080,
+    FAKE_PROXY_9090,
+    TARGET_PROD,
+)
 
 pytestmark = [pytest.mark.unit]
 
@@ -49,9 +57,9 @@ def _migration_definition() -> IngressDefinition:
     """A representative definition for a site being migrated."""
     return IngressDefinition(
         alias="migrated-app",
-        primary_domain="migrated.example.com",
-        public_url="https://migrated.example.com",
-        proxy="http://127.0.0.1:9090",
+        primary_domain=DOMAIN_MIGRATED,
+        public_url=f"https://{DOMAIN_MIGRATED}",
+        proxy=FAKE_PROXY_9090,
         status="Running",
         config_file="/data/1panel/www/conf.d/migrated-app.conf",
         ssl_id=42,
@@ -62,9 +70,9 @@ def _old_definition() -> IngressDefinition:
     """The existing entry before migration (different proxy / ssl)."""
     return IngressDefinition(
         alias="migrated-app",
-        primary_domain="migrated.example.com",
-        public_url="https://migrated.example.com",
-        proxy="http://127.0.0.1:8080",
+        primary_domain=DOMAIN_MIGRATED,
+        public_url=f"https://{DOMAIN_MIGRATED}",
+        proxy=FAKE_PROXY_8080,
         status="Running",
         config_file="/data/1panel/www/conf.d/migrated-app.conf",
         ssl_id=10,
@@ -101,8 +109,8 @@ class FakeWebsiteExecutor:
                 return {"items": []}
             website_id = 9 if self._existing is None else int(self._existing["id"])
             alias = "migrated-app" if self._existing is None else str(self._existing["alias"])
-            primary_domain = "migrated.example.com" if self._existing is None else str(self._existing["primaryDomain"])
-            proxy = "http://127.0.0.1:9090" if self._existing is None else str(self._existing["proxy"])
+            primary_domain = DOMAIN_MIGRATED if self._existing is None else str(self._existing["primaryDomain"])
+            proxy = FAKE_PROXY_9090 if self._existing is None else str(self._existing["proxy"])
             return {
                 "items": [
                     {
@@ -126,8 +134,8 @@ class FakeWebsiteExecutor:
             return {
                 "id": 9,
                 "alias": "migrated-app",
-                "primaryDomain": "migrated.example.com",
-                "proxy": "http://127.0.0.1:9090",
+                "primaryDomain": DOMAIN_MIGRATED,
+                "proxy": FAKE_PROXY_9090,
                 "status": "Running",
             }
         if path == "/api/v2/websites/9/https":
@@ -152,8 +160,8 @@ class TestParallelValidation(unittest.TestCase):
             root = Path(tmp)
             other_entry = {
                 "alias": "other-site",
-                "primary_domain": "other.example.com",
-                "public_url": "https://other.example.com",
+                "primary_domain": DOMAIN_OTHER,
+                "public_url": f"https://{DOMAIN_OTHER}",
                 "proxy": "http://127.0.0.1:3000",
                 "status": "Running",
             }
@@ -175,8 +183,8 @@ class TestParallelValidation(unittest.TestCase):
             root = Path(tmp)
             other_entry = {
                 "alias": "keep-me",
-                "primary_domain": "keep.example.com",
-                "public_url": "https://keep.example.com",
+                "primary_domain": DOMAIN_KEEP,
+                "public_url": f"https://{DOMAIN_KEEP}",
                 "proxy": "http://127.0.0.1:4000",
                 "status": "Running",
             }
@@ -255,8 +263,8 @@ class TestIngressReconcile(unittest.TestCase):
                 existing={
                     "id": 7,
                     "alias": "migrated-app",
-                    "primaryDomain": "migrated.example.com",
-                    "proxy": "http://127.0.0.1:9090",
+                    "primaryDomain": DOMAIN_MIGRATED,
+                    "proxy": FAKE_PROXY_9090,
                     "status": "Running",
                 },
                 https={"enable": True, "httpsPort": "443", "SSL": {"id": 42}},
@@ -299,8 +307,8 @@ class TestDomainCutoverVerification(unittest.TestCase):
                 existing={
                     "id": 7,
                     "alias": "migrated-app",
-                    "primaryDomain": "migrated.example.com",
-                    "proxy": "http://127.0.0.1:9090",
+                    "primaryDomain": DOMAIN_MIGRATED,
+                    "proxy": FAKE_PROXY_9090,
                     "status": "Running",
                 },
                 https={"enable": True, "httpsPort": "443", "SSL": {"id": 42}},
@@ -326,8 +334,8 @@ class TestDomainCutoverVerification(unittest.TestCase):
                 existing={
                     "id": 7,
                     "alias": "migrated-app",
-                    "primaryDomain": "migrated.example.com",
-                    "proxy": "http://127.0.0.1:8080",
+                    "primaryDomain": DOMAIN_MIGRATED,
+                    "proxy": FAKE_PROXY_8080,
                     "status": "Running",
                 },
                 https={"enable": True, "httpsPort": "443", "SSL": {"id": 42}},
@@ -339,8 +347,8 @@ class TestDomainCutoverVerification(unittest.TestCase):
             self.assertFalse(payload["ok"])
             self.assertIn("proxy", payload["failures"])
             self.assertFalse(payload["checks"]["proxy"]["ok"])
-            self.assertEqual(payload["checks"]["proxy"]["actual"], "http://127.0.0.1:8080")
-            self.assertEqual(payload["checks"]["proxy"]["expected"], "http://127.0.0.1:9090")
+            self.assertEqual(payload["checks"]["proxy"]["actual"], FAKE_PROXY_8080)
+            self.assertEqual(payload["checks"]["proxy"]["expected"], FAKE_PROXY_9090)
 
     def test_verify_fails_when_site_missing(self) -> None:
         from agentplane.domain.ingress.handlers import verify_ingress
@@ -367,8 +375,8 @@ class TestDomainCutoverVerification(unittest.TestCase):
                 existing={
                     "id": 7,
                     "alias": "migrated-app",
-                    "primaryDomain": "migrated.example.com",
-                    "proxy": "http://127.0.0.1:9090",
+                    "primaryDomain": DOMAIN_MIGRATED,
+                    "proxy": FAKE_PROXY_9090,
                     "status": "Running",
                 },
                 https={"enable": False, "httpsPort": "", "SSL": {"id": 99}},

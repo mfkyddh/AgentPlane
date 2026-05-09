@@ -11,6 +11,7 @@ from tests.support.constants import (
     CONTAINER_POSTGRES,
     CONTAINER_REDIS,
     DOMAIN_RELAY,
+    FAKE_BINDING_3000,
     IP_CLOUDFLARE_RECORD,
     TARGET_PROD,
 )
@@ -75,7 +76,7 @@ def write_inventory(root: Path) -> None:
                         "compose_file": "/opt/agentplane/infra/compose/sampleapi/docker-compose.prod0.yml",
                         "image": "ghcr.io/example/sampleapi:2026.04",
                         "status": "running",
-                        "host_binding": "127.0.0.1:3000",
+                        "host_binding": FAKE_BINDING_3000,
                     },
                     "relay-trojan": {
                         "control_plane": "compose",

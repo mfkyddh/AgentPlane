@@ -16,7 +16,7 @@ from agentplane.domain.ingress.lifecycle import (
 )
 from agentplane.domain.ingress.models import IngressDefinition
 from tests.support.cli import run_agentplane_cli as run_cli
-from tests.support.constants import DOMAIN_TOKEN, FAKE_HOST_BINDING, TARGET_PROD
+from tests.support.constants import DOMAIN_LANE5, DOMAIN_OLD, DOMAIN_TOKEN, DOMAIN_TOKEN_ORG, FAKE_HOST_BINDING, FAKE_PROXY_8080, TARGET_PROD
 
 pytestmark = pytest.mark.e2e
 
@@ -32,8 +32,8 @@ def write_inventory(root: Path) -> None:
                     "public_ingresses": [
                         {
                             "alias": "token",
-                            "primary_domain": "token.example.org",
-                            "public_url": "https://token.example.org",
+                            "primary_domain": DOMAIN_TOKEN_ORG,
+                            "public_url": f"https://{DOMAIN_TOKEN_ORG}",
                             "proxy": f"http://{FAKE_HOST_BINDING}",
                             "config_file": "/data/1panel/www/conf.d/token.conf",
                             "ssl_id": 3,
@@ -90,9 +90,9 @@ def _write_inventory(tmp_path: Path, target: str, payload: dict) -> Path:
 def _definition() -> IngressDefinition:
     return IngressDefinition(
         alias="lane5",
-        primary_domain="lane5.example.com",
-        public_url="https://lane5.example.com",
-        proxy="http://127.0.0.1:8080",
+        primary_domain=DOMAIN_LANE5,
+        public_url=f"https://{DOMAIN_LANE5}",
+        proxy=FAKE_PROXY_8080,
         status="Running",
         config_file="/data/lane5/www/conf.d/lane5.conf",
         ssl_id=77,
@@ -261,9 +261,9 @@ def _write_inventory(tmp_path: Path, target: str, payload: dict) -> Path:
 def _definition() -> IngressDefinition:
     return IngressDefinition(
         alias="lane5",
-        primary_domain="lane5.example.com",
-        public_url="https://lane5.example.com",
-        proxy="http://127.0.0.1:8080",
+        primary_domain=DOMAIN_LANE5,
+        public_url=f"https://{DOMAIN_LANE5}",
+        proxy=FAKE_PROXY_8080,
         status="Running",
         config_file="/data/lane5/www/conf.d/lane5.conf",
         ssl_id=77,
@@ -307,7 +307,7 @@ def test_apply_onboard_creates_entry_and_verifies(tmp_path: Path) -> None:
 def test_plan_onboard_mismatch_triggers_replace(tmp_path: Path) -> None:
     definition = _definition()
     entry = _entry_from(definition)
-    entry["public_url"] = "https://old.example.com"
+    entry["public_url"] = f"https://{DOMAIN_OLD}"
     _write_inventory(tmp_path, TARGET, {"services": {"public_ingresses": [entry]}})
     plan = plan_ingress_truth_onboard(tmp_path, TARGET, definition)
     assert plan["drift"]["status"] == "drift"
