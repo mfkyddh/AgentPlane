@@ -61,6 +61,7 @@ def _run_linux_backend_command(
     cwd: Path,
     env: dict[str, str],
     backend: str,
+    _runner=None,
 ) -> CompletedProcess[str]:
     local_backend = _local_backend_type()
     if backend == "native-posix":
@@ -69,7 +70,7 @@ def _run_linux_backend_command(
         execution_backend = "windows-wsl" if local_backend == "windows-wsl" else "linux-native"
     else:
         raise ValueError(f"暂不支持本地执行 packaging.backend={backend!r}")
-    runner = build_backend_runner()
+    runner = _runner or build_backend_runner()
     spec = CommandSpec(
         backend_type=execution_backend,  # type: ignore[arg-type]
         argv=("bash", "-lc", command),
@@ -513,9 +514,10 @@ def _execute_step(
     backend_type: str | None = None,
     capabilities: tuple[str, ...] | None = None,
     timeout: int = 300,
+    _runner=None,
 ) -> dict[str, Any]:
     if backend_type is not None:
-        runner = build_backend_runner()
+        runner = _runner or build_backend_runner()
         spec = CommandSpec(
             backend_type=backend_type,  # type: ignore[arg-type]
             argv=tuple(str(item) for item in argv),
@@ -760,7 +762,8 @@ def _service_env_path(repo_root: Path, app_id: str, target: str) -> Path:
 
 
 def ship_image(
-    contract: dict[str, Any], *, repo_root: Path, target: str, image_ref: str | None, archive_dir: Path, dry_run: bool
+    contract: dict[str, Any], *, repo_root: Path, target: str, image_ref: str | None, archive_dir: Path, dry_run: bool,
+    _streamer=stream_docker_image,
 ) -> dict[str, Any]:
     op_id = next_operation_id("ship-image")
     if not image_ref:
@@ -805,7 +808,7 @@ def ship_image(
             "dry_run": True,
         }
 
-    result = stream_docker_image(effective_image, ssh_target)
+    result = _streamer(effective_image, ssh_target)
     if not result.ok:
         raise ValueError(result.stderr or "流式 docker 传输失败")
     operation = _record_app_operation(

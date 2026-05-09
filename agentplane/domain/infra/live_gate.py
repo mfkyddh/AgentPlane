@@ -189,7 +189,7 @@ def assert_live_gate_checkout(
         raise ValueError("wsl live integration gate must run from Windows with WSL or inside WSL.")
 
 
-def _run_step_with_backend(step: LiveGateStep) -> dict[str, Any]:
+def _run_step_with_backend(step: LiveGateStep, *, _runner=None) -> dict[str, Any]:
     host_profile = detect_host_profile()
     spec = CommandSpec(
         backend_type=host_profile.linux_backend,
@@ -198,7 +198,8 @@ def _run_step_with_backend(step: LiveGateStep) -> dict[str, Any]:
         capabilities=step.capabilities,
         timeout=step.timeout,
     )
-    result = build_backend_runner().execute_spec(spec)
+    runner = _runner or build_backend_runner()
+    result = runner.execute_spec(spec)
     payload = {
         "key": step.key,
         "execution": step.execution,

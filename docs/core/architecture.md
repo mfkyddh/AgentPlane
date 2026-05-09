@@ -124,6 +124,46 @@ project 聚合状态 ← 从 app 和 service 收集
 - 参数使用原始类型或域中性对象
 - 契约测试覆盖所有实现（`tests/contracts/`）
 
+### SSH 连接层
+
+域层通过 `SSHConnectionProtocol` 和 `RemoteAPIProtocol`（`agentplane/ssh.py`）与远程 SSH 基础设施交互。
+
+```
+域层代码 → SSHConnectionProtocol（4 方法，≤5 上限）
+                ├── SSHConnectionPool（ControlMaster 连接池）
+                └── StubSSHConnection（测试桩，证明协议可替换性）
+
+域层代码 → RemoteAPIProtocol（3 方法 + context manager，≤5 上限）
+                ├── RemoteAPIClient（SSH 端口转发 HTTP 客户端）
+                └── StubRemoteAPIClient（测试桩，证明协议可替换性）
+```
+
+**设计约束**：
+- 方法数 ≤ 5（超限即拆分）
+- `SshTarget` 是 frozen dataclass（值类型），不纳入 Protocol 接口
+- 契约测试三层结构：参数化 + 结构兼容性 + 方法数守卫
+
+### 边界策略：范围分化
+
+域层使用两种边界策略，按依赖方向选择：
+
+| 边界类型 | 策略 | 理由 | 示例 |
+|----------|------|------|------|
+| **跨包边界**（domain → provider, domain → ssh） | Protocol + 契约测试 | 实现可替换，需要正式契约 | `ProviderProtocol`, `SSHConnectionProtocol` |
+| **包内边界**（domain → runtime） | 参数注入 | 包内，已有模式，YAGNI | `def func(..., _runner=None)` |
+
+**参数注入模式**：
+```python
+# 有状态工厂调用通过注入参数获取，默认回退到直接实例化
+def some_handler(repo_root, target, *, _runner=None):
+    runner = _runner or build_backend_runner()
+```
+
+**Import 三分类**：
+- **A 类（有状态工厂调用）**：`build_backend_runner()`, `stream_docker_image` → 注入候选
+- **B 类（SSH 基础设施）**：`SshTarget`, `resolve_ssh_target` → Protocol 候选
+- **C 类（无状态工具/值类型）**：`CommandSpec`, `shell_join`, `redact_*` → 保留为直接 import
+
 ### 使用场景
 
 | 你想做什么 | 使用哪个域 | 示例命令 |

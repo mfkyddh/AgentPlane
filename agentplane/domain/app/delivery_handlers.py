@@ -148,8 +148,8 @@ def _candidate_runtime_material(
     }
 
 
-def _render_execution_steps(steps: list[CommandStep]) -> list[dict[str, Any]]:
-    runner = build_backend_runner()
+def _render_execution_steps(steps: list[CommandStep], *, _runner=None) -> list[dict[str, Any]]:
+    runner = _runner or build_backend_runner()
     rendered_steps: list[dict[str, Any]] = []
     for step in steps:
         display_override = step.spec.metadata.get("display_override")
@@ -185,8 +185,8 @@ def _render_execution_steps(steps: list[CommandStep]) -> list[dict[str, Any]]:
     return rendered_steps
 
 
-def _execute_steps(steps: list[CommandStep], *, stop_on_failure: bool) -> list[dict[str, Any]]:
-    runner = build_backend_runner()
+def _execute_steps(steps: list[CommandStep], *, stop_on_failure: bool, _runner=None) -> list[dict[str, Any]]:
+    runner = _runner or build_backend_runner()
     results: list[dict[str, Any]] = []
     for step in steps:
         result = runner.execute_spec(step.spec)
@@ -812,6 +812,7 @@ def deploy_for_app(
     dry_run: bool,
     execute: bool,
     app_repo_root: str | None = None,
+    _streamer=stream_docker_image,
 ) -> dict[str, Any]:
     app_cli, contract, _ = _load_validated_contract(repo_root, target=target, app=app, app_repo_root=app_repo_root)
 
@@ -967,7 +968,7 @@ def deploy_for_app(
     effective_image_ref = image_ref or candidate_material.get("image_ref")
     if effective_image_ref:
         ssh_target = app_cli._target_ssh_target(repo_root, target)
-        stream_result = stream_docker_image(effective_image_ref, ssh_target)
+        stream_result = _streamer(effective_image_ref, ssh_target)
         if not stream_result.ok:
             raise ValueError(f"流式镜像传输失败: {stream_result.stderr}")
 

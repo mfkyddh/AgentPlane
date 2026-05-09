@@ -181,6 +181,7 @@ def execute_remote_bash(
     dry_run: bool = False,
     intent: Intent = "mutation",
     stream: bool = False,
+    _runner=None,
 ) -> dict[str, Any]:
     repo_root = Path(repo_root).resolve()
     remote_args = _strip_remainder_separator(list(remote_args or []))
@@ -204,7 +205,7 @@ def execute_remote_bash(
     else:
         guard(intent, argv=spec.argv, stdin_text=spec.stdin_text)
 
-    runner = build_backend_runner()
+    runner = _runner or build_backend_runner()
     rendered = runner.render_spec(spec)
     payload = _render_payload(
         repo_root=repo_root,

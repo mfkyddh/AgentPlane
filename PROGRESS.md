@@ -67,6 +67,7 @@ audience: both
 | B30 | foundation-replan Phase 2-3 — provider abstraction, projection contracts, golden tests, doc alignment | 已完成 | — | pending (2026-05-09) |
 | B31 | correct commit_message module path in CI workflow | 已完成 | — | pending (2026-05-09) |
 | B32 | replace 'repo' with 'project' subcommand in CI workflow | 已完成 | — | pending (2026-05-09) |
+| B33 | fix docs-sanity gate errors — archive status, broken links, isolated doc | 已完成 | — | pending (2026-05-09) |
 
 ---
 

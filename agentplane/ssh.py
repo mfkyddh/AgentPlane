@@ -11,9 +11,58 @@ import threading
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Protocol
 
 from agentplane.runtime.secret_resolver import SecretResolver
 from agentplane.runtime.wsl_bridge import windows_path_to_wsl_posix
+
+
+# ---------------------------------------------------------------------------
+# SSH Protocols — cross-package boundary contracts
+# ---------------------------------------------------------------------------
+
+
+class SSHConnectionProtocol(Protocol):
+    """Contract for SSH connection management.
+
+    Design constraints (from foundation-replan):
+    - Method count ≤ 5
+    - Parameters use primitive types
+    """
+
+    def ensure_connection(self, alias: str) -> None:
+        """Ensure a persistent SSH connection exists for the given alias."""
+
+    def ssh_args(self, alias: str, command: str) -> list[str]:
+        """Return argv for running a command over SSH."""
+
+    def tunnel_args(self, alias: str, local_port: int, remote_port: int) -> list[str]:
+        """Return argv for opening an SSH tunnel."""
+
+    def scp_args(self, alias: str, local_path: str, remote_path: str) -> list[str]:
+        """Return argv for copying a file via SCP."""
+
+
+class RemoteAPIProtocol(Protocol):
+    """Contract for remote API access via SSH tunnel.
+
+    Design constraints (from foundation-replan):
+    - Method count ≤ 5
+    - Context manager support
+    """
+
+    @property
+    def local_port(self) -> int:
+        """Return the local port of the active tunnel, creating one if needed."""
+
+    def close(self) -> None:
+        """Close the SSH tunnel and release resources."""
+
+    def __enter__(self) -> RemoteAPIProtocol:
+        ...
+
+    def __exit__(self, *exc: object) -> None:
+        ...
 
 
 def _local_backend_arg(value: str) -> str:
