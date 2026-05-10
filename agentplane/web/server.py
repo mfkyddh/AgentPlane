@@ -9,7 +9,15 @@ from fastapi.responses import FileResponse, JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from agentplane.web.agent_router import handle_chat_message
-from agentplane.web.api import get_data_mtime, list_apps, list_hosts, list_operations
+from agentplane.web.api import (
+    get_app_detail,
+    get_data_mtime,
+    get_server_detail,
+    get_topology,
+    list_apps,
+    list_hosts,
+    list_operations,
+)
 
 STATIC_DIR = Path(__file__).parent / "static"
 MAX_HISTORY = 20
@@ -50,6 +58,24 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
     @app.get("/api/mtime")
     async def api_mtime():
         return get_data_mtime(repo_root)
+
+    @app.get("/api/topology")
+    async def api_topology():
+        return get_topology(repo_root)
+
+    @app.get("/api/servers/{target}")
+    async def api_server_detail(target: str):
+        result = get_server_detail(repo_root, target)
+        if result.get("error") == "not_found":
+            return JSONResponse(result, status_code=404)
+        return result
+
+    @app.get("/api/apps/{target}/{app}")
+    async def api_app_detail(target: str, app: str):
+        result = get_app_detail(repo_root, target, app)
+        if result.get("error") == "not_found":
+            return JSONResponse(result, status_code=404)
+        return result
 
     @app.websocket("/ws/chat")
     async def ws_chat(websocket: WebSocket):
@@ -107,5 +133,12 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
     @app.get("/")
     async def index():
         return FileResponse(str(STATIC_DIR / "index.html"))
+
+    @app.get("/static/{filename:path}")
+    async def static_file(filename: str):
+        file_path = STATIC_DIR / filename
+        if not file_path.is_file():
+            return JSONResponse({"error": "not found"}, status_code=404)
+        return FileResponse(str(file_path))
 
     return app

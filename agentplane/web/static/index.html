@@ -4,127 +4,582 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AgentPlane</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/tokens.css">
   <script src="https://unpkg.com/vue@3.5.13/dist/vue.global.prod.js" crossorigin="anonymous"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #1a1a2e;
-      color: #e0e0e0;
-      height: 100vh;
-      overflow: hidden;
-    }
+    /* tokens.css loaded above — page-specific overrides below */
+
+    body { height: 100vh; overflow: hidden; }
     #app { display: flex; height: 100vh; }
 
-    /* Sidebar */
+    /* ── Sidebar ── */
     .sidebar {
-      width: 220px;
-      background: #16213e;
-      padding: 20px 0;
+      width: 240px;
+      min-width: 240px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      border-right: 1px solid #2a2a4a;
     }
     .sidebar-brand {
-      padding: 0 20px 20px;
-      font-size: 20px;
-      font-weight: bold;
-      color: #00d4aa;
-      border-bottom: 1px solid #2a2a4a;
-      margin-bottom: 10px;
+      padding: 20px 20px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
     }
-    .sidebar-nav { flex: 1; }
+    .sidebar-brand-icon {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 700; color: var(--bg-primary);
+      font-family: var(--font-mono);
+    }
+    .sidebar-brand-text {
+      font-size: 16px; font-weight: 600; color: var(--fg-primary);
+      letter-spacing: -0.01em;
+    }
+    .sidebar-brand-tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--fg-muted);
+      background: var(--bg-overlay);
+      padding: 1px 6px;
+      border-radius: 3px;
+      margin-left: auto;
+    }
+    .sidebar-nav { flex: 1; padding: 8px 0; }
     .nav-item {
-      padding: 12px 20px;
+      padding: 10px 20px;
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 10px;
-      color: #a0a0a0;
-      transition: all 0.2s;
+      color: var(--fg-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.15s ease;
+      border-left: 3px solid transparent;
+      margin: 1px 0;
     }
-    .nav-item:hover { background: #1f2b47; color: #e0e0e0; }
-    .nav-item.active { background: #1f2b47; color: #00d4aa; border-left: 3px solid #00d4aa; }
+    .nav-item:hover {
+      background: var(--bg-tertiary);
+      color: var(--fg-primary);
+    }
+    .nav-item.active {
+      background: var(--bg-tertiary);
+      color: var(--fg-primary);
+      border-left-color: var(--accent-blue);
+    }
+    .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.7; }
+    .nav-item.active svg { opacity: 1; }
     .sidebar-footer {
-      padding: 15px 20px;
-      border-top: 1px solid #2a2a4a;
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .sidebar-footer-version {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--fg-muted);
+    }
+    .sidebar-footer-status {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; color: var(--fg-muted);
+    }
+    .sidebar-footer-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent-green);
+      box-shadow: 0 0 6px var(--accent-green);
+    }
+    .sidebar-footer-dot.disconnected {
+      background: var(--accent-yellow);
+      box-shadow: 0 0 6px var(--accent-yellow);
+    }
+
+    /* ── Main content ── */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-secondary);
+      flex-shrink: 0;
+    }
+    .topbar-title {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .topbar-actions { display: flex; gap: 8px; }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--fg-secondary);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
       font-size: 12px;
-      color: #666;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
     }
+    .btn-ghost:hover { border-color: var(--fg-muted); color: var(--fg-primary); }
+    .btn-ghost svg { width: 14px; height: 14px; }
 
-    /* Main content */
-    .main { flex: 1; overflow-y: auto; padding: 24px; }
-
-    /* Server cards grid */
-    .cards-grid {
+    /* ── KPI Stats row ── */
+    .stats-row {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      grid-template-columns: repeat(4, 1fr);
       gap: 16px;
-      margin-bottom: 32px;
+      padding: 20px 24px;
+      flex-shrink: 0;
     }
-    .server-card {
-      background: #16213e;
-      border-radius: 8px;
-      padding: 16px;
-      position: relative;
-      border: 1px solid #2a2a4a;
-      transition: border-color 0.2s;
+    .stat-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
-    .server-card:hover { border-color: #00d4aa40; }
-    .status-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      display: inline-block;
-      margin-right: 8px;
+    .stat-label {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--fg-muted);
+      font-family: var(--font-mono);
     }
-    .status-dot.connected { background: #00d4aa; box-shadow: 0 0 6px #00d4aa80; }
-    .status-dot.unknown { background: #ffd93d; box-shadow: 0 0 6px #ffd93d80; }
-    .status-dot.error { background: #ff6b6b; box-shadow: 0 0 6px #ff6b6b80; }
-    .server-hostname { font-size: 16px; font-weight: bold; margin-bottom: 4px; }
-    .server-ip { font-size: 14px; color: #a0a0a0; margin-bottom: 4px; }
-    .server-meta { font-size: 12px; color: #666; }
+    .stat-value {
+      font-size: 28px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+    .stat-value.blue { color: var(--accent-blue); }
+    .stat-value.green { color: var(--accent-green); }
+    .stat-value.yellow { color: var(--accent-yellow); }
+    .stat-value.cyan { color: var(--accent-cyan); }
+    .stat-detail {
+      font-size: 12px;
+      color: var(--fg-secondary);
+      margin-top: 2px;
+    }
+    .stat-detail code {
+      font-family: var(--font-mono);
+      background: var(--bg-overlay);
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 11px;
+    }
 
-    /* App table */
-    .app-table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #16213e;
-      border-radius: 8px;
+    /* ── Content grid ── */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 16px;
+      padding: 0 24px 24px;
+      flex: 1;
       overflow: hidden;
     }
-    .app-table th, .app-table td {
-      padding: 12px 16px;
-      text-align: left;
-      border-bottom: 1px solid #2a2a4a;
+    .content-main {
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
-    .app-table th {
-      background: #1f2b47;
-      font-weight: 600;
-      color: #a0a0a0;
-      font-size: 13px;
-      text-transform: uppercase;
-    }
-    .app-table td { font-size: 14px; }
-    .app-url {
-      color: #4fc3f7;
-      text-decoration: none;
-      word-break: break-all;
-    }
-    .app-url:hover { text-decoration: underline; }
-    .control-plane-tag {
-      background: #2a2a4a;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 12px;
+    .content-side {
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
 
-    /* Chat */
-    .chat-container { display: flex; flex-direction: column; height: 100%; }
+    /* ── Card / Panel ── */
+    .panel {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--fg-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel-title svg { width: 14px; height: 14px; color: var(--fg-muted); }
+    .panel-count {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--fg-muted);
+      background: var(--bg-overlay);
+      padding: 1px 7px;
+      border-radius: 10px;
+    }
+    .panel-body { padding: 0; }
+    .panel-body.padded { padding: 16px; }
+
+    /* ── Server cards (side panel) ── */
+    .host-card {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-muted);
+      transition: background 0.1s;
+      cursor: default;
+    }
+    .host-card:last-child { border-bottom: none; }
+    .host-card:hover { background: var(--bg-tertiary); }
+    .host-card-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .host-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg-primary);
+    }
+    .host-ip {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--fg-secondary);
+      margin-left: auto;
+    }
+    .host-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--fg-muted);
+    }
+    .host-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* ── Status indicators ── */
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .status-dot.connected {
+      background: var(--accent-green);
+      box-shadow: 0 0 6px rgba(63, 185, 80, 0.4);
+    }
+    .status-dot.unknown {
+      background: var(--accent-yellow);
+      box-shadow: 0 0 6px rgba(210, 153, 34, 0.4);
+    }
+    .status-dot.error {
+      background: var(--accent-red);
+      box-shadow: 0 0 6px rgba(248, 81, 73, 0.4);
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    .status-pill.connected {
+      color: var(--accent-green);
+      background: rgba(63, 185, 80, 0.1);
+      border: 1px solid rgba(63, 185, 80, 0.2);
+    }
+    .status-pill.unknown {
+      color: var(--accent-yellow);
+      background: rgba(210, 153, 34, 0.1);
+      border: 1px solid rgba(210, 153, 34, 0.2);
+    }
+    .status-pill.error {
+      color: var(--accent-red);
+      background: rgba(248, 81, 73, 0.1);
+      border: 1px solid rgba(248, 81, 73, 0.2);
+    }
+
+    /* ── Topology tree ── */
+    .topo-target { border-bottom: 1px solid var(--border-muted); }
+    .topo-target:last-child { border-bottom: none; }
+    .topo-target-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .topo-target-header:hover { background: var(--bg-tertiary); }
+    .topo-expand {
+      font-size: 10px;
+      color: var(--fg-muted);
+      width: 14px;
+      text-align: center;
+      transition: transform 0.15s;
+    }
+    .topo-target-name {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--fg-primary);
+    }
+    .topo-target-meta {
+      color: var(--fg-secondary);
+      font-size: 12px;
+      font-family: var(--font-mono);
+    }
+    .topo-badge {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--fg-muted);
+      background: var(--bg-overlay);
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    .topo-children {
+      padding: 0 16px 12px 40px;
+    }
+    .topo-section { margin-bottom: 12px; }
+    .topo-section-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--fg-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-family: var(--font-mono);
+      margin-bottom: 8px;
+    }
+    .topo-app-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 8px;
+    }
+    .topo-app-card {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-muted);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .topo-app-card:hover {
+      border-color: var(--accent-blue);
+      background: var(--bg-overlay);
+    }
+    .topo-app-name {
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .topo-app-image {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--fg-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .topo-app-detail {
+      font-size: 11px;
+      color: var(--fg-muted);
+      margin-top: 4px;
+      display: flex;
+      gap: 8px;
+    }
+    .topo-app-url {
+      font-size: 11px;
+      color: var(--accent-blue);
+      text-decoration: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+      margin-top: 4px;
+    }
+    .topo-app-url:hover { text-decoration: underline; }
+    .topo-deps {
+      margin-top: 6px;
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .topo-dep-tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--accent-purple);
+      background: rgba(188, 140, 255, 0.08);
+      border: 1px solid rgba(188, 140, 255, 0.15);
+      padding: 1px 6px;
+      border-radius: 3px;
+    }
+    .topo-svc-card {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-muted);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .topo-svc-name {
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .topo-svc-kind {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--fg-muted);
+      margin-left: auto;
+    }
+
+    /* ── App table ── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .data-table th {
+      padding: 8px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--fg-muted);
+      font-family: var(--font-mono);
+      background: var(--bg-tertiary);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .data-table td {
+      padding: 10px 16px;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border-muted);
+      color: var(--fg-secondary);
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: var(--bg-tertiary); }
+    .data-table .cell-primary {
+      font-weight: 600;
+      color: var(--fg-primary);
+    }
+    .data-table .cell-mono {
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+    .data-table .cell-link {
+      color: var(--accent-blue);
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+    .data-table .cell-link:hover { text-decoration: underline; }
+    .control-plane-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--fg-secondary);
+      background: var(--bg-overlay);
+      border: 1px solid var(--border-muted);
+      padding: 2px 8px;
+      border-radius: 3px;
+    }
+
+    /* ── Operations timeline ── */
+    .op-item {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border-muted);
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .op-item:last-child { border-bottom: none; }
+    .op-time {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--fg-muted);
+      white-space: nowrap;
+      min-width: 60px;
+      padding-top: 1px;
+    }
+    .op-body { flex: 1; min-width: 0; }
+    .op-action {
+      font-size: 13px;
+      color: var(--fg-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .op-target-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent-cyan);
+      background: rgba(57, 210, 192, 0.08);
+      border: 1px solid rgba(57, 210, 192, 0.15);
+      padding: 1px 6px;
+      border-radius: 3px;
+    }
+    .op-type-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent-purple);
+    }
+    .op-result {
+      font-size: 12px;
+      margin-top: 2px;
+    }
+    .op-result.success { color: var(--accent-green); }
+    .op-result.fail { color: var(--accent-red); }
+    .op-result.neutral { color: var(--fg-muted); }
+
+    /* ── Chat ── */
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
     .chat-messages {
       flex: 1;
       overflow-y: auto;
-      padding: 16px 0;
+      padding: 16px;
     }
     .message {
       margin-bottom: 12px;
@@ -133,61 +588,109 @@
     .message.user { justify-content: flex-end; }
     .message.agent { justify-content: flex-start; }
     .message-bubble {
-      max-width: 70%;
+      max-width: 75%;
       padding: 10px 14px;
-      border-radius: 12px;
-      font-size: 14px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
       line-height: 1.5;
       white-space: pre-wrap;
       word-break: break-word;
     }
     .message.user .message-bubble {
-      background: #16213e;
-      border-bottom-right-radius: 4px;
+      background: var(--accent-blue);
+      color: #fff;
+      border-bottom-right-radius: 3px;
     }
     .message.agent .message-bubble {
-      background: #1f2b47;
-      border-bottom-left-radius: 4px;
+      background: var(--bg-overlay);
+      color: var(--fg-primary);
+      border-bottom-left-radius: 3px;
     }
-    .message-time { font-size: 11px; color: #666; margin-top: 4px; }
+    .message-time {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--fg-muted);
+      margin-top: 4px;
+    }
     .message.user .message-time { text-align: right; }
-
+    .message-rejected {
+      background: rgba(210, 153, 34, 0.08);
+      border: 1px solid rgba(210, 153, 34, 0.2);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      color: var(--accent-yellow);
+      font-size: 13px;
+      max-width: 75%;
+    }
+    .message-error {
+      background: rgba(248, 81, 73, 0.08);
+      border: 1px solid rgba(248, 81, 73, 0.2);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      color: var(--accent-red);
+      font-size: 13px;
+      max-width: 75%;
+    }
     .chat-input-area {
-      border-top: 1px solid #2a2a4a;
-      padding: 12px 0;
+      border-top: 1px solid var(--border);
+      padding: 12px 16px;
       display: flex;
       gap: 8px;
     }
     .chat-input {
       flex: 1;
-      background: #16213e;
-      border: 1px solid #2a2a4a;
-      border-radius: 8px;
-      padding: 10px 14px;
-      color: #e0e0e0;
-      font-size: 14px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: var(--fg-primary);
+      font-size: 13px;
+      font-family: var(--font-sans);
       resize: none;
-      font-family: inherit;
     }
-    .chat-input:focus { outline: none; border-color: #00d4aa; }
+    .chat-input:focus { outline: none; border-color: var(--accent-blue); }
+    .chat-input::placeholder { color: var(--fg-muted); }
     .chat-send {
-      background: #00d4aa;
+      background: var(--accent-blue);
       border: none;
-      border-radius: 8px;
-      padding: 10px 20px;
-      color: #1a1a2e;
-      font-weight: bold;
+      border-radius: var(--radius-sm);
+      padding: 10px 16px;
+      color: #fff;
+      font-weight: 600;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 13px;
+      font-family: var(--font-sans);
+      transition: opacity 0.15s;
     }
-    .chat-send:hover { opacity: 0.9; }
-    .chat-send:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    /* Typing indicator */
-    .typing { display: flex; gap: 4px; padding: 10px 14px; }
+    .chat-send:hover { opacity: 0.85; }
+    .chat-send:disabled { opacity: 0.4; cursor: not-allowed; }
+    .chat-welcome {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--fg-muted);
+    }
+    .chat-welcome h3 {
+      color: var(--fg-primary);
+      font-size: 16px;
+      margin-bottom: 12px;
+    }
+    .chat-welcome p {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--fg-secondary);
+    }
+    .chat-welcome code {
+      font-family: var(--font-mono);
+      background: var(--bg-overlay);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 12px;
+      color: var(--accent-blue);
+    }
+    .typing { display: flex; gap: 5px; padding: 10px 14px; }
     .typing-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: #a0a0a0;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--fg-muted);
       animation: bounce 1.4s infinite ease-in-out;
     }
     .typing-dot:nth-child(1) { animation-delay: -0.32s; }
@@ -197,170 +700,219 @@
       40% { transform: scale(1); }
     }
 
-    /* Rejected message */
-    .message-rejected {
-      background: #2d2a1a;
-      border: 1px solid #ffd93d;
-      border-radius: 8px;
-      padding: 10px 14px;
-      color: #ffd93d;
+    /* ── Detail panel ── */
+    .detail-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 200;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .detail-panel {
+      width: 440px;
+      max-width: 90vw;
+      background: var(--bg-secondary);
+      height: 100%;
+      overflow-y: auto;
+      border-left: 1px solid var(--border);
+    }
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--bg-secondary);
+      z-index: 1;
+    }
+    .detail-title {
+      font-weight: 600;
+      font-size: 15px;
+      font-family: var(--font-mono);
+    }
+    .detail-close {
+      background: none;
+      border: none;
+      color: var(--fg-muted);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+      transition: color 0.15s;
+    }
+    .detail-close:hover { color: var(--fg-primary); }
+    .detail-body { padding: 16px 20px; }
+    .detail-field { margin-bottom: 14px; }
+    .detail-key {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--fg-muted);
+      margin-bottom: 3px;
+    }
+    .detail-val {
       font-size: 13px;
-      max-width: 70%;
+      color: var(--fg-primary);
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      background: var(--bg-tertiary);
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-muted);
     }
 
-    /* Error message */
-    .message-error {
-      background: #2a1a1a;
-      border: 1px solid #ff6b6b;
-      border-radius: 8px;
-      padding: 10px 14px;
-      color: #ff6b6b;
-      font-size: 13px;
-      max-width: 70%;
+    /* ── Auth page ── */
+    .auth-page {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: var(--bg-primary);
+      width: 100%;
     }
+    .auth-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      padding: 40px;
+      border-radius: var(--radius-lg);
+      width: 380px;
+      text-align: center;
+    }
+    .auth-box-icon {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 700; color: var(--bg-primary);
+      font-family: var(--font-mono);
+      margin: 0 auto 16px;
+    }
+    .auth-box h2 {
+      margin-bottom: 8px;
+      color: var(--fg-primary);
+      font-size: 20px;
+    }
+    .auth-box p {
+      color: var(--fg-secondary);
+      font-size: 13px;
+      margin-bottom: 24px;
+    }
+    .auth-input {
+      width: 100%;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      color: var(--fg-primary);
+      font-size: 13px;
+      font-family: var(--font-mono);
+      margin-bottom: 16px;
+    }
+    .auth-input:focus { outline: none; border-color: var(--accent-blue); }
+    .auth-input::placeholder { color: var(--fg-muted); }
+    .auth-btn {
+      width: 100%;
+      background: var(--accent-blue);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 14px;
+      font-family: var(--font-sans);
+      transition: opacity 0.15s;
+    }
+    .auth-btn:hover { opacity: 0.85; }
+    .auth-error { color: var(--accent-red); font-size: 12px; margin-top: 12px; }
 
-    /* Empty state */
+    /* ── Empty / Error / Skeleton states ── */
     .empty-state {
       text-align: center;
-      padding: 48px 24px;
-      color: #a0a0a0;
+      padding: 32px 24px;
+      color: var(--fg-muted);
     }
-    .empty-state-icon { font-size: 32px; margin-bottom: 12px; }
-    .empty-state-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: #e0e0e0; }
+    .empty-state-icon { font-size: 28px; margin-bottom: 8px; opacity: 0.5; }
+    .empty-state-title { font-size: 14px; font-weight: 600; color: var(--fg-secondary); margin-bottom: 6px; }
     .empty-state-hint {
-      font-size: 13px;
-      color: #666;
-      margin-top: 8px;
+      font-size: 12px;
+      color: var(--fg-muted);
+      margin-top: 6px;
     }
     .empty-state-hint code {
-      background: #2a2a4a;
+      font-family: var(--font-mono);
+      background: var(--bg-overlay);
       padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 12px;
-      color: #4fc3f7;
+      border-radius: 3px;
+      font-size: 11px;
+      color: var(--accent-blue);
     }
-
-    /* Skeleton loading */
     .skeleton {
-      background: linear-gradient(90deg, #1f2b47 25%, #2a3557 50%, #1f2b47 75%);
+      background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-overlay) 50%, var(--bg-tertiary) 75%);
       background-size: 200% 100%;
       animation: shimmer 1.5s infinite;
-      border-radius: 4px;
+      border-radius: 3px;
     }
     @keyframes shimmer {
       0% { background-position: 200% 0; }
       100% { background-position: -200% 0; }
     }
     .skeleton-card {
-      background: #16213e;
-      border-radius: 8px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
       padding: 16px;
-      border: 1px solid #2a2a4a;
     }
-    .skeleton-line { height: 14px; margin-bottom: 8px; }
+    .skeleton-line { height: 12px; margin-bottom: 8px; }
     .skeleton-line.w60 { width: 60%; }
     .skeleton-line.w40 { width: 40%; }
     .skeleton-line.w80 { width: 80%; }
-
-    /* Error state with retry */
     .error-state {
       text-align: center;
-      padding: 48px 24px;
+      padding: 32px 24px;
     }
-    .error-state-icon { font-size: 32px; margin-bottom: 12px; }
-    .error-state-msg { color: #ff6b6b; margin-bottom: 16px; }
+    .error-state-msg { color: var(--accent-red); margin-bottom: 12px; font-size: 13px; }
     .retry-btn {
-      background: #2a2a4a;
-      border: 1px solid #ff6b6b40;
-      color: #ff6b6b;
-      padding: 8px 20px;
-      border-radius: 6px;
+      background: var(--bg-overlay);
+      border: 1px solid var(--border);
+      color: var(--fg-secondary);
+      padding: 6px 16px;
+      border-radius: var(--radius-sm);
       cursor: pointer;
-      font-size: 13px;
-    }
-    .retry-btn:hover { background: #3a3a5a; }
-
-    /* Section title */
-    .section-title {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 16px;
-      color: #e0e0e0;
-    }
-
-    /* Connection banner */
-    .connection-banner {
-      background: #2d2a1a;
-      color: #ffd93d;
-      text-align: center;
-      padding: 8px;
-      font-size: 13px;
-      position: fixed;
-      top: 0; left: 220px; right: 0;
-      z-index: 100;
-    }
-
-    /* Auth page */
-    .auth-page {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      background: #1a1a2e;
-    }
-    .auth-box {
-      background: #16213e;
-      padding: 40px;
-      border-radius: 12px;
-      width: 360px;
-      text-align: center;
-    }
-    .auth-box h2 { margin-bottom: 20px; color: #00d4aa; }
-    .auth-input {
-      width: 100%;
-      background: #1a1a2e;
-      border: 1px solid #2a2a4a;
-      border-radius: 8px;
-      padding: 12px;
-      color: #e0e0e0;
-      font-size: 14px;
-      margin-bottom: 16px;
-    }
-    .auth-input:focus { outline: none; border-color: #00d4aa; }
-    .auth-btn {
-      width: 100%;
-      background: #00d4aa;
-      border: none;
-      border-radius: 8px;
-      padding: 12px;
-      color: #1a1a2e;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    .auth-error { color: #ff6b6b; font-size: 13px; margin-top: 10px; }
-
-    /* Chat welcome */
-    .chat-welcome {
-      text-align: center;
-      padding: 60px 24px;
-      color: #a0a0a0;
-    }
-    .chat-welcome h3 { color: #e0e0e0; margin-bottom: 12px; }
-    .chat-welcome p { font-size: 13px; line-height: 1.6; }
-    .chat-welcome code {
-      background: #2a2a4a;
-      padding: 2px 6px;
-      border-radius: 4px;
       font-size: 12px;
-      color: #4fc3f7;
+      font-family: var(--font-sans);
+      transition: all 0.15s;
+    }
+    .retry-btn:hover { border-color: var(--fg-muted); color: var(--fg-primary); }
+    .retry-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Connection banner ── */
+    .connection-banner {
+      background: rgba(210, 153, 34, 0.08);
+      border-bottom: 1px solid rgba(210, 153, 34, 0.2);
+      color: var(--accent-yellow);
+      text-align: center;
+      padding: 6px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      flex-shrink: 0;
     }
 
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #3a3a5a; }
+    /* ── Generated timestamp ── */
+    .generated-ts {
+      text-align: right;
+      padding: 8px 16px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--fg-muted);
+      border-top: 1px solid var(--border-muted);
+    }
   </style>
 </head>
 <body>
@@ -368,9 +920,11 @@
     <!-- Auth page -->
     <div v-if="needsAuth && !authenticated" class="auth-page">
       <div class="auth-box">
+        <div class="auth-box-icon">AP</div>
         <h2>AgentPlane</h2>
-        <input class="auth-input" type="password" v-model="authToken" placeholder="Enter access token"
-               @keyup.enter="submitAuth">
+        <p>AI-driven ops control plane</p>
+        <input class="auth-input" type="password" v-model="authToken" placeholder="Access token"
+               @keyup.enter="submitAuth" autofocus>
         <button class="auth-btn" @click="submitAuth">Connect</button>
         <div v-if="authError" class="auth-error">{{ authError }}</div>
       </div>
@@ -378,144 +932,327 @@
 
     <!-- Main app -->
     <template v-else>
-      <!-- Connection banner -->
-      <div v-if="wsDisconnected" class="connection-banner">
-        Connection lost, reconnecting...
-      </div>
-
       <!-- Sidebar -->
       <div class="sidebar">
-        <div class="sidebar-brand">AgentPlane</div>
+        <div class="sidebar-brand">
+          <div class="sidebar-brand-icon">AP</div>
+          <span class="sidebar-brand-text">AgentPlane</span>
+          <span class="sidebar-brand-tag">v0.1.0</span>
+        </div>
         <div class="sidebar-nav">
           <div class="nav-item" :class="{active: view === 'dashboard'}" @click="view = 'dashboard'">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 1.75V13.5h13.25a.75.75 0 010 1.5H.75a.75.75 0 01-.75-.75V1.75a.75.75 0 011.5 0zm14.28 2.53a.75.75 0 00-1.06-1.06L10 7.94 7.53 5.47a.75.75 0 00-1.06 0L3.22 8.72a.75.75 0 001.06 1.06L7 7.06l2.47 2.47a.75.75 0 001.06 0l5.25-5.25z"/></svg>
             Dashboard
           </div>
+          <div class="nav-item" :class="{active: view === 'topology'}" @click="view = 'topology'">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8.5.75a.75.75 0 00-1.5 0v5.19L4.391 3.33a.75.75 0 10-1.06 1.061L5.939 7H.75a.75.75 0 000 1.5h5.19l-2.61 2.609a.75.75 0 101.061 1.06L7 9.561v5.189a.75.75 0 001.5 0V9.56l2.609 2.61a.75.75 0 101.06-1.061L9.561 8.5h5.189a.75.75 0 000-1.5H9.56l2.61-2.609a.75.75 0 00-1.061-1.06L8.5 5.939V.75z"/></svg>
+            Topology
+          </div>
           <div class="nav-item" :class="{active: view === 'chat'}" @click="view = 'chat'">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.75 1h8.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0110.25 10H7.061l-2.574 2.573A.25.25 0 014 12.354V10H1.75A1.75 1.75 0 010 8.25v-5.5C0 1.784.784 1 1.75 1zM1.5 2.75v5.5c0 .138.112.25.25.25h1a.75.75 0 01.75.75v2.19l2.72-2.72a.75.75 0 01.53-.22h3.5a.25.25 0 00.25-.25v-5.5a.25.25 0 00-.25-.25h-8.5a.25.25 0 00-.25.25zm13 2a.25.25 0 00-.25-.25h-.5a.75.75 0 010-1.5h.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0114.25 12H14v1.543a1.457 1.457 0 01-2.487 1.03L9.22 12.28a.75.75 0 111.06-1.06l2.22 2.22v-2.19a.75.75 0 01.75-.75h1a.25.25 0 00.25-.25v-5.5z"/></svg>
             Chat
           </div>
         </div>
-        <div class="sidebar-footer">v0.1.0</div>
+        <div class="sidebar-footer">
+          <span class="sidebar-footer-version">CLI-first ops</span>
+          <span class="sidebar-footer-status">
+            <span class="sidebar-footer-dot" :class="{disconnected: wsDisconnected}"></span>
+            {{ wsDisconnected ? 'Offline' : 'Live' }}
+          </span>
+        </div>
       </div>
 
       <!-- Main content -->
       <div class="main">
-        <!-- Dashboard -->
-        <div v-if="view === 'dashboard'">
+        <!-- Connection banner -->
+        <div v-if="wsDisconnected" class="connection-banner">
+          Connection lost, reconnecting...
+        </div>
+
+        <!-- Topbar -->
+        <div class="topbar">
+          <div class="topbar-title">{{ viewLabel }}</div>
+          <div class="topbar-actions">
+            <button v-if="view === 'dashboard' || view === 'topology'" class="btn-ghost" @click="refreshAll" :disabled="loading">
+              <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 2.5a5.487 5.487 0 00-4.131 1.869l1.204 1.204A.25.25 0 014.896 6H1.25A.25.25 0 011 5.75V2.104a.25.25 0 01.427-.177l1.38 1.38A7.002 7.002 0 0115 8a.75.75 0 01-1.5 0 5.5 5.5 0 00-5.5-5.5zM8 12.5a5.487 5.487 0 004.131-1.869l-1.204-1.204a.25.25 0 01.177-.427h3.646a.25.25 0 01.25.25v3.646a.25.25 0 01-.427.177l-1.38-1.38A7.002 7.002 0 011 8a.75.75 0 011.5 0 5.5 5.5 0 005.5 5.5z"/></svg>
+              Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- ═══ Dashboard view ═══ -->
+        <div v-if="view === 'dashboard'" style="flex:1; overflow-y:auto; display:flex; flex-direction:column;">
           <!-- Loading skeleton -->
           <template v-if="loading">
-            <div class="section-title">Servers</div>
-            <div class="cards-grid">
-              <div v-for="n in 2" :key="n" class="skeleton-card">
-                <div class="skeleton skeleton-line w60"></div>
+            <div class="stats-row">
+              <div v-for="n in 4" :key="n" class="skeleton-card">
                 <div class="skeleton skeleton-line w40"></div>
-                <div class="skeleton skeleton-line w80"></div>
+                <div class="skeleton skeleton-line w60" style="height:24px;margin-top:8px;"></div>
               </div>
             </div>
-            <div class="section-title">Applications</div>
-            <div class="skeleton-card">
-              <div class="skeleton skeleton-line w80"></div>
-              <div class="skeleton skeleton-line w60"></div>
+            <div class="content-grid">
+              <div class="skeleton-card"><div class="skeleton skeleton-line w80"></div><div class="skeleton skeleton-line w60"></div></div>
+              <div class="skeleton-card"><div class="skeleton skeleton-line w80"></div><div class="skeleton skeleton-line w60"></div></div>
             </div>
           </template>
 
           <!-- Error state -->
-          <div v-else-if="loadError" class="error-state">
-            <div class="error-state-icon">&#x26A0;</div>
+          <div v-else-if="loadError" class="error-state" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+            <div style="font-size:32px; margin-bottom:12px; opacity:0.5;">&#x26A0;</div>
             <div class="error-state-msg">{{ loadError }}</div>
             <button class="retry-btn" @click="fetchDashboard">Retry</button>
           </div>
 
           <!-- Dashboard content -->
           <template v-else>
-            <div class="section-title">Servers</div>
-            <div v-if="hosts.length === 0" class="empty-state">
-              <div class="empty-state-icon">&#x1F5A5;</div>
-              <div class="empty-state-title">No servers yet</div>
-              <div class="empty-state-hint">
-                Run <code>agentplane infra inventory &lt;target&gt;</code> to register a server
+            <!-- KPI Stats -->
+            <div class="stats-row">
+              <div class="stat-card">
+                <div class="stat-label">Hosts</div>
+                <div class="stat-value blue">{{ hosts.length }}</div>
+                <div class="stat-detail">
+                  <span v-if="connectedHosts > 0">{{ connectedHosts }} connected</span>
+                  <span v-else>No active hosts</span>
+                </div>
               </div>
-            </div>
-            <div v-else class="cards-grid">
-              <div v-for="host in hosts" :key="host.target" class="server-card">
-                <div>
-                  <span class="status-dot" :class="host.status"></span>
-                  <span class="server-hostname">{{ host.hostname }}</span>
+              <div class="stat-card">
+                <div class="stat-label">Applications</div>
+                <div class="stat-value green">{{ apps.length }}</div>
+                <div class="stat-detail">
+                  <span v-if="appsWithUrl > 0">{{ appsWithUrl }} with public URL</span>
+                  <span v-else>No apps deployed</span>
                 </div>
-                <div class="server-ip">{{ host.ip || 'local' }}</div>
-                <div class="server-meta">{{ host.label }}</div>
-                <div v-if="host.last_seen" class="server-meta">
-                  Updated {{ formatRelativeTime(host.last_seen) }}
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Operations</div>
+                <div class="stat-value cyan">{{ operations.length }}</div>
+                <div class="stat-detail">
+                  <span v-if="latestOp">{{ latestOp.action }} {{ latestOp.object_type }}</span>
+                  <span v-else>No recent ops</span>
                 </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Data Freshness</div>
+                <div class="stat-value yellow" style="font-size:20px;">{{ dataFreshness }}</div>
+                <div class="stat-detail">Last inventory update</div>
               </div>
             </div>
 
-            <div class="section-title">Applications</div>
-            <div v-if="apps.length === 0" class="empty-state">
-              <div class="empty-state-icon">&#x1F4E6;</div>
-              <div class="empty-state-title">No applications yet</div>
-              <div class="empty-state-hint">
-                Run <code>agentplane app object onboard &lt;target&gt; --app &lt;name&gt;</code> to onboard an app
-              </div>
-            </div>
-            <table v-else class="app-table">
-              <thead>
-                <tr>
-                  <th>App</th>
-                  <th>Target</th>
-                  <th>Control Plane</th>
-                  <th>Public URL</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="app in apps" :key="app.app + app.target">
-                  <td><strong>{{ app.app }}</strong></td>
-                  <td>{{ app.target }}</td>
-                  <td><span class="control-plane-tag">{{ app.control_plane || '-' }}</span></td>
-                  <td>
-                    <a v-if="app.public_url" :href="app.public_url" target="_blank" class="app-url">
-                      {{ app.public_url }}
-                    </a>
-                    <span v-else>-</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <!-- Main content grid -->
+            <div class="content-grid">
+              <!-- Left column -->
+              <div class="content-main">
+                <!-- Topology tree (inline) -->
+                <div class="panel" v-if="topology.targets.length > 0">
+                  <div class="panel-header">
+                    <div class="panel-title">
+                      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8.5.75a.75.75 0 00-1.5 0v5.19L4.391 3.33a.75.75 0 10-1.06 1.061L5.939 7H.75a.75.75 0 000 1.5h5.19l-2.61 2.609a.75.75 0 101.061 1.06L7 9.561v5.189a.75.75 0 001.5 0V9.56l2.609 2.61a.75.75 0 101.06-1.061L9.561 8.5h5.189a.75.75 0 000-1.5H9.56l2.61-2.609a.75.75 0 00-1.061-1.06L8.5 5.939V.75z"/></svg>
+                      Resource Topology
+                    </div>
+                    <span class="panel-count">{{ topology.targets.length }} targets</span>
+                  </div>
+                  <div class="panel-body">
+                    <div v-for="target in topology.targets" :key="target.target" class="topo-target">
+                      <div class="topo-target-header" @click="toggleTarget(target.target)">
+                        <span class="topo-expand">{{ expandedTargets.has(target.target) ? '&#x25BC;' : '&#x25B6;' }}</span>
+                        <span class="status-dot" :class="target.status"></span>
+                        <span class="topo-target-name">{{ target.target }}</span>
+                        <span class="topo-target-meta">{{ target.hostname }} &middot; {{ target.ip || 'local' }}</span>
+                        <span class="topo-badge">{{ target.apps.length }} apps</span>
+                      </div>
+                      <div v-if="expandedTargets.has(target.target)" class="topo-children">
+                        <!-- Apps -->
+                        <div v-if="target.apps.length > 0" class="topo-section">
+                          <div class="topo-section-label">Applications</div>
+                          <div class="topo-app-grid">
+                            <div v-for="app in target.apps" :key="app.app"
+                                 class="topo-app-card" @click="selectApp(target.target, app)">
+                              <div class="topo-app-name">
+                                <span class="status-dot" :class="appStatusClass(app.status)"></span>
+                                {{ app.app }}
+                              </div>
+                              <div v-if="app.image" class="topo-app-image">{{ app.image }}</div>
+                              <div class="topo-app-detail">
+                                <span v-if="app.port">:{{ app.port }}</span>
+                                <span v-if="app.control_plane">{{ app.control_plane }}</span>
+                              </div>
+                              <a v-if="app.public_url" :href="app.public_url" target="_blank" class="topo-app-url"
+                                 @click.stop>{{ app.public_url }}</a>
+                              <div v-if="app.dependencies.length > 0" class="topo-deps">
+                                <span v-for="dep in app.dependencies" :key="dep.kind" class="topo-dep-tag">{{ dep.kind }}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <!-- Services -->
+                        <div v-if="target.services.length > 0" class="topo-section">
+                          <div class="topo-section-label">Services</div>
+                          <div class="topo-app-grid">
+                            <div v-for="svc in target.services" :key="svc.name" class="topo-svc-card">
+                              <span class="status-dot" :class="serviceStatusClass(svc.status)"></span>
+                              <span class="topo-svc-name">{{ svc.name }}</span>
+                              <span class="topo-svc-kind">{{ svc.kind }}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div v-if="target.apps.length === 0 && target.services.length === 0"
+                             class="empty-state" style="padding:16px;">
+                          <div class="empty-state-hint">No apps or services</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div v-if="topology.generated_at" class="generated-ts">
+                      Generated {{ formatTime(topology.generated_at) }}
+                    </div>
+                  </div>
+                </div>
 
-            <div v-if="operations.length > 0" style="margin-top: 32px;">
-              <div class="section-title">Recent Operations</div>
-              <table class="app-table">
-                <thead>
-                  <tr>
-                    <th>Time</th>
-                    <th>Target</th>
-                    <th>Object</th>
-                    <th>Action</th>
-                    <th>Result</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="op in operations" :key="op.op_id">
-                    <td>{{ formatRelativeTime(op.timestamp) }}</td>
-                    <td>{{ op.target }}</td>
-                    <td>{{ op.object_type }}</td>
-                    <td>{{ op.action }}</td>
-                    <td>{{ op.result }}</td>
-                  </tr>
-                </tbody>
-              </table>
+                <!-- Applications table -->
+                <div class="panel" v-if="apps.length > 0">
+                  <div class="panel-header">
+                    <div class="panel-title">
+                      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M0 1.75A.75.75 0 01.75 1h4.253c1.227 0 2.317.59 3 1.501A3.744 3.744 0 0111.006 1h4.245a.75.75 0 01.75.75v10.5a.75.75 0 01-.75.75h-4.507a2.25 2.25 0 00-1.591.659l-.622.621a.75.75 0 01-1.06 0l-.622-.621A2.25 2.25 0 005.258 13H.75a.75.75 0 01-.75-.75V1.75zm7.251 10.324l.004-5.073-.002-2.253A2.25 2.25 0 005.003 2.5H1.5v9h3.757a3.75 3.75 0 011.994.574zM8.755 4.75l-.004 7.322a3.752 3.752 0 011.992-.572H14.5v-9h-3.495a2.25 2.25 0 00-2.25 2.25z"/></svg>
+                      Applications
+                    </div>
+                    <span class="panel-count">{{ apps.length }}</span>
+                  </div>
+                  <div class="panel-body">
+                    <table class="data-table">
+                      <thead>
+                        <tr>
+                          <th>App</th>
+                          <th>Target</th>
+                          <th>Service Key</th>
+                          <th>Control Plane</th>
+                          <th>Public URL</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="app in apps" :key="app.app + app.target">
+                          <td class="cell-primary">{{ app.app }}</td>
+                          <td class="cell-mono">{{ app.target }}</td>
+                          <td class="cell-mono">{{ app.service_key || '-' }}</td>
+                          <td><span class="control-plane-tag">{{ app.control_plane || '-' }}</span></td>
+                          <td>
+                            <a v-if="app.public_url" :href="app.public_url" target="_blank" class="cell-link">
+                              {{ truncateUrl(app.public_url) }}
+                            </a>
+                            <span v-else style="color:var(--fg-muted);">-</span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- Empty states -->
+                <div v-if="hosts.length === 0 && apps.length === 0" class="panel">
+                  <div class="empty-state">
+                    <div class="empty-state-icon">&#x1F5A5;</div>
+                    <div class="empty-state-title">No resources yet</div>
+                    <div class="empty-state-hint">
+                      Run <code>agentplane infra inventory &lt;target&gt;</code> to register a server
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right column -->
+              <div class="content-side">
+                <!-- Host cards -->
+                <div class="panel" v-if="hosts.length > 0">
+                  <div class="panel-header">
+                    <div class="panel-title">
+                      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3.75A.75.75 0 012.75 3h10.5a.75.75 0 010 1.5H2.75A.75.75 0 012 3.75zm0 4A.75.75 0 012.75 7h10.5a.75.75 0 010 1.5H2.75A.75.75 0 012 7.75zm0 4a.75.75 0 01.75-.75h10.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75z"/></svg>
+                      Hosts
+                    </div>
+                    <span class="panel-count">{{ hosts.length }}</span>
+                  </div>
+                  <div class="panel-body">
+                    <div v-for="host in hosts" :key="host.target" class="host-card">
+                      <div class="host-card-row">
+                        <span class="status-dot" :class="host.status"></span>
+                        <span class="host-name">{{ host.hostname }}</span>
+                        <span class="host-ip">{{ host.ip || 'local' }}</span>
+                      </div>
+                      <div class="host-meta">
+                        <span class="host-meta-item">
+                          <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M1.75 1.5a.25.25 0 00-.25.25v12.5c0 .138.112.25.25.25h12.5a.25.25 0 00.25-.25V1.75a.25.25 0 00-.25-.25H1.75zM0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v12.5A1.75 1.75 0 0114.25 16H1.75A1.75 1.75 0 010 14.25V1.75z"/></svg>
+                          {{ host.label }}
+                        </span>
+                        <span v-if="host.provider" class="host-meta-item">{{ host.provider }}</span>
+                        <span v-if="host.last_seen" class="host-meta-item">{{ formatRelativeTime(host.last_seen) }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Operations timeline -->
+                <div class="panel" v-if="operations.length > 0">
+                  <div class="panel-header">
+                    <div class="panel-title">
+                      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"/></svg>
+                      Recent Operations
+                    </div>
+                    <span class="panel-count">{{ operations.length }}</span>
+                  </div>
+                  <div class="panel-body">
+                    <div v-for="op in operations" :key="op.op_id" class="op-item">
+                      <span class="op-time">{{ formatRelativeTime(op.timestamp) }}</span>
+                      <div class="op-body">
+                        <div class="op-action">
+                          <span class="op-target-tag">{{ op.target }}</span>
+                          <span class="op-type-tag">{{ op.object_type }}</span>
+                          {{ op.action }}
+                        </div>
+                        <div class="op-result" :class="opResultClass(op.result)">{{ op.result }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </template>
         </div>
 
-        <!-- Chat -->
-        <div v-if="view === 'chat'" class="chat-container">
+        <!-- App detail panel overlay -->
+        <div v-if="detailPanel.visible" class="detail-overlay" @click.self="closeDetail">
+          <div class="detail-panel">
+            <div class="detail-header">
+              <span class="detail-title">{{ detailPanel.title }}</span>
+              <button class="detail-close" @click="closeDetail">&times;</button>
+            </div>
+            <div class="detail-body">
+              <div v-if="detailPanel.loading" class="skeleton-card">
+                <div class="skeleton skeleton-line w80"></div>
+                <div class="skeleton skeleton-line w60"></div>
+                <div class="skeleton skeleton-line w40"></div>
+              </div>
+              <div v-else-if="detailPanel.error" style="color:var(--accent-red);font-size:13px;">{{ detailPanel.error }}</div>
+              <div v-else>
+                <div v-for="(val, key) in detailPanel.data" :key="key" class="detail-field">
+                  <div class="detail-key">{{ key }}</div>
+                  <div class="detail-val">{{ formatDetailVal(val) }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ Topology view (full) ═══ -->
+        <div v-if="view === 'topology'" style="flex:1; overflow-y:auto; padding:20px 24px;">
+          <topology-view></topology-view>
+        </div>
+
+        <!-- ═══ Chat view ═══ -->
+        <div v-if="view === 'chat'" class="chat-container" style="flex:1;">
           <div class="chat-messages" ref="chatMessagesEl">
             <div v-if="chatMessages.length === 0" class="chat-welcome">
               <h3>Agent Chat</h3>
               <p>
                 Describe what you need in natural language.<br>
                 The agent will translate your request into commands.<br><br>
-                Example: <code>Check the status of sub2api on prod0-main</code><br>
+                Example: <code>Check the status of sub2api on prod0-main</code><br><br>
                 Only read-only operations are allowed in WebUI.<br>
                 Destructive operations will be redirected to CLI.
               </p>
@@ -553,15 +1290,17 @@
     </template>
   </div>
 
+  <script src="/static/topology.js"></script>
   <script>
-    const { createApp, ref, onMounted, nextTick, onUnmounted } = Vue;
+    const { createApp, ref, computed, provide, onMounted, nextTick, onUnmounted } = Vue;
 
-    createApp({
+    const app = createApp({
       setup() {
         const view = ref('dashboard');
         const hosts = ref([]);
         const apps = ref([]);
         const operations = ref([]);
+        const topology = ref({ targets: [], generated_at: '' });
         const loading = ref(true);
         const loadError = ref('');
         const chatMessages = ref([]);
@@ -573,6 +1312,10 @@
         const authenticated = ref(false);
         const authToken = ref('');
         const authError = ref('');
+        const expandedTargets = ref(new Set());
+        const detailPanel = ref({ visible: false, title: '', data: null, loading: false, error: '' });
+
+        provide('authToken', authToken);
 
         let ws = null;
         let mtimePoller = null;
@@ -580,6 +1323,21 @@
         let reconnectDelay = 1000;
         const MAX_RECONNECT_DELAY = 30000;
 
+        // Computed
+        const viewLabel = computed(() => {
+          const labels = { dashboard: 'Dashboard', topology: 'Resource Topology', chat: 'Agent Chat' };
+          return labels[view.value] || 'Dashboard';
+        });
+
+        const connectedHosts = computed(() => hosts.value.filter(h => h.status === 'connected').length);
+        const appsWithUrl = computed(() => apps.value.filter(a => a.public_url).length);
+        const latestOp = computed(() => operations.value.length > 0 ? operations.value[0] : null);
+        const dataFreshness = computed(() => {
+          if (!latestOp.value || !latestOp.value.timestamp) return 'N/A';
+          return formatRelativeTime(latestOp.value.timestamp);
+        });
+
+        // Helpers
         function formatRelativeTime(ts) {
           if (!ts) return '-';
           try {
@@ -598,6 +1356,74 @@
           }
         }
 
+        function formatTime(ts) {
+          if (!ts) return '';
+          try { return new Date(ts).toLocaleString(); } catch { return ts; }
+        }
+
+        function truncateUrl(url) {
+          if (!url) return '';
+          try {
+            const u = new URL(url);
+            return u.hostname + (u.pathname !== '/' ? u.pathname : '');
+          } catch {
+            return url;
+          }
+        }
+
+        function opResultClass(result) {
+          if (!result) return 'neutral';
+          const r = String(result).toLowerCase();
+          if (r.includes('success') || r.includes('ok') || r.includes('done')) return 'success';
+          if (r.includes('fail') || r.includes('error')) return 'fail';
+          return 'neutral';
+        }
+
+        function appStatusClass(status) {
+          if (!status || status === 'unknown') return 'unknown';
+          return 'connected';
+        }
+
+        function serviceStatusClass(status) {
+          if (!status) return 'unknown';
+          const s = String(status).toLowerCase();
+          if (s.includes('running') || s.includes('active')) return 'connected';
+          if (s.includes('error') || s.includes('fail')) return 'error';
+          return 'unknown';
+        }
+
+        function toggleTarget(target) {
+          if (expandedTargets.value.has(target)) {
+            expandedTargets.value.delete(target);
+          } else {
+            expandedTargets.value.add(target);
+          }
+        }
+
+        async function selectApp(target, app) {
+          detailPanel.value = { visible: true, title: `${app.app} (${target})`, data: null, loading: true, error: '' };
+          try {
+            const res = await apiFetch(`/api/apps/${target}/${app.app}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            detailPanel.value.data = await res.json();
+          } catch (e) {
+            detailPanel.value.error = e.message;
+          } finally {
+            detailPanel.value.loading = false;
+          }
+        }
+
+        function closeDetail() {
+          detailPanel.value.visible = false;
+        }
+
+        function formatDetailVal(val) {
+          if (val === null || val === undefined) return '-';
+          if (typeof val === 'object') return JSON.stringify(val, null, 2);
+          return String(val);
+        }
+
+        // API
         function apiFetch(url) {
           const headers = {};
           if (authenticated.value && authToken.value) {
@@ -609,27 +1435,39 @@
         async function fetchDashboard() {
           loadError.value = '';
           try {
-            const [hostsRes, appsRes, opsRes] = await Promise.all([
+            const [hostsRes, appsRes, opsRes, topoRes] = await Promise.all([
               apiFetch('/api/hosts'),
               apiFetch('/api/apps'),
               apiFetch('/api/operations'),
+              apiFetch('/api/topology'),
             ]);
             if (hostsRes.status === 401 || appsRes.status === 401 || opsRes.status === 401) {
               authenticated.value = false;
               needsAuth.value = true;
               return;
             }
-            if (!hostsRes.ok || !appsRes.ok || !opsRes.ok) {
+            if (!hostsRes.ok || !appsRes.ok || !opsRes.ok || !topoRes.ok) {
               throw new Error('API request failed');
             }
             hosts.value = (await hostsRes.json()).hosts || [];
             apps.value = (await appsRes.json()).apps || [];
             operations.value = (await opsRes.json()).operations || [];
+            const topoData = await topoRes.json();
+            topology.value = topoData;
+            // Auto-expand first target
+            if (topoData.targets && topoData.targets.length > 0 && expandedTargets.value.size === 0) {
+              expandedTargets.value.add(topoData.targets[0].target);
+            }
           } catch (e) {
             loadError.value = `Failed to load data: ${e.message}`;
           } finally {
             loading.value = false;
           }
+        }
+
+        function refreshAll() {
+          loading.value = true;
+          fetchDashboard();
         }
 
         async function checkMtime() {
@@ -641,14 +1479,12 @@
               fetchDashboard();
             }
           } catch {
-            // ignore mtime check failures
+            // ignore
           }
         }
 
         function startMtimePolling() {
-          // Initial fetch
           fetchDashboard();
-          // Poll mtime every 5 seconds
           mtimePoller = setInterval(checkMtime, 5000);
         }
 
@@ -659,6 +1495,7 @@
           }
         }
 
+        // WebSocket
         function connectWs() {
           const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
           ws = new WebSocket(`${proto}//${location.host}/ws/chat`);
@@ -666,7 +1503,6 @@
           ws.onopen = () => {
             wsDisconnected.value = false;
             reconnectDelay = 1000;
-            // Send token if we have one (reconnect case or pre-filled)
             if (authToken.value && needsAuth.value && !authenticated.value) {
               ws.send(JSON.stringify({ type: 'auth', token: authToken.value }));
             }
@@ -676,10 +1512,11 @@
             const msg = JSON.parse(event.data);
 
             if (msg.type === 'auth_required') {
-              needsAuth.value = true;
-              // If user already entered token (e.g. reconnect), send it now
-              if (authToken.value) {
-                ws.send(JSON.stringify({ type: 'auth', token: authToken.value }));
+              if (!authenticated.value) {
+                needsAuth.value = true;
+                if (authToken.value) {
+                  ws.send(JSON.stringify({ type: 'auth', token: authToken.value }));
+                }
               }
               return;
             }
@@ -793,7 +1630,6 @@
             return;
           }
           authError.value = '';
-          // If ws is already open, send auth directly; otherwise reconnect
           if (ws && ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ type: 'auth', token: authToken.value }));
           } else {
@@ -802,7 +1638,6 @@
         }
 
         onMounted(async () => {
-          // Check if server requires auth before connecting WebSocket
           try {
             const res = await fetch('/api/config');
             const config = await res.json();
@@ -825,13 +1660,21 @@
         });
 
         return {
-          view, hosts, apps, operations, loading, loadError,
+          view, hosts, apps, operations, topology, loading, loadError,
           chatMessages, chatInput, agentTyping, chatMessagesEl,
           wsDisconnected, needsAuth, authenticated, authToken, authError,
-          formatRelativeTime, sendMessage, submitAuth, fetchDashboard,
+          expandedTargets,
+          viewLabel, connectedHosts, appsWithUrl, latestOp, dataFreshness,
+          formatRelativeTime, formatTime, truncateUrl,
+          opResultClass, appStatusClass, serviceStatusClass,
+          toggleTarget, selectApp, detailPanel, closeDetail, formatDetailVal,
+          sendMessage, submitAuth, fetchDashboard, refreshAll,
         };
       },
-    }).mount('#app');
+    });
+
+    app.component('topology-view', TopologyComponent);
+    app.mount('#app');
   </script>
 </body>
 </html>

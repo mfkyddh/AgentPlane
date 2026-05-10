@@ -7,8 +7,8 @@ from typing import Any
 
 from agentplane.domain.app import runtime as app_runtime
 from agentplane.domain.app.artifacts import resolve_delivery_contract_spec
-from agentplane.domain.app.contracts import validate_contract
 from agentplane.domain.app.catalog import resolve_app_contract, resolve_app_entry
+from agentplane.domain.app.contracts import validate_contract
 from agentplane.domain.app.models import AppCatalogEntry, DeliveryContractSpec
 from agentplane.domain.app.projection.runtime_env import (
     apply_runtime_env_projection,

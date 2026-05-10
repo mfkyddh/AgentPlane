@@ -32,6 +32,7 @@ from agentplane.domain.project.skills import (
     write_skill_export,
 )
 from agentplane.domain.project.status import build_repo_status, write_status_html
+from agentplane.domain.project.topology import build_topology
 from agentplane.domain.targets import SUPPORTED_RUNTIME_ENV_TARGETS
 from agentplane.providers.onepanel_fixtures import (
     apply_fixture,
@@ -98,6 +99,10 @@ def add_project_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentP
     route_fingerprint.add_argument("--baseline", type=Path, help="上一版 route fingerprint JSON")
     route_fingerprint.add_argument("--output", type=Path, help="写出当前 route fingerprint JSON")
     route_fingerprint.add_argument("--fail-on-drift", action="store_true", help="存在 route drift 时返回失败")
+
+    topology = project_subparsers.add_parser("topology", help="显示资源拓扑关系")
+    topology.add_argument("--repo-root", type=Path, default=Path.cwd())
+    topology.add_argument("--json", action="store_true", dest="json_output", help="输出 JSON 格式")
 
     skills = project_subparsers.add_parser("skills", help="Skill 能力面治理")
     skills_subparsers = skills.add_subparsers(dest="project_skills_action", required=True)
@@ -525,6 +530,27 @@ def run_provider_command(args: argparse.Namespace) -> dict[str, Any]:
     raise ValueError(f"unsupported repo provider action: {args.project_provider_action}")
 
 
+def run_topology_command(args: argparse.Namespace) -> dict[str, Any]:
+    repo_root = args.repo_root.resolve()
+    payload = build_topology(repo_root)
+    if getattr(args, "json_output", False):
+        return payload
+    # Human-readable output
+    targets = payload.get("targets", [])
+    if not targets:
+        print("No targets found.")
+        return payload
+    for t in targets:
+        print(f"\n[{t['target']}] {t['hostname']} ({t['ip'] or 'local'}) — {t['status']}")
+        for app in t.get("apps", []):
+            deps = ", ".join(d.get("kind", "") for d in app.get("dependencies", []))
+            dep_str = f" -> [{deps}]" if deps else ""
+            print(f"  ├─ App: {app['app']} ({app.get('control_plane', '-')}){dep_str}")
+        for svc in t.get("services", []):
+            print(f"  └─ Service: {svc['name']} ({svc.get('kind', '-')})")
+    return payload
+
+
 def run_skills_command(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = args.repo_root.resolve()
     if args.project_skills_action == "check":
@@ -656,6 +682,8 @@ def handle_project_command(args: argparse.Namespace) -> dict[str, Any]:
         return run_provider_command(args)
     if args.project_action == "skills":
         return run_skills_command(args)
+    if args.project_action == "topology":
+        return run_topology_command(args)
     if args.project_action == "projection":
         return _handle_projection(args)
     raise ValueError(f"unsupported project action: {args.project_action}")

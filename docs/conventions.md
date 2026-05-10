@@ -219,6 +219,17 @@ audience: both
 
 ---
 
+## Web UI 设计规范
+
+AgentPlane Web UI 采用暗色 Tech/utility 风格，所有页面共享一套 CSS token。
+
+| 资产 | 位置 | 用途 |
+|------|------|------|
+| CSS Token | `agentplane/web/static/tokens.css` | 色板、字体、圆角、reset |
+| 设计规范 | [docs/design-system.md](design-system.md) | 色板、字号、组件模式、反模式 |
+
+新页面必须引入 `tokens.css`，禁止硬编码颜色值。详见 design-system.md。
+
 ## Node 与前端
 
 本仓库不是前端应用仓库，默认不引入 Node 工具链。

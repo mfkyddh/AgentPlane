@@ -15,13 +15,11 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-
 from agentplane.ssh import (
     RemoteAPIProtocol,
     SSHConnectionPool,
     SSHConnectionProtocol,
 )
-
 
 # ---------------------------------------------------------------------------
 # Stubs — minimal implementations proving Protocol replaceability

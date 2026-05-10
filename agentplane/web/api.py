@@ -5,7 +5,12 @@ import os
 from pathlib import Path
 from typing import Any
 
-from agentplane.domain.app.object_handlers import search_apps
+from agentplane.domain.app.object_handlers import (
+    _contract_payload,
+    get_app,
+    search_apps,
+)
+from agentplane.domain.project.topology import build_topology
 from agentplane.domain.targets import FORMAL_TARGETS
 
 
@@ -91,3 +96,46 @@ def get_data_mtime(repo_root: Path) -> dict[str, Any]:
             except OSError:
                 pass
     return {"mtime": max_mtime}
+
+
+def get_topology(repo_root: Path) -> dict[str, Any]:
+    """Return full resource graph: targets → servers → apps → dependencies."""
+    return build_topology(repo_root)
+
+
+def get_server_detail(repo_root: Path, target: str) -> dict[str, Any]:
+    """Return full inventory payload for one target."""
+    inventory = _load_inventory(repo_root, target)
+    if not inventory:
+        return {"error": "not_found", "target": target}
+    ssh = inventory.get("ssh", {})
+    return {
+        "target": target,
+        "hostname": inventory.get("hostname", target),
+        "ip": ssh.get("infra", inventory.get("public_ip", "")),
+        "os": inventory.get("os", ""),
+        "label": inventory.get("label", target),
+        "provider": inventory.get("provider", ""),
+        "status": _host_status(inventory),
+        "docker_containers": inventory.get("docker_containers", []),
+        "compose_services": inventory.get("compose_services", []),
+        "host_truth": inventory.get("host_truth", {}),
+    }
+
+
+def get_app_detail(repo_root: Path, target: str, app: str) -> dict[str, Any]:
+    """Return app object info with contract details."""
+    try:
+        detail = get_app(repo_root, target, app)
+    except Exception:  # noqa: BLE001
+        return {"error": "not_found", "target": target, "app": app}
+    contract = _contract_payload(
+        Path(detail["app"]["contract_file"])
+    ) if detail["app"].get("contract_file") else {}
+    return {
+        "app": detail["app"],
+        "inventory_entry": detail.get("inventory_entry", {}),
+        "contract": contract,
+        "summary_files": detail.get("summary_files", []),
+        "ledger_status": detail.get("ledger_status", {}),
+    }

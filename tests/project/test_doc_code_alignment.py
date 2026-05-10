@@ -7,10 +7,8 @@ If a test fails, the documentation needs updating (or the code drifted).
 from __future__ import annotations
 
 import unittest
-from pathlib import Path
 
 import pytest
-
 from tests.support.paths import REPO_ROOT
 
 pytestmark = pytest.mark.integration

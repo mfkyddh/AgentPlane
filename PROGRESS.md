@@ -68,6 +68,7 @@ audience: both
 | B31 | correct commit_message module path in CI workflow | 已完成 | — | pending (2026-05-09) |
 | B32 | replace 'repo' with 'project' subcommand in CI workflow | 已完成 | — | pending (2026-05-09) |
 | B33 | fix docs-sanity gate errors — archive status, broken links, isolated doc | 已完成 | — | pending (2026-05-09) |
+| B34 | foundation-replan Phase 0-1 — boundary repair and SSH Protocol | 已完成 | — | pending (2026-05-09) |
 
 ---
 

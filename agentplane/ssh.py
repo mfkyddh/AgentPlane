@@ -16,7 +16,6 @@ from typing import Protocol
 from agentplane.runtime.secret_resolver import SecretResolver
 from agentplane.runtime.wsl_bridge import windows_path_to_wsl_posix
 
-
 # ---------------------------------------------------------------------------
 # SSH Protocols — cross-package boundary contracts
 # ---------------------------------------------------------------------------
