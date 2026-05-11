@@ -1,21 +1,21 @@
-// Topology Vue component for AgentPlane WebUI
-// Loaded as a separate file to prevent index.html bloat
+// AgentPlane — Topology view component
+// Standalone topology page with own data fetching
 
-const TopologyComponent = {
+const TopologyViewComponent = {
   template: `
     <div>
       <!-- Refresh bar -->
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-        <div class="section-title" style="margin-bottom:0;">Resource Topology</div>
+        <div class="panel-title" style="margin-bottom:0; font-size:16px;">{{ t('topology.title') }}</div>
         <button class="retry-btn" @click="fetchTopology" :disabled="loading"
-                style="border-color:#00d4aa40; color:#00d4aa;">
-          {{ loading ? 'Loading...' : 'Refresh' }}
+                style="border-color:var(--accent-green); color:var(--accent-green);">
+          {{ loading ? t('action.loading') : t('action.refresh') }}
         </button>
       </div>
 
       <!-- Loading -->
       <div v-if="loading && topology.targets.length === 0">
-        <div class="cards-grid">
+        <div class="topo-app-grid">
           <div v-for="n in 2" :key="n" class="skeleton-card">
             <div class="skeleton skeleton-line w60"></div>
             <div class="skeleton skeleton-line w40"></div>
@@ -26,18 +26,16 @@ const TopologyComponent = {
 
       <!-- Error -->
       <div v-else-if="error" class="error-state">
-        <div class="error-state-icon">&#x26A0;</div>
+        <div style="font-size:28px; margin-bottom:8px; opacity:0.5;">&#x26A0;</div>
         <div class="error-state-msg">{{ error }}</div>
-        <button class="retry-btn" @click="fetchTopology">Retry</button>
+        <button class="retry-btn" @click="fetchTopology">{{ t('action.retry') }}</button>
       </div>
 
       <!-- Empty -->
       <div v-else-if="topology.targets.length === 0" class="empty-state">
         <div class="empty-state-icon">&#x1F310;</div>
-        <div class="empty-state-title">No targets found</div>
-        <div class="empty-state-hint">
-          Run <code>agentplane infra inventory &lt;target&gt;</code> to register a server
-        </div>
+        <div class="empty-state-title">{{ t('topology.no_targets') }}</div>
+        <div class="empty-state-hint" v-html="t('topology.no_targets_hint')"></div>
       </div>
 
       <!-- Topology tree -->
@@ -49,29 +47,28 @@ const TopologyComponent = {
             <span class="status-dot" :class="target.status"></span>
             <span class="topo-target-name">{{ target.target }}</span>
             <span class="topo-target-meta">{{ target.hostname }} &middot; {{ target.ip || 'local' }}</span>
-            <span class="topo-badge">{{ target.apps.length }} apps</span>
+            <span class="topo-badge">{{ target.apps.length }} {{ t('topology.apps') }}</span>
           </div>
 
           <!-- Target details -->
           <div v-if="expandedTargets.has(target.target)" class="topo-children">
             <!-- Apps -->
             <div v-if="target.apps.length > 0" class="topo-section">
-              <div class="topo-section-label">Applications</div>
-              <div class="cards-grid">
+              <div class="topo-section-label">{{ t('dashboard.applications') }}</div>
+              <div class="topo-app-grid">
                 <div v-for="app in target.apps" :key="app.app"
-                     class="server-card topo-app-card" @click="selectApp(target.target, app)">
-                  <div>
+                     class="topo-app-card" @click="selectApp(target.target, app)">
+                  <div class="topo-app-name">
                     <span class="status-dot" :class="appStatusClass(app.status)"></span>
-                    <span class="server-hostname">{{ app.app }}</span>
+                    {{ app.app }}
                   </div>
-                  <div v-if="app.image" class="server-ip">{{ app.image }}</div>
-                  <div class="server-meta">
-                    <span v-if="app.port">Port: {{ app.port }}</span>
-                    <span v-if="app.control_plane"> &middot; {{ app.control_plane }}</span>
+                  <div v-if="app.image" class="topo-app-image">{{ app.image }}</div>
+                  <div class="topo-app-detail">
+                    <span v-if="app.port">:{{ app.port }}</span>
+                    <span v-if="app.control_plane">{{ app.control_plane }}</span>
                   </div>
-                  <div v-if="app.public_url" class="server-meta">
-                    <a :href="app.public_url" target="_blank" class="app-url">{{ app.public_url }}</a>
-                  </div>
+                  <a v-if="app.public_url" :href="app.public_url" target="_blank" class="topo-app-url"
+                     @click.stop>{{ app.public_url }}</a>
                   <div v-if="app.dependencies.length > 0" class="topo-deps">
                     <span v-for="dep in app.dependencies" :key="dep.kind" class="topo-dep-tag">
                       {{ dep.kind }}
@@ -83,49 +80,47 @@ const TopologyComponent = {
 
             <!-- Services -->
             <div v-if="target.services.length > 0" class="topo-section">
-              <div class="topo-section-label">Services</div>
-              <div class="cards-grid">
-                <div v-for="svc in target.services" :key="svc.name" class="server-card">
-                  <div>
-                    <span class="status-dot" :class="serviceStatusClass(svc.status)"></span>
-                    <span class="server-hostname">{{ svc.name }}</span>
-                  </div>
-                  <div class="server-meta">{{ svc.kind }}</div>
+              <div class="topo-section-label">{{ t('dashboard.services') }}</div>
+              <div class="topo-app-grid">
+                <div v-for="svc in target.services" :key="svc.name" class="topo-svc-card">
+                  <span class="status-dot" :class="serviceStatusClass(svc.status)"></span>
+                  <span class="topo-svc-name">{{ svc.name }}</span>
+                  <span class="topo-svc-kind">{{ svc.kind }}</span>
                 </div>
               </div>
             </div>
 
             <div v-if="target.apps.length === 0 && target.services.length === 0"
-                 class="empty-state" style="padding:24px;">
-              <div class="empty-state-hint">No apps or services on this target</div>
+                 class="empty-state" style="padding:16px;">
+              <div class="empty-state-hint">{{ t('topology.no_items') }}</div>
             </div>
           </div>
         </div>
 
         <!-- Generated timestamp -->
-        <div v-if="topology.generated_at" style="text-align:right; margin-top:16px; font-size:12px; color:#666;">
-          Generated {{ formatTime(topology.generated_at) }}
+        <div v-if="topology.generated_at" class="generated-ts">
+          {{ t('dashboard.generated') }} {{ formatTime(topology.generated_at) }}
         </div>
       </div>
 
       <!-- Detail panel -->
-      <div v-if="detailPanel.visible" class="topo-detail-overlay" @click.self="closeDetail">
-        <div class="topo-detail-panel">
-          <div class="topo-detail-header">
-            <span class="topo-detail-title">{{ detailPanel.title }}</span>
-            <button class="topo-detail-close" @click="closeDetail">&times;</button>
+      <div v-if="detailPanel.visible" class="detail-overlay" @click.self="closeDetail">
+        <div class="detail-panel">
+          <div class="detail-header">
+            <span class="detail-title">{{ detailPanel.title }}</span>
+            <button class="detail-close" @click="closeDetail">&times;</button>
           </div>
-          <div class="topo-detail-body">
+          <div class="detail-body">
             <div v-if="detailPanel.loading" class="skeleton-card">
               <div class="skeleton skeleton-line w80"></div>
               <div class="skeleton skeleton-line w60"></div>
               <div class="skeleton skeleton-line w40"></div>
             </div>
-            <div v-else-if="detailPanel.error" style="color:#ff6b6b;">{{ detailPanel.error }}</div>
+            <div v-else-if="detailPanel.error" style="color:var(--accent-red);">{{ detailPanel.error }}</div>
             <div v-else>
-              <div v-for="(val, key) in detailPanel.data" :key="key" class="topo-detail-field">
-                <div class="topo-detail-key">{{ key }}</div>
-                <div class="topo-detail-val">{{ formatDetailVal(val) }}</div>
+              <div v-for="(val, key) in detailPanel.data" :key="key" class="detail-field">
+                <div class="detail-key">{{ key }}</div>
+                <div class="detail-val">{{ formatDetailVal(val) }}</div>
               </div>
             </div>
           </div>
@@ -136,6 +131,7 @@ const TopologyComponent = {
 
   setup() {
     const authToken = Vue.inject('authToken', Vue.ref(''));
+    const { t } = useI18n();
     const topology = Vue.ref({ targets: [], generated_at: '' });
     const loading = Vue.ref(false);
     const error = Vue.ref('');
@@ -153,19 +149,21 @@ const TopologyComponent = {
       error.value = '';
       try {
         const res = await fetch('/api/topology', { headers: getAuthHeaders() });
-        if (res.status === 401) { error.value = 'Authentication required'; return; }
+        if (res.status === 401) { error.value = t('error.auth_required'); return; }
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         topology.value = await res.json();
-        // Auto-expand first target
         if (topology.value.targets.length > 0 && expandedTargets.value.size === 0) {
           expandedTargets.value.add(topology.value.targets[0].target);
         }
       } catch (e) {
-        error.value = `Failed to load topology: ${e.message}`;
+        error.value = t('error.load_topology') + ': ' + e.message;
       } finally {
         loading.value = false;
       }
     }
+
+    // Shared polling
+    useDataPoller(fetchTopology);
 
     function toggleTarget(target) {
       if (expandedTargets.value.has(target)) {
@@ -188,9 +186,7 @@ const TopologyComponent = {
       }
     }
 
-    function closeDetail() {
-      detailPanel.value.visible = false;
-    }
+    function closeDetail() { detailPanel.value.visible = false; }
 
     function appStatusClass(status) {
       if (!status || status === 'unknown') return 'unknown';
@@ -216,12 +212,11 @@ const TopologyComponent = {
       return String(val);
     }
 
-    Vue.onMounted(fetchTopology);
-
     return {
       topology, loading, error, expandedTargets, detailPanel,
       fetchTopology, toggleTarget, selectApp, closeDetail,
       appStatusClass, serviceStatusClass, formatTime, formatDetailVal,
+      t,
     };
   },
 };

@@ -1,0 +1,533 @@
+{
+  "version": 1,
+  "layers": [
+    {
+      "id": "infra",
+      "name": "基础设施",
+      "name_en": "Infrastructure",
+      "description": "Target 配置、主机、网络、Secrets",
+      "description_en": "Target configuration, hosts, networks, Secrets",
+      "objects": [
+        {
+          "id": "host-inventory",
+          "name": "主机纳管",
+          "name_en": "Host Inventory",
+          "capabilities": [
+            {
+              "id": "inventory-snapshot",
+              "name": "资产盘点",
+              "name_en": "Inventory Snapshot",
+              "status": "implemented",
+              "cli": "agentplane infra inventory <target>"
+            },
+            {
+              "id": "security-audit",
+              "name": "安全审计",
+              "name_en": "Security Audit",
+              "status": "implemented",
+              "cli": "agentplane infra audit <target>"
+            },
+            {
+              "id": "remote-exec",
+              "name": "远程命令执行",
+              "name_en": "Remote Execution",
+              "status": "implemented",
+              "cli": "agentplane infra remote bash <target>"
+            },
+            {
+              "id": "health-check",
+              "name": "健康检查",
+              "name_en": "Health Check",
+              "status": "implemented",
+              "cli": "agentplane infra health <target>"
+            }
+          ]
+        },
+        {
+          "id": "network",
+          "name": "网络管理",
+          "name_en": "Network Management",
+          "capabilities": [
+            {
+              "id": "network-audit",
+              "name": "网络审计",
+              "name_en": "Network Audit",
+              "status": "implemented",
+              "cli": "agentplane infra network audit <target>"
+            },
+            {
+              "id": "firewall-manage",
+              "name": "防火墙管理",
+              "name_en": "Firewall Management",
+              "status": "implemented",
+              "cli": "agentplane infra network firewall plan <target>"
+            }
+          ]
+        },
+        {
+          "id": "automation",
+          "name": "定时任务",
+          "name_en": "Automation",
+          "capabilities": [
+            {
+              "id": "automation-search",
+              "name": "定时任务搜索",
+              "name_en": "Automation Search",
+              "status": "implemented",
+              "cli": "agentplane infra automation search <target>"
+            },
+            {
+              "id": "automation-plan",
+              "name": "定时任务计划",
+              "name_en": "Automation Plan",
+              "status": "implemented",
+              "cli": "agentplane infra automation plan <target>"
+            },
+            {
+              "id": "automation-apply",
+              "name": "定时任务执行",
+              "name_en": "Automation Apply",
+              "status": "implemented",
+              "cli": "agentplane infra automation apply <target>"
+            }
+          ]
+        },
+        {
+          "id": "secrets",
+          "name": "Secrets 管理",
+          "name_en": "Secrets Management",
+          "capabilities": [
+            {
+              "id": "secrets-sync",
+              "name": "Secrets 同步",
+              "name_en": "Secrets Sync",
+              "status": "implemented",
+              "cli": "agentplane infra secrets sync-layout <target>"
+            }
+          ]
+        },
+        {
+          "id": "bootstrap",
+          "name": "Bootstrap",
+          "name_en": "Bootstrap",
+          "capabilities": [
+            {
+              "id": "bootstrap-doctor",
+              "name": "环境诊断",
+              "name_en": "Bootstrap Doctor",
+              "status": "implemented",
+              "cli": "agentplane infra bootstrap doctor"
+            },
+            {
+              "id": "bootstrap-inspect",
+              "name": "本地检查",
+              "name_en": "Bootstrap Inspect",
+              "status": "implemented",
+              "cli": "agentplane infra bootstrap inspect-local"
+            },
+            {
+              "id": "bootstrap-init",
+              "name": "初始化 Secrets",
+              "name_en": "Bootstrap Init Secrets",
+              "status": "implemented",
+              "cli": "agentplane infra bootstrap init-secrets"
+            },
+            {
+              "id": "bootstrap-verify",
+              "name": "验证 Secrets",
+              "name_en": "Bootstrap Verify Secrets",
+              "status": "implemented",
+              "cli": "agentplane infra bootstrap verify-secrets"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "service",
+      "name": "服务运行时",
+      "name_en": "Service Runtime",
+      "description": "所有 Docker 容器的健康、重启、日志",
+      "description_en": "Health, restart, logs for all Docker containers",
+      "objects": [
+        {
+          "id": "service-lifecycle",
+          "name": "服务生命周期",
+          "name_en": "Service Lifecycle",
+          "capabilities": [
+            {
+              "id": "service-search",
+              "name": "服务搜索",
+              "name_en": "Service Search",
+              "status": "implemented",
+              "cli": "agentplane service search --target <target>"
+            },
+            {
+              "id": "service-get",
+              "name": "服务详情",
+              "name_en": "Service Get",
+              "status": "implemented",
+              "cli": "agentplane service get --target <target> --name <service>"
+            },
+            {
+              "id": "service-verify",
+              "name": "服务验证",
+              "name_en": "Service Verify",
+              "status": "implemented",
+              "cli": "agentplane service verify --target <target> --name <service>"
+            },
+            {
+              "id": "service-plan",
+              "name": "操作计划",
+              "name_en": "Service Plan",
+              "status": "implemented",
+              "cli": "agentplane service plan --target <target> --name <service>"
+            },
+            {
+              "id": "service-apply",
+              "name": "操作执行",
+              "name_en": "Service Apply",
+              "status": "implemented",
+              "cli": "agentplane service apply --target <target> --name <service>"
+            },
+            {
+              "id": "service-public-endpoint",
+              "name": "公网端点验证",
+              "name_en": "Public Endpoint Verify",
+              "status": "implemented",
+              "cli": "agentplane service public-endpoint verify --target <target>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "app",
+      "name": "应用交付",
+      "name_en": "Application Delivery",
+      "description": "应用的 catalog、构建、部署、回滚",
+      "description_en": "App catalog, build, deploy, rollback",
+      "objects": [
+        {
+          "id": "app-object",
+          "name": "应用对象",
+          "name_en": "App Object",
+          "capabilities": [
+            {
+              "id": "app-search",
+              "name": "应用搜索",
+              "name_en": "App Search",
+              "status": "implemented",
+              "cli": "agentplane app object search --target <target>"
+            },
+            {
+              "id": "app-get",
+              "name": "应用详情",
+              "name_en": "App Get",
+              "status": "implemented",
+              "cli": "agentplane app object get --target <target> --app <app>"
+            },
+            {
+              "id": "app-discover",
+              "name": "未纳管发现",
+              "name_en": "App Discover",
+              "status": "implemented",
+              "cli": "agentplane app object discover --target <target>"
+            }
+          ]
+        },
+        {
+          "id": "app-resource",
+          "name": "应用资源",
+          "name_en": "App Resource",
+          "capabilities": [
+            {
+              "id": "resource-search",
+              "name": "资源搜索",
+              "name_en": "Resource Search",
+              "status": "implemented",
+              "cli": "agentplane app resource search --target <target>"
+            },
+            {
+              "id": "resource-get",
+              "name": "资源详情",
+              "name_en": "Resource Get",
+              "status": "implemented",
+              "cli": "agentplane app resource get --target <target> --app <app>"
+            },
+            {
+              "id": "resource-verify",
+              "name": "资源验证",
+              "name_en": "Resource Verify",
+              "status": "implemented",
+              "cli": "agentplane app resource verify --target <target> --app <app>"
+            },
+            {
+              "id": "resource-refresh-ledger",
+              "name": "台账刷新",
+              "name_en": "Resource Ledger Refresh",
+              "status": "implemented",
+              "cli": "agentplane app resource refresh-ledger --target <target> --app <app>"
+            }
+          ]
+        },
+        {
+          "id": "app-delivery",
+          "name": "应用交付流水线",
+          "name_en": "App Delivery Pipeline",
+          "capabilities": [
+            {
+              "id": "validate-contract",
+              "name": "合约验证",
+              "name_en": "Contract Validation",
+              "status": "implemented",
+              "cli": "agentplane app delivery validate-contract --target <target> --app <app>"
+            },
+            {
+              "id": "build-artifact",
+              "name": "构建产物",
+              "name_en": "Build Artifact",
+              "status": "implemented",
+              "cli": "agentplane app delivery build-artifact --target <target> --app <app>"
+            },
+            {
+              "id": "ship-image",
+              "name": "推送镜像",
+              "name_en": "Ship Image",
+              "status": "implemented",
+              "cli": "agentplane app delivery ship-image --target <target> --app <app>"
+            },
+            {
+              "id": "render-runtime",
+              "name": "渲染运行时",
+              "name_en": "Render Runtime",
+              "status": "implemented",
+              "cli": "agentplane app delivery render-runtime --target <target> --app <app>"
+            },
+            {
+              "id": "deploy",
+              "name": "部署",
+              "name_en": "Deploy",
+              "status": "implemented",
+              "cli": "agentplane app delivery deploy --target <target> --app <app>"
+            },
+            {
+              "id": "deploy-verify",
+              "name": "部署验证",
+              "name_en": "Deploy Verify",
+              "status": "implemented",
+              "cli": "agentplane app delivery verify --target <target> --app <app>"
+            },
+            {
+              "id": "rollback",
+              "name": "回滚",
+              "name_en": "Rollback",
+              "status": "implemented",
+              "cli": "agentplane app delivery deploy --target <target> --app <app> --rollback"
+            },
+            {
+              "id": "inventory-refresh",
+              "name": "Inventory 刷新",
+              "name_en": "Inventory Refresh",
+              "status": "implemented",
+              "cli": "agentplane app delivery inventory-refresh --target <target> --app <app>"
+            },
+            {
+              "id": "doc-sync",
+              "name": "文档同步",
+              "name_en": "Doc Sync",
+              "status": "implemented",
+              "cli": "agentplane app delivery doc-sync --target <target> --app <app>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ingress",
+      "name": "公网入口",
+      "name_en": "Ingress",
+      "description": "域名、SSL、路由管理",
+      "description_en": "Domain, SSL, and route management",
+      "objects": [
+        {
+          "id": "ingress-lifecycle",
+          "name": "入口生命周期",
+          "name_en": "Ingress Lifecycle",
+          "capabilities": [
+            {
+              "id": "ingress-search",
+              "name": "入口搜索",
+              "name_en": "Ingress Search",
+              "status": "implemented",
+              "cli": "agentplane ingress search --target <target>"
+            },
+            {
+              "id": "ingress-get",
+              "name": "入口详情",
+              "name_en": "Ingress Get",
+              "status": "implemented",
+              "cli": "agentplane ingress get --target <target> --alias <alias>"
+            },
+            {
+              "id": "ingress-verify",
+              "name": "公网访问验证",
+              "name_en": "Ingress Verify",
+              "status": "implemented",
+              "cli": "agentplane ingress verify --target <target> --alias <alias>"
+            },
+            {
+              "id": "ingress-refresh-ledger",
+              "name": "台账刷新",
+              "name_en": "Ingress Ledger Refresh",
+              "status": "implemented",
+              "cli": "agentplane ingress refresh-ledger --target <target>"
+            },
+            {
+              "id": "ingress-publish-plan",
+              "name": "发布计划",
+              "name_en": "Publish Plan",
+              "status": "implemented",
+              "cli": "agentplane ingress publish plan --target <target>"
+            },
+            {
+              "id": "ingress-publish-apply",
+              "name": "发布执行",
+              "name_en": "Publish Apply",
+              "status": "implemented",
+              "cli": "agentplane ingress publish apply --target <target>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "project",
+      "name": "项目治理",
+      "name_en": "Project Governance",
+      "description": "仓库健康、投影验证、Skill 治理",
+      "description_en": "Repo health, projection validation, Skill governance",
+      "objects": [
+        {
+          "id": "repo-health",
+          "name": "仓库健康",
+          "name_en": "Repo Health",
+          "capabilities": [
+            {
+              "id": "project-status",
+              "name": "仓库状态",
+              "name_en": "Project Status",
+              "status": "implemented",
+              "cli": "agentplane project status"
+            },
+            {
+              "id": "health-check",
+              "name": "健康检查",
+              "name_en": "Health Check",
+              "status": "implemented",
+              "cli": "agentplane project health-check"
+            },
+            {
+              "id": "docs-sanity",
+              "name": "文档检查",
+              "name_en": "Docs Sanity",
+              "status": "implemented",
+              "cli": "agentplane project docs-sanity"
+            },
+            {
+              "id": "doc-layer",
+              "name": "文档分层检查",
+              "name_en": "Doc Layer Check",
+              "status": "implemented",
+              "cli": "agentplane project doc-layer"
+            }
+          ]
+        },
+        {
+          "id": "security-scan",
+          "name": "安全扫描",
+          "name_en": "Security Scan",
+          "capabilities": [
+            {
+              "id": "secret-scan",
+              "name": "密钥扫描",
+              "name_en": "Secret Scan",
+              "status": "implemented",
+              "cli": "agentplane project secret-scan"
+            },
+            {
+              "id": "privacy-scan",
+              "name": "隐私扫描",
+              "name_en": "Privacy Scan",
+              "status": "implemented",
+              "cli": "agentplane project privacy-scan"
+            }
+          ]
+        },
+        {
+          "id": "skill-governance",
+          "name": "Skill 治理",
+          "name_en": "Skill Governance",
+          "capabilities": [
+            {
+              "id": "skills-check",
+              "name": "Skill 检查",
+              "name_en": "Skills Check",
+              "status": "implemented",
+              "cli": "agentplane project skills check"
+            },
+            {
+              "id": "skills-list",
+              "name": "Skill 列表",
+              "name_en": "Skills List",
+              "status": "implemented",
+              "cli": "agentplane project skills list"
+            }
+          ]
+        },
+        {
+          "id": "projection",
+          "name": "投影管理",
+          "name_en": "Projection Management",
+          "capabilities": [
+            {
+              "id": "runtime-env-plan",
+              "name": "运行时环境计划",
+              "name_en": "Runtime Env Plan",
+              "status": "implemented",
+              "cli": "agentplane project projection runtime-env plan --target <target> --app <app>"
+            },
+            {
+              "id": "runtime-env-verify",
+              "name": "运行时环境验证",
+              "name_en": "Runtime Env Verify",
+              "status": "implemented",
+              "cli": "agentplane project projection runtime-env verify --target <target> --app <app>"
+            },
+            {
+              "id": "verification-run",
+              "name": "验证执行",
+              "name_en": "Verification Run",
+              "status": "implemented",
+              "cli": "agentplane project projection verification run --target <target>"
+            },
+            {
+              "id": "fixture-plan",
+              "name": "Fixture 计划",
+              "name_en": "Fixture Plan",
+              "status": "implemented",
+              "cli": "agentplane project projection fixture plan --target <target>"
+            },
+            {
+              "id": "ledger-refresh",
+              "name": "台账刷新",
+              "name_en": "Ledger Refresh",
+              "status": "implemented",
+              "cli": "agentplane project projection ledger refresh --target <target>"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

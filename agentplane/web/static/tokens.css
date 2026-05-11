@@ -22,8 +22,8 @@
 
   /* Foregrounds */
   --fg-primary:    #e6edf3;
-  --fg-secondary:  #8b949e;
-  --fg-muted:      #484f58;
+  --fg-secondary:  #9da7b0;
+  --fg-muted:      #6e7681;
 
   /* Accent palette */
   --accent-blue:   #58a6ff;
@@ -55,8 +55,8 @@ body {
   font-family: var(--font-sans);
   background: var(--bg-primary);
   color: var(--fg-primary);
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
 

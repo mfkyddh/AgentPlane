@@ -11,7 +11,14 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from agentplane.web.agent_router import handle_chat_message
 from agentplane.web.api import (
     get_app_detail,
+    get_capabilities,
+    get_dashboard,
     get_data_mtime,
+    get_domain_app,
+    get_domain_infra,
+    get_domain_ingress,
+    get_domain_project,
+    get_domain_service,
     get_server_detail,
     get_topology,
     list_apps,
@@ -42,6 +49,10 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
 
     if token is not None:
         app.add_middleware(TokenAuthMiddleware, token=token)
+
+    @app.get("/api/dashboard")
+    async def api_dashboard():
+        return get_dashboard(repo_root)
 
     @app.get("/api/hosts")
     async def api_hosts():
@@ -76,6 +87,30 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
         if result.get("error") == "not_found":
             return JSONResponse(result, status_code=404)
         return result
+
+    @app.get("/api/domains/infra")
+    async def api_domain_infra():
+        return get_domain_infra(repo_root)
+
+    @app.get("/api/domains/service")
+    async def api_domain_service():
+        return get_domain_service(repo_root)
+
+    @app.get("/api/domains/app")
+    async def api_domain_app():
+        return get_domain_app(repo_root)
+
+    @app.get("/api/domains/ingress")
+    async def api_domain_ingress():
+        return get_domain_ingress(repo_root)
+
+    @app.get("/api/domains/project")
+    async def api_domain_project():
+        return get_domain_project(repo_root)
+
+    @app.get("/api/capabilities")
+    async def api_capabilities():
+        return get_capabilities()
 
     @app.websocket("/ws/chat")
     async def ws_chat(websocket: WebSocket):
