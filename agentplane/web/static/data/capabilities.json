@@ -145,10 +145,10 @@
     },
     {
       "id": "service",
-      "name": "服务运行时",
-      "name_en": "Service Runtime",
-      "description": "所有 Docker 容器的健康、重启、日志",
-      "description_en": "Health, restart, logs for all Docker containers",
+      "name": "服务",
+      "name_en": "Service",
+      "description": "容器健康、重启、日志管理",
+      "description_en": "Container health, restart, and log management",
       "objects": [
         {
           "id": "service-lifecycle",
@@ -203,10 +203,10 @@
     },
     {
       "id": "app",
-      "name": "应用交付",
-      "name_en": "Application Delivery",
-      "description": "应用的 catalog、构建、部署、回滚",
-      "description_en": "App catalog, build, deploy, rollback",
+      "name": "应用",
+      "name_en": "Application",
+      "description": "应用目录、构建、部署、回滚",
+      "description_en": "App catalog, build, deploy, and rollback",
       "objects": [
         {
           "id": "app-object",
@@ -345,10 +345,10 @@
     },
     {
       "id": "ingress",
-      "name": "公网入口",
+      "name": "入口",
       "name_en": "Ingress",
-      "description": "域名、SSL、路由管理",
-      "description_en": "Domain, SSL, and route management",
+      "description": "域名、SSL 证书、路由管理",
+      "description_en": "Domain, SSL certificate, and route management",
       "objects": [
         {
           "id": "ingress-lifecycle",
@@ -403,10 +403,10 @@
     },
     {
       "id": "project",
-      "name": "项目治理",
-      "name_en": "Project Governance",
+      "name": "项目",
+      "name_en": "Project",
       "description": "仓库健康、投影验证、Skill 治理",
-      "description_en": "Repo health, projection validation, Skill governance",
+      "description_en": "Repo health, projection validation, and Skill governance",
       "objects": [
         {
           "id": "repo-health",

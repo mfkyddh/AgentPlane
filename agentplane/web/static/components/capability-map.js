@@ -16,7 +16,11 @@ const CapabilityMapComponent = {
         <div v-for="layer in layers" :key="layer.id" class="cap-layer">
           <div class="cap-layer-header" @click="toggle(layer.id)">
             <span class="cap-toggle">{{ expanded[layer.id] ? '▼' : '▶' }}</span>
-            <span class="cap-layer-name">{{ layer.name }}</span>
+            <span class="cap-domain-icon">{{ domainIcon(layer.id) }}</span>
+            <span class="cap-layer-name">
+              {{ locale === 'zh' ? layer.name : layer.name_en }}
+              <span v-if="locale === 'zh'" class="cap-layer-sub">{{ layer.name_en }}</span>
+            </span>
             <span class="cap-layer-stats">{{ layerStats(layer) }}</span>
           </div>
           <div v-if="expanded[layer.id]" class="cap-layer-body">
@@ -42,7 +46,10 @@ const CapabilityMapComponent = {
   setup() {
     const { ref, reactive, onMounted, inject } = Vue;
     const authToken = inject('authToken', ref(''));
-    const { t } = useI18n();
+    const { t, locale } = useI18n();
+
+    const domainIcons = { infra: '🖥', service: '⚙', app: '📦', ingress: '🌐', project: '📋' };
+    function domainIcon(id) { return domainIcons[id] || ''; }
 
     const layers = ref([]);
     const loading = ref(true);
@@ -91,6 +98,6 @@ const CapabilityMapComponent = {
 
     onMounted(loadCapabilities);
 
-    return { layers, loading, error, expanded, toggle, layerStats, objectStats, t };
+    return { layers, loading, error, expanded, toggle, layerStats, objectStats, t, locale, domainIcon };
   },
 };
