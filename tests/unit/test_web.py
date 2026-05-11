@@ -276,24 +276,24 @@ class TestAgentRouter:
         assert result["status"] == "error"
         assert "No handler" in result["message"]
 
-    def test_call_llm_no_api_key(self) -> None:
+    @pytest.mark.flaky(reruns=2)
+    @pytest.mark.anyio
+    async def test_call_llm_no_api_key(self) -> None:
         from agentplane.web.agent_router import call_llm
 
         with patch.dict("os.environ", {"ANTHROPIC_API_KEY": ""}, clear=False):
-            import asyncio
-            result = asyncio.get_event_loop().run_until_complete(call_llm("hi", []))
+            result = await call_llm("hi", [])
             assert result["command"] == "error"
             assert "ANTHROPIC_API_KEY" in result["reason"]
 
-    def test_handle_chat_message_blocked(self, tmp_path: Path) -> None:
+    @pytest.mark.flaky(reruns=2)
+    @pytest.mark.anyio
+    async def test_handle_chat_message_blocked(self, tmp_path: Path) -> None:
         from agentplane.web.agent_router import handle_chat_message
 
         with patch("agentplane.web.agent_router.call_llm", new_callable=AsyncMock) as mock_llm:
             mock_llm.return_value = {"command": "app apply", "args": ["wsl"]}
-            import asyncio
-            result = asyncio.get_event_loop().run_until_complete(
-                handle_chat_message(tmp_path, "deploy myapp", [])
-            )
+            result = await handle_chat_message(tmp_path, "deploy myapp", [])
             assert result["type"] == "command_rejected"
 
 

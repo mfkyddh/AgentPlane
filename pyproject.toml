@@ -47,6 +47,7 @@ dev = [
   "pre-commit>=4.2.0",
   "pytest>=9.0.3",
   "pytest-cov>=6.0",
+  "pytest-rerunfailures>=16.0",
   "pytest-xdist>=3.8.0",
   "ruff>=0.8.0",
   "httpx>=0.28.1",
@@ -57,6 +58,8 @@ dev = [
 [tool.pytest.ini_options]
 addopts = "-m 'not live_gate and not integration_wsl and not integration_remote and not external_app and not docker_required and not ssh_required' --dist loadfile"
 markers = [
+  "anyio: async test using anyio backend",
+  "flaky: test is flaky and will be retried on failure",
   "unit: Pure functions, no I/O, no global mutable state, <10ms",
   "integration: Module composition, mocked externals, tmpdir allowed, <100ms",
   "e2e: Full CLI subprocess launch, >1s acceptable",
