@@ -18,7 +18,7 @@ repos:
       - id: validate-commit-msg
         name: "Validate commit message"
         entry: >-
-          python -c "import sys, subprocess; from pathlib import Path; msg = Path(sys.argv[1]).read_text().strip(); result = subprocess.run(['uv', 'run', 'python', '-m', 'agentplane.domain.repository.commit_message', '--message', msg], capture_output=True, text=True); print(result.stdout, end=''); print(result.stderr, end='', file=sys.stderr); sys.exit(result.returncode)"
+          python -c "import sys, subprocess; from pathlib import Path; msg = Path(sys.argv[1]).read_text().strip(); result = subprocess.run(['uv', 'run', 'python', '-m', 'agentplane.domain.project.commit_message', '--message', msg], capture_output=True, text=True); print(result.stdout, end=''); print(result.stderr, end='', file=sys.stderr); sys.exit(result.returncode)"
         language: system
         stages: [commit-msg]
 
@@ -33,7 +33,7 @@ repos:
       # Documentation sanity check (runs before push)
       - id: docs-sanity
         name: "Documentation sanity check"
-        entry: uv run python -m agentplane.cli repo docs-sanity --repo-root .
+        entry: uv run python -m agentplane.cli project docs-sanity --repo-root .
         language: system
         stages: [pre-push]
         pass_filenames: false
@@ -41,7 +41,23 @@ repos:
       # Secret scan (runs before push)
       - id: secret-scan
         name: "Secret scan"
-        entry: uv run python -m agentplane.cli repo secret-scan --repo-root .
+        entry: uv run python -m agentplane.cli project secret-scan --repo-root .
+        language: system
+        stages: [pre-push]
+        pass_filenames: false
+
+      # Privacy scan (runs before push)
+      - id: privacy-scan
+        name: "Privacy scan"
+        entry: uv run python -m agentplane.cli project privacy-scan --repo-root .
+        language: system
+        stages: [pre-push]
+        pass_filenames: false
+
+      # Skills sync check (runs before push)
+      - id: skills-check
+        name: "Skills sync check"
+        entry: uv run python -m agentplane.cli project skills check --repo-root .
         language: system
         stages: [pre-push]
         pass_filenames: false

@@ -75,6 +75,7 @@ audience: both
 | B38 | Beta M2: 发布工程 | 已完成 | — | release.yml 工作流、版本号对齐、coverage 门禁提升到 50% |
 | B39 | Beta M3: 合同硬化 | 已完成 | — | schema 移至正式位置、独立验证模式、validate-contract CLI、v1→v2 迁移文档、contract 模板 |
 | B40 | Beta M1/M2/M3 — contributor loop, release engineering, contract hardening | 已完成 | — | pending (2026-05-11) |
+| B41 | fix flaky web async tests with pytest-rerunfailures | 已完成 | — | pending (2026-05-11) |
 
 ---
 
