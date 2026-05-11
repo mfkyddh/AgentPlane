@@ -12,10 +12,77 @@ Thanks for helping improve AgentPlane.
 
 ## Development Setup
 
-1. Fork or clone the repository.
-2. Install `uv`.
-3. Run `agentplane --help`.
-4. Run `uv run python -m pytest`.
+### Prerequisites
+
+- Python 3.12+
+- [uv](https://docs.astral.sh/uv/) (package manager)
+- Git
+
+### Platform-Specific Setup
+
+#### Linux (Ubuntu/Debian)
+
+```bash
+# Install uv
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source ~/.bashrc
+
+# Clone and setup
+git clone https://github.com/anthropics/agentplane.git
+cd agentplane
+uv sync
+uv run agentplane --help
+```
+
+#### macOS
+
+```bash
+# Install uv (via Homebrew)
+brew install uv
+
+# Clone and setup
+git clone https://github.com/anthropics/agentplane.git
+cd agentplane
+uv sync
+uv run agentplane --help
+```
+
+#### Windows (PowerShell)
+
+```powershell
+# Install uv
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# Clone and setup
+git clone https://github.com/anthropics/agentplane.git
+cd agentplane
+uv sync
+uv run agentplane --help
+```
+
+#### Windows (WSL)
+
+```bash
+# In WSL terminal
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source ~/.bashrc
+
+# Clone and setup
+git clone https://github.com/anthropics/agentplane.git
+cd agentplane
+uv sync
+uv run agentplane --help
+```
+
+### Running Tests
+
+```bash
+# Fast tests (offline, deterministic)
+uv run python -m pytest
+
+# With coverage
+uv run python -m pytest --cov=agentplane --cov-report=term-missing
+```
 
 Use one source checkout per machine. On Windows, the same checkout may be used by the WSL backend through resolver-managed path mapping. Do not create platform-specific virtualenvs such as `.venv-win` or `.venv-wsl`.
 

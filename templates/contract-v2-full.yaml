@@ -1,0 +1,92 @@
+# AgentPlane Contract v2 - 完整示例
+# 包含所有可选字段和常见配置
+
+schema_version: 2
+
+# 应用唯一标识
+app_id: "my-app"
+
+# 运行时配置
+runtime:
+  kind: "compose"  # 当前仅支持 compose
+  container_name: "my-app-prod"  # 生产环境容器名，必须以 -prod 结尾
+  container_port: 3000
+  host_binding: "0.0.0.0:3000"  # 可选: 宿主机绑定
+  healthcheck:
+    path: "/health"
+    expected_status: 200
+  env_template: "deploy/env.example"
+  compose_file: "docker-compose.yaml"  # 可选: 自定义 compose 文件
+
+# 构建产物配置
+artifact:
+  build_command: "npm run build"
+  output_path: "./dist"
+  runtime_os: "linux"
+  runtime_arch: "amd64"
+
+# 打包配置
+packaging:
+  backend: "native-posix"  # native-posix / wsl-linux / ssh-linux
+  image_name: "my-app"
+  image_tag_rule: "<upstream>-zzz.<yyyymmdd>.v<n>.g<gitsha>"
+  package_command: "docker build -t {image_name}:{image_tag} ."
+
+# 基础设施依赖
+infra:
+  depends_on_containers:
+    - "postgres-main"
+    - "redis-main"
+  tenant_resources:
+    postgres:
+      required: true
+      database: "my_app_prod"
+      user: "my_app_prod"
+      secret_file: "secrets/hosts/prod0-main/apps/my-app/resources/postgres.env"
+    redis:
+      required: true
+      db: 0
+      key_prefix: "my-app:"
+      secret_file: "secrets/hosts/prod0-main/apps/my-app/resources/redis.env"
+
+# 数据挂载
+data:
+  mounts:
+    - host_path: "/data/my-app/uploads"
+      container_path: "/app/uploads"
+    - host_path: "/data/my-app/logs"
+      container_path: "/app/logs"
+
+# 回滚配置
+rollback:
+  previous_control_plane:
+    kind: "systemd"  # none / systemd / 1panel-app / 1panel-compose
+    service_name: "my-app"
+    # 1panel-app 专用字段:
+    # install_id: 123
+    # app_key: "my-app"
+    # 1panel-compose 专用字段:
+    # project_name: "my-app"
+    # container_name: "my-app"
+    # project_path: "/opt/1panel/docker/compose/my-app"
+    # compose_file: "docker-compose.yaml"
+
+# 入口配置
+ingress:
+  mode: "public"  # public / internal
+  public_sites:
+    - domain: "my-app.example.com"
+      port: 80
+      ssl: true
+    - domain: "api.my-app.example.com"
+      port: 443
+      ssl: true
+  # internal 模式不需要 public_sites
+
+# 文档配置（可选）
+docs:
+  app_summary_file: "docs/AGENTPLANE_DEPLOYMENT.md"
+
+# Inventory 配置（可选）
+inventory:
+  service_key: "my-app"

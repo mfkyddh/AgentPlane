@@ -2,6 +2,16 @@
 
 - 
 
+## Related Issues
+
+- Closes #
+- Relates to #
+
+## Breaking Changes
+
+- [ ] This PR introduces breaking changes
+- [ ] Migration guide: <!-- link or description -->
+
 ## Change Layer
 
 - [ ] **Strategy** — Vision, principles, roadmap, decision records

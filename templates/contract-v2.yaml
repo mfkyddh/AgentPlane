@@ -1,0 +1,47 @@
+# AgentPlane Contract v2 - 最小可用模板
+# 使用方法: 复制此文件到你的项目 deploy/agentplane/contract.yaml
+# 验证: agentplane app delivery validate-contract --standalone --contract-path deploy/agentplane/contract.yaml
+
+schema_version: 2
+
+app_id: "my-app"  # 应用唯一标识
+
+runtime:
+  kind: "compose"
+  container_name: "my-app-prod"  # 生产环境容器名，必须以 -prod 结尾
+  container_port: 3000  # 应用监听端口
+  healthcheck:
+    path: "/health"  # 健康检查路径
+  env_template: "deploy/env.example"  # 环境变量模板文件
+
+artifact:
+  build_command: "npm run build"  # 构建命令
+  output_path: "./dist"  # 构建产物输出路径
+  runtime_os: "linux"
+  runtime_arch: "amd64"
+
+packaging:
+  backend: "native-posix"  # 打包后端: native-posix / wsl-linux / ssh-linux
+  image_name: "my-app"
+  image_tag_rule: "<upstream>-zzz.<yyyymmdd>.v<n>.g<gitsha>"
+  package_command: "docker build -t {image_name}:{image_tag} ."
+
+infra:
+  depends_on_containers:
+    - "postgres-main"  # 依赖的容器名
+    - "redis-main"
+
+data:
+  mounts:
+    - host_path: "/data/my-app/uploads"  # 必须以 /data/ 开头
+      container_path: "/app/uploads"
+
+rollback:
+  previous_control_plane:
+    kind: "none"  # none / systemd / 1panel-app / 1panel-compose
+
+ingress:
+  mode: "public"  # public / internal
+  public_sites:
+    - domain: "my-app.example.com"
+      port: 80

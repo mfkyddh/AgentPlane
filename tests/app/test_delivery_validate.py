@@ -474,6 +474,212 @@ class TestAppDeliveryValidateCliTests(unittest.TestCase):
 
 
 # ======================================================================
+# Standalone contract validation tests
+# ======================================================================
+
+
+class TestContractStandaloneValidation(unittest.TestCase):
+    """Tests for validate_contract_standalone (no inventory dependency)."""
+
+    def test_standalone_validates_valid_contract(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            contract_file = write_contract(root, tenant_resources={})
+
+            result = run_cli(
+                "app",
+                "delivery",
+                "validate-contract",
+                "--standalone",
+                "--contract-path",
+                str(contract_file),
+            )
+
+            self.assertEqual(result.returncode, 0, msg=result.stderr)
+            payload = json.loads(result.stdout)
+            self.assertTrue(payload["valid"])
+            self.assertTrue(payload["standalone"])
+
+    def test_standalone_rejects_missing_required_fields(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            contract_file = root / "contract.yaml"
+            contract_file.write_text(
+                yaml.dump(
+                    {
+                        "app_id": "test-app",
+                        "runtime": {"kind": "compose"},
+                    },
+                    sort_keys=False,
+                ),
+                encoding="utf-8",
+            )
+
+            result = run_cli(
+                "app",
+                "delivery",
+                "validate-contract",
+                "--standalone",
+                "--contract-path",
+                str(contract_file),
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("missing_fields", result.stdout + result.stderr)
+
+    def test_standalone_rejects_invalid_image_tag_rule(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            contract_file = write_contract(root, tenant_resources={})
+            payload = yaml.safe_load(contract_file.read_text(encoding="utf-8"))
+            payload["artifact"]["image_tag_rule"] = "invalid-rule"
+            contract_file.write_text(yaml.dump(payload, sort_keys=False), encoding="utf-8")
+
+            result = run_cli(
+                "app",
+                "delivery",
+                "validate-contract",
+                "--standalone",
+                "--contract-path",
+                str(contract_file),
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("image_tag_rule", result.stdout + result.stderr)
+
+    def test_standalone_rejects_invalid_packaging_backend(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            contract_file = write_contract(root, tenant_resources={})
+            payload = yaml.safe_load(contract_file.read_text(encoding="utf-8"))
+            # Convert to v2 format
+            payload["schema_version"] = 2
+            payload["packaging"] = {
+                "backend": "invalid-backend",
+                "image_name": "test-image",
+                "image_tag_rule": "<upstream>-zzz.<yyyymmdd>.v<n>.g<gitsha>",
+                "package_command": "docker build",
+            }
+            payload["artifact"]["output_path"] = "./dist"
+            payload["artifact"]["runtime_os"] = "linux"
+            payload["artifact"]["runtime_arch"] = "amd64"
+            contract_file.write_text(yaml.dump(payload, sort_keys=False), encoding="utf-8")
+
+            result = run_cli(
+                "app",
+                "delivery",
+                "validate-contract",
+                "--standalone",
+                "--contract-path",
+                str(contract_file),
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("packaging.backend", result.stdout + result.stderr)
+
+    def test_standalone_rejects_invalid_ingress_mode(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            contract_file = write_contract(root, tenant_resources={})
+            payload = yaml.safe_load(contract_file.read_text(encoding="utf-8"))
+            payload["ingress"]["mode"] = "invalid-mode"
+            contract_file.write_text(yaml.dump(payload, sort_keys=False), encoding="utf-8")
+
+            result = run_cli(
+                "app",
+                "delivery",
+                "validate-contract",
+                "--standalone",
+                "--contract-path",
+                str(contract_file),
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("ingress.mode", result.stdout + result.stderr)
+
+    def test_standalone_rejects_invalid_rollback_kind(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            contract_file = write_contract(root, tenant_resources={})
+            payload = yaml.safe_load(contract_file.read_text(encoding="utf-8"))
+            payload["rollback"]["previous_control_plane"]["kind"] = "invalid-kind"
+            contract_file.write_text(yaml.dump(payload, sort_keys=False), encoding="utf-8")
+
+            result = run_cli(
+                "app",
+                "delivery",
+                "validate-contract",
+                "--standalone",
+                "--contract-path",
+                str(contract_file),
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("rollback", result.stdout + result.stderr)
+
+    def test_standalone_accepts_internal_mode_without_public_sites(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            contract_file = write_contract(root, tenant_resources={})
+            payload = yaml.safe_load(contract_file.read_text(encoding="utf-8"))
+            payload["ingress"]["mode"] = "internal"
+            payload["ingress"]["public_sites"] = []
+            contract_file.write_text(yaml.dump(payload, sort_keys=False), encoding="utf-8")
+
+            result = run_cli(
+                "app",
+                "delivery",
+                "validate-contract",
+                "--standalone",
+                "--contract-path",
+                str(contract_file),
+            )
+
+            self.assertEqual(result.returncode, 0, msg=result.stderr)
+
+    def test_standalone_rejects_public_mode_without_sites(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            contract_file = write_contract(root, tenant_resources={})
+            payload = yaml.safe_load(contract_file.read_text(encoding="utf-8"))
+            payload["ingress"]["mode"] = "public"
+            payload["ingress"]["public_sites"] = []
+            contract_file.write_text(yaml.dump(payload, sort_keys=False), encoding="utf-8")
+
+            result = run_cli(
+                "app",
+                "delivery",
+                "validate-contract",
+                "--standalone",
+                "--contract-path",
+                str(contract_file),
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("public_sites", result.stdout + result.stderr)
+
+    def test_standalone_rejects_invalid_data_mounts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            contract_file = write_contract(root, tenant_resources={})
+            payload = yaml.safe_load(contract_file.read_text(encoding="utf-8"))
+            payload["data"]["mounts"] = [{"host_path": "/invalid/path"}]
+            contract_file.write_text(yaml.dump(payload, sort_keys=False), encoding="utf-8")
+
+            result = run_cli(
+                "app",
+                "delivery",
+                "validate-contract",
+                "--standalone",
+                "--contract-path",
+                str(contract_file),
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("data.mounts", result.stdout + result.stderr)
+
+
+# ======================================================================
 # From: test_app_delivery_validate_resources_cli.py
 # ======================================================================
 

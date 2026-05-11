@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "agentplane-cli"
-version = "0.1.0"
+version = "0.2.0"
 description = "Agent-first control plane CLI and template repository"
 readme = "README.md"
 license = "MIT"
@@ -14,7 +14,7 @@ authors = [
 ]
 keywords = ["agentplane", "control-plane", "deployment", "automation"]
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 4 - Beta",
   "Environment :: Console",
   "Intended Audience :: Developers",
   "License :: OSI Approved :: MIT License",
@@ -84,7 +84,7 @@ source = ["agentplane"]
 [tool.coverage.report]
 show_missing = true
 skip_covered = false
-fail_under = 25
+fail_under = 50
 
 [tool.hatch.build.targets.wheel]
 packages = ["agentplane"]

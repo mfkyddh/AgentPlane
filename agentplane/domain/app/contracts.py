@@ -21,7 +21,7 @@ ERROR_ID_CONTRACT_INVALID_INGRESS = "app.delivery.contract.invalid_ingress"
 ERROR_ID_CONTRACT_INVALID_DEPENDENCY = "app.delivery.contract.invalid_dependency"
 ERROR_ID_CONTRACT_INVALID_ROLLBACK = "app.delivery.contract.invalid_rollback"
 ERROR_ID_CONTRACT_INVALID_DATA_MOUNT = "app.delivery.contract.invalid_data_mount"
-APP_DELIVERY_CONTRACT_SCHEMA_V2 = "docs/archive/reference/schemas/app-delivery-contract-v2.schema.json"
+APP_DELIVERY_CONTRACT_SCHEMA_V2 = "docs/schemas/app-delivery-contract-v2.schema.json"
 COMMON_REQUIRED_CONTRACT_FIELDS = (
     "app_id",
     "runtime.container_name",
@@ -346,11 +346,16 @@ def _validate_contract_registry_formal_gate(
     _validate_contract_registry_secret_files(repo_root, target, app_id, filtered_entry)
 
 
-def validate_contract(contract_path: Path, *, repo_root: Path, target: str) -> dict[str, Any]:
-    payload = load_yaml(contract_path)
-    contract_spec = resolve_delivery_contract_spec(payload)
-    contract_mode = contract_spec.contract_mode
-
+def _validate_contract_core(
+    payload: dict[str, Any],
+    contract_path: Path,
+    contract_spec: Any,
+    contract_mode: str,
+    *,
+    repo_root: Path | None = None,
+    target: str | None = None,
+) -> dict[str, Any]:
+    """Core validation logic shared by validate_contract and validate_contract_standalone."""
     runtime_kind = nested_get(payload, "runtime.kind")
     if runtime_kind != "compose":
         raise _contract_error(
@@ -391,62 +396,64 @@ def validate_contract(contract_path: Path, *, repo_root: Path, target: str) -> d
             "infra.depends_on_containers 必须是非空字符串列表",
         )
 
-    validation_target = contract_validation_target(target)
-    _, inventory = _load_inventory(repo_root, validation_target)
-    known_containers = _inventory_container_names(inventory)
-    unknown_dependencies = [item for item in depends if item not in known_containers]
-    if unknown_dependencies:
-        raise _contract_error(
-            ERROR_ID_CONTRACT_INVALID_DEPENDENCY,
-            "depends_on_containers 引用了未登记容器: " + ", ".join(unknown_dependencies),
-        )
-
     app_id = payload.get("app_id")
     if not isinstance(app_id, str) or not app_id:
         raise _contract_error(ERROR_ID_CONTRACT_MISSING_FIELDS, "合同缺少必填字段: app_id")
 
-    tenant_resources = nested_get(payload, "infra.tenant_resources")
-    required_kinds = _tenant_dependency_kinds(depends, inventory)
-    tenant_resource_errors = _required_tenant_resource_errors(app_id, required_kinds, tenant_resources)
-    if tenant_resource_errors:
-        raise ValueError("; ".join(tenant_resource_errors))
+    # Inventory-dependent validation (optional in standalone mode)
+    if repo_root is not None and target is not None:
+        validation_target = contract_validation_target(target)
+        _, inventory = _load_inventory(repo_root, validation_target)
+        known_containers = _inventory_container_names(inventory)
+        unknown_dependencies = [item for item in depends if item not in known_containers]
+        if unknown_dependencies:
+            raise _contract_error(
+                ERROR_ID_CONTRACT_INVALID_DEPENDENCY,
+                "depends_on_containers 引用了未登记容器: " + ", ".join(unknown_dependencies),
+            )
 
-    if isinstance(tenant_resources, dict):
-        declared_kinds = {
-            kind for kind in ("postgres", "redis", "minio") if isinstance(tenant_resources.get(kind), dict)
-        }
-        for resource_kind in sorted(declared_kinds):
-            resource_spec = tenant_resources.get(resource_kind)
-            if isinstance(resource_spec, dict):
-                _validate_contract_tenant_secret_file(
-                    repo_root, validation_target, app_id, resource_kind, resource_spec
-                )
-        if declared_kinds:
-            try:
-                _validate_contract_registry_formal_gate(
-                    repo_root,
-                    validation_target,
-                    app_id,
-                    declared_kinds,
-                )
-                _validate_contract_tenant_registry_alignment(
-                    repo_root,
-                    validation_target,
-                    app_id,
-                    declared_kinds,
-                    tenant_resources,
-                )
-            except FileNotFoundError:
-                # App resource registry may be absent in bootstrap/incremental states.
-                # Contract-side tenant_resources requirements are still enforced above.
-                pass
+        tenant_resources = nested_get(payload, "infra.tenant_resources")
+        required_kinds = _tenant_dependency_kinds(depends, inventory)
+        tenant_resource_errors = _required_tenant_resource_errors(app_id, required_kinds, tenant_resources)
+        if tenant_resource_errors:
+            raise ValueError("; ".join(tenant_resource_errors))
 
-    container_name = nested_get(payload, "runtime.container_name")
-    if validation_target == "prod0-main" and isinstance(container_name, str) and not container_name.endswith("-prod"):
-        raise _contract_error(
-            ERROR_ID_CONTRACT_UNSUPPORTED_RUNTIME,
-            "runtime.container_name 必须使用稳定生产容器名并以 -prod 结尾",
-        )
+        if isinstance(tenant_resources, dict):
+            declared_kinds = {
+                kind for kind in ("postgres", "redis", "minio") if isinstance(tenant_resources.get(kind), dict)
+            }
+            for resource_kind in sorted(declared_kinds):
+                resource_spec = tenant_resources.get(resource_kind)
+                if isinstance(resource_spec, dict):
+                    _validate_contract_tenant_secret_file(
+                        repo_root, validation_target, app_id, resource_kind, resource_spec
+                    )
+            if declared_kinds:
+                try:
+                    _validate_contract_registry_formal_gate(
+                        repo_root,
+                        validation_target,
+                        app_id,
+                        declared_kinds,
+                    )
+                    _validate_contract_tenant_registry_alignment(
+                        repo_root,
+                        validation_target,
+                        app_id,
+                        declared_kinds,
+                        tenant_resources,
+                    )
+                except FileNotFoundError:
+                    # App resource registry may be absent in bootstrap/incremental states.
+                    # Contract-side tenant_resources requirements are still enforced above.
+                    pass
+
+        container_name = nested_get(payload, "runtime.container_name")
+        if validation_target == "prod0-main" and isinstance(container_name, str) and not container_name.endswith("-prod"):
+            raise _contract_error(
+                ERROR_ID_CONTRACT_UNSUPPORTED_RUNTIME,
+                "runtime.container_name 必须使用稳定生产容器名并以 -prod 结尾",
+            )
 
     data_mounts = nested_get(payload, "data.mounts")
     if not isinstance(data_mounts, list) or any(not isinstance(item, dict) for item in data_mounts):
@@ -457,10 +464,11 @@ def validate_contract(contract_path: Path, *, repo_root: Path, target: str) -> d
             raise _contract_error(ERROR_ID_CONTRACT_INVALID_DATA_MOUNT, "data.mounts.host_path 必须收口到 /data/")
     _validate_previous_control_plane(nested_get(payload, "rollback.previous_control_plane"))
 
+    validation_target = contract_validation_target(target) if target else "standalone"
     payload["_meta"] = {
         "contract_file": str(contract_path.resolve()),
         "app_root": str(contract_app_root(contract_path)),
-        "target": target,
+        "target": target or "standalone",
         "validation_target": validation_target,
         "contract_mode": contract_mode,
         "schema_version": contract_spec.schema_version,
@@ -468,3 +476,33 @@ def validate_contract(contract_path: Path, *, repo_root: Path, target: str) -> d
         "artifact_first": contract_mode == "v2",
     }
     return payload
+
+
+def validate_contract_standalone(
+    contract_path: Path,
+    *,
+    repo_root: Path | None = None,
+    target: str | None = None,
+) -> dict[str, Any]:
+    """Standalone contract validation: does not require inventory.
+
+    Args:
+        contract_path: Path to contract.yaml file.
+        repo_root: Optional repo root for inventory-dependent validation.
+        target: Optional target for inventory-dependent validation.
+
+    Returns:
+        Validated contract payload with _meta section.
+    """
+    payload = load_yaml(contract_path)
+    contract_spec = resolve_delivery_contract_spec(payload)
+    contract_mode = contract_spec.contract_mode
+    return _validate_contract_core(payload, contract_path, contract_spec, contract_mode, repo_root=repo_root, target=target)
+
+
+def validate_contract(contract_path: Path, *, repo_root: Path, target: str) -> dict[str, Any]:
+    """Full contract validation with inventory dependency."""
+    payload = load_yaml(contract_path)
+    contract_spec = resolve_delivery_contract_spec(payload)
+    contract_mode = contract_spec.contract_mode
+    return _validate_contract_core(payload, contract_path, contract_spec, contract_mode, repo_root=repo_root, target=target)

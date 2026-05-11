@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentplane.example.net/schemas/app-delivery-contract-v2.schema.json",
+  "title": "AgentPlane App Delivery Contract v2",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "app_id",
+    "artifact",
+    "packaging",
+    "runtime",
+    "infra",
+    "data",
+    "rollback"
+  ],
+  "properties": {
+    "schema_version": { "const": 2 },
+    "app_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "artifact": {
+      "type": "object",
+      "required": ["build_command", "output_path", "runtime_os", "runtime_arch"],
+      "properties": {
+        "build_command": { "type": "string", "minLength": 1 },
+        "output_path": { "type": "string", "minLength": 1 },
+        "runtime_os": { "type": "string", "minLength": 1 },
+        "runtime_arch": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": true
+    },
+    "packaging": {
+      "type": "object",
+      "required": ["backend", "image_name", "image_tag_rule", "package_command"],
+      "properties": {
+        "backend": { "enum": ["native-posix", "wsl-linux", "ssh-linux"] },
+        "image_name": { "type": "string", "minLength": 1 },
+        "image_tag_rule": { "const": "<upstream>-zzz.<yyyymmdd>.v<n>.g<gitsha>" },
+        "package_command": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": true
+    },
+    "runtime": {
+      "type": "object",
+      "required": ["kind", "container_name", "container_port", "healthcheck", "env_template"],
+      "properties": {
+        "kind": { "const": "compose" },
+        "container_name": { "type": "string", "minLength": 1 },
+        "container_port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "host_binding": { "type": "string" },
+        "healthcheck": {
+          "type": "object",
+          "required": ["path"],
+          "properties": {
+            "path": { "type": "string", "minLength": 1 },
+            "expected_status": { "type": "integer" }
+          },
+          "additionalProperties": true
+        },
+        "env_template": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": true
+    },
+    "infra": {
+      "type": "object",
+      "required": ["depends_on_containers"],
+      "properties": {
+        "depends_on_containers": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "tenant_resources": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "ingress": {
+      "type": "object",
+      "properties": {
+        "mode": { "enum": ["public", "internal"] },
+        "public_sites": {
+          "type": "array",
+          "items": { "type": "object", "additionalProperties": true }
+        }
+      },
+      "additionalProperties": true
+    },
+    "data": {
+      "type": "object",
+      "required": ["mounts"],
+      "properties": {
+        "mounts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["host_path", "container_path"],
+            "properties": {
+              "host_path": { "type": "string", "pattern": "^/data/" },
+              "container_path": { "type": "string", "minLength": 1 }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "rollback": {
+      "type": "object",
+      "required": ["previous_control_plane"],
+      "properties": {
+        "previous_control_plane": {
+          "type": "object",
+          "required": ["kind"],
+          "properties": {
+            "kind": { "enum": ["none", "systemd", "1panel-app", "1panel-compose"] }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "docs": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "inventory": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

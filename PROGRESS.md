@@ -70,6 +70,10 @@ audience: both
 | B33 | fix docs-sanity gate errors — archive status, broken links, isolated doc | 已完成 | — | pending (2026-05-09) |
 | B34 | foundation-replan Phase 0-1 — boundary repair and SSH Protocol | 已完成 | — | pending (2026-05-09) |
 | B35 | add resource topology view and design system | 已完成 | — | pending (2026-05-10) |
+| B36 | WebUI component refactoring, i18n, dashboard optimization, and E2E test suite | 已完成 | — | pending (2026-05-11) |
+| B37 | Beta M1: 公开贡献者循环 | 已完成 | — | Issue/PR 模板、CONTRIBUTING.md 跨平台指南、CI fork PR 配置文档 |
+| B38 | Beta M2: 发布工程 | 已完成 | — | release.yml 工作流、版本号对齐、coverage 门禁提升到 50% |
+| B39 | Beta M3: 合同硬化 | 已完成 | — | schema 移至正式位置、独立验证模式、validate-contract CLI、v1→v2 迁移文档、contract 模板 |
 
 ---
 

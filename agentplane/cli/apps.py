@@ -108,9 +108,11 @@ def add_app_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParse
     delivery_subparsers = delivery_parser.add_subparsers(dest="app_delivery_action", required=True)
 
     validate = delivery_subparsers.add_parser("validate-contract", help="校验应用交付合同")
-    validate.add_argument("--target", required=True, choices=SUPPORTED_APP_TARGETS, help="目标环境")
-    validate.add_argument("--app", required=True, help="catalog 中登记的 app")
+    validate.add_argument("--target", choices=SUPPORTED_APP_TARGETS, help="目标环境（standalone 模式可省略）")
+    validate.add_argument("--app", help="catalog 中登记的 app（standalone 模式可省略）")
     validate.add_argument("--repo-root", default=".", help="AgentPlane 仓库根目录")
+    validate.add_argument("--standalone", action="store_true", help="独立验证模式，不依赖 inventory")
+    validate.add_argument("--contract-path", help="合同文件路径（standalone 模式必需）")
     _add_app_repo_root_override(validate)
 
     render = delivery_subparsers.add_parser("render-runtime", help="渲染目标环境运行时 Compose")
@@ -334,6 +336,13 @@ def handle_app_command(args: argparse.Namespace) -> dict[str, Any]:
         from agentplane.domain.app import delivery_handlers
 
         if args.app_delivery_action == "validate-contract":
+            if getattr(args, "standalone", False):
+                contract_path = getattr(args, "contract_path", None)
+                if not contract_path:
+                    raise ValueError("--standalone 模式需要 --contract-path 参数")
+                return delivery_handlers.validate_contract_standalone_for_app(
+                    Path(contract_path), repo_root=repo_root
+                )
             return delivery_handlers.validate_contract_for_app(
                 repo_root, target=args.target, app=args.app, app_repo_root=getattr(args, "app_repo_root", None)
             )

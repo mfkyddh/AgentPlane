@@ -703,6 +703,18 @@ def validate_contract_for_app(
     return {"command": "app", "action": "validate-contract", "valid": True, "payload": contract}
 
 
+def validate_contract_standalone_for_app(
+    contract_path: Path,
+    *,
+    repo_root: Path | None = None,
+) -> dict[str, Any]:
+    """Standalone contract validation without inventory dependency."""
+    from agentplane.domain.app.contracts import validate_contract_standalone
+
+    contract = validate_contract_standalone(contract_path, repo_root=repo_root)
+    return {"command": "app", "action": "validate-contract", "valid": True, "standalone": True, "payload": contract}
+
+
 def render_runtime_for_app(
     repo_root: Path,
     *,
