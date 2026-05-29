@@ -83,6 +83,7 @@ audience: both
 | B46 | add 16 source-command skill definitions | 已完成 | — | pending (2026-05-29) |
 | B47 | add comprehensive test coverage for all domains | 已完成 | — | pending (2026-05-29) |
 | B48 | add missing test markers and adjust coverage gate | 已完成 | — | pending (2026-05-29) |
+| B49 | migrate domain layer to ProviderProtocol | 已完成 | — | pending (2026-05-29) |
 
 ---
 

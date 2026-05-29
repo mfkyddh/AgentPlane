@@ -192,3 +192,43 @@ class TestStubProviderSatisfiesProtocol:
         stub = StubProvider()
         proto: ProviderProtocol = stub  # type: ignore[assignment]
         assert proto is stub
+
+
+class TestBoundaryConditions:
+    """Edge-case tests for StubProvider contract compliance."""
+
+    def test_search_with_empty_name(self) -> None:
+        from agentplane.providers.stub_provider import StubProvider
+
+        stub = StubProvider()
+        tgt = stub.get_target("test")
+        result = stub.search_websites(tgt, name="")
+        assert isinstance(result, dict)
+
+    def test_lifecycle_with_empty_rollback(self) -> None:
+        from agentplane.providers.stub_provider import StubProvider
+
+        stub = StubProvider()
+        argv, display = stub.app_lifecycle_step(
+            Path("."), target="t", operate="restart", rollback_entry={},
+        )
+        assert isinstance(argv, list)
+        assert len(argv) > 0
+
+    def test_dashboard_has_required_keys(self) -> None:
+        from agentplane.providers.stub_provider import StubProvider
+
+        stub = StubProvider()
+        tgt = stub.get_target("test")
+        result = stub.get_dashboard(tgt)
+        assert "cpu" in result
+        assert "memory" in result
+        assert "load" in result
+
+    def test_get_target_returns_consistent_type(self) -> None:
+        from agentplane.providers.stub_provider import StubProvider
+
+        stub = StubProvider()
+        tgt1 = stub.get_target("host-a")
+        tgt2 = stub.get_target("host-b")
+        assert type(tgt1) is type(tgt2)
