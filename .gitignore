@@ -23,6 +23,7 @@ secrets/
 .cache/
 .ruff_cache/
 .claude/
+.codex/
 plans/
 tmp/
 .omc/

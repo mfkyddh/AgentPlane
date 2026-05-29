@@ -9,7 +9,6 @@ from pathlib import Path
 
 import pytest
 import uvicorn
-
 from agentplane.web.server import create_app
 
 

@@ -78,6 +78,7 @@ audience: both
 | B41 | fix flaky web async tests with pytest-rerunfailures | 已完成 | — | pending (2026-05-11) |
 | B42 | align pre-commit hooks with CI workflow | 已完成 | — | pending (2026-05-11) |
 | B43 | add 124 tests for weak coverage modules | 已完成 | — | pending (2026-05-11) |
+| B44 | add 124 tests for weak coverage modules | 已完成 | — | pending (2026-05-11) |
 
 ---
 

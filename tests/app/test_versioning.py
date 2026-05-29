@@ -8,7 +8,6 @@ from subprocess import CompletedProcess
 from unittest.mock import MagicMock
 
 import pytest
-
 from agentplane.domain.app.versioning import (
     detect_git_short_sha,
     detect_upstream_version,

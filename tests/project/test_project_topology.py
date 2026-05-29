@@ -6,7 +6,6 @@ import json
 from pathlib import Path
 
 import pytest
-
 from agentplane.domain.project.topology import (
     _extract_dependencies,
     _host_status,

@@ -13,6 +13,7 @@ pytestmark = pytest.mark.e2e
 
 ALLOWED_TRACKED_TOP_LEVELS = {
     ".agents",
+    ".codex",
     ".editorconfig",
     ".gitattributes",
     ".github",

@@ -5,7 +5,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-
 from agentplane.domain.app.artifacts import (
     SUPPORTED_PACKAGING_BACKENDS,
     artifact_output_path,
@@ -134,7 +133,7 @@ class TestArtifactOutputPath:
     def test_resolves_relative(self, tmp_path: Path) -> None:
         from agentplane.domain.app.models import DeliveryArtifactSpec
 
-        spec = DeliveryArtifactSpec(
+        DeliveryArtifactSpec(
             build_command=None, output_path="bin/server", runtime_os=None, runtime_arch=None,
         )
         result = artifact_output_path(tmp_path, resolve_delivery_contract_spec({
@@ -145,7 +144,6 @@ class TestArtifactOutputPath:
         assert result.name == "server"
 
     def test_none_output_path(self) -> None:
-        from agentplane.domain.app.models import DeliveryArtifactSpec
 
         spec = resolve_delivery_contract_spec({"schema_version": 2})
         assert artifact_output_path(Path("/tmp"), spec) is None

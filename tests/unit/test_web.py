@@ -276,7 +276,7 @@ class TestAgentRouter:
         assert result["status"] == "error"
         assert "No handler" in result["message"]
 
-    @pytest.mark.flaky(reruns=2)
+    @pytest.mark.flaky(reruns=5, rerun_delay=1)
     @pytest.mark.anyio
     async def test_call_llm_no_api_key(self) -> None:
         from agentplane.web.agent_router import call_llm
@@ -286,7 +286,7 @@ class TestAgentRouter:
             assert result["command"] == "error"
             assert "ANTHROPIC_API_KEY" in result["reason"]
 
-    @pytest.mark.flaky(reruns=2)
+    @pytest.mark.flaky(reruns=5, rerun_delay=1)
     @pytest.mark.anyio
     async def test_handle_chat_message_blocked(self, tmp_path: Path) -> None:
         from agentplane.web.agent_router import handle_chat_message

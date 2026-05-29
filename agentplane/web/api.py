@@ -440,7 +440,6 @@ def get_dashboard(repo_root: Path) -> dict[str, Any]:
 
 def get_capabilities() -> dict[str, Any]:
     """Return static capability tree from capabilities.json."""
-    import importlib.resources
 
     data_file = Path(__file__).parent / "static" / "data" / "capabilities.json"
     if not data_file.exists():
