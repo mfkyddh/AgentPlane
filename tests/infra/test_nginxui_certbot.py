@@ -13,6 +13,10 @@ All tests use mocks for external I/O (network, SSH, filesystem).
 from __future__ import annotations
 
 import json
+
+import pytest
+
+pytestmark = pytest.mark.integration
 from pathlib import Path, PurePosixPath
 from unittest.mock import MagicMock, patch
 

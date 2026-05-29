@@ -4,12 +4,16 @@ import threading
 import time
 from unittest.mock import MagicMock
 
+import pytest
+
 from agentplane.runtime.execution import (
     BackendRunner,
     CommandSpec,
     ConcurrentExecutor,
     ExecutionResult,
 )
+
+pytestmark = pytest.mark.unit
 
 
 def _make_result(spec: CommandSpec, ok: bool = True) -> ExecutionResult:

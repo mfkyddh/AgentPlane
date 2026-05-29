@@ -7,10 +7,18 @@ from agentplane.providers.stub_provider import StubProvider
 
 
 def _has_onepanel_target() -> bool:
-    """Check if a real 1Panel target is configured (env_targets)."""
+    """Check if a real 1Panel target is configured and reachable."""
     try:
         from agentplane.scripts.onepanel.env_targets import supported_targets
-        return len(supported_targets()) > 0
+        targets = supported_targets()
+        if not targets:
+            return False
+        # Quick reachability check: try to get a dashboard (will fail fast if unreachable)
+        from agentplane.providers.onepanel_adapter import OnePanelAdapter
+        adapter = OnePanelAdapter()
+        tgt = adapter.get_target(targets[0])
+        adapter.get_dashboard(tgt)
+        return True
     except Exception:
         return False
 

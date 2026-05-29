@@ -13,6 +13,10 @@ All tests use mocks for external I/O (network, SSH, filesystem).
 from __future__ import annotations
 
 from pathlib import Path
+
+import pytest
+
+pytestmark = pytest.mark.integration
 from unittest.mock import patch
 
 import pytest

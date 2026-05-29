@@ -6,6 +6,8 @@ from pathlib import Path
 import pytest
 from agentplane.domain.project.doc_layer import _expected_layer, _extract_layer, run_doc_layer_check
 
+pytestmark = pytest.mark.unit
+
 
 class TestExpectedLayer:
     def test_strategy_dir(self) -> None:

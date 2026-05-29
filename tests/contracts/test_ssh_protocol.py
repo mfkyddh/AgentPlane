@@ -15,6 +15,10 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+
+pytestmark = pytest.mark.integration
+
+import pytest
 from agentplane.ssh import (
     RemoteAPIProtocol,
     SSHConnectionPool,
