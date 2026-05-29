@@ -5,22 +5,23 @@ from typing import Any
 
 from agentplane.domain.ingress.lifecycle import build_ingress_follow_through, summarize_ingress
 from agentplane.domain.ingress.registry import available_ingresses, resolve_ingress
+from agentplane.providers import get_provider
 from agentplane.providers.gateway import default_provider_gateway
 
 
 def _executor_for_target(target: str) -> object:
-    return default_provider_gateway().onepanel_target_executor(target)
+    return get_provider().get_target(target)
 
 
 def _find_live_ingress(executor: object, alias: str) -> dict[str, Any] | None:
-    provider = default_provider_gateway()
-    payload = provider.search_onepanel_websites(executor, name=alias)
+    provider = get_provider()
+    payload = provider.search_websites(executor, name=alias)
     items = payload.get("items")
     if not isinstance(items, list):
         raise RuntimeError("ingress search returned no items")
     for item in items:
         if isinstance(item, dict) and item.get("alias") == alias and "id" in item:
-            return provider.get_onepanel_website(executor, website_id=int(item["id"]))
+            return provider.get_website(executor, website_id=int(item["id"]))
     return None
 
 
@@ -87,8 +88,8 @@ def verify_ingress(repo_root: Path, target: str, alias: str) -> dict[str, Any]:
     ssl_detail: dict[str, Any] | None = None
     if actual_ssl.get("id"):
         try:
-            provider = default_provider_gateway()
-            ssl_detail = provider.get_onepanel_website_ssl(executor, ssl_id=int(actual_ssl["id"]))
+            provider = get_provider()
+            ssl_detail = provider.get_website_ssl(executor, ssl_id=int(actual_ssl["id"]))
             ssl_status = ssl_detail.get("status", "")
             checks["ssl_status"] = {
                 "ok": ssl_status == "ready",
@@ -100,8 +101,7 @@ def verify_ingress(repo_root: Path, target: str, alias: str) -> dict[str, Any]:
 
     openresty_status: dict[str, Any] | None = None
     try:
-        provider = default_provider_gateway()
-        openresty_status = provider.get_onepanel_openresty_status(executor)
+        openresty_status = default_provider_gateway().get_onepanel_openresty_status(executor)
         openresty_running = openresty_status.get("status") == "Running"
         checks["openresty"] = {
             "ok": openresty_running,
@@ -136,7 +136,7 @@ def plan_ingress_operation(repo_root: Path, target: str, alias: str, operation: 
         steps: list[dict[str, Any]] = []
         warnings: list[str] = []
     elif verification["failures"] == ["missing"]:
-        create_plan = default_provider_gateway().plan_onepanel_website_create(
+        create_plan = get_provider().plan_website_create(
             alias=definition.alias,
             domain=definition.primary_domain,
             proxy=definition.proxy,
@@ -218,4 +218,4 @@ def apply_ingress_operation(
 
 
 def refresh_ingress_ledger(repo_root: Path, target: str, *, write: bool = False) -> dict[str, Any]:
-    return default_provider_gateway().refresh_onepanel_ledgers(Path(repo_root).resolve(), target, write=write)
+    return get_provider().refresh_ledgers(Path(repo_root).resolve(), target, write=write)

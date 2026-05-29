@@ -9,7 +9,7 @@ from agentplane.adapters.service.systemd_runtime import plan_systemd_operation, 
 from agentplane.domain.service.materialize import materialize_service_artifact
 from agentplane.domain.service.models import ServiceDefinition
 from agentplane.domain.service.registry import available_services, resolve_service
-from agentplane.providers.gateway import default_provider_gateway
+from agentplane.providers import get_provider
 from agentplane.runtime.observation import build_verification_payload
 from agentplane.runtime.path_policy import assert_canonical_ref
 
@@ -195,7 +195,7 @@ def apply_service_operation(
 
 
 def refresh_service_ledger(repo_root: Path, target: str, *, write: bool = False) -> dict[str, Any]:
-    result = default_provider_gateway().refresh_onepanel_ledgers(Path(repo_root).resolve(), target, write=write)
+    result = get_provider().refresh_ledgers(Path(repo_root).resolve(), target, write=write)
     service_ledger = result.get("ledgers", {}).get("containers")
     return {
         "ok": True,

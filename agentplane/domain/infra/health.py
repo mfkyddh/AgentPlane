@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from agentplane.providers import get_provider
 from agentplane.providers.gateway import default_provider_gateway
 
 
@@ -108,39 +109,40 @@ def check_infra_health(target: str) -> dict[str, Any]:
     This is a read-only evidence collection that queries 1Panel dashboard,
     alerts, and monitor APIs to produce a structured health summary.
     """
-    provider = default_provider_gateway()
-    executor = provider.onepanel_target_executor(target)
+    provider = get_provider()
+    executor = provider.get_target(target)
 
     # Collect dashboard metrics
-    dashboard_current = provider.get_onepanel_dashboard_current(executor)
-    dashboard_base = provider.get_onepanel_dashboard_base(executor)
+    dashboard_current = provider.get_dashboard(executor)
+    dashboard_base = default_provider_gateway().get_onepanel_dashboard_base(executor)
 
     # Collect top processes
+    _gw = default_provider_gateway()
     try:
-        top_cpu = provider.get_onepanel_dashboard_top_cpu(executor)
+        top_cpu = _gw.get_onepanel_dashboard_top_cpu(executor)
     except Exception:
         top_cpu = []
     try:
-        top_mem = provider.get_onepanel_dashboard_top_mem(executor)
+        top_mem = _gw.get_onepanel_dashboard_top_mem(executor)
     except Exception:
         top_mem = []
 
     # Collect alerts
     try:
-        alerts_payload = provider.search_onepanel_alerts(executor, status="enable")
+        alerts_payload = _gw.search_onepanel_alerts(executor, status="enable")
         active_alerts = alerts_payload.get("items", []) if isinstance(alerts_payload, dict) else []
     except Exception:
         active_alerts = []
 
     try:
-        alert_logs_payload = provider.search_onepanel_alert_logs(executor, status="firing")
+        alert_logs_payload = _gw.search_onepanel_alert_logs(executor, status="firing")
         firing_alerts = alert_logs_payload.get("items", []) if isinstance(alert_logs_payload, dict) else []
     except Exception:
         firing_alerts = []
 
     # Collect monitor settings
     try:
-        monitor_setting = provider.get_onepanel_monitor_setting(executor)
+        monitor_setting = _gw.get_onepanel_monitor_setting(executor)
     except Exception:
         monitor_setting = {}
 

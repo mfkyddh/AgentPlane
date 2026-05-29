@@ -15,7 +15,7 @@ from agentplane.domain.app.resource_state import (
     resolve_secret_file_path,
     validate_secret_files,
 )
-from agentplane.providers.gateway import default_provider_gateway
+from agentplane.providers import get_provider
 from agentplane.runtime.observation import build_verification_payload
 from agentplane.runtime.path_policy import assert_canonical_ref
 
@@ -89,8 +89,8 @@ def _live_database_evidence(repo_root: Path, target: str, definition: AppResourc
     if not definition.resource_kinds:
         return None
     try:
-        provider = default_provider_gateway()
-        executor = provider.onepanel_target_executor(target)
+        provider = get_provider()
+        executor = provider.get_target(target)
     except Exception:
         return None
 
@@ -101,7 +101,7 @@ def _live_database_evidence(repo_root: Path, target: str, definition: AppResourc
         if kind == "postgres":
             db_type = "postgresql"
         try:
-            payload = provider.search_onepanel_databases(executor, db_type=db_type)
+            payload = provider.search_databases(executor, db_type=db_type)
             items = payload.get("items") if isinstance(payload, dict) else None
             live_databases[kind] = items if isinstance(items, list) else []
         except Exception:
@@ -211,4 +211,4 @@ def verify_app_resource(repo_root: Path, target: str, app: str) -> dict[str, Any
 
 
 def refresh_app_resource_ledger(repo_root: Path, target: str, *, write: bool) -> dict[str, Any]:
-    return default_provider_gateway().refresh_app_resource_ledgers(repo_root, target, write=write)
+    return get_provider().refresh_app_resource_ledgers(repo_root, target, write=write)

@@ -34,7 +34,7 @@ from agentplane.domain.app.resource_state import (
 from agentplane.domain.app.versioning import recommended_versions
 from agentplane.domain.infra.networks import ensure_managed_bridge_networks
 from agentplane.domain.targets import PRODUCTION_TARGETS, is_production_target, remote_compose_filename, target_alias
-from agentplane.providers.gateway import default_provider_gateway
+from agentplane.providers import get_provider
 from agentplane.runtime.backends import build_backend_runner
 from agentplane.runtime.backends.ssh_linux import stream_docker_image
 from agentplane.runtime.execution import CommandRunner, CommandSpec
@@ -193,7 +193,7 @@ def _onepanel_lifecycle_command(repo_root: Path, *, target: str, operate: str, r
 def _onepanel_lifecycle_step(
     repo_root: Path, *, target: str, operate: str, rollback_entry: dict[str, Any]
 ) -> tuple[list[str], str]:
-    return default_provider_gateway().onepanel_app_lifecycle_step(
+    return get_provider().app_lifecycle_step(
         repo_root,
         target=target,
         operate=operate,
@@ -204,7 +204,7 @@ def _onepanel_lifecycle_step(
 def _onepanel_project_step(
     repo_root: Path, *, target: str, operate: str, rollback_entry: dict[str, Any]
 ) -> tuple[list[str], str]:
-    return default_provider_gateway().onepanel_project_lifecycle_step(
+    return get_provider().project_lifecycle_step(
         repo_root,
         target=target,
         operate=operate,

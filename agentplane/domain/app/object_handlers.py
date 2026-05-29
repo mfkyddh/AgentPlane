@@ -8,7 +8,7 @@ from agentplane.domain.app.catalog import load_app_catalog, resolve_app_contract
 from agentplane.domain.app.models import AppObject
 from agentplane.domain.app.resource_paths import canonical_contract_ref
 from agentplane.domain.app.runtime_helpers import render_domain_path
-from agentplane.providers.gateway import default_provider_gateway
+from agentplane.providers import get_provider
 from agentplane.runtime.observation import build_verification_payload
 
 
@@ -293,7 +293,7 @@ def refresh_app_ledger(repo_root: Path, target: str, write: bool) -> dict[str, A
 
 
 def _executor_for_target(target: str) -> object:
-    return default_provider_gateway().onepanel_target_executor(target)
+    return get_provider().get_target(target)
 
 
 def discover_installed_apps(
@@ -305,8 +305,8 @@ def discover_installed_apps(
 ) -> dict[str, Any]:
     """Discover 1Panel installed apps and classify them as managed or unmanaged."""
     executor = _executor_for_target(target)
-    provider = default_provider_gateway()
-    live_payload = provider.search_onepanel_installed_apps(executor, name=name)
+    provider = get_provider()
+    live_payload = provider.search_installed_apps(executor, name=name)
     live_items = live_payload.get("items") if isinstance(live_payload, dict) else []
     if not isinstance(live_items, list):
         live_items = []
