@@ -87,7 +87,7 @@ source = ["agentplane"]
 [tool.coverage.report]
 show_missing = true
 skip_covered = false
-fail_under = 48  # Will be raised to 55+ after Beta M4/M5 test coverage improvements
+fail_under = 50
 
 [tool.hatch.build.targets.wheel]
 packages = ["agentplane"]

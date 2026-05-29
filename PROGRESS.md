@@ -86,6 +86,7 @@ audience: both
 | B49 | migrate domain layer to ProviderProtocol | 已完成 | — | pending (2026-05-29) |
 | B50 | add OnePanelAdapter contract and delegation tests | 已完成 | — | pending (2026-05-29) |
 | B51 | add 22 unit tests for cli/app.py entry point | 已完成 | — | pending (2026-05-29) |
+| B52 | add 31 unit tests for object_handlers.py | 已完成 | — | pending (2026-05-29) |
 
 ---
 
