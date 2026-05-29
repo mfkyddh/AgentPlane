@@ -80,6 +80,7 @@ audience: both
 | B43 | add 124 tests for weak coverage modules | 已完成 | — | pending (2026-05-11) |
 | B44 | add 124 tests for weak coverage modules | 已完成 | — | pending (2026-05-11) |
 | B45 | add .codex/ to gitignore and clean up unused imports | 已完成 | — | pending (2026-05-29) |
+| B46 | add 16 source-command skill definitions | 已完成 | — | pending (2026-05-29) |
 
 ---
 
