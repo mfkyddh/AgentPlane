@@ -88,6 +88,7 @@ audience: both
 | B51 | add 22 unit tests for cli/app.py entry point | 已完成 | — | pending (2026-05-29) |
 | B52 | add 31 unit tests for object_handlers.py | 已完成 | — | pending (2026-05-29) |
 | B53 | add 33 unit tests for project dispatch + raise coverage gate to 50% | 已完成 | — | pending (2026-05-29) |
+| B54 | Phase 1-5 milestone execution - quality hardening, real validation, architecture optimization, release preparation, WebUI enhancement | 已完成 | — | pending (2026-06-11) |
 
 ---
 

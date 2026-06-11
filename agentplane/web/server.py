@@ -11,6 +11,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from agentplane.web.agent_router import handle_chat_message
 from agentplane.web.api import (
     get_app_detail,
+    get_audit_log,
     get_capabilities,
     get_dashboard,
     get_data_mtime,
@@ -65,6 +66,10 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
     @app.get("/api/operations")
     async def api_operations():
         return list_operations(repo_root)
+
+    @app.get("/api/audit-log")
+    async def api_audit_log(limit: int = 100, target: str | None = None):
+        return get_audit_log(repo_root, limit=limit, target=target)
 
     @app.get("/api/mtime")
     async def api_mtime():
@@ -143,6 +148,51 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
         )
         return handle_service_command(args)
 
+    @app.post("/api/app/delivery/deploy")
+    async def api_app_delivery_deploy(request: Request):
+        body = await request.json()
+        target = body.get("target", "")
+        app = body.get("app", "")
+        execute = body.get("execute", False)
+        if not target or not app:
+            return JSONResponse({"error": "target and app required"}, status_code=400)
+        from agentplane.cli.apps import handle_app_command
+        from types import SimpleNamespace
+        args = SimpleNamespace(
+            app_surface="delivery",
+            app_delivery_action="deploy",
+            target=target,
+            app=app,
+            repo_root=str(repo_root),
+            app_repo_root_override=None,
+            image_ref=None,
+            execute=execute,
+            dry_run=not execute,
+        )
+        return handle_app_command(args)
+
+    @app.post("/api/app/delivery/rollback")
+    async def api_app_delivery_rollback(request: Request):
+        body = await request.json()
+        target = body.get("target", "")
+        app = body.get("app", "")
+        execute = body.get("execute", False)
+        if not target or not app:
+            return JSONResponse({"error": "target and app required"}, status_code=400)
+        from agentplane.cli.apps import handle_app_command
+        from types import SimpleNamespace
+        args = SimpleNamespace(
+            app_surface="delivery",
+            app_delivery_action="rollback",
+            target=target,
+            app=app,
+            repo_root=str(repo_root),
+            app_repo_root_override=None,
+            execute=execute,
+            dry_run=not execute,
+        )
+        return handle_app_command(args)
+
     @app.websocket("/ws/chat")
     async def ws_chat(websocket: WebSocket):
         await websocket.accept()
@@ -203,6 +253,55 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
                 await asyncio.sleep(5)
         except WebSocketDisconnect:
             pass
+
+    @app.websocket("/ws/logs/{target}/{container}")
+    async def ws_logs(websocket: WebSocket, target: str, container: str):
+        await websocket.accept()
+        try:
+            import asyncio
+            import subprocess
+            
+            # Build SSH command to stream logs
+            ssh_cmd = [
+                "ssh", "-o", "ControlMaster=auto", "-o", "ControlPersist=60s",
+                target, "docker", "logs", "-f", "--tail", "50", container
+            ]
+            
+            process = subprocess.Popen(
+                ssh_cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1,
+            )
+            
+            try:
+                while True:
+                    line = process.stdout.readline()
+                    if not line:
+                        break
+                    await websocket.send_json({
+                        "type": "log",
+                        "payload": {
+                            "container": container,
+                            "target": target,
+                            "line": line.rstrip(),
+                        }
+                    })
+                    await asyncio.sleep(0.01)  # Small delay to prevent overwhelming
+            finally:
+                process.terminate()
+                process.wait()
+                
+        except WebSocketDisconnect:
+            if 'process' in locals():
+                process.terminate()
+                process.wait()
+        except Exception as e:
+            await websocket.send_json({
+                "type": "error",
+                "payload": {"message": f"Failed to stream logs: {str(e)}"}
+            })
 
     @app.get("/api/config")
     async def api_config():

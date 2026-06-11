@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -505,4 +506,42 @@ def get_app_detail(repo_root: Path, target: str, app: str) -> dict[str, Any]:
         "contract": contract,
         "summary_files": detail.get("summary_files", []),
         "ledger_status": detail.get("ledger_status", {}),
+    }
+
+
+def get_audit_log(repo_root: Path, limit: int = 100, target: str | None = None) -> dict[str, Any]:
+    """Return operation audit log from JSONL ledger files."""
+    from agentplane.runtime.operations import operation_ledger_path
+    
+    ledger_dir = repo_root / "tmp" / "operation-ledger"
+    if not ledger_dir.exists():
+        return {"entries": [], "total": 0}
+    
+    entries = []
+    for ledger_file in sorted(ledger_dir.glob("*.jsonl"), reverse=True):
+        try:
+            with ledger_file.open("r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        entry = json.loads(line)
+                        if target and entry.get("target") != target:
+                            continue
+                        entries.append(entry)
+                    except json.JSONDecodeError:
+                        continue
+        except OSError:
+            continue
+        
+        if len(entries) >= limit:
+            break
+    
+    entries.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
+    entries = entries[:limit]
+    
+    return {
+        "entries": entries,
+        "total": len(entries),
     }
