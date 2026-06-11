@@ -203,7 +203,7 @@ const OperationsComponent = {
     </div>
   `,
   setup() {
-    const { t } = inject('i18n');
+    const { t } = useI18n();
     const authToken = inject('authToken');
     
     const tab = ref('history');

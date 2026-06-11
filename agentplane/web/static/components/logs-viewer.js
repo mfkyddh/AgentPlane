@@ -76,7 +76,7 @@ const LogsViewerComponent = {
     </div>
   `,
   setup() {
-    const { t } = inject('i18n');
+    const { t } = useI18n();
     const authToken = inject('authToken');
     
     const targets = ref(['prod0-main', 'wsl']);

@@ -90,6 +90,7 @@ audience: both
 | B53 | add 33 unit tests for project dispatch + raise coverage gate to 50% | 已完成 | — | pending (2026-05-29) |
 | B54 | Phase 1-5 milestone execution - quality hardening, real validation, architecture optimization, release preparation, WebUI enhancement | 已完成 | — | pending (2026-06-11) |
 | B55 | enhance WebUI with write operations, audit log, and real-time log streaming | 已完成 | — | pending (2026-06-11) |
+| B56 | add operations and logs viewer components to WebUI | 已完成 | — | pending (2026-06-11) |
 
 ---
 
