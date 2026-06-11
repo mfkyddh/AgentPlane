@@ -47,6 +47,7 @@
   "dashboard.no_resources": "No resources yet",
   "dashboard.no_resources_hint": "Run <code>agentplane infra inventory &lt;target&gt;</code> to register a server",
   "dashboard.generated": "Generated",
+  "dashboard.stale_hint": "Data is outdated. Run:",
 
   "topology.title": "Resource Topology",
   "topology.no_targets": "No targets found",

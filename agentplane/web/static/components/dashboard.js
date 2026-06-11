@@ -60,6 +60,13 @@ const DashboardComponent = {
           </div>
         </div>
 
+        <!-- Stale data warning -->
+        <div v-if="isDataStale" class="stale-data-banner">
+          <svg viewBox="0 0 16 16" fill="currentColor" style="width:16px;height:16px;flex-shrink:0;"><path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm9-3a1 1 0 11-2 0 1 1 0 012 0zM8 7a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 018 7z"/></svg>
+          <span>{{ t('dashboard.stale_hint') || 'Data is outdated. Run:' }}</span>
+          <code>agentplane infra inventory &lt;target&gt; --repo-root . --write</code>
+        </div>
+
         <!-- Domain health cards -->
         <div v-if="Object.keys(domains).length > 0" class="domain-health-row">
           <div v-for="d in domainCards" :key="d.key" class="domain-card">
@@ -298,6 +305,14 @@ const DashboardComponent = {
       return formatRelativeTime(latestOp.value.timestamp);
     });
 
+    const isDataStale = computed(() => {
+      if (!latestOp.value || !latestOp.value.timestamp) return true;
+      const ts = new Date(latestOp.value.timestamp);
+      const now = new Date();
+      const diffDays = (now - ts) / (1000 * 60 * 60 * 24);
+      return diffDays > 7;
+    });
+
     const domainCards = computed(() => {
       const d = domains.value;
       const cards = [];
@@ -451,7 +466,7 @@ const DashboardComponent = {
     return {
       hosts, apps, operations, topology, domains, loading, loadError,
       expandedTargets, detailPanel,
-      connectedHosts, appsWithUrl, latestOp, dataFreshness, domainCards,
+      connectedHosts, appsWithUrl, latestOp, dataFreshness, isDataStale, domainCards,
       fetchDashboard, toggleTarget, selectApp, closeDetail,
       formatRelativeTime, formatTime, truncateUrl,
       opResultClass, appStatusClass, serviceStatusClass, formatDetailVal,

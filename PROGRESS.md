@@ -91,6 +91,7 @@ audience: both
 | B54 | Phase 1-5 milestone execution - quality hardening, real validation, architecture optimization, release preparation, WebUI enhancement | 已完成 | — | pending (2026-06-11) |
 | B55 | enhance WebUI with write operations, audit log, and real-time log streaming | 已完成 | — | pending (2026-06-11) |
 | B56 | add operations and logs viewer components to WebUI | 已完成 | — | pending (2026-06-11) |
+| B57 | fix i18n translations and component registration for operations/logs views | 已完成 | — | pending (2026-06-11) |
 
 ---
 

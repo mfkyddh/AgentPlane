@@ -47,6 +47,7 @@
   "dashboard.no_resources": "暂无资源",
   "dashboard.no_resources_hint": "运行 <code>agentplane infra inventory &lt;target&gt;</code> 注册服务器",
   "dashboard.generated": "生成于",
+  "dashboard.stale_hint": "数据已过期。运行以下命令刷新：",
 
   "topology.title": "资源拓扑",
   "topology.no_targets": "未发现目标",

@@ -16,6 +16,7 @@ function createAgentPlaneApp() {
   const app = createApp({
     setup() {
       const view = ref('dashboard');
+      const sidebarOpen = ref(false);
       const loading = ref(true);
       const loadError = ref('');
       const wsDisconnected = ref(false);
@@ -171,7 +172,7 @@ function createAgentPlaneApp() {
       });
 
       return {
-        view, loading, loadError, wsDisconnected,
+        view, sidebarOpen, loading, loadError, wsDisconnected,
         needsAuth, authenticated, authToken, authError,
         viewLabel, currentView, submitAuth, refreshAll,
         t, locale, toggleLocale,
