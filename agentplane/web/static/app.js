@@ -28,12 +28,12 @@ function createAgentPlaneApp() {
       const { locale, t, toggleLocale } = useI18n();
 
       const viewLabel = computed(() => {
-        const labels = { dashboard: t('topbar.overview'), topology: t('topbar.topology'), 'capability-map': t('topbar.capabilities'), chat: t('topbar.chat') };
+        const labels = { dashboard: t('topbar.overview'), topology: t('topbar.topology'), 'capability-map': t('topbar.capabilities'), chat: t('topbar.chat'), operations: t('topbar.operations') || 'Operations', logs: t('topbar.logs') || 'Live Logs' };
         return labels[view.value] || t('topbar.overview');
       });
 
       const currentView = computed(() => {
-        const map = { dashboard: 'dashboard-view', topology: 'topology-view', 'capability-map': 'capability-map-view', chat: 'chat-view' };
+        const map = { dashboard: 'dashboard-view', topology: 'topology-view', 'capability-map': 'capability-map-view', chat: 'chat-view', operations: 'operations-view', logs: 'logs-view' };
         return map[view.value] || 'dashboard-view';
       });
 

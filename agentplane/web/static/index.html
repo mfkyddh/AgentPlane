@@ -53,6 +53,15 @@
             <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.75 1h8.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0110.25 10H7.061l-2.574 2.573A.25.25 0 014 12.354V10H1.75A1.75 1.75 0 010 8.25v-5.5C0 1.784.784 1 1.75 1zM1.5 2.75v5.5c0 .138.112.25.25.25h1a.75.75 0 01.75.75v2.19l2.72-2.72a.75.75 0 01.53-.22h3.5a.25.25 0 00.25-.25v-5.5a.25.25 0 00-.25-.25h-8.5a.25.25 0 00-.25.25zm13 2a.25.25 0 00-.25-.25h-.5a.75.75 0 010-1.5h.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0114.25 12H14v1.543a1.457 1.457 0 01-2.487 1.03L9.22 12.28a.75.75 0 111.06-1.06l2.22 2.22v-2.19a.75.75 0 01.75-.75h1a.25.25 0 00.25-.25v-5.5z"/></svg>
             {{ t('nav.chat') }}
           </div>
+          <div class="sidebar-section-label">{{ t('nav.operations') || 'Operations' }}</div>
+          <div class="nav-item" :class="{active: view === 'operations'}" @click="view = 'operations'">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm9-3a1 1 0 11-2 0 1 1 0 012 0zM8 7a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 018 7z"/></svg>
+            {{ t('nav.operations') || 'Operations' }}
+          </div>
+          <div class="nav-item" :class="{active: view === 'logs'}" @click="view = 'logs'">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.75 1h8.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0110.25 10H7.061l-2.574 2.573A.25.25 0 014 12.354V10H1.75A1.75 1.75 0 010 8.25v-5.5C0 1.784.784 1 1.75 1z"/></svg>
+            {{ t('nav.logs') || 'Live Logs' }}
+          </div>
         </div>
         <div class="sidebar-footer">
           <span class="sidebar-footer-version">{{ t('status.cli_first') }}</span>
@@ -87,6 +96,8 @@
   <script src="/static/components/topology.js"></script>
   <script src="/static/components/capability-map.js"></script>
   <script src="/static/components/chat.js"></script>
+  <script src="/static/components/operations.js"></script>
+  <script src="/static/components/logs-viewer.js"></script>
   <script src="/static/i18n/index.js"></script>
   <script src="/static/app.js"></script>
   <script>
@@ -95,6 +106,8 @@
     app.component('topology-view', TopologyViewComponent);
     app.component('capability-map-view', CapabilityMapComponent);
     app.component('chat-view', ChatComponent);
+    app.component('operations-view', OperationsComponent);
+    app.component('logs-view', LogsViewerComponent);
     app.mount('#app');
   </script>
 </body>
