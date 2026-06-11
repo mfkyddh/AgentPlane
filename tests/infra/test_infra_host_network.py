@@ -290,15 +290,15 @@ class HostCliTests(unittest.TestCase):
             "appInstalledNumber": 4,
         }
         fake_executor = object()
-        fake_gateway = SimpleNamespace(
-            onepanel_target_executor=lambda target: fake_executor,
-            get_onepanel_dashboard_current=lambda executor: fake_dashboard_current,
-            get_onepanel_dashboard_base=lambda executor: fake_dashboard_base,
-            get_onepanel_dashboard_top_cpu=lambda executor: [],
-            get_onepanel_dashboard_top_mem=lambda executor: [],
-            search_onepanel_alerts=lambda executor, alert_type="", status="": {"items": [], "total": 0},
-            search_onepanel_alert_logs=lambda executor, status="": {"items": [], "total": 0},
-            get_onepanel_monitor_setting=lambda executor: {"monitorStatus": "enable"},
+        fake_provider = SimpleNamespace(
+            get_target=lambda target: fake_executor,
+            get_dashboard=lambda executor: fake_dashboard_current,
+            get_dashboard_base=lambda executor: fake_dashboard_base,
+            get_dashboard_top_cpu=lambda executor: [],
+            get_dashboard_top_mem=lambda executor: [],
+            search_alerts=lambda executor, alert_type="", status="": {"items": [], "total": 0},
+            search_alert_logs=lambda executor, status="": {"items": [], "total": 0},
+            get_monitor_setting=lambda executor: {"monitorStatus": "enable"},
         )
 
         args = SimpleNamespace(
@@ -306,7 +306,7 @@ class HostCliTests(unittest.TestCase):
             target="prod0-main",
             repo_root=".",
         )
-        with patch("agentplane.domain.infra.health.default_provider_gateway", return_value=fake_gateway):
+        with patch("agentplane.domain.infra.health.get_provider", return_value=fake_provider):
             payload = handle_infra_command(args)
 
         self.assertEqual({"command", "action", "target", "payload"}, set(payload))
@@ -352,19 +352,15 @@ class HostCliTests(unittest.TestCase):
             "appInstalledNumber": 4,
         }
         fake_executor = object()
-        fake_gateway = SimpleNamespace(
-            onepanel_target_executor=lambda target: fake_executor,
-            get_onepanel_dashboard_current=lambda executor: fake_dashboard_current,
-            get_onepanel_dashboard_base=lambda executor: fake_dashboard_base,
-            get_onepanel_dashboard_top_cpu=lambda executor: [],
-            get_onepanel_dashboard_top_mem=lambda executor: [],
-            search_onepanel_alerts=lambda executor, alert_type="", status="": {"items": [], "total": 0},
-            search_onepanel_alert_logs=lambda executor, status="": {"items": [], "total": 0},
-            get_onepanel_monitor_setting=lambda executor: {"monitorStatus": "enable"},
-        )
         fake_provider = SimpleNamespace(
             get_target=lambda target: fake_executor,
             get_dashboard=lambda executor: fake_dashboard_current,
+            get_dashboard_base=lambda executor: fake_dashboard_base,
+            get_dashboard_top_cpu=lambda executor: [],
+            get_dashboard_top_mem=lambda executor: [],
+            search_alerts=lambda executor, alert_type="", status="": {"items": [], "total": 0},
+            search_alert_logs=lambda executor, status="": {"items": [], "total": 0},
+            get_monitor_setting=lambda executor: {"monitorStatus": "enable"},
         )
 
         args = SimpleNamespace(
@@ -372,10 +368,7 @@ class HostCliTests(unittest.TestCase):
             target="prod0-main",
             repo_root=".",
         )
-        with (
-            patch("agentplane.domain.infra.health.default_provider_gateway", return_value=fake_gateway),
-            patch("agentplane.domain.infra.health.get_provider", return_value=fake_provider),
-        ):
+        with patch("agentplane.domain.infra.health.get_provider", return_value=fake_provider):
             payload = handle_infra_command(args)
 
         self.assertEqual("warning", payload["payload"]["status"])
