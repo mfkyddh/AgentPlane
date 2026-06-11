@@ -57,18 +57,18 @@ class ProviderProtocol(Protocol):
 - [x] 实现 OnePanelAdapter
 - [x] 契约测试覆盖
 
-### Phase 2: 核心逻辑迁移（进行中）
+### Phase 2: 核心逻辑迁移（已完成）
 
 - [x] 迁移 domain/app/ 到 ProviderProtocol
 - [x] 迁移 domain/service/ 到 ProviderProtocol
-- [ ] 迁移 domain/ingress/ 到 ProviderProtocol（部分完成，openresty_status 仍依赖 default_provider_gateway）
-- [ ] 迁移 domain/infra/ 到 ProviderProtocol（部分完成，health 模块仍依赖 default_provider_gateway）
+- [x] 迁移 domain/ingress/ 到 ProviderProtocol
+- [x] 迁移 domain/infra/ 到 ProviderProtocol
 
-### Phase 3: Provider 隔离（待开始）
+### Phase 3: Provider 隔离（已完成）
 
-- [ ] 移除 domain/ 对 default_provider_gateway 的直接依赖
-- [ ] 统一通过 get_provider() 获取 Provider 实例
-- [ ] 验证所有 domain/ 代码不 import provider 特定模块
+- [x] 移除 domain/ 对 default_provider_gateway 的直接依赖
+- [x] 统一通过 get_provider() 获取 Provider 实例
+- [x] 验证所有 domain/ 代码不 import provider 特定模块
 
 ### Phase 4: 第二 Provider 实现（待开始）
 
@@ -76,14 +76,14 @@ class ProviderProtocol(Protocol):
 - [ ] 验证同一操作在两个 Provider 上结果一致
 - [ ] 更新文档
 
-## 已知限制
+## 已知限制（已解决）
 
-以下模块仍依赖 `default_provider_gateway`，因为使用的 1Panel 特定方法不在 ProviderProtocol 中：
+以下模块已通过子协议模式迁移：
 
-1. **domain/infra/health.py** — 使用 `get_onepanel_dashboard_base`, `get_onepanel_dashboard_top_cpu`, `get_onepanel_dashboard_top_mem`, `search_onepanel_alerts`, `search_onepanel_alert_logs`
-2. **domain/ingress/handlers.py** — 使用 `get_onepanel_openresty_status`
+1. **domain/infra/health.py** — 现在使用 HealthProviderProtocol
+2. **domain/ingress/handlers.py** — 现在使用 InfraOpsProviderProtocol
 
-这些方法需要在 Phase 4 中通过扩展 ProviderProtocol 或创建 HealthProvider 子协议来解决。
+子协议设计允许 Provider 按需实现扩展能力，不强制所有 Provider 支持所有功能。
 
 ## 替代方案
 
