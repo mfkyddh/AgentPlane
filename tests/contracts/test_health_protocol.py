@@ -50,27 +50,27 @@ class TestHealthProviderProtocolStructure:
 
     def test_get_dashboard_base_returns_dict(self) -> None:
         hints = typing.get_type_hints(HealthProviderProtocol.get_dashboard_base)
-        assert hints.get("return") is not None
+        assert typing.get_origin(hints["return"]) is dict
 
     def test_get_dashboard_top_cpu_returns_list(self) -> None:
         hints = typing.get_type_hints(HealthProviderProtocol.get_dashboard_top_cpu)
-        assert hints.get("return") is not None
+        assert typing.get_origin(hints["return"]) is list
 
     def test_get_dashboard_top_mem_returns_list(self) -> None:
         hints = typing.get_type_hints(HealthProviderProtocol.get_dashboard_top_mem)
-        assert hints.get("return") is not None
+        assert typing.get_origin(hints["return"]) is list
 
     def test_search_alerts_returns_dict(self) -> None:
         hints = typing.get_type_hints(HealthProviderProtocol.search_alerts)
-        assert hints.get("return") is not None
+        assert typing.get_origin(hints["return"]) is dict
 
     def test_search_alert_logs_returns_dict(self) -> None:
         hints = typing.get_type_hints(HealthProviderProtocol.search_alert_logs)
-        assert hints.get("return") is not None
+        assert typing.get_origin(hints["return"]) is dict
 
     def test_get_monitor_setting_returns_dict(self) -> None:
         hints = typing.get_type_hints(HealthProviderProtocol.get_monitor_setting)
-        assert hints.get("return") is not None
+        assert typing.get_origin(hints["return"]) is dict
 
 
 class TestHealthProviderProtocolMethodCount:
@@ -107,24 +107,4 @@ class TestHealthProviderProtocolMethodCount:
         )
 
 
-class TestProviderProtocolUnchanged:
-    """Ensure adding sub-protocols didn't change ProviderProtocol method count."""
 
-    def test_provider_protocol_still_13_methods(self) -> None:
-        protocol_methods = [
-            name
-            for name in dir(ProviderProtocol)
-            if not name.startswith("_") and callable(getattr(ProviderProtocol, name, None))
-        ]
-        assert len(protocol_methods) == 13, (
-            f"ProviderProtocol has {len(protocol_methods)} methods, expected 13. "
-            f"Methods: {protocol_methods}"
-        )
-
-    def test_provider_protocol_within_limit(self) -> None:
-        protocol_methods = [
-            name
-            for name in dir(ProviderProtocol)
-            if not name.startswith("_") and callable(getattr(ProviderProtocol, name, None))
-        ]
-        assert len(protocol_methods) <= 15

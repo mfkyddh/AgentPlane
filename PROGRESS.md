@@ -92,6 +92,8 @@ audience: both
 | B55 | enhance WebUI with write operations, audit log, and real-time log streaming | 已完成 | — | pending (2026-06-11) |
 | B56 | add operations and logs viewer components to WebUI | 已完成 | — | pending (2026-06-11) |
 | B57 | fix i18n translations and component registration for operations/logs views | 已完成 | — | pending (2026-06-11) |
+| B58 | improve UI accessibility, data freshness hints, and mobile responsiveness | 已完成 | — | pending (2026-06-11) |
+| B59 | define HealthProviderProtocol and InfraOpsProviderProtocol sub-protocols | 已完成 | — | pending (2026-06-11) |
 
 ---
 
