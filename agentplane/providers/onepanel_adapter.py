@@ -48,10 +48,20 @@ class OnePanelAdapter:
         return self._gw.get_onepanel_website_ssl(tgt, ssl_id=ssl_id)  # type: ignore[arg-type]
 
     def plan_website_create(
-        self, *, alias: str, domain: str, proxy: str, remark: str, ipv6: bool,
+        self,
+        *,
+        alias: str,
+        domain: str,
+        proxy: str,
+        remark: str,
+        ipv6: bool,
     ) -> object:
         return self._gw.plan_onepanel_website_create(
-            alias=alias, domain=domain, proxy=proxy, remark=remark, ipv6=ipv6,
+            alias=alias,
+            domain=domain,
+            proxy=proxy,
+            remark=remark,
+            ipv6=ipv6,
         )
 
     # --- App operations ------------------------------------------------------
@@ -76,7 +86,10 @@ class OnePanelAdapter:
         rollback_entry: dict[str, Any],
     ) -> tuple[list[str], str]:
         return self._gw.onepanel_app_lifecycle_step(
-            repo_root, target=target, operate=operate, rollback_entry=rollback_entry,
+            repo_root,
+            target=target,
+            operate=operate,
+            rollback_entry=rollback_entry,
         )
 
     def project_lifecycle_step(
@@ -88,10 +101,36 @@ class OnePanelAdapter:
         rollback_entry: dict[str, Any],
     ) -> tuple[list[str], str]:
         return self._gw.onepanel_project_lifecycle_step(
-            repo_root, target=target, operate=operate, rollback_entry=rollback_entry,
+            repo_root,
+            target=target,
+            operate=operate,
+            rollback_entry=rollback_entry,
         )
 
     # --- Health / monitoring -------------------------------------------------
 
     def get_dashboard(self, tgt: ProviderTarget) -> dict[str, Any]:
         return self._gw.get_onepanel_dashboard_current(tgt)  # type: ignore[arg-type]
+
+    def get_dashboard_base(self, tgt: ProviderTarget) -> dict[str, Any]:
+        return self._gw.get_onepanel_dashboard_base(tgt)  # type: ignore[arg-type]
+
+    def get_dashboard_top_cpu(self, tgt: ProviderTarget) -> list[Any]:
+        return self._gw.get_onepanel_dashboard_top_cpu(tgt)  # type: ignore[arg-type]
+
+    def get_dashboard_top_mem(self, tgt: ProviderTarget) -> list[Any]:
+        return self._gw.get_onepanel_dashboard_top_mem(tgt)  # type: ignore[arg-type]
+
+    def search_alerts(self, tgt: ProviderTarget, *, alert_type: str = "", status: str = "") -> dict[str, Any]:
+        return self._gw.search_onepanel_alerts(tgt, alert_type=alert_type, status=status)  # type: ignore[arg-type]
+
+    def search_alert_logs(self, tgt: ProviderTarget, *, status: str = "") -> dict[str, Any]:
+        return self._gw.search_onepanel_alert_logs(tgt, status=status)  # type: ignore[arg-type]
+
+    def get_monitor_setting(self, tgt: ProviderTarget) -> dict[str, Any]:
+        return self._gw.get_onepanel_monitor_setting(tgt)  # type: ignore[arg-type]
+
+    # --- Infra-ops -----------------------------------------------------------
+
+    def get_openresty_status(self, tgt: ProviderTarget) -> dict[str, Any]:
+        return self._gw.get_onepanel_openresty_status(tgt)  # type: ignore[arg-type]
