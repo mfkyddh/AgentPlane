@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import pytest
+from agentplane.providers import get_provider
+from agentplane.providers.protocol import HealthProviderProtocol, InfraOpsProviderProtocol
 from agentplane.providers.stub_provider import StubProvider
 
 
@@ -50,6 +52,28 @@ def provider(request):
     """
     if request.param == "onepanel":
         return _make_onepanel_adapter(), _make_onepanel_target_name()
+    return StubProvider(), "test-target"
+
+
+@pytest.fixture(params=_provider_params())
+def health_provider(request):
+    """Yield (provider, default_target_name) for health contract tests.
+
+    OnePanel provider is only used when a real 1Panel target is configured.
+    """
+    if request.param == "onepanel":
+        return get_provider(protocol=HealthProviderProtocol), _make_onepanel_target_name()
+    return StubProvider(), "test-target"
+
+
+@pytest.fixture(params=_provider_params())
+def infraops_provider(request):
+    """Yield (provider, default_target_name) for infraops contract tests.
+
+    OnePanel provider is only used when a real 1Panel target is configured.
+    """
+    if request.param == "onepanel":
+        return get_provider(protocol=InfraOpsProviderProtocol), _make_onepanel_target_name()
     return StubProvider(), "test-target"
 
 
