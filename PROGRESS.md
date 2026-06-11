@@ -95,6 +95,9 @@ audience: both
 | B58 | improve UI accessibility, data freshness hints, and mobile responsiveness | 已完成 | — | pending (2026-06-11) |
 | B59 | define HealthProviderProtocol and InfraOpsProviderProtocol sub-protocols | 已完成 | — | pending (2026-06-11) |
 | B60 | fix DRY violation and type assertions in sub-protocol tests | 已完成 | — | pending (2026-06-11) |
+| B61 | migrate health.py to HealthProviderProtocol | 已完成 | — | pending (2026-06-11) |
+| B62 | replace default_provider_gateway with InfraOpsProviderProtocol | 已完成 | — | pending (2026-06-11) |
+| B63 | update ADR 011 Phase 2-3 as completed | 已完成 | — | pending (2026-06-11) |
 
 ---
 
