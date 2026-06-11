@@ -6,7 +6,7 @@ from typing import Any
 from agentplane.domain.ingress.lifecycle import build_ingress_follow_through, summarize_ingress
 from agentplane.domain.ingress.registry import available_ingresses, resolve_ingress
 from agentplane.providers import get_provider
-from agentplane.providers.gateway import default_provider_gateway
+from agentplane.providers.protocol import InfraOpsProviderProtocol
 
 
 def _executor_for_target(target: str) -> object:
@@ -101,8 +101,7 @@ def verify_ingress(repo_root: Path, target: str, alias: str) -> dict[str, Any]:
 
     openresty_status: dict[str, Any] | None = None
     try:
-        # TODO: Migrate to ProviderProtocol when openresty status method is added
-        openresty_status = default_provider_gateway().get_onepanel_openresty_status(executor)
+        openresty_status = get_provider(protocol=InfraOpsProviderProtocol).get_openresty_status(executor)
         openresty_running = openresty_status.get("status") == "Running"
         checks["openresty"] = {
             "ok": openresty_running,
