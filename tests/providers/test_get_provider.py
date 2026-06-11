@@ -39,7 +39,12 @@ class TestGetProviderProtocolValidation:
         provider = get_provider(protocol=ProviderProtocol)
         assert provider is not None
 
-    def test_stub_provider_unsupported_protocol_raises(self, monkeypatch) -> None:
+    def test_stub_provider_health_protocol_accepted(self, monkeypatch) -> None:
         monkeypatch.setenv("AGENTPLANE_PROVIDER", "stub")
-        with pytest.raises(UnsupportedProviderProtocol):
-            get_provider(protocol=HealthProviderProtocol)
+        provider = get_provider(protocol=HealthProviderProtocol)
+        assert provider is not None
+
+    def test_stub_provider_infra_ops_protocol_accepted(self, monkeypatch) -> None:
+        monkeypatch.setenv("AGENTPLANE_PROVIDER", "stub")
+        provider = get_provider(protocol=InfraOpsProviderProtocol)
+        assert provider is not None

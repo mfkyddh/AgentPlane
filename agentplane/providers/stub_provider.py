@@ -88,3 +88,24 @@ class StubProvider:
             "memory": {"used": 0, "total": 100},
             "load": {"load1": 0, "load5": 0, "load15": 0},
         }
+
+    def get_dashboard_base(self, tgt: _StubTarget) -> dict[str, Any]:
+        return {"hostname": "stub-host", "os": "stub-os", "cpuCores": 1}
+
+    def get_dashboard_top_cpu(self, tgt: _StubTarget) -> list[Any]:
+        return []
+
+    def get_dashboard_top_mem(self, tgt: _StubTarget) -> list[Any]:
+        return []
+
+    def search_alerts(self, tgt: _StubTarget, *, alert_type: str = "", status: str = "") -> dict[str, Any]:
+        return {"total": 0, "items": []}
+
+    def search_alert_logs(self, tgt: _StubTarget, *, status: str = "") -> dict[str, Any]:
+        return {"total": 0, "items": []}
+
+    def get_monitor_setting(self, tgt: _StubTarget) -> dict[str, Any]:
+        return {"monitorStatus": "stub"}
+
+    def get_openresty_status(self, tgt: _StubTarget) -> dict[str, Any]:
+        return {"status": "stub"}
