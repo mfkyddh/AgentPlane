@@ -5,7 +5,6 @@ import time
 from unittest.mock import MagicMock
 
 import pytest
-
 from agentplane.runtime.execution import (
     BackendRunner,
     CommandSpec,

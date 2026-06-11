@@ -7,7 +7,6 @@ from agentplane.providers import (
     HealthProviderProtocol,
     InfraOpsProviderProtocol,
     ProviderProtocol,
-    UnsupportedProviderProtocol,
     get_provider,
 )
 from agentplane.providers.onepanel_adapter import OnePanelAdapter

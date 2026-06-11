@@ -99,6 +99,35 @@ audience: both
 | B62 | replace default_provider_gateway with InfraOpsProviderProtocol | 已完成 | — | pending (2026-06-11) |
 | B63 | update ADR 011 Phase 2-3 as completed | 已完成 | — | pending (2026-06-11) |
 | B64 | remove external user goals, refocus on quality hardening (M5-M7) | 已完成 | — | pending (2026-06-11) |
+| B65 | remove deprecated default_provider_gateway and fix WebUI silent error handling | 已完成 | — | pending (2026-06-11) |
+| B66 | extract 22 pure helpers into runtime_helpers.py | 已完成 | — | pending (2026-06-11) |
+| B67 | extract rollback into runtime_rollback.py | 已完成 | — | pending (2026-06-11) |
+| B68 | extract build/package/ship pipeline into runtime_build.py | 已完成 | — | pending (2026-06-11) |
+| B69 | extract deploy/verify into runtime_deploy.py | 已完成 | — | pending (2026-06-11) |
+| B70 | slim runtime.py to infrastructure + re-exports | 已完成 | — | pending (2026-06-11) |
+| B71 | extract rollback state into delivery_handlers_state.py | 已完成 | — | pending (2026-06-11) |
+| B72 | extract shared infrastructure into delivery_handlers_shared.py | 已完成 | — | pending (2026-06-11) |
+| B73 | extract candidate runtime into delivery_handlers_candidate.py | 已完成 | — | pending (2026-06-11) |
+| B74 | extract delivery planning into delivery_handlers_planning.py | 已完成 | — | pending (2026-06-11) |
+| B75 | extract simple handlers into delivery_handlers_handlers.py | 已完成 | — | pending (2026-06-11) |
+| B76 | extract verify/rollback into delivery_handlers_verify_rollback.py | 已完成 | — | pending (2026-06-11) |
+| B77 | extract deploy orchestrator into delivery_handlers_deploy.py | 已完成 | — | pending (2026-06-11) |
+| B78 | slim delivery_handlers.py to facade with re-exports | 已完成 | — | pending (2026-06-11) |
+| B79 | extract contract resolution into lifecycle_contract.py | 已完成 | — | pending (2026-06-11) |
+| B80 | extract step factories into lifecycle_steps.py | 已完成 | — | pending (2026-06-11) |
+| B81 | extract step factories into lifecycle_steps.py | 已完成 | — | pending (2026-06-11) |
+| B82 | extract resource/secret/ingress helpers into lifecycle_resources.py | 已完成 | — | pending (2026-06-11) |
+| B83 | extract post-actions into lifecycle_post_actions.py | 已完成 | — | pending (2026-06-11) |
+| B84 | slim lifecycle.py to orchestrators + re-exports | 已完成 | — | pending (2026-06-11) |
+| B85 | add unit tests for postgres_audit module | 已完成 | — | pending (2026-06-11) |
+| B86 | add unit tests for test_runner module | 已完成 | — | pending (2026-06-11) |
+| B87 | add unit tests for infra_onepanel module | 已完成 | — | pending (2026-06-11) |
+| B88 | add unit tests for public_endpoint module | 已完成 | — | pending (2026-06-11) |
+| B89 | add unit tests for materialize module edge cases | 已完成 | — | pending (2026-06-11) |
+| B90 | add unit tests for apps.py delivery dispatch | 已完成 | — | pending (2026-06-11) |
+| B91 | add 222 unit tests for 6 untested modules (M6 test gap coverage) | 已完成 | — | pending (2026-06-11) |
+| B92 | fix test isolation issue in apps dispatch tests by using patch.object instead of sys.modules injection | 已完成 | — | pending (2026-06-11) |
+| B93 | split 3 oversized files into 18 focused modules | 已完成 | — | pending (2026-06-11) |
 
 ---
 

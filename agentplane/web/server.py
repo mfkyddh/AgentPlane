@@ -125,8 +125,9 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
         operation = body.get("operation", "restart")
         if not target or not name:
             return JSONResponse({"error": "target and name required"}, status_code=400)
-        from agentplane.cli.service import handle_service_command
         from types import SimpleNamespace
+
+        from agentplane.cli.service import handle_service_command
         args = SimpleNamespace(
             service_action="plan", target=target, name=name,
             operation=operation, repo_root=str(repo_root),
@@ -140,8 +141,9 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
         name = body.get("name", "")
         if not target or not name:
             return JSONResponse({"error": "target and name required"}, status_code=400)
-        from agentplane.cli.service import handle_service_command
         from types import SimpleNamespace
+
+        from agentplane.cli.service import handle_service_command
         args = SimpleNamespace(
             service_action="verify", target=target, name=name,
             repo_root=str(repo_root),
@@ -156,8 +158,9 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
         execute = body.get("execute", False)
         if not target or not app:
             return JSONResponse({"error": "target and app required"}, status_code=400)
-        from agentplane.cli.apps import handle_app_command
         from types import SimpleNamespace
+
+        from agentplane.cli.apps import handle_app_command
         args = SimpleNamespace(
             app_surface="delivery",
             app_delivery_action="deploy",
@@ -179,8 +182,9 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
         execute = body.get("execute", False)
         if not target or not app:
             return JSONResponse({"error": "target and app required"}, status_code=400)
-        from agentplane.cli.apps import handle_app_command
         from types import SimpleNamespace
+
+        from agentplane.cli.apps import handle_app_command
         args = SimpleNamespace(
             app_surface="delivery",
             app_delivery_action="rollback",

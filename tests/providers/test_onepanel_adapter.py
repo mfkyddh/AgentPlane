@@ -10,7 +10,6 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-
 from agentplane.providers.onepanel_adapter import OnePanelAdapter
 from agentplane.providers.protocol import ProviderProtocol
 

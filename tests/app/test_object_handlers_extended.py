@@ -11,15 +11,12 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from agentplane.domain.app.models import AppCatalogEntry, AppObject
 from agentplane.domain.app.object_handlers import (
     _canonical_ref,
-    _contract_payload,
     _inventory_entry,
     _ledger_status,
     _object_payload,
-    _resolved_summary_path,
     _summary_files,
     discover_installed_apps,
     get_app,

@@ -7,10 +7,9 @@ and main() command dispatch with mocked handlers.
 from __future__ import annotations
 
 import json
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
-
 from agentplane.cli.app import _emit, _split_remote_bash_remainder, build_parser, main
 
 pytestmark = pytest.mark.unit
