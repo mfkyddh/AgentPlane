@@ -13,7 +13,7 @@ from agentplane.runtime.host_profile import HostProfile
 from agentplane.ssh import SshTarget, resolve_ssh_config_path, resolve_ssh_target
 from tests.support.paths import REPO_ROOT
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 def write_inventory(root: Path) -> None:
     inventory_file = root / "inventory" / "servers" / "wsl" / "inventory.json"
     inventory_file.parent.mkdir(parents=True, exist_ok=True)

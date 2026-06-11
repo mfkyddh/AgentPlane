@@ -13,7 +13,7 @@ from agentplane.runtime.bootstrap import bootstrap_directory_specs, bootstrap_re
 from tests.support.cli import run_agentplane_cli as run_cli
 from tests.support.paths import REPO_ROOT
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 
 def parse_env_text(content: str) -> dict[str, str]:

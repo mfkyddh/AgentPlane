@@ -19,7 +19,7 @@ from agentplane.scripts.onepanel.fixture_manager import (
 )
 from tests.support.paths import REPO_ROOT
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))

@@ -232,3 +232,144 @@ class TestBoundaryConditions:
         tgt1 = stub.get_target("host-a")
         tgt2 = stub.get_target("host-b")
         assert type(tgt1) is type(tgt2)
+
+
+class TestNegativeContracts:
+    """Negative and edge-case contract tests for StubProvider."""
+
+    def test_search_websites_empty_name_returns_empty(self) -> None:
+        from agentplane.providers.stub_provider import StubProvider
+
+        stub = StubProvider()
+        tgt = stub.get_target("test")
+        result = stub.search_websites(tgt, name="")
+        assert result["total"] == 0
+        assert result["items"] == []
+
+    def test_search_installed_apps_empty_name_returns_empty(self) -> None:
+        from agentplane.providers.stub_provider import StubProvider
+
+        stub = StubProvider()
+        tgt = stub.get_target("test")
+        result = stub.search_installed_apps(tgt, name="")
+        assert result["total"] == 0
+        assert result["items"] == []
+
+    def test_search_databases_returns_empty(self) -> None:
+        from agentplane.providers.stub_provider import StubProvider
+
+        stub = StubProvider()
+        tgt = stub.get_target("test")
+        result = stub.search_databases(tgt, db_type="postgresql")
+        assert result["total"] == 0
+        assert result["items"] == []
+
+    def test_get_website_returns_id(self) -> None:
+        from agentplane.providers.stub_provider import StubProvider
+
+        stub = StubProvider()
+        tgt = stub.get_target("test")
+        result = stub.get_website(tgt, website_id=42)
+        assert result["id"] == 42
+
+    def test_get_website_ssl_returns_id(self) -> None:
+        from agentplane.providers.stub_provider import StubProvider
+
+        stub = StubProvider()
+        tgt = stub.get_target("test")
+        result = stub.get_website_ssl(tgt, ssl_id=99)
+        assert result["id"] == 99
+
+    def test_get_installed_app_returns_id(self) -> None:
+        from agentplane.providers.stub_provider import StubProvider
+
+        stub = StubProvider()
+        tgt = stub.get_target("test")
+        result = stub.get_installed_app(tgt, install_id=7)
+        assert result["id"] == 7
+
+    def test_plan_website_create_preserves_params(self) -> None:
+        from agentplane.providers.stub_provider import StubProvider
+
+        stub = StubProvider()
+        result = stub.plan_website_create(
+            alias="myapp", domain="example.com", proxy="http://localhost:3000",
+            remark="production", ipv6=True,
+        )
+        body = result["body"]
+        assert body["alias"] == "myapp"
+        assert body["domain"] == "example.com"
+        assert body["proxy"] == "http://localhost:3000"
+        assert body["remark"] == "production"
+        assert body["ipv6"] is True
+
+    def test_lifecycle_step_preserves_operate(self) -> None:
+        from agentplane.providers.stub_provider import StubProvider
+
+        stub = StubProvider()
+        for operate in ("start", "stop", "restart"):
+            argv, display = stub.app_lifecycle_step(
+                Path("."), target="t", operate=operate, rollback_entry={},
+            )
+            assert operate in argv[-1]
+            assert operate in display
+
+    def test_project_lifecycle_step_preserves_operate(self) -> None:
+        from agentplane.providers.stub_provider import StubProvider
+
+        stub = StubProvider()
+        for operate in ("start", "stop", "restart"):
+            argv, display = stub.project_lifecycle_step(
+                Path("."), target="t", operate=operate, rollback_entry={},
+            )
+            assert operate in argv[-1]
+            assert operate in display
+
+    def test_dashboard_has_all_metric_sections(self) -> None:
+        from agentplane.providers.stub_provider import StubProvider
+
+        stub = StubProvider()
+        tgt = stub.get_target("test")
+        result = stub.get_dashboard(tgt)
+        for section in ("cpu", "memory", "load"):
+            assert section in result
+            assert isinstance(result[section], dict)
+
+    def test_refresh_ledgers_write_false_no_side_effect(self) -> None:
+        from agentplane.providers.stub_provider import StubProvider
+
+        stub = StubProvider()
+        result = stub.refresh_ledgers(Path("/nonexistent"), "target", write=False)
+        assert result["write"] is False
+        assert result["status"] == "stub"
+
+    def test_refresh_app_resource_ledgers_write_false_no_side_effect(self) -> None:
+        from agentplane.providers.stub_provider import StubProvider
+
+        stub = StubProvider()
+        result = stub.refresh_app_resource_ledgers(Path("/nonexistent"), "target", write=False)
+        assert result["write"] is False
+        assert result["status"] == "stub"
+
+    def test_target_handle_is_hashable(self) -> None:
+        from agentplane.providers.stub_provider import StubProvider
+
+        stub = StubProvider()
+        tgt = stub.get_target("test")
+        hash(tgt)
+
+    def test_target_handle_equality(self) -> None:
+        from agentplane.providers.stub_provider import StubProvider
+
+        stub = StubProvider()
+        tgt1 = stub.get_target("same")
+        tgt2 = stub.get_target("same")
+        assert tgt1 == tgt2
+
+    def test_target_handle_inequality(self) -> None:
+        from agentplane.providers.stub_provider import StubProvider
+
+        stub = StubProvider()
+        tgt1 = stub.get_target("a")
+        tgt2 = stub.get_target("b")
+        assert tgt1 != tgt2

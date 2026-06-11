@@ -22,7 +22,7 @@ from tests.support.app_delivery_targets import (
     write_tenant_secret_files,
 )
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 
 class TestAppDeliveryBuildCliTests(unittest.TestCase):

@@ -26,7 +26,7 @@ from tests.support.app_delivery_targets import (
 )
 from tests.support.constants import FAKE_PROXY_18080
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 
 class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):

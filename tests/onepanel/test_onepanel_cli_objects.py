@@ -27,7 +27,7 @@ from tests.support.constants import (
 )
 from tests.support.paths import REPO_ROOT
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 
 class FakeExecutor(FakeLikeExecutorProtocol):

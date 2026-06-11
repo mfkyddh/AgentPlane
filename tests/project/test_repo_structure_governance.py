@@ -16,7 +16,7 @@ from agentplane.domain.app.models import AppCatalogEntry
 from agentplane.runtime.path_policy import assert_canonical_ref, is_host_specific_path
 from tests.support.paths import REPO_ROOT
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 ALLOWED_TRACKED_TOP_LEVELS = {
     ".agents",

@@ -26,7 +26,7 @@ from tests.support.constants import (
     TARGET_PROD,
 )
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 
 def write_inventory(root: Path) -> None:

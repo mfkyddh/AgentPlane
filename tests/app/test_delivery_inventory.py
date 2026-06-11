@@ -25,7 +25,7 @@ from tests.support.app_delivery_targets import (
 from tests.support.app_resources import resource_relative
 from tests.support.constants import FAKE_BINDING_18081, FAKE_PROXY_3000, FAKE_PROXY_18081
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 
 class TestAppDeliveryInventoryCliTests(unittest.TestCase):

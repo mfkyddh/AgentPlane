@@ -10,7 +10,7 @@ from agentplane.runtime.wsl_bridge import inspect_local_host
 from tests.support.cli import run_cli_json
 from tests.support.paths import REPO_ROOT
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 class LocalHostCliTests(unittest.TestCase):
     def test_windows_host_binds_wsl_to_same_checkout(self) -> None:

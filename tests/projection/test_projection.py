@@ -12,7 +12,7 @@ from tests.support.app_resources import resource_relative, resource_root
 from tests.support.cli import run_agentplane_cli as run_cli
 from tests.support.paths import REPO_ROOT
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 
 def write_inventory(root: Path) -> None:
@@ -349,3 +349,139 @@ class ProjectionValidationCliTests(unittest.TestCase):
         self.assertNotIn("projection verification run", self_check)
         self.assertNotIn("projection fixture", self_check)
         self.assertNotIn("projection ledger refresh", self_check)
+
+
+class ProjectionGoldenTests(unittest.TestCase):
+    """Golden tests for the three-layer projection model.
+
+    These tests verify that the output format of each projection layer
+    is stable and reproducible.  If these tests break, the projection
+    contract has changed and downstream consumers may be affected.
+    """
+
+    def test_layer1_inventory_snapshot_has_required_keys(self) -> None:
+        from agentplane.domain.infra.inventory import generate_inventory_snapshot
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            inventory_file = root / "inventory" / "servers" / "prod0-main" / "inventory.json"
+            inventory_file.parent.mkdir(parents=True, exist_ok=True)
+            inventory_file.write_text(
+                json.dumps({"services": {"sub2api": {"control_plane": "compose"}}}, indent=2),
+                encoding="utf-8",
+            )
+            result = generate_inventory_snapshot(root, "prod0-main")
+
+        assert "command" in result
+        assert "target" in result
+        assert "inventory_file" in result
+        assert "payload" in result
+        assert result["command"] == "inventory"
+        assert result["target"] == "prod0-main"
+
+    def test_layer1_inventory_snapshot_payload_has_services(self) -> None:
+        from agentplane.domain.infra.inventory import generate_inventory_snapshot
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            inventory_file = root / "inventory" / "servers" / "prod0-main" / "inventory.json"
+            inventory_file.parent.mkdir(parents=True, exist_ok=True)
+            inventory_file.write_text(
+                json.dumps({"services": {"sub2api": {"control_plane": "compose"}}}, indent=2),
+                encoding="utf-8",
+            )
+            result = generate_inventory_snapshot(root, "prod0-main")
+
+        assert "services" in result["payload"]
+        assert "sub2api" in result["payload"]["services"]
+
+    def test_layer2_app_ledger_has_required_keys(self) -> None:
+        from agentplane.domain.app.object_handlers import refresh_app_ledger
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_inventory(root)
+            result = refresh_app_ledger(root, "prod0-main", write=False)
+
+        assert "target" in result
+        assert "count" in result
+        assert "json_file" in result
+        assert "markdown_file" in result
+        assert "inventory_pointer" in result
+        assert result["target"] == "prod0-main"
+
+    def test_layer2_app_ledger_json_structure(self) -> None:
+        from agentplane.domain.app.object_handlers import refresh_app_ledger
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_inventory(root)
+            result = refresh_app_ledger(root, "prod0-main", write=True)
+
+            json_file = Path(result["json_file"])
+            assert json_file.exists()
+            ledger = json.loads(json_file.read_text(encoding="utf-8"))
+
+        assert "target" in ledger
+        assert "count" in ledger
+        assert "items" in ledger
+        assert ledger["target"] == "prod0-main"
+
+    def test_layer2_app_ledger_markdown_structure(self) -> None:
+        from agentplane.domain.app.object_handlers import refresh_app_ledger
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_inventory(root)
+            result = refresh_app_ledger(root, "prod0-main", write=True)
+
+            md_file = Path(result["markdown_file"])
+            assert md_file.exists()
+            content = md_file.read_text(encoding="utf-8")
+
+        assert content.startswith("# prod0-main apps ledger")
+        assert "- " in content
+
+    def test_layer2_inventory_pointer_written(self) -> None:
+        from agentplane.domain.app.object_handlers import refresh_app_ledger
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_inventory(root)
+            refresh_app_ledger(root, "prod0-main", write=True)
+
+            inventory_file = root / "inventory" / "servers" / "prod0-main" / "inventory.json"
+            inventory = json.loads(inventory_file.read_text(encoding="utf-8"))
+
+        assert "object_ledgers" in inventory
+        assert "ledgers" in inventory["object_ledgers"]
+        assert "apps" in inventory["object_ledgers"]["ledgers"]
+
+    def test_layer3_app_summary_rendering(self) -> None:
+        from agentplane.domain.app.doc_sync import _render_app_summary
+
+        contract = {
+            "app_id": "sub2api",
+            "runtime": {"container_name": "sub2api-prod", "container_port": 8080},
+        }
+        inventory_entry = {
+            "control_plane": "compose",
+            "container_name": "sub2api-prod",
+            "public_url": "https://sub2api.example.com",
+        }
+        summary = _render_app_summary(contract, "prod0-main", inventory_entry)
+
+        assert "sub2api" in summary
+        assert "prod0-main" in summary
+        assert "sub2api-prod" in summary
+
+    def test_layer2_ledger_idempotent_when_write_false(self) -> None:
+        from agentplane.domain.app.object_handlers import refresh_app_ledger
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_inventory(root)
+            r1 = refresh_app_ledger(root, "prod0-main", write=False)
+            r2 = refresh_app_ledger(root, "prod0-main", write=False)
+
+        assert r1 == r2

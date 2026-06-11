@@ -10,7 +10,7 @@ from unittest.mock import patch
 import pytest
 from tests.support.app_object import run_cli, write_inventory_with_app
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 
 class AppObjectCliTests(unittest.TestCase):
@@ -165,16 +165,16 @@ class AppObjectCliTests(unittest.TestCase):
             "total": 3,
         }
         fake_executor = object()
-        fake_gateway = SimpleNamespace(
-            onepanel_target_executor=lambda target: fake_executor,
-            search_onepanel_installed_apps=lambda executor, name="": fake_installed,
+        fake_provider = SimpleNamespace(
+            get_target=lambda target: fake_executor,
+            search_installed_apps=lambda executor, name="": fake_installed,
         )
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory_with_app(root)
 
-            with patch("agentplane.domain.app.object_handlers.default_provider_gateway", return_value=fake_gateway):
+            with patch("agentplane.domain.app.object_handlers.get_provider", return_value=fake_provider):
                 args = SimpleNamespace(
                     app_surface="object",
                     app_object_action="discover",
@@ -206,16 +206,16 @@ class AppObjectCliTests(unittest.TestCase):
             "total": 2,
         }
         fake_executor = object()
-        fake_gateway = SimpleNamespace(
-            onepanel_target_executor=lambda target: fake_executor,
-            search_onepanel_installed_apps=lambda executor, name="": fake_installed,
+        fake_provider = SimpleNamespace(
+            get_target=lambda target: fake_executor,
+            search_installed_apps=lambda executor, name="": fake_installed,
         )
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory_with_app(root)
 
-            with patch("agentplane.domain.app.object_handlers.default_provider_gateway", return_value=fake_gateway):
+            with patch("agentplane.domain.app.object_handlers.get_provider", return_value=fake_provider):
                 args = SimpleNamespace(
                     app_surface="object",
                     app_object_action="discover",
@@ -240,16 +240,16 @@ class AppObjectCliTests(unittest.TestCase):
         from agentplane.cli.apps import handle_app_command
 
         fake_executor = object()
-        fake_gateway = SimpleNamespace(
-            onepanel_target_executor=lambda target: fake_executor,
-            search_onepanel_installed_apps=lambda executor, name="": {"items": [], "total": 0},
+        fake_provider = SimpleNamespace(
+            get_target=lambda target: fake_executor,
+            search_installed_apps=lambda executor, name="": {"items": [], "total": 0},
         )
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_inventory_with_app(root)
 
-            with patch("agentplane.domain.app.object_handlers.default_provider_gateway", return_value=fake_gateway):
+            with patch("agentplane.domain.app.object_handlers.get_provider", return_value=fake_provider):
                 args = SimpleNamespace(
                     app_surface="object",
                     app_object_action="discover",

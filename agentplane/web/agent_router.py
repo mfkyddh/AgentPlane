@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 ALLOWED_VERBS = {"search", "get", "verify", "health"}
 BLOCKED_VERBS = {"apply", "delete", "plan", "migrate", "deploy", "rollback"}
+CONFIRM_VERBS = {"plan", "apply"}  # Write operations that need user confirmation
 
 COMMAND_MAP = {
     "app search": lambda repo_root, args: search_apps(repo_root, *args),
@@ -83,6 +84,13 @@ def validate_command(cmd: dict[str, Any]) -> dict[str, Any]:
         return {"command": "error", "reason": f"Invalid command format: {command}"}
 
     verb = parts[-1]
+    if verb in CONFIRM_VERBS:
+        return {
+            "command": "needs_confirmation",
+            "original_command": command,
+            "args": cmd.get("args", []),
+            "reason": f"Write operation '{verb}' requires confirmation. Reply 'yes' to proceed.",
+        }
     if verb in BLOCKED_VERBS:
         return {
             "command": "blocked",
@@ -127,6 +135,12 @@ async def handle_chat_message(
 ) -> dict[str, Any]:
     llm_response = await call_llm(user_message, history)
     validated = validate_command(llm_response)
+
+    if validated.get("command") == "needs_confirmation":
+        return {
+            "type": "confirmation_required",
+            "payload": validated,
+        }
 
     if validated.get("command") in ("blocked", "error"):
         return {

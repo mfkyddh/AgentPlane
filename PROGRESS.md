@@ -87,6 +87,7 @@ audience: both
 | B50 | add OnePanelAdapter contract and delegation tests | 已完成 | — | pending (2026-05-29) |
 | B51 | add 22 unit tests for cli/app.py entry point | 已完成 | — | pending (2026-05-29) |
 | B52 | add 31 unit tests for object_handlers.py | 已完成 | — | pending (2026-05-29) |
+| B53 | add 33 unit tests for project dispatch + raise coverage gate to 50% | 已完成 | — | pending (2026-05-29) |
 
 ---
 

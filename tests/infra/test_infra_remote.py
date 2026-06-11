@@ -14,7 +14,7 @@ from tests.support.constants import CONTAINER_POSTGRES
 from tests.support.paths import REPO_ROOT
 from tests.support.ssh_helpers import MAIN_REPO_ROOT, expected_ssh_stdin_argv
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 class RemoteCliTests(unittest.TestCase):
     def test_execute_remote_bash_uses_explicit_stdin_text(self) -> None:

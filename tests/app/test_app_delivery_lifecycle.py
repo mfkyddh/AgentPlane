@@ -9,7 +9,7 @@ import pytest
 import yaml
 from tests.support.constants import FAKE_HOST_BINDING, FAKE_PROXY_18080
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 
 def _write_json(path: Path, payload: object) -> None:

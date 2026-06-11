@@ -1,18 +1,15 @@
 ---
 status: active
 owner: AgentPlane maintainers
-last_verified: 2026-05-07
+last_verified: 2026-06-11
 superseded_by: null
 audience: ai
 ---
 
 # AI 助手工作规范
 
-> 👤 **人类读者**：本文档面向 AI Agent。人类入口见 [docs/getting-started.md](docs/getting-started.md)。
->
-> 本文档是 AI 助手的工作手册，每次对话自动注入。只放核心约束。
->
-> **维护规则**：本文档不超过 120 行。新规则一律先写进 `docs/`，只有 🔴 级别规则才可提炼一行到此处。
+> 本文档面向 AI Agent。人类入口见 [docs/getting-started.md](docs/getting-started.md)。
+> 完整规范见 [docs/conventions.md](docs/conventions.md)。
 
 ---
 
@@ -22,11 +19,43 @@ AgentPlane 是 Agent-first 控制面 CLI。所有操作通过 `agentplane <domai
 
 **入口**: `agentplane/cli/app.py` → `main()`（也可 `python -m agentplane`）。
 
-**常用**: `uv run agentplane ...` · `agentplane test fast --tb=short` · `agentplane project health-check --repo-root .` · `agentplane --help`
+---
+
+## 关键命令
+
+```bash
+# 开发环境
+uv sync                                    # 安装依赖
+uv run agentplane --help                   # 查看所有命令
+
+# 测试
+uv run pytest                              # 运行默认测试（离线、确定性）
+uv run pytest tests/path/to/test.py        # 运行单个测试文件
+uv run pytest tests/path/to/test.py::TestClass::test_method  # 运行单个测试
+uv run pytest -m unit                      # 只运行 unit 测试
+uv run pytest -m integration               # 只运行 integration 测试
+uv run pytest -m e2e                       # 只运行 e2e 测试（需要浏览器）
+uv run pytest --co -q                      # 收集测试但不运行（检查标记分布）
+uv run pytest --cov=agentplane --cov-report=term-missing  # 带覆盖率
+
+# Lint 和格式化
+uv run ruff check .                        # 检查 lint 错误
+uv run ruff check . --fix                  # 自动修复 lint 错误
+uv run ruff format .                       # 格式化代码
+
+# 项目健康检查
+uv run agentplane project health-check --repo-root .
+uv run agentplane project docs-sanity --repo-root .
+uv run agentplane project secret-scan --repo-root .
+uv run agentplane project skills check --repo-root .
+
+# 测试门禁（pre-push hook）
+uv run agentplane test fast --tb=short
+```
 
 ---
 
-## 必读摘要
+## 必读规则
 
 | # | 规则 | 级别 |
 |---|------|------|
@@ -34,20 +63,54 @@ AgentPlane 是 Agent-first 控制面 CLI。所有操作通过 `agentplane <domai
 | 2 | **Secrets 绝不提交**：敏感信息只放 `secrets/` 目录 | 🔴 |
 | 3 | **单份源码**：Windows 和 WSL 共用同一个仓库目录 | 🔴 |
 | 4 | **单虚拟环境**：只使用根目录 `.venv`，不创建平台变种 | 🔴 |
-| 5 | **原子提交**：每个逻辑变更单元独立提交，暂存超 15 文件必须评估拆分 | 🔴 |
+| 5 | **原子提交**：每个逻辑变更单元独立提交 | 🔴 |
 | 6 | **Conventional Commits**：`type(scope): description` 格式 | 🔴 |
-| 7 | **先计划后执行**：高风险操作必须有 plan 阶段 | 🔴 |
-| 8 | **固定顶层结构**：新增顶层目录前先更新目录契约 | 🔴 |
-| 9 | **执行后必验证**：每次变更都运行最小验证 | 🟡 |
-| 10 | **用 `pwsh` 而非 `cmd`**：Windows 上默认用 PowerShell | 🟡 |
-| 11 | **先查帮助再执行**：不确定时用 `--help` | 🟡 |
-| 12 | **文档必须可达**：新增 active 文档必须加入索引或被上游文档链接 | 🔴 |
-| 13 | **测试分层+并行**：新增测试必须标记 unit/integration/e2e；禁止按操作/环境拆分测试文件 | 🔴 |
-| 14 | **main 合入门禁**：合入 `main` 前必须通过测试或 CI | 🔴 |
-| 15 | **Skill 同步**：正式能力变更必须同步 `.agents/skills` 或说明无需更新 | 🔴 |
-| 16 | **单人维护收尾**：小任务完成后必须自动 commit、合入本地 `main`、推送 `origin main` | 🔴 |
-| 17 | **提交前必须通过本地检查**：`git commit` 前通过 pre-commit，`git push` 前通过 pre-push | 🔴 |
-| 18 | **原则驱动决策**：做架构、设计、原则相关判断时，必须参考 [principles.md](docs/core/principles.md) 的道法术体系 | 🔴 |
+| 7 | **执行后必验证**：每次变更都运行最小验证 | 🟡 |
+| 8 | **用 `pwsh` 而非 `cmd`**：Windows 上默认用 PowerShell | 🟡 |
+| 9 | **测试分层**：新增测试必须标记 unit/integration/e2e | 🔴 |
+| 10 | **Skill 同步**：正式能力变更必须同步 `.agents/skills` | 🔴 |
+
+---
+
+## 测试金字塔
+
+| 层级 | 标记 | 占比 | 耗时 |
+|------|------|------|------|
+| unit | `@pytest.mark.unit` | 72% | <10ms |
+| integration | `@pytest.mark.integration` | 29% | <100ms |
+| e2e | `@pytest.mark.e2e` | 1% | >1s |
+
+**默认排除**：`live_gate`, `integration_wsl`, `integration_remote`, `external_app`, `docker_required`, `ssh_required`
+
+**文件级标记**（在文件顶部）：
+```python
+pytestmark = pytest.mark.integration
+```
+
+**测试风格**：新测试用 pytest-native 风格（不继承 `unittest.TestCase`），用 `assert` 不用 `self.assertEqual`。
+
+**测试文件上限**：500 行，超限必须拆分。
+
+**测试常量**：fixture 输入值放 `tests/support/constants.py`，断言期望值留在测试内。
+
+**CLI 测试模式**：用 `tests/support/cli.py` 的 `run_agentplane_cli()` 或 `run_cli_json()`，不要直接 `subprocess.run`。
+
+---
+
+## 架构要点
+
+**五域分层**：`infra`（配置）→ `service`（运行时）→ `app`（交付）→ `ingress`（入口）→ `project`（治理）
+
+**投影模型**：
+- Layer 1: Host Inventory（台账）— `inventory/servers/<target>/inventory.json`
+- Layer 2: Object Ledgers（证据）— `inventory/servers/<target>/ledgers/*.json`
+- Layer 3: App Summary（摘要）— 从台账+证据派生
+
+**Provider 抽象**：domain 层通过 `ProviderProtocol`（`agentplane/providers/protocol.py`）与基础设施交互，不直接依赖 1Panel。方法数 ≤ 15。
+
+**SSH 连接层**：通过 `SSHConnectionProtocol`（`agentplane/ssh.py`）交互，方法数 ≤ 5。
+
+**WebUI 定位**：控制面的可视化视图，不是新的控制面入口。FastAPI + Vue 3 CDN。
 
 ---
 
@@ -55,27 +118,34 @@ AgentPlane 是 Agent-first 控制面 CLI。所有操作通过 `agentplane <domai
 
 - Windows 默认 `pwsh`，需 Linux 时 `wsl.exe -e <程序>`
 - 远程 Linux 走 `agentplane infra remote bash`，禁止手写多层 SSH
-- Python 用 `uv`，Node 用 `pnpm`，禁止 `UV_PROJECT_ENVIRONMENT` 指向平台路径
+- Python 用 `uv`，禁止 `UV_PROJECT_ENVIRONMENT` 指向平台路径
+- `.gitattributes` 为换行符唯一权威（`* text=auto eol=lf`）
 
-> 完整规范：[docs/conventions.md](docs/conventions.md#技术栈基线)
-
-## 安全约束
-
-- 真实 Secrets 只放 `secrets/`（已被 `.gitignore` 保护）
-- 非敏感模板放 `templates/`
-- 新 PEM 私钥必须 `chmod 600`
+---
 
 ## Git 约束
 
-- 原子提交，无关变更不混入
 - Conventional Commits：`type(scope): description`，type 仅限 `feat|fix|refactor|docs|test|chore|style|perf`
 - 超过 3 个文件或跨模块变更时必须有 body
-- `.gitattributes` 为换行符唯一权威（`* text=auto eol=lf`），`core.autocrlf=false`
 - 单人维护默认完成小任务后自动 commit、合入本地 `main`、推送 `origin main`
 - 禁止 `push --force` 到 main
 
-> 编码行为准则、反模式、哲学原则见 [docs/conventions.md](docs/conventions.md)。
+---
 
 ## 文档索引
 
-完整地图见 [docs/README.md](docs/README.md)。最常用：[架构](docs/core/architecture.md) · [命令参考](docs/command-reference.md) · [编码与协作规范](docs/conventions.md) · [Maintainer 指南](docs/maintainer-guide.md)
+完整地图见 [docs/README.md](docs/README.md)。最常用：
+- [架构](docs/core/architecture.md) — 五域、投影模型、CLI 接口
+- [命令参考](docs/command-reference.md) — 所有 CLI 命令
+- [编码与协作规范](docs/conventions.md) — 技术栈、测试工程、编码规则
+- [Maintainer 指南](docs/maintainer-guide.md) — 治理资产约束、Skill 同步门禁
+- [原则](docs/core/principles.md) — 道法术三层原则体系
+
+---
+
+## 关联文档
+
+- [CLAUDE.md](CLAUDE.md) — Claude Code 专属指令
+- [CONTRIBUTING.md](CONTRIBUTING.md) — 贡献者指南
+- [CHANGELOG.md](CHANGELOG.md) — 版本里程碑
+- [PROGRESS.md](PROGRESS.md) — 主线追踪器

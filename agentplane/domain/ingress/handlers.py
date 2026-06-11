@@ -101,6 +101,7 @@ def verify_ingress(repo_root: Path, target: str, alias: str) -> dict[str, Any]:
 
     openresty_status: dict[str, Any] | None = None
     try:
+        # TODO: Migrate to ProviderProtocol when openresty status method is added
         openresty_status = default_provider_gateway().get_onepanel_openresty_status(executor)
         openresty_running = openresty_status.get("status") == "Running"
         checks["openresty"] = {

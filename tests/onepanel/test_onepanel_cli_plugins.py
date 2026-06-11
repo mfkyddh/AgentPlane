@@ -16,7 +16,7 @@ from tests.support.paths import REPO_ROOT
 CATALOG_FILE = REPO_ROOT / ".agents" / "skills" / "catalog.yaml"
 REQUIRED_DOMAINS = {"infra", "service", "ingress", "app", "project"}
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 
 class OnePanelPluginAndSkillsTests(unittest.TestCase):

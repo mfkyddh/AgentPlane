@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 
 def _listed_help_commands(help_text: str) -> set[str]:

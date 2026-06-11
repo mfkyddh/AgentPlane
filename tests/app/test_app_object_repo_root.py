@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 from tests.support.app_object import run_cli
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 
 class AppObjectRepoRootCliTests(unittest.TestCase):

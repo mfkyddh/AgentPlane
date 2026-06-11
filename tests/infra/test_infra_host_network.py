@@ -14,7 +14,7 @@ from tests.support.cli import run_agentplane_cli as run_cli
 from tests.support.constants import CONTAINER_SUB2API
 from tests.support.fake_scripts import write_fake_bridge_network_ssh
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 
 class HostCliTests(unittest.TestCase):
@@ -362,13 +362,20 @@ class HostCliTests(unittest.TestCase):
             search_onepanel_alert_logs=lambda executor, status="": {"items": [], "total": 0},
             get_onepanel_monitor_setting=lambda executor: {"monitorStatus": "enable"},
         )
+        fake_provider = SimpleNamespace(
+            get_target=lambda target: fake_executor,
+            get_dashboard=lambda executor: fake_dashboard_current,
+        )
 
         args = SimpleNamespace(
             infra_action="health",
             target="prod0-main",
             repo_root=".",
         )
-        with patch("agentplane.domain.infra.health.default_provider_gateway", return_value=fake_gateway):
+        with (
+            patch("agentplane.domain.infra.health.default_provider_gateway", return_value=fake_gateway),
+            patch("agentplane.domain.infra.health.get_provider", return_value=fake_provider),
+        ):
             payload = handle_infra_command(args)
 
         self.assertEqual("warning", payload["payload"]["status"])

@@ -10,7 +10,7 @@ import pytest
 from tests.support.app_resources import resource_relative, resource_root
 from tests.support.cli import run_agentplane_cli as run_cli
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 
 def write_inventory(root: Path, *, projection_drift: bool = False) -> None:

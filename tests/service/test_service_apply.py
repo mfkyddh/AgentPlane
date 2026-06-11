@@ -15,7 +15,7 @@ from tests.support.service_cli import (
     write_inventory,
 )
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 
 # ======================================================================

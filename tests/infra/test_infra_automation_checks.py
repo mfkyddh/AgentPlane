@@ -21,7 +21,7 @@ from agentplane.domain.infra.preflight import (
     _check_wsl_available,
 )
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 def write_inventory(root: Path) -> None:
     inventory_file = root / "inventory" / "servers" / "wsl" / "inventory.json"
     inventory_file.parent.mkdir(parents=True, exist_ok=True)

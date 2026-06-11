@@ -13,6 +13,14 @@ audience: human
 
 ## 安装
 
+### 方式一：从 PyPI 安装（推荐）
+
+```bash
+pip install agentplane-cli
+```
+
+### 方式二：从源码安装
+
 ```bash
 git clone <你的仓库地址> && cd AgentPlane
 uv tool install -e .

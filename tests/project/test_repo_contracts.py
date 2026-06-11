@@ -11,7 +11,7 @@ import yaml
 from agentplane.domain.app.resource_paths import git_common_root
 from tests.support.paths import REPO_ROOT
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 EXPECTED_MANAGED_SERVICES = {
     "sub2api": {

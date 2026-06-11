@@ -114,9 +114,11 @@ def check_infra_health(target: str) -> dict[str, Any]:
 
     # Collect dashboard metrics
     dashboard_current = provider.get_dashboard(executor)
+    # TODO: Migrate to ProviderProtocol when health methods are added
     dashboard_base = default_provider_gateway().get_onepanel_dashboard_base(executor)
 
     # Collect top processes
+    # TODO: Migrate to ProviderProtocol when health methods are added
     _gw = default_provider_gateway()
     try:
         top_cpu = _gw.get_onepanel_dashboard_top_cpu(executor)

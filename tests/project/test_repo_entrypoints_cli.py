@@ -10,7 +10,7 @@ import pytest
 from tests.support.cli import run_agentplane_cli as run_cli
 from tests.support.paths import REPO_ROOT
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 
 def _listed_help_commands(help_text: str) -> set[str]:
@@ -330,4 +330,43 @@ class CliEntrypointsTests(unittest.TestCase):
         self.assertIn("AgentPlane Status", html_text)
         self.assertIn("Public Skills", html_text)
         self.assertIn("Targets", html_text)
+
+    def test_object_surface_verbs_are_consistent_across_domains(self) -> None:
+        """Object surfaces (service, ingress, app object, app resource) must share core verbs."""
+        core_object_verbs = {"search", "get", "verify", "refresh-ledger"}
+
+        service_help = run_cli("service", "--help")
+        self.assertEqual(service_help.returncode, 0, msg=service_help.stderr)
+        service_cmds = _listed_help_commands(service_help.stdout)
+        self.assertTrue(core_object_verbs.issubset(service_cmds), msg=f"service missing: {core_object_verbs - service_cmds}")
+
+        app_object_help = run_cli("app", "object", "--help")
+        self.assertEqual(app_object_help.returncode, 0, msg=app_object_help.stderr)
+        app_object_cmds = _listed_help_commands(app_object_help.stdout)
+        self.assertTrue(
+            core_object_verbs.issubset(app_object_cmds), msg=f"app object missing: {core_object_verbs - app_object_cmds}"
+        )
+
+        app_resource_help = run_cli("app", "resource", "--help")
+        self.assertEqual(app_resource_help.returncode, 0, msg=app_resource_help.stderr)
+        app_resource_cmds = _listed_help_commands(app_resource_help.stdout)
+        self.assertTrue(
+            core_object_verbs.issubset(app_resource_cmds),
+            msg=f"app resource missing: {core_object_verbs - app_resource_cmds}",
+        )
+
+    def test_all_domain_help_exits_zero(self) -> None:
+        """Every domain --help must exit 0 and produce output."""
+        domains = [
+            ("infra",),
+            ("service",),
+            ("ingress",),
+            ("app",),
+            ("project",),
+        ]
+        for args in domains:
+            with self.subTest(args=args):
+                result = run_cli(*args, "--help")
+                self.assertEqual(result.returncode, 0, msg=result.stderr)
+                self.assertGreater(len(result.stdout), 0)
 

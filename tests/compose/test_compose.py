@@ -15,7 +15,7 @@ from agentplane.scripts.internal import ensure_cloudflare_dns_record  # type: ig
 from tests.support.constants import DOMAIN_A, DOMAIN_B, DOMAIN_RELAY, DOMAIN_RELAY_COM
 from tests.support.paths import REPO_ROOT
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))

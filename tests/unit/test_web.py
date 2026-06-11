@@ -206,7 +206,7 @@ class TestAgentRouter:
 
         cmd = {"command": "app apply", "args": ["wsl"]}
         result = validate_command(cmd)
-        assert result["command"] == "blocked"
+        assert result["command"] == "needs_confirmation"
 
     def test_validate_command_blocked_delete(self) -> None:
         from agentplane.web.agent_router import validate_command
@@ -294,7 +294,7 @@ class TestAgentRouter:
         with patch("agentplane.web.agent_router.call_llm", new_callable=AsyncMock) as mock_llm:
             mock_llm.return_value = {"command": "app apply", "args": ["wsl"]}
             result = await handle_chat_message(tmp_path, "deploy myapp", [])
-            assert result["type"] == "command_rejected"
+            assert result["type"] == "confirmation_required"
 
 
 # ---------------------------------------------------------------------------

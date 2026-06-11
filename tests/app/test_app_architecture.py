@@ -8,7 +8,7 @@ import pytest
 from agentplane.domain.app.contracts import APP_DELIVERY_CONTRACT_SCHEMA_V2
 from tests.support.paths import REPO_ROOT
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 
 def _imports(path: Path) -> list[str]:

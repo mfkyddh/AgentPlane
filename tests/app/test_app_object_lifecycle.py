@@ -9,7 +9,7 @@ import pytest
 from agentplane.domain.app.models import AppCatalogEntry
 from agentplane.domain.app.truth_lifecycle import offboard_catalog_entry, onboard_catalog_entry
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 
 def _write_catalog(repo_root: Path, payload: dict) -> None:

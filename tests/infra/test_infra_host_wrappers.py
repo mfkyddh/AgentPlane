@@ -12,7 +12,7 @@ from agentplane.runtime.host_profile import HostProfile
 from tests.support.cli import run_agentplane_cli as run_cli
 from tests.support.paths import REPO_ROOT
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 
 class HostCliTests(unittest.TestCase):

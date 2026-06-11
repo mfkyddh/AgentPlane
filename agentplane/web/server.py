@@ -112,6 +112,37 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
     async def api_capabilities():
         return get_capabilities()
 
+    @app.post("/api/service/plan")
+    async def api_service_plan(request: Request):
+        body = await request.json()
+        target = body.get("target", "")
+        name = body.get("name", "")
+        operation = body.get("operation", "restart")
+        if not target or not name:
+            return JSONResponse({"error": "target and name required"}, status_code=400)
+        from agentplane.cli.service import handle_service_command
+        from types import SimpleNamespace
+        args = SimpleNamespace(
+            service_action="plan", target=target, name=name,
+            operation=operation, repo_root=str(repo_root),
+        )
+        return handle_service_command(args)
+
+    @app.post("/api/service/verify")
+    async def api_service_verify(request: Request):
+        body = await request.json()
+        target = body.get("target", "")
+        name = body.get("name", "")
+        if not target or not name:
+            return JSONResponse({"error": "target and name required"}, status_code=400)
+        from agentplane.cli.service import handle_service_command
+        from types import SimpleNamespace
+        args = SimpleNamespace(
+            service_action="verify", target=target, name=name,
+            repo_root=str(repo_root),
+        )
+        return handle_service_command(args)
+
     @app.websocket("/ws/chat")
     async def ws_chat(websocket: WebSocket):
         await websocket.accept()
@@ -158,6 +189,18 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
                     history = history[-MAX_HISTORY:]
                 await websocket.send_json(result)
 
+        except WebSocketDisconnect:
+            pass
+
+    @app.websocket("/ws/status")
+    async def ws_status(websocket: WebSocket):
+        await websocket.accept()
+        try:
+            while True:
+                dashboard = get_dashboard(repo_root)
+                await websocket.send_json({"type": "status", "payload": dashboard})
+                import asyncio
+                await asyncio.sleep(5)
         except WebSocketDisconnect:
             pass
 

@@ -29,7 +29,7 @@ from tests.support.app_delivery_targets import (
 from tests.support.app_resources import resource_relative
 from tests.support.constants import FAKE_BINDING_3000, FAKE_HOST_BINDING, FAKE_PROXY_18080
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 
 class TestAppDeliveryDocSyncCliTests(unittest.TestCase):

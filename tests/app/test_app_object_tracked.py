@@ -6,7 +6,7 @@ import unittest
 import pytest
 from tests.support.app_object import REPO_ROOT, run_cli
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 
 class AppObjectTrackedCatalogTests(unittest.TestCase):

@@ -22,7 +22,7 @@ from tests.support.app_delivery_targets import (
 )
 from tests.support.app_resources import resource_relative
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 
 class TestAppDeliveryRenderVerifyCliTests(unittest.TestCase):
