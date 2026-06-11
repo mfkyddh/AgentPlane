@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from .gateway import ProviderGateway, default_provider_gateway
+from .gateway import ProviderGateway
 from .onepanel_adapter import OnePanelAdapter
 from .protocol import HealthProviderProtocol, InfraOpsProviderProtocol, ProviderProtocol
 
@@ -39,11 +39,10 @@ def get_provider(protocol: type | None = None) -> ProviderProtocol:
 
 
 __all__ = [
-    "HealthProviderProtocol",
-    "InfraOpsProviderProtocol",
     "ProviderGateway",
     "ProviderProtocol",
+    "HealthProviderProtocol",
+    "InfraOpsProviderProtocol",
     "UnsupportedProviderProtocol",
-    "default_provider_gateway",
     "get_provider",
 ]

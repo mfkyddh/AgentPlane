@@ -217,14 +217,3 @@ class OnePanelProviderGateway:
         ]
         return argv, " ".join(shlex.quote(part) for part in argv)
 
-
-def default_provider_gateway() -> ProviderGateway:
-    """Deprecated: use get_provider() from agentplane.providers instead."""
-    import warnings
-
-    warnings.warn(
-        "default_provider_gateway() is deprecated; use get_provider() from agentplane.providers",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    return OnePanelProviderGateway()

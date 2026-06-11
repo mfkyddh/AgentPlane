@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
-from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +13,8 @@ from agentplane.domain.app.object_handlers import (
 )
 from agentplane.domain.project.topology import build_topology
 from agentplane.domain.targets import FORMAL_TARGETS
+
+logger = logging.getLogger(__name__)
 
 
 def _inventory_path(repo_root: Path, target: str) -> Path:
@@ -391,7 +393,7 @@ def get_dashboard(repo_root: Path) -> dict[str, Any]:
                 item["target"] = target
                 service_items.append(item)
     except Exception:
-        pass
+        logger.debug("Failed to load service data", exc_info=True)
     domain_service = {"service_count": len(service_items)}
 
     try:
@@ -401,7 +403,7 @@ def get_dashboard(repo_root: Path) -> dict[str, Any]:
                 item["target"] = target
                 ingress_items.append(item)
     except Exception:
-        pass
+        logger.debug("Failed to load ingress data", exc_info=True)
     domain_ingress = {"ingress_count": len(ingress_items)}
 
     # Project domain
@@ -422,7 +424,7 @@ def get_dashboard(repo_root: Path) -> dict[str, Any]:
                 domain_project["current_phase"] = current_phase.get("id", "")
                 domain_project["phase_status"] = current_phase.get("status", "")
     except Exception:
-        pass
+        logger.debug("Failed to load project data", exc_info=True)
 
     return {
         "hosts": all_hosts,
@@ -511,7 +513,6 @@ def get_app_detail(repo_root: Path, target: str, app: str) -> dict[str, Any]:
 
 def get_audit_log(repo_root: Path, limit: int = 100, target: str | None = None) -> dict[str, Any]:
     """Return operation audit log from JSONL ledger files."""
-    from agentplane.runtime.operations import operation_ledger_path
     
     ledger_dir = repo_root / "tmp" / "operation-ledger"
     if not ledger_dir.exists():
