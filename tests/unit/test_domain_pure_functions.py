@@ -13,8 +13,6 @@ from pathlib import Path
 import pytest
 from agentplane.domain.app.artifacts import detect_contract_mode
 from agentplane.domain.app.delivery_handlers import _delayed_cleanup_state, _rollback_state_payload
-
-pytestmark = pytest.mark.unit
 from agentplane.domain.app.models import AppCatalogEntry
 from agentplane.domain.app.resource_state import (
     normalize_key_prefix,
@@ -24,6 +22,8 @@ from agentplane.domain.app.resource_state import (
 )
 from agentplane.domain.app.runtime import _secrets_root
 from agentplane.domain.app.truth_lifecycle import offboard_catalog_entry, onboard_catalog_entry, validate_app_id
+
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # validate_app_id

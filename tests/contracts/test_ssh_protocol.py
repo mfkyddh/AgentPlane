@@ -15,15 +15,13 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-
-pytestmark = pytest.mark.integration
-
-import pytest
 from agentplane.ssh import (
     RemoteAPIProtocol,
     SSHConnectionPool,
     SSHConnectionProtocol,
 )
+
+pytestmark = pytest.mark.integration
 
 # ---------------------------------------------------------------------------
 # Stubs — minimal implementations proving Protocol replaceability

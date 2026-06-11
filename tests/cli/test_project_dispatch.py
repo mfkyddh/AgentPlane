@@ -12,11 +12,10 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from agentplane.cli.project import (
     handle_project_command,
-    run_docs_sanity_command,
     run_doc_layer_command,
+    run_docs_sanity_command,
     run_health_check,
     run_privacy_scan,
     run_secret_scan,
@@ -341,7 +340,7 @@ class TestRunTopologyCommand:
     def test_human_readable_no_targets(self, mock_topo, capsys) -> None:
         mock_topo.return_value = {"targets": []}
         args = _ns(json_output=False)
-        result = run_topology_command(args)
+        run_topology_command(args)
         assert "No targets" in capsys.readouterr().out
 
     @patch("agentplane.cli.project.build_topology")
@@ -357,7 +356,7 @@ class TestRunTopologyCommand:
             }]
         }
         args = _ns(json_output=False)
-        result = run_topology_command(args)
+        run_topology_command(args)
         output = capsys.readouterr().out
         assert "wsl" in output
         assert "myapp" in output

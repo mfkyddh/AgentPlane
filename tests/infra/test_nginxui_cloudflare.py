@@ -13,16 +13,14 @@ All tests use mocks for external I/O (network, SSH, filesystem).
 from __future__ import annotations
 
 from pathlib import Path
-
-import pytest
-
-pytestmark = pytest.mark.integration
 from unittest.mock import patch
 
 import pytest
 from agentplane.adapters.cloudflare import CloudflareClient, CloudflareError, load_shell_env_file, parse_bool
 from agentplane.scripts.internal.ensure_cloudflare_dns_record import ensure_cloudflare_dns_record
 from tests.support.constants import DOMAIN_MISSING, DOMAIN_NGINX, DOMAIN_PROXY, DOMAIN_TOKEN
+
+pytestmark = pytest.mark.integration
 
 # ---------------------------------------------------------------------------
 # load_shell_env_file

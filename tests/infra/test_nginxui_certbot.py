@@ -13,10 +13,6 @@ All tests use mocks for external I/O (network, SSH, filesystem).
 from __future__ import annotations
 
 import json
-
-import pytest
-
-pytestmark = pytest.mark.integration
 from pathlib import Path, PurePosixPath
 from unittest.mock import MagicMock, patch
 
@@ -24,6 +20,8 @@ import pytest
 from agentplane.adapters.cloudflare import CloudflareClient, CloudflareError, load_shell_env_file
 from agentplane.scripts.internal.ensure_cloudflare_dns_record import ensure_cloudflare_dns_record
 from tests.support.constants import DOMAIN_NGINX, DOMAIN_TOKEN
+
+pytestmark = pytest.mark.integration
 
 # ---------------------------------------------------------------------------
 # Certbot command construction

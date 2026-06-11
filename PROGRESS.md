@@ -98,6 +98,7 @@ audience: both
 | B61 | migrate health.py to HealthProviderProtocol | 已完成 | — | pending (2026-06-11) |
 | B62 | replace default_provider_gateway with InfraOpsProviderProtocol | 已完成 | — | pending (2026-06-11) |
 | B63 | update ADR 011 Phase 2-3 as completed | 已完成 | — | pending (2026-06-11) |
+| B64 | remove external user goals, refocus on quality hardening (M5-M7) | 已完成 | — | pending (2026-06-11) |
 
 ---
 
