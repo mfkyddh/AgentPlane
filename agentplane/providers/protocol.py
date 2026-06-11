@@ -8,7 +8,7 @@ Implementations:
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Protocol, runtime_checkable
 
 
 class ProviderTarget(Protocol):
@@ -21,6 +21,7 @@ class ProviderTarget(Protocol):
     ...
 
 
+@runtime_checkable
 class ProviderProtocol(Protocol):
     """Provider-agnostic interface for infrastructure operations.
 
@@ -98,7 +99,8 @@ class ProviderProtocol(Protocol):
         """Fetch current dashboard metrics (CPU, memory, load, disk, network)."""
 
 
-class HealthProviderProtocol(ProviderProtocol):
+@runtime_checkable
+class HealthProviderProtocol(ProviderProtocol, Protocol):
     """Extended protocol for health/monitoring operations.
 
     Adds 6 health-specific methods on top of ProviderProtocol's 13.
@@ -124,7 +126,8 @@ class HealthProviderProtocol(ProviderProtocol):
         """Fetch current monitoring configuration."""
 
 
-class InfraOpsProviderProtocol(ProviderProtocol):
+@runtime_checkable
+class InfraOpsProviderProtocol(ProviderProtocol, Protocol):
     """Extended protocol for infrastructure operations.
 
     Adds 1 infra-ops method on top of ProviderProtocol's 13.
