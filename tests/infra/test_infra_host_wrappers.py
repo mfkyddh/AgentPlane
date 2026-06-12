@@ -45,6 +45,7 @@ class HostCliTests(unittest.TestCase):
                 self.assertNotEqual(0, result.returncode)
                 self.assertIn("invalid choice", result.stderr)
 
+    @pytest.mark.integration_wsl
     def test_infra_inventory_wraps_inventory_payload(self) -> None:
         result = run_cli("infra", "inventory", "wsl", "--repo-root", str(REPO_ROOT))
         self.assertEqual(result.returncode, 0, msg=result.stderr)
@@ -78,6 +79,7 @@ class HostCliTests(unittest.TestCase):
         self.assertEqual("windows-wsl", runner.spec.backend_type)
         self.assertEqual(fake_snapshot, payload["payload"])
 
+    @pytest.mark.integration_wsl
     def test_infra_local_inspect_wraps_payload(self) -> None:
         result = run_cli("infra", "local", "inspect", "--repo-root", "C:/repos/agentplane")
         self.assertEqual(result.returncode, 0, msg=result.stderr)

@@ -55,6 +55,7 @@ class ServiceCliTests(unittest.TestCase):
                 names,
             )
 
+    @pytest.mark.integration_wsl
     def test_service_get_returns_declared_shape_and_supported_operations(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -84,6 +85,7 @@ class ServiceCliTests(unittest.TestCase):
             self.assertIn("restart", payload["payload"]["service"]["supported_operations"])
             self.assertIn("reconcile", payload["payload"]["service"]["supported_operations"])
 
+    @pytest.mark.integration_wsl
     def test_service_get_supports_dynamic_compose_service_with_reconcile(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

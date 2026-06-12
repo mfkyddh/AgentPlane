@@ -13,6 +13,7 @@ from tests.support.paths import REPO_ROOT
 pytestmark = pytest.mark.integration
 
 class LocalHostCliTests(unittest.TestCase):
+    @pytest.mark.integration_wsl
     def test_windows_host_binds_wsl_to_same_checkout(self) -> None:
         payload = inspect_local_host(
             "C:/repos/agentplane",
@@ -42,6 +43,7 @@ class LocalHostCliTests(unittest.TestCase):
             payload["workspace"]["artifact_staging_root"],
         )
 
+    @pytest.mark.integration_wsl
     def test_infra_local_inspect_reports_windows_control_root(self) -> None:
         payload = run_cli_json("infra", "local", "inspect", "--repo-root", "C:/repos/agentplane")
 

@@ -96,6 +96,7 @@ class TestAppDeliveryValidateCliTests(unittest.TestCase):
             self.assertEqual("validate-contract", payload["action"])
             self.assertTrue(payload["valid"])
 
+    @pytest.mark.integration_wsl
     def test_validate_contract_requires_project_name_for_1panel_compose_rollback(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

@@ -74,6 +74,7 @@ class InfraAutomationTests(unittest.TestCase):
         self.assertEqual(payload["action"], "automation.search")
         self.assertIn("payload", payload)
 
+    @pytest.mark.integration_wsl
     def test_automation_get_wraps_payload(self) -> None:
         result = run_cli(
             "infra", "automation", "get", "wsl",
@@ -91,6 +92,7 @@ class InfraAutomationTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0)
         self.assertIn("--name", result.stdout)
 
+    @pytest.mark.integration_wsl
     def test_automation_plan_dry_run(self) -> None:
         result = run_cli(
             "infra", "automation", "plan", "wsl",
@@ -103,6 +105,7 @@ class InfraAutomationTests(unittest.TestCase):
         self.assertEqual(payload["command"], "infra")
         self.assertEqual(payload["action"], "automation.plan")
 
+    @pytest.mark.integration_wsl
     def test_automation_apply_requires_execute_flag(self) -> None:
         result = run_cli(
             "infra", "automation", "apply", "wsl",
@@ -130,6 +133,7 @@ class InfraLocalInspectTests(unittest.TestCase):
         self.assertEqual(payload["action"], "local.inspect")
         self.assertIn("payload", payload)
 
+    @pytest.mark.integration_wsl
     def test_local_inspect_with_windows_root(self) -> None:
         result = run_cli(
             "infra", "local", "inspect",

@@ -190,6 +190,7 @@ class RemoteCliTests(unittest.TestCase):
                 },
             )
 
+    @pytest.mark.ssh_required
     def test_remote_bash_dry_run_emits_structured_plan(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             script_file = Path(tmp) / "example.sh"

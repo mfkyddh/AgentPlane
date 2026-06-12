@@ -53,6 +53,7 @@ pytestmark = pytest.mark.integration
 
 
 class AppLifecycleCliContractsTests(unittest.TestCase):
+    @pytest.mark.integration_wsl
     def test_onboard_help_exposes_single_formal_entry_contract(self) -> None:
         result = run_cli("app", "delivery", "onboard", "--help")
         self.assertEqual(result.returncode, 0, msg=result.stderr)
@@ -60,6 +61,7 @@ class AppLifecycleCliContractsTests(unittest.TestCase):
         self.assertIn("--dry-run", result.stdout)
         self.assertIn("--write", result.stdout)
 
+    @pytest.mark.integration_wsl
     def test_offboard_help_exposes_single_formal_entry_contract(self) -> None:
         result = run_cli("app", "delivery", "offboard", "--help")
         self.assertEqual(result.returncode, 0, msg=result.stderr)

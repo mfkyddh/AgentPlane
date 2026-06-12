@@ -233,6 +233,7 @@ class OnePanelPublicIngressTests(unittest.TestCase):
         self.assertEqual({"id": "token-1", "status": "active"}, result)
         self.assertEqual(("GET", "/accounts/account-1/tokens/verify", None, None), client.calls[-1])
 
+    @pytest.mark.live_gate
     @patch.object(public_ingress, "PublicIngressManager")
     @patch.object(public_ingress, "OnePanelExecutor")
     @patch.object(public_ingress, "CloudflareClient")

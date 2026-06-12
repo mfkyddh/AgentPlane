@@ -101,6 +101,7 @@ class InventoryGenerationTests(unittest.TestCase):
 
         self.assertEqual(["sampleapi", "sub2api"], [row["app_id"] for row in rows])
 
+    @pytest.mark.docker_required
     def test_inventory_separates_managed_and_unmanaged_containers(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -139,6 +140,7 @@ class InventoryGenerationTests(unittest.TestCase):
             self.assertEqual(["redis7-dev"], [item["name"] for item in payload["docker_containers"]])
             self.assertEqual(["foreign-service"], [item["name"] for item in payload["unmanaged_docker_containers"]])
 
+    @pytest.mark.integration_wsl
     def test_inventory_command_outputs_wsl_snapshot(self) -> None:
         result = run_cli("infra", "inventory", "wsl", "--repo-root", str(REPO_ROOT), cwd=REPO_ROOT)
         self.assertEqual(result.returncode, 0, msg=result.stderr)

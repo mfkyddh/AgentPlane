@@ -447,6 +447,7 @@ class ProjectLifecycleAcceptanceTests(unittest.TestCase):
             self.assertIn("server_readme", doc_payload)
             self.assertTrue(doc_payload.get("planned"), msg=doc_payload)
 
+    @pytest.mark.integration_wsl
     def test_offboarding_dry_run_acceptance_wsl(self) -> None:
         app_id = "sub2api"
         target = "wsl"

@@ -64,6 +64,7 @@ class OnePanelEnvTargetsTests(unittest.TestCase):
 
             self.assertEqual(main_root, resolved)
 
+    @pytest.mark.live_gate
     def test_prod_targets_use_agentplane_remote_paths_and_support_prod2(self) -> None:
         prod0_target = env_targets.get_target("prod0-main")
         prod2_target = env_targets.get_target("prod0-main")
@@ -75,6 +76,7 @@ class OnePanelEnvTargetsTests(unittest.TestCase):
         self.assertIn("onepanel-api.env", str(prod0_target.api_env_file))
         self.assertIn("onepanel-api.env", str(prod2_target.api_env_file))
 
+    @pytest.mark.live_gate
     def test_supported_targets_include_prod2(self) -> None:
         self.assertIn("prod0-main", env_targets.supported_targets())
 

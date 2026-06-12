@@ -15,7 +15,7 @@ from agentplane.runtime.wsl_bridge import (
     wsl_unc_to_posix,
 )
 
-pytestmark = pytest.mark.unit
+pytestmark = pytest.mark.integration_wsl
 
 
 # ---------------------------------------------------------------------------

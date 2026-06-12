@@ -91,6 +91,7 @@ class ProjectionRuntimeEnvCliTests(unittest.TestCase):
             self.assertFalse(payload["ok"])
             self.assertEqual("app.resource.registry_missing_app", payload["error"]["id"])
 
+    @pytest.mark.integration_wsl
     def test_runtime_env_plan_returns_target_env_file_without_writing(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

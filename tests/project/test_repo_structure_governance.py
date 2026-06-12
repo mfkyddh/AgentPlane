@@ -426,6 +426,7 @@ class CommitMessagePolicyTests(unittest.TestCase):
 # ======================================================================
 
 
+@pytest.mark.integration_wsl
 class CleanupTests(unittest.TestCase):
     def test_cleanup_plan_lists_whitelisted_wsl_artifacts(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

@@ -208,6 +208,7 @@ class SshTargetTests(unittest.TestCase):
 # ======================================================================
 
 
+@pytest.mark.integration_wsl
 class WslAuditTests(unittest.TestCase):
     def test_windows_host_uses_backend_exec_for_wsl_path_checks(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
