@@ -147,6 +147,7 @@ audience: both
 | B110 | deduplicate target helpers | 已完成 | — | pending (2026-06-12) |
 | B111 | split status.py into 4 focused sub-modules | 已完成 | — | pending (2026-06-12) |
 | B112 | split audit.py into 3 focused sub-modules | 已完成 | — | pending (2026-06-12) |
+| B113 | split project.py into 3 focused sub-modules | 已完成 | — | pending (2026-06-12) |
 
 ---
 

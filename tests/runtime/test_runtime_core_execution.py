@@ -94,7 +94,7 @@ def test_backend_runner_execute_batch_runs_serially(monkeypatch) -> None:
 
         return CompletedProcess(argv, 0, stdout=f"ok{call_count}", stderr="")
 
-    monkeypatch.setattr("agentplane.runtime.execution.subprocess.run", fake_run)
+    monkeypatch.setattr("agentplane.runtime.execution_runners.subprocess.run", fake_run)
     runner = build_backend_runner()
     plan = ExecutionPlan(
         backend_type="linux-native",
@@ -126,7 +126,7 @@ def test_backend_runner_execute_batch_on_each_callback(monkeypatch) -> None:
 
         return CompletedProcess(argv, 0, stdout="done", stderr="")
 
-    monkeypatch.setattr("agentplane.runtime.execution.subprocess.run", fake_run)
+    monkeypatch.setattr("agentplane.runtime.execution_runners.subprocess.run", fake_run)
     runner = build_backend_runner()
     plan = ExecutionPlan(
         backend_type="linux-native",

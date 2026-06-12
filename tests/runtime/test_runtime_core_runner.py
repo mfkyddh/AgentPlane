@@ -29,7 +29,7 @@ class TestBackendRunnerExecuteStream:
     def teardown_method(self) -> None:
         self._which_patcher.stop()
 
-    @patch("agentplane.runtime.execution.subprocess.Popen")
+    @patch("agentplane.runtime.execution_runners.subprocess.Popen")
     def test_stream_yields_stdout_and_stderr(self, mock_popen: MagicMock) -> None:
         runner = build_backend_runner()
         plan = ExecutionPlan(
@@ -69,7 +69,7 @@ class TestBackendRunnerExecuteStream:
         assert result.stdout == "hello\n"
         assert any(c.stream == "stdout" and "hello" in c.text for c in chunks)
 
-    @patch("agentplane.runtime.execution.subprocess.Popen")
+    @patch("agentplane.runtime.execution_runners.subprocess.Popen")
     def test_stream_failure_returns_error(self, mock_popen: MagicMock) -> None:
         runner = build_backend_runner()
         plan = ExecutionPlan(
@@ -97,7 +97,7 @@ class TestBackendRunnerExecuteStream:
         assert result.returncode == 1
         assert "error" in result.stderr
 
-    @patch("agentplane.runtime.execution.subprocess.Popen")
+    @patch("agentplane.runtime.execution_runners.subprocess.Popen")
     def test_stream_without_callback_still_collects_output(self, mock_popen: MagicMock) -> None:
         runner = build_backend_runner()
         plan = ExecutionPlan(
@@ -185,7 +185,7 @@ class TestBackendRunnerErrorHandling:
             timeout=1,
         )
         with patch(
-            "agentplane.runtime.execution.subprocess.run",
+            "agentplane.runtime.execution_runners.subprocess.run",
             side_effect=subprocess.TimeoutExpired(cmd="sleep 10", timeout=1),
         ):
             result = runner.execute(plan)
@@ -208,7 +208,7 @@ class TestBackendRunnerErrorHandling:
             capabilities=("bash",),
             timeout=300,
         )
-        with patch("agentplane.runtime.execution.subprocess.run", side_effect=FileNotFoundError("No such file")):
+        with patch("agentplane.runtime.execution_runners.subprocess.run", side_effect=FileNotFoundError("No such file")):
             result = runner.execute(plan)
         assert result.ok is False
         assert result.error is not None
@@ -228,7 +228,7 @@ class TestBackendRunnerErrorHandling:
             capabilities=("bash",),
             timeout=300,
         )
-        with patch("agentplane.runtime.execution.subprocess.run", side_effect=OSError("random os error")):
+        with patch("agentplane.runtime.execution_runners.subprocess.run", side_effect=OSError("random os error")):
             result = runner.execute(plan)
         assert result.ok is False
         assert result.error is not None
@@ -253,7 +253,7 @@ class TestBackendRunnerErrorHandling:
             stdout="",
             stderr="ssh: connect to host bad-host port 22: Connection refused",
         )
-        with patch("agentplane.runtime.execution.subprocess.run", return_value=mock_completed):
+        with patch("agentplane.runtime.execution_runners.subprocess.run", return_value=mock_completed):
             result = runner.execute(plan)
         assert result.ok is False
         assert result.error is not None
@@ -277,7 +277,7 @@ class TestBackendRunnerErrorHandling:
             stdout="hello\n",
             stderr="",
         )
-        with patch("agentplane.runtime.execution.subprocess.run", return_value=mock_completed):
+        with patch("agentplane.runtime.execution_runners.subprocess.run", return_value=mock_completed):
             result = runner.execute(plan)
         assert result.ok is True
         assert result.error is None
