@@ -6,18 +6,14 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from agentplane.domain.infra.audit import (
-    _as_list,
+from agentplane.domain.infra.audit_common import _as_list, _sub2api_inventory_entry, _violation
+from agentplane.domain.infra.audit_prod0 import (
     _duplicate_json_key_paths,
     _find_legacy_flat_secret_references,
     _formal_app_services,
-    _host_path_exists,
-    _host_path_is_symlink,
-    _inventory_compose_service_names,
     _openresty_declared_public_ports,
-    _sub2api_inventory_entry,
-    _violation,
 )
+from agentplane.domain.infra.audit_wsl import _host_path_exists, _host_path_is_symlink, _inventory_compose_service_names
 
 pytestmark = pytest.mark.unit
 
