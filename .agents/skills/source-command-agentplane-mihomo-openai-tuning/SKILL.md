@@ -19,3 +19,17 @@ Use on the remote host side when Mihomo is healthy but OpenAI traffic is slow be
 - Benchmark candidate nodes before switching
 
 Full details: `.agents/skills/tencent-host-mihomo-openai-tuning/SKILL.md`
+
+## Overview
+
+Diagnose and optimize slow OpenAI/ChatGPT egress on Tencent Cloud hosts when Mihomo is deployed. Benchmark nodes, hot-switch selector, verify improvement.
+
+## Commands
+
+```bash
+agentplane infra
+```
+
+## Downstream Docs
+
+See `.agents/skills/tencent-host-mihomo-openai-tuning/SKILL.md` for detailed documentation.

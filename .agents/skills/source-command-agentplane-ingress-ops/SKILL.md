@@ -28,3 +28,17 @@ agentplane ingress refresh-ledger --target <target> --repo-root <repo-root> --wr
 - Route through `agentplane ingress ...`
 
 Full details: `.agents/skills/agentplane-ingress-ops/SKILL.md`
+
+## Overview
+
+Website and public ingress object search, inspection, verification, publication planning, certificate binding, and ledger refresh through AgentPlane.
+
+## Commands
+
+```bash
+agentplane ingress
+```
+
+## Downstream Docs
+
+See `.agents/skills/agentplane-ingress-ops/SKILL.md` for detailed documentation.

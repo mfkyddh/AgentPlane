@@ -19,3 +19,17 @@ Use for site or domain migration. Keep existing public entry online, create new 
 - Parallel validation is mandatory
 
 Full details: `.agents/skills/site-migration-ops/SKILL.md`
+
+## Overview
+
+Migrate a single website or public ingress path into AgentPlane-managed ingress model while preserving the current public entry until parallel validation passes.
+
+## Commands
+
+```bash
+agentplane ingress
+```
+
+## Downstream Docs
+
+See `.agents/skills/site-migration-ops/SKILL.md` for detailed documentation.

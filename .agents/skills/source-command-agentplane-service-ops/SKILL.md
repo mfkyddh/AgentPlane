@@ -28,3 +28,17 @@ agentplane service restart --target <target> --service <service> --repo-root <re
 - After restart, always verify
 
 Full details: `.agents/skills/agentplane-service-ops/SKILL.md`
+
+## Overview
+
+Service object search, inspection, verification, restart/reconcile planning, and execution through AgentPlane service surface.
+
+## Commands
+
+```bash
+agentplane service
+```
+
+## Downstream Docs
+
+See `.agents/skills/agentplane-service-ops/SKILL.md` for detailed documentation.

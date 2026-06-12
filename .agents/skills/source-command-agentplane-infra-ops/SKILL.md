@@ -33,3 +33,17 @@ agentplane infra secrets sync-layout <target> --repo-root <repo-root> --write
 - Firewall mutations use plan/apply style
 
 Full details: `.agents/skills/agentplane-infra-ops/SKILL.md`
+
+## Overview
+
+Host identity, inventory, audit, network, secrets layout, remote command routing, firewall posture, and automation checks through AgentPlane CLI.
+
+## Commands
+
+```bash
+agentplane infra
+```
+
+## Downstream Docs
+
+See `.agents/skills/agentplane-infra-ops/SKILL.md` for detailed documentation.

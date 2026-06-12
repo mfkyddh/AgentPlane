@@ -19,3 +19,17 @@ Use for initial setup or repair of repository-managed Docker Compose services.
 - After setup, verify service health
 
 Full details: `.agents/skills/docker-service-setup/SKILL.md`
+
+## Overview
+
+Install or repair repository-managed Docker Compose services such as PostgreSQL, Redis, MinIO, nginx-ui, CLIProxyAPI, or OpenClaw.
+
+## Commands
+
+```bash
+agentplane service
+```
+
+## Downstream Docs
+
+See `.agents/skills/docker-service-setup/SKILL.md` for detailed documentation.

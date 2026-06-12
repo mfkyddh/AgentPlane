@@ -19,3 +19,17 @@ Use from the Windows host side. Separates five slow points: Cloudflare edge late
 - Benchmark before and after each change
 
 Full details: `.agents/skills/windows-mihomo-cloudflare-latency-debug/SKILL.md`
+
+## Overview
+
+Diagnose why a domain is slow from Windows when Clash Nyanpasu or Mihomo is involved. Compare latency, identify delay source, apply reversible mitigations.
+
+## Commands
+
+```bash
+agentplane infra
+```
+
+## Downstream Docs
+
+See `.agents/skills/windows-mihomo-cloudflare-latency-debug/SKILL.md` for detailed documentation.

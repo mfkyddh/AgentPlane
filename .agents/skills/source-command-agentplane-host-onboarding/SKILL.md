@@ -19,3 +19,17 @@ Use when a host is not yet fully managed by AgentPlane. Combines new-host onboar
 - SSH baseline is mandatory for new hosts
 
 Full details: `.agents/skills/host-onboarding-ops/SKILL.md`
+
+## Overview
+
+Bring a new Ubuntu, WSL, or remote Linux host under AgentPlane management, including bootstrap, SSH topology, 1Panel installation, and SSH security baseline.
+
+## Commands
+
+```bash
+agentplane infra bootstrap
+```
+
+## Downstream Docs
+
+See `.agents/skills/host-onboarding-ops/SKILL.md` for detailed documentation.

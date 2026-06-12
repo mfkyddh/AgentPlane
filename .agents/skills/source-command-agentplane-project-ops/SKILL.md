@@ -29,3 +29,17 @@ agentplane project skill-catalog-check --repo-root <repo-root>
 - Run health-check before releases
 
 Full details: `.agents/skills/agentplane-project-ops/SKILL.md`
+
+## Overview
+
+AgentPlane project governance, docs sanity, secret/privacy scanning, fast tests, release checks, and Skill catalog consistency.
+
+## Commands
+
+```bash
+agentplane project
+```
+
+## Downstream Docs
+
+See `.agents/skills/agentplane-project-ops/SKILL.md` for detailed documentation.

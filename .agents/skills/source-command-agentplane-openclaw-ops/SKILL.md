@@ -19,3 +19,17 @@ Use for OpenClaw tasks. First choose the lane: repository-managed Docker service
 - Choose lane before executing
 
 Full details: `.agents/skills/openclaw-ops/SKILL.md`
+
+## Overview
+
+OpenClaw setup or repair decisions, including Docker vs official WSL installation, custom OpenAI-compatible endpoints, Feishu delivery repair, and Windows Chrome bridge checks.
+
+## Commands
+
+```bash
+agentplane
+```
+
+## Downstream Docs
+
+See `.agents/skills/openclaw-ops/SKILL.md` for detailed documentation.

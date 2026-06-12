@@ -19,3 +19,17 @@ Use when a host or WSL backend is missing a toolchain required by a formal Agent
 - Verify installation after setup
 
 Full details: `.agents/skills/toolchain-setup/SKILL.md`
+
+## Overview
+
+Install or repair host development toolchains such as Node.js LTS, pnpm/npm mirror settings, Maven, or Java when AgentPlane needs them.
+
+## Commands
+
+```bash
+agentplane infra
+```
+
+## Downstream Docs
+
+See `.agents/skills/toolchain-setup/SKILL.md` for detailed documentation.

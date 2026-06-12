@@ -19,3 +19,17 @@ Use when a host serves HTTPS through `nginx-ui-prod` but the certificate is self
 - Install automatic renewal plus nginx reload
 
 Full details: `.agents/skills/nginxui-letsencrypt-cloudflare-dns01/SKILL.md`
+
+## Overview
+
+Issue or repair Let's Encrypt certificates for nginx-ui deployments when Cloudflare uses grey-cloud direct access or port 80/443 validation is unavailable.
+
+## Commands
+
+```bash
+agentplane ingress
+```
+
+## Downstream Docs
+
+See `.agents/skills/nginxui-letsencrypt-cloudflare-dns01/SKILL.md` for detailed documentation.

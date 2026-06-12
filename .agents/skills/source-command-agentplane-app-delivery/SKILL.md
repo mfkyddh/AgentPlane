@@ -29,3 +29,17 @@ agentplane app delivery verify --target <target> --app <app> --repo-root <repo-r
 - App repos own code + contract YAML; AgentPlane owns the delivery workflow
 
 Full details: `.agents/skills/app-delivery-ops/SKILL.md`
+
+## Overview
+
+Application onboarding, contract validation, build, deployment, rollback, verification, inventory refresh, and deployment summary write-back through AgentPlane.
+
+## Commands
+
+```bash
+agentplane app delivery
+```
+
+## Downstream Docs
+
+See `.agents/skills/app-delivery-ops/SKILL.md` for detailed documentation.

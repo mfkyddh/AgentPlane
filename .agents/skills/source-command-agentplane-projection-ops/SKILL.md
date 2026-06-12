@@ -28,3 +28,17 @@ agentplane projection doc-sync --target <target> --repo-root <repo-root>
 - After state changes, always refresh projection ledger
 
 Full details: `.agents/skills/agentplane-projection-ops/SKILL.md`
+
+## Overview
+
+Runtime environment projection, drift verification, fixture projection, ledger refresh, inventory refresh, and doc-sync through AgentPlane.
+
+## Commands
+
+```bash
+agentplane project projection
+```
+
+## Downstream Docs
+
+See `.agents/skills/agentplane-projection-ops/SKILL.md` for detailed documentation.

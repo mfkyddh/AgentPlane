@@ -33,3 +33,17 @@ agentplane app resource verify --target <target> --app <app> --repo-root <repo-r
 - App deploy/build/rollback → route to `app-delivery-ops`
 
 Full details: `.agents/skills/agentplane-app-ops/SKILL.md`
+
+## Overview
+
+App object truth, catalog inspection, app resource truth, resource projection verification, and app ledger refresh through AgentPlane.
+
+## Commands
+
+```bash
+agentplane app
+```
+
+## Downstream Docs
+
+See `.agents/skills/agentplane-app-ops/SKILL.md` for detailed documentation.
