@@ -7,7 +7,7 @@ synthetic roadmap data structures.
 from __future__ import annotations
 
 import pytest
-from agentplane.domain.project.status import (
+from agentplane.domain.project.status_risks import (
     _derive_next_step,
     _derive_risks,
 )

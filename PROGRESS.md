@@ -143,6 +143,8 @@ audience: both
 | B106 | fast test tier in release-check, add timeout | 已完成 | — | pending (2026-06-12) |
 | B107 | add bump-version command for automated releases | 已完成 | — | pending (2026-06-12) |
 | B108 | add starlette dep, update ruff pre-commit to v0.15.11 | 已完成 | — | pending (2026-06-12) |
+| B109 | deduplicate target helpers by importing from domain.targets | 已完成 | — | pending (2026-06-12) |
+| B110 | deduplicate target helpers | 已完成 | — | pending (2026-06-12) |
 
 ---
 
