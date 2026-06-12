@@ -41,7 +41,7 @@ class RemoteCliTests(unittest.TestCase):
             )
 
             with (
-                patch("agentplane.runtime.execution.subprocess.run", return_value=completed) as run_mock,
+                patch("agentplane.runtime.execution_runners.subprocess.run", return_value=completed) as run_mock,
                 patch("agentplane.domain.infra.remote.sys.stdin", stdin_mock),
             ):
                 payload = execute_remote_bash(
@@ -149,7 +149,7 @@ class RemoteCliTests(unittest.TestCase):
                     "agentplane.domain.infra.remote.append_operation_ledger",
                     return_value={"ledger_file": str(ledger_file)},
                 ) as ledger_mock,
-                patch("agentplane.runtime.execution.subprocess.run", side_effect=fake_run) as run_mock,
+                patch("agentplane.runtime.execution_runners.subprocess.run", side_effect=fake_run) as run_mock,
             ):
                 payload = execute_remote_bash(
                     repo_root=root,
