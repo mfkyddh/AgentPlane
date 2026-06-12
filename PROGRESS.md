@@ -131,6 +131,7 @@ audience: both
 | B94 | add 222 unit tests for 6 untested modules | 已完成 | — | pending (2026-06-11) |
 | B95 | add required sections to source-command skill files | 已完成 | — | pending (2026-06-12) |
 | B96 | resolve pre-existing CI failures (AGENTS.md headings, scripts allowlist, skill catalog) | 已完成 | — | pending (2026-06-12) |
+| B97 | fix async test isolation by running coroutines in thread pool when event loop is active | 已完成 | — | pending (2026-06-12) |
 
 ---
 

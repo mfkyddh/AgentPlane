@@ -6,6 +6,7 @@ All tests use tmp_path or mocks — zero network, zero real LLM calls.
 
 from __future__ import annotations
 
+import asyncio
 import json
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
@@ -276,25 +277,41 @@ class TestAgentRouter:
         assert result["status"] == "error"
         assert "No handler" in result["message"]
 
-    @pytest.mark.flaky(reruns=5, rerun_delay=1)
-    @pytest.mark.anyio
-    async def test_call_llm_no_api_key(self) -> None:
+    def test_call_llm_no_api_key(self) -> None:
         from agentplane.web.agent_router import call_llm
 
         with patch.dict("os.environ", {"ANTHROPIC_API_KEY": ""}, clear=False):
-            result = await call_llm("hi", [])
-            assert result["command"] == "error"
-            assert "ANTHROPIC_API_KEY" in result["reason"]
+            coro = call_llm("hi", [])
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                loop = None
+            if loop and loop.is_running():
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor() as pool:
+                    result = pool.submit(asyncio.run, coro).result()
+            else:
+                result = asyncio.run(coro)
+        assert result["command"] == "error"
+        assert "ANTHROPIC_API_KEY" in result["reason"]
 
-    @pytest.mark.flaky(reruns=5, rerun_delay=1)
-    @pytest.mark.anyio
-    async def test_handle_chat_message_blocked(self, tmp_path: Path) -> None:
+    def test_handle_chat_message_blocked(self, tmp_path: Path) -> None:
         from agentplane.web.agent_router import handle_chat_message
 
         with patch("agentplane.web.agent_router.call_llm", new_callable=AsyncMock) as mock_llm:
             mock_llm.return_value = {"command": "app apply", "args": ["wsl"]}
-            result = await handle_chat_message(tmp_path, "deploy myapp", [])
-            assert result["type"] == "confirmation_required"
+            coro = handle_chat_message(tmp_path, "deploy myapp", [])
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                loop = None
+            if loop and loop.is_running():
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor() as pool:
+                    result = pool.submit(asyncio.run, coro).result()
+            else:
+                result = asyncio.run(coro)
+        assert result["type"] == "confirmation_required"
 
 
 # ---------------------------------------------------------------------------
