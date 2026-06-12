@@ -155,6 +155,7 @@ audience: both
 | B118 | split api.py into helpers, endpoints, and dashboard | 已完成 | — | pending (2026-06-12) |
 | B119 | split contracts.py into helpers and validation | 已完成 | — | pending (2026-06-12) |
 | B120 | update execution mock patch path after module split | 已完成 | — | pending (2026-06-12) |
+| B121 | mark Beta exit criteria and M5-M7 as complete | 已完成 | — | pending (2026-06-12) |
 
 ---
 
