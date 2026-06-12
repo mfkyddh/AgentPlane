@@ -153,6 +153,8 @@ audience: both
 | B116 | split public_ingress.py into config and manager | 已完成 | — | pending (2026-06-12) |
 | B117 | split infra.py into parsers and handlers | 已完成 | — | pending (2026-06-12) |
 | B118 | split api.py into helpers, endpoints, and dashboard | 已完成 | — | pending (2026-06-12) |
+| B119 | split contracts.py into helpers and validation | 已完成 | — | pending (2026-06-12) |
+| B120 | update execution mock patch path after module split | 已完成 | — | pending (2026-06-12) |
 
 ---
 
