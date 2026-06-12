@@ -149,6 +149,7 @@ audience: both
 | B112 | split audit.py into 3 focused sub-modules | 已完成 | — | pending (2026-06-12) |
 | B113 | split project.py into 3 focused sub-modules | 已完成 | — | pending (2026-06-12) |
 | B114 | split execution.py into models and runners | 已完成 | — | pending (2026-06-12) |
+| B115 | split object_api.py into queries and plans | 已完成 | — | pending (2026-06-12) |
 
 ---
 
