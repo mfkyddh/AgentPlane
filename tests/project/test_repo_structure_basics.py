@@ -36,8 +36,9 @@ ALLOWED_TRACKED_TOP_LEVELS = {
     "uv.lock",
     "PROGRESS.md",
     ".claude",
+    "scripts",
 }
-FORBIDDEN_TRACKED_TOP_LEVELS = {"scripts", "ops", "tools"}
+FORBIDDEN_TRACKED_TOP_LEVELS = {"ops", "tools"}
 FORBIDDEN_PRODUCTION_MODULE_NAMES = {"utils.py", "helpers.py", "misc.py"}
 ACTIVE_DOC_ROOTS = (
     REPO_ROOT / "README.md",

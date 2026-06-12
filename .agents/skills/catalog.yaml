@@ -84,3 +84,115 @@ skills:
     domains: [infra]
     aliases: [nodejs-lts-setup, maven-setup]
     entrypoint: uv run python -m agentplane.cli infra
+  - name: source-command-agentplane-app-delivery
+    frontmatter_name: source-command-agentplane-app-delivery
+    source_path: .agents/skills/source-command-agentplane-app-delivery/SKILL.md
+    kind: source-command
+    domains: [app]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli app delivery
+  - name: source-command-agentplane-app-ops
+    frontmatter_name: source-command-agentplane-app-ops
+    source_path: .agents/skills/source-command-agentplane-app-ops/SKILL.md
+    kind: source-command
+    domains: [app]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli app
+  - name: source-command-agentplane-docker-service-setup
+    frontmatter_name: source-command-agentplane-docker-service-setup
+    source_path: .agents/skills/source-command-agentplane-docker-service-setup/SKILL.md
+    kind: source-command
+    domains: [service]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli service
+  - name: source-command-agentplane-host-onboarding
+    frontmatter_name: source-command-agentplane-host-onboarding
+    source_path: .agents/skills/source-command-agentplane-host-onboarding/SKILL.md
+    kind: source-command
+    domains: [infra]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli infra bootstrap
+  - name: source-command-agentplane-infra-ops
+    frontmatter_name: source-command-agentplane-infra-ops
+    source_path: .agents/skills/source-command-agentplane-infra-ops/SKILL.md
+    kind: source-command
+    domains: [infra]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli infra
+  - name: source-command-agentplane-ingress-ops
+    frontmatter_name: source-command-agentplane-ingress-ops
+    source_path: .agents/skills/source-command-agentplane-ingress-ops/SKILL.md
+    kind: source-command
+    domains: [ingress]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli ingress
+  - name: source-command-agentplane-mihomo-latency-debug
+    frontmatter_name: source-command-agentplane-mihomo-latency-debug
+    source_path: .agents/skills/source-command-agentplane-mihomo-latency-debug/SKILL.md
+    kind: source-command
+    domains: [infra]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli infra
+  - name: source-command-agentplane-mihomo-openai-tuning
+    frontmatter_name: source-command-agentplane-mihomo-openai-tuning
+    source_path: .agents/skills/source-command-agentplane-mihomo-openai-tuning/SKILL.md
+    kind: source-command
+    domains: [infra]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli infra
+  - name: source-command-agentplane-nginxui-cert
+    frontmatter_name: source-command-agentplane-nginxui-cert
+    source_path: .agents/skills/source-command-agentplane-nginxui-cert/SKILL.md
+    kind: source-command
+    domains: [ingress]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli ingress
+  - name: source-command-agentplane-openclaw-ops
+    frontmatter_name: source-command-agentplane-openclaw-ops
+    source_path: .agents/skills/source-command-agentplane-openclaw-ops/SKILL.md
+    kind: source-command
+    domains: [service]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli
+  - name: source-command-agentplane-project-ops
+    frontmatter_name: source-command-agentplane-project-ops
+    source_path: .agents/skills/source-command-agentplane-project-ops/SKILL.md
+    kind: source-command
+    domains: [project]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli project
+  - name: source-command-agentplane-projection-ops
+    frontmatter_name: source-command-agentplane-projection-ops
+    source_path: .agents/skills/source-command-agentplane-projection-ops/SKILL.md
+    kind: source-command
+    domains: [project]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli project projection
+  - name: source-command-agentplane-service-ops
+    frontmatter_name: source-command-agentplane-service-ops
+    source_path: .agents/skills/source-command-agentplane-service-ops/SKILL.md
+    kind: source-command
+    domains: [service]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli service
+  - name: source-command-agentplane-site-migration
+    frontmatter_name: source-command-agentplane-site-migration
+    source_path: .agents/skills/source-command-agentplane-site-migration/SKILL.md
+    kind: source-command
+    domains: [ingress]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli ingress
+  - name: source-command-agentplane-tencent-migration
+    frontmatter_name: source-command-agentplane-tencent-migration
+    source_path: .agents/skills/source-command-agentplane-tencent-migration/SKILL.md
+    kind: source-command
+    domains: [infra]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli infra
+  - name: source-command-agentplane-toolchain-setup
+    frontmatter_name: source-command-agentplane-toolchain-setup
+    source_path: .agents/skills/source-command-agentplane-toolchain-setup/SKILL.md
+    kind: source-command
+    domains: [infra]
+    aliases: []
+    entrypoint: uv run python -m agentplane.cli infra

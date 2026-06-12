@@ -13,6 +13,24 @@ audience: ai
 
 ---
 
+## 必读摘要
+
+- 所有操作通过 `agentplane <domain> <surface> <verb> [flags]` 进入，不要绕过 CLI
+- Secrets 只放 `secrets/` 目录，绝不提交到仓库
+- 测试必须标记 `unit`/`integration`/`e2e`，默认排除 `live_gate`/`integration_wsl`/`ssh_required`
+- Conventional Commits 格式：`type(scope): description`
+
+---
+
+## 安全约束
+
+- 敏感信息（密码、token、API key）只放 `secrets/` 目录，被 `.gitignore` 保护
+- 禁止在代码中硬编码 IP 地址、域名、凭证
+- SSH 密钥和连接信息通过 `agentplane infra secrets` 管理
+- `uv run agentplane project secret-scan --repo-root .` 检查泄露
+
+---
+
 ## 项目概述
 
 AgentPlane 是 Agent-first 控制面 CLI。所有操作通过 `agentplane <domain> <surface> <verb> [flags]` 进入，提供 Plan → Apply → Verify → Record 执行闭环。Skill 是 AI 入口，路由到 CLI——永远不要绕过 CLI。

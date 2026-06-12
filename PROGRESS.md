@@ -129,6 +129,8 @@ audience: both
 | B92 | fix test isolation issue in apps dispatch tests by using patch.object instead of sys.modules injection | 已完成 | — | pending (2026-06-11) |
 | B93 | split 3 oversized files into 18 focused modules | 已完成 | — | pending (2026-06-11) |
 | B94 | add 222 unit tests for 6 untested modules | 已完成 | — | pending (2026-06-11) |
+| B95 | add required sections to source-command skill files | 已完成 | — | pending (2026-06-12) |
+| B96 | resolve pre-existing CI failures (AGENTS.md headings, scripts allowlist, skill catalog) | 已完成 | — | pending (2026-06-12) |
 
 ---
 
