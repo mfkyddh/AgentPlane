@@ -4,16 +4,10 @@ import secrets as secrets_lib
 from pathlib import Path
 from typing import Any, Callable
 
-TARGET_ALIASES = {
-    "wsl": "wsl",
-    "prod0-main": "prod0",
-}
+from agentplane.domain.targets import TARGET_ALIASES
+from agentplane.domain.targets import target_alias as _target_alias
 
 SUPPORTED_SECRET_TARGETS = tuple(TARGET_ALIASES.keys())
-
-
-def _target_alias(target: str) -> str:
-    return TARGET_ALIASES[target]
 
 
 def _token() -> str:

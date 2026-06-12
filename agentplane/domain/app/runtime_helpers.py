@@ -6,7 +6,9 @@ from typing import Any
 
 from agentplane.domain.app.contracts import has_public_ingress, load_yaml, public_sites
 from agentplane.domain.app.resource_paths import secrets_root as shared_secrets_root
-from agentplane.domain.targets import is_production_target, remote_compose_filename, target_alias
+from agentplane.domain.targets import is_production_target as _is_production_target
+from agentplane.domain.targets import remote_compose_filename as _remote_compose_filename
+from agentplane.domain.targets import target_alias as _target_alias
 from agentplane.runtime.wsl_bridge import wsl_unc_to_posix
 
 
@@ -38,18 +40,6 @@ def render_domain_path(path: Path | str) -> str:
     else:
         rendered = path
     return rendered.replace("\\", "/") if rendered.startswith("/") else rendered
-
-
-def _is_production_target(target: str) -> bool:
-    return is_production_target(target)
-
-
-def _target_alias(target: str) -> str:
-    return target_alias(target)
-
-
-def _remote_compose_filename(target: str) -> str:
-    return remote_compose_filename(target)
 
 
 def _prod0_data_env_path(app_id: str, *, candidate_suffix: str | None = None) -> str | None:

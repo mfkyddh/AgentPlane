@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from agentplane.domain.app.lifecycle_resources import _ingress_sites
 from agentplane.domain.app.projection.runtime_env import (
     apply_runtime_env_projection,
     plan_runtime_env_projection,
@@ -41,16 +42,6 @@ def _catalog_entry_from_validated(validated: ValidatedDeliveryContract, *, targe
         service_key=service_key,
         contracts=contracts,
     )
-
-
-def _ingress_sites(contract: dict[str, Any]) -> list[dict[str, Any]]:
-    top_level = contract.get("public_sites")
-    if isinstance(top_level, list):
-        return [site for site in top_level if isinstance(site, dict)]
-    ingress_sites = contract.get("ingress", {}).get("public_sites")
-    if isinstance(ingress_sites, list):
-        return [site for site in ingress_sites if isinstance(site, dict)]
-    return []
 
 
 def _service_entry_from_validated(validated: ValidatedDeliveryContract) -> dict[str, Any]:

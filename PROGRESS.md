@@ -142,6 +142,7 @@ audience: both
 | B105 | use fast test tier in release-check, add timeout to _run_check | 已完成 | — | pending (2026-06-12) |
 | B106 | fast test tier in release-check, add timeout | 已完成 | — | pending (2026-06-12) |
 | B107 | add bump-version command for automated releases | 已完成 | — | pending (2026-06-12) |
+| B108 | add starlette dep, update ruff pre-commit to v0.15.11 | 已完成 | — | pending (2026-06-12) |
 
 ---
 
