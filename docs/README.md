@@ -39,6 +39,19 @@
 - [术语表](glossary.md) — 唯一术语真源
 - [决策记录](decisions/) — 关键决策追溯
 - [Runbooks](runbooks/) — 操作手册和验证记录
+- [Schemas](schemas/) — 数据格式和迁移文档
+
+### 决策记录
+
+- [011. 运行时拆分](decisions/011-runtime-split.md) — 核心逻辑与 Provider 解耦
+
+### Runbooks
+
+- [静态站点验证](runbooks/static-site-verification.md) — 静态站点部署验证流程
+
+### Schemas
+
+- [Contract 迁移](schemas/contract-migration.md) — contract.yaml v1→v2 迁移指南
 
 ## 执行层（当前进度）
 

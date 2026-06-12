@@ -134,6 +134,10 @@ audience: both
 | B97 | fix async test isolation by running coroutines in thread pool when event loop is active | 已完成 | — | pending (2026-06-12) |
 | B98 | add infrastructure markers to CI-failing tests | 已完成 | — | pending (2026-06-12) |
 | B99 | add missing infra markers for CI compat | 已完成 | — | pending (2026-06-12) |
+| B100 | run on ubuntu-only, add infra markers, enforce CI check rule | 已完成 | — | pending (2026-06-12) |
+| B101 | run on ubuntu-only, add infra markers | 已完成 | — | pending (2026-06-12) |
+| B102 | run on ubuntu-only, add infra markers | 已完成 | — | pending (2026-06-12) |
+| B103 | run on ubuntu-only, add infra markers | 已完成 | — | pending (2026-06-12) |
 
 ---
 

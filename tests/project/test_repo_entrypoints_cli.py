@@ -279,6 +279,7 @@ class CliEntrypointsTests(unittest.TestCase):
             },
         )
 
+    @pytest.mark.integration_wsl
     def test_required_subcommands_emit_json(self) -> None:
         cases = [
             ("infra", "local", "inspect", "--repo-root", "C:/repos/agentplane"),

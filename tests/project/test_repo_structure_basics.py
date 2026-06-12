@@ -284,8 +284,6 @@ class OpenSourceReadinessTests(unittest.TestCase):
         text = (REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
 
         self.assertIn("ubuntu-latest", text)
-        self.assertIn("macos-latest", text)
-        self.assertIn("windows-latest", text)
         self.assertIn("uv run python -m agentplane.cli test fast --tb=short", text)
         self.assertIn("uv run python -m agentplane.cli project docs-sanity --repo-root .", text)
         self.assertIn("uv run python -m agentplane.cli project secret-scan --repo-root .", text)

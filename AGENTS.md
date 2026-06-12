@@ -18,7 +18,8 @@ audience: ai
 - 所有操作通过 `agentplane <domain> <surface> <verb> [flags]` 进入，不要绕过 CLI
 - Secrets 只放 `secrets/` 目录，绝不提交到仓库
 - 测试必须标记 `unit`/`integration`/`e2e`，默认排除 `live_gate`/`integration_wsl`/`ssh_required`
-- Conventional Commits 格式：`type(scope): description`
+- Conventional Commits 格式：`type(scope): description`，subject ≤ 72 字符
+- 每次推送后必须检查 CI，失败必须修复后再继续
 
 ---
 
