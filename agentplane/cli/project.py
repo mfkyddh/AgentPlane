@@ -23,6 +23,16 @@ from agentplane.domain.project.onepanel_provider import (
     write_route_fingerprint,
 )
 from agentplane.domain.project.privacy_scan import scan_repository_for_private_material
+from agentplane.domain.project.release import (
+    bump_version,
+    create_release_commit_and_tag,
+    determine_bump_type,
+    generate_changelog_entry,
+    get_commits_since_tag,
+    get_current_version,
+    update_changelog,
+    update_pyproject_version,
+)
 from agentplane.domain.project.secret_scan import scan_repository_for_secrets
 from agentplane.domain.project.skills import (
     check_skill_surface,
@@ -85,6 +95,11 @@ def add_project_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentP
 
     release = project_subparsers.add_parser("release-check", help="运行发布前检查")
     release.add_argument("--repo-root", type=Path, default=Path.cwd())
+
+    bump = project_subparsers.add_parser("bump-version", help="根据 conventional commits 自动确定并更新版本")
+    bump.add_argument("--repo-root", type=Path, default=Path.cwd())
+    bump.add_argument("--dry-run", action="store_true", help="仅展示计划，不执行变更")
+    bump.add_argument("--bump-type", choices=("patch", "minor", "major"), help="覆盖自动检测的 bump 类型")
 
     provider = project_subparsers.add_parser("provider", help="Provider 更新适配门禁")
     provider_subparsers = provider.add_subparsers(dest="project_provider_action", required=True)
@@ -562,6 +577,38 @@ def run_topology_command(args: argparse.Namespace) -> dict[str, Any]:
     return payload
 
 
+def run_bump_version(args: argparse.Namespace) -> dict[str, Any]:
+    repo_root = args.repo_root.resolve()
+    current = get_current_version(repo_root)
+    commits = get_commits_since_tag(repo_root)
+    bump_type = determine_bump_type(commits, override=args.bump_type)
+    new_version = bump_version(current, bump_type)
+    changelog_entry = generate_changelog_entry(new_version, commits)
+    dry_run = args.dry_run
+
+    result: dict[str, Any] = {
+        "command": "project",
+        "action": "bump-version",
+        "repo_root": str(repo_root),
+        "current_version": current,
+        "new_version": new_version,
+        "bump_type": bump_type,
+        "commit_count": len(commits),
+        "dry_run": dry_run,
+    }
+
+    if dry_run:
+        result["changelog_entry"] = changelog_entry
+        result["commits"] = commits
+        return result
+
+    update_pyproject_version(repo_root, new_version)
+    update_changelog(repo_root, changelog_entry)
+    create_release_commit_and_tag(repo_root, new_version)
+    result["ok"] = True
+    return result
+
+
 def run_skills_command(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = args.repo_root.resolve()
     if args.project_skills_action == "check":
@@ -689,6 +736,8 @@ def handle_project_command(args: argparse.Namespace) -> dict[str, Any]:
         return run_privacy_scan(args)
     if args.project_action == "release-check":
         return run_release_check(args)
+    if args.project_action == "bump-version":
+        return run_bump_version(args)
     if args.project_action == "provider":
         return run_provider_command(args)
     if args.project_action == "skills":

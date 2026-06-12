@@ -139,6 +139,8 @@ audience: both
 | B102 | run on ubuntu-only, add infra markers | 已完成 | — | pending (2026-06-12) |
 | B103 | run on ubuntu-only, add infra markers | 已完成 | — | pending (2026-06-12) |
 | B104 | run on ubuntu-only, add infra markers | 已完成 | — | pending (2026-06-12) |
+| B105 | use fast test tier in release-check, add timeout to _run_check | 已完成 | — | pending (2026-06-12) |
+| B106 | fast test tier in release-check, add timeout | 已完成 | — | pending (2026-06-12) |
 
 ---
 
