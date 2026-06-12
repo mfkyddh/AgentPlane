@@ -151,6 +151,8 @@ audience: both
 | B114 | split execution.py into models and runners | 已完成 | — | pending (2026-06-12) |
 | B115 | split object_api.py into queries and plans | 已完成 | — | pending (2026-06-12) |
 | B116 | split public_ingress.py into config and manager | 已完成 | — | pending (2026-06-12) |
+| B117 | split infra.py into parsers and handlers | 已完成 | — | pending (2026-06-12) |
+| B118 | split api.py into helpers, endpoints, and dashboard | 已完成 | — | pending (2026-06-12) |
 
 ---
 
