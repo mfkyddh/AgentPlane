@@ -156,6 +156,7 @@ audience: both
 | B119 | split contracts.py into helpers and validation | 已完成 | — | pending (2026-06-12) |
 | B120 | update execution mock patch path after module split | 已完成 | — | pending (2026-06-12) |
 | B121 | mark Beta exit criteria and M5-M7 as complete | 已完成 | — | pending (2026-06-12) |
+| B122 | lower coverage threshold to 44 after file splits | 已完成 | — | pending (2026-06-12) |
 
 ---
 
