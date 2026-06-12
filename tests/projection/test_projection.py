@@ -205,9 +205,9 @@ class ProjectionValidationCliTests(unittest.TestCase):
         )
 
         with (
-            patch("agentplane.cli.project.onepanel_target_executor", return_value=object()),
+            patch("agentplane.cli.project_projection.onepanel_target_executor", return_value=object()),
             patch(
-                "agentplane.cli.project.run_onepanel_verification_suite",
+                "agentplane.cli.project_projection.run_onepanel_verification_suite",
                 return_value={"ok": True, "checks": []},
             ) as run_suite,
         ):
@@ -240,9 +240,9 @@ class ProjectionValidationCliTests(unittest.TestCase):
         )
 
         with (
-            patch("agentplane.cli.project.onepanel_target_executor", return_value=object()),
+            patch("agentplane.cli.project_projection.onepanel_target_executor", return_value=object()),
             patch(
-                "agentplane.cli.project.run_onepanel_verification_suite",
+                "agentplane.cli.project_projection.run_onepanel_verification_suite",
                 return_value={"ok": True, "checks": [{"scope": "panel", "ok": True, "payload": {"apiKey": "secret"}}]},
             ),
         ):
@@ -290,10 +290,10 @@ class ProjectionValidationCliTests(unittest.TestCase):
         )
 
         with (
-            patch("agentplane.cli.project.resolve_fixture_spec", return_value=object()) as resolve_spec,
-            patch("agentplane.cli.project.onepanel_target_executor", return_value=object()),
+            patch("agentplane.cli.project_projection.resolve_fixture_spec", return_value=object()) as resolve_spec,
+            patch("agentplane.cli.project_projection.onepanel_target_executor", return_value=object()),
             patch(
-                "agentplane.cli.project.cleanup_fixture",
+                "agentplane.cli.project_projection.cleanup_fixture",
                 return_value={"ok": True, "items": [{"object": "project", "action": "down-project"}]},
             ) as cleanup_fixture,
         ):
@@ -326,7 +326,7 @@ class ProjectionValidationCliTests(unittest.TestCase):
         )
 
         with patch(
-            "agentplane.cli.project.refresh_onepanel_ledgers",
+            "agentplane.cli.project_projection.refresh_onepanel_ledgers",
             return_value={"counts": {"websites": 1}, "written": True},
         ) as refresh_ledgers:
             payload = _handle_projection(args)

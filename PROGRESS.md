@@ -145,6 +145,8 @@ audience: both
 | B108 | add starlette dep, update ruff pre-commit to v0.15.11 | 已完成 | — | pending (2026-06-12) |
 | B109 | deduplicate target helpers by importing from domain.targets | 已完成 | — | pending (2026-06-12) |
 | B110 | deduplicate target helpers | 已完成 | — | pending (2026-06-12) |
+| B111 | split status.py into 4 focused sub-modules | 已完成 | — | pending (2026-06-12) |
+| B112 | split audit.py into 3 focused sub-modules | 已完成 | — | pending (2026-06-12) |
 
 ---
 

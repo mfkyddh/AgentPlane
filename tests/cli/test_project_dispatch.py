@@ -131,7 +131,7 @@ class TestRunHealthCheck:
             onepanel_baseline=None,
             fail_on_onepanel_drift=False,
         )
-        with patch("agentplane.cli.project._skills_check", return_value={"name": "skills-check", "ok": True}):
+        with patch("agentplane.cli.project_checks._skills_check", return_value={"name": "skills-check", "ok": True}):
             result = run_health_check(args)
         assert result["command"] == "project"
         assert result["action"] == "health-check"
@@ -149,8 +149,8 @@ class TestRunHealthCheck:
             onepanel_baseline=None,
             fail_on_onepanel_drift=False,
         )
-        with patch("agentplane.cli.project._run_check", return_value={"name": "ruff", "ok": True}), \
-             patch("agentplane.cli.project._skills_check", return_value={"name": "skills-check", "ok": True}):
+        with patch("agentplane.cli.project_checks._run_check", return_value={"name": "ruff", "ok": True}), \
+             patch("agentplane.cli.project_checks._skills_check", return_value={"name": "skills-check", "ok": True}):
             result = run_health_check(args)
         assert any(c["name"] == "ruff" for c in result["checks"])
 
@@ -176,15 +176,15 @@ class TestRunHealthCheck:
 
 
 class TestRunStatusCommand:
-    @patch("agentplane.cli.project.build_repo_status", return_value={"ok": True})
+    @patch("agentplane.cli.project_commands.build_repo_status", return_value={"ok": True})
     def test_basic_status(self, mock_status) -> None:
         args = _ns(html=None)
         result = run_status_command(args)
         assert result["ok"] is True
         assert result["dashboard"]["html"] is None
 
-    @patch("agentplane.cli.project.write_status_html")
-    @patch("agentplane.cli.project.build_repo_status", return_value={"ok": True})
+    @patch("agentplane.cli.project_commands.write_status_html")
+    @patch("agentplane.cli.project_commands.build_repo_status", return_value={"ok": True})
     def test_with_html_output(self, mock_status, mock_write, tmp_path: Path) -> None:
         html_path = tmp_path / "out.html"
         args = _ns(html=html_path)
@@ -199,13 +199,13 @@ class TestRunStatusCommand:
 
 
 class TestRunDocsSanityCommand:
-    @patch("agentplane.cli.project.run_docs_sanity", return_value=[])
+    @patch("agentplane.cli.project_commands.run_docs_sanity", return_value=[])
     def test_no_issues(self, mock_fn) -> None:
         result = run_docs_sanity_command(_ns())
         assert result["ok"] is True
         assert result["errors_count"] == 0
 
-    @patch("agentplane.cli.project.run_docs_sanity")
+    @patch("agentplane.cli.project_commands.run_docs_sanity")
     def test_with_errors(self, mock_fn) -> None:
         issue = MagicMock()
         issue.severity = "error"
@@ -222,7 +222,7 @@ class TestRunDocsSanityCommand:
 
 
 class TestRunDocLayerCommand:
-    @patch("agentplane.cli.project.run_doc_layer_check", return_value=[])
+    @patch("agentplane.cli.project_commands.run_doc_layer_check", return_value=[])
     def test_no_issues(self, mock_fn) -> None:
         result = run_doc_layer_command(_ns())
         assert result["ok"] is True
@@ -235,13 +235,13 @@ class TestRunDocLayerCommand:
 
 
 class TestRunSecretScan:
-    @patch("agentplane.cli.project.scan_repository_for_secrets", return_value=[])
+    @patch("agentplane.cli.project_commands.scan_repository_for_secrets", return_value=[])
     def test_no_secrets(self, mock_fn) -> None:
         result = run_secret_scan(_ns(allowlist=None))
         assert result["ok"] is True
         assert result["action"] == "secret-scan"
 
-    @patch("agentplane.cli.project.scan_repository_for_secrets")
+    @patch("agentplane.cli.project_commands.scan_repository_for_secrets")
     def test_with_issues(self, mock_fn) -> None:
         issue = MagicMock()
         issue.to_dict.return_value = {"file": "test", "line": 1}
@@ -257,7 +257,7 @@ class TestRunSecretScan:
 
 
 class TestRunPrivacyScan:
-    @patch("agentplane.cli.project.scan_repository_for_private_material", return_value=[])
+    @patch("agentplane.cli.project_commands.scan_repository_for_private_material", return_value=[])
     def test_no_issues(self, mock_fn) -> None:
         result = run_privacy_scan(_ns())
         assert result["ok"] is True
@@ -270,14 +270,14 @@ class TestRunPrivacyScan:
 
 
 class TestRunSkillsCommand:
-    @patch("agentplane.cli.project.check_skill_surface", return_value=[])
+    @patch("agentplane.cli.project_commands.check_skill_surface", return_value=[])
     def test_skills_check_ok(self, mock_fn) -> None:
         args = _ns(project_skills_action="check")
         result = run_skills_command(args)
         assert result["ok"] is True
         assert result["action"] == "skills.check"
 
-    @patch("agentplane.cli.project.check_skill_surface")
+    @patch("agentplane.cli.project_commands.check_skill_surface")
     def test_skills_check_with_issues(self, mock_fn) -> None:
         issue = MagicMock()
         issue.to_dict.return_value = {"severity": "error"}
@@ -286,23 +286,23 @@ class TestRunSkillsCommand:
         result = run_skills_command(args)
         assert result["ok"] is False
 
-    @patch("agentplane.cli.project.list_skill_entries", return_value=[])
+    @patch("agentplane.cli.project_commands.list_skill_entries", return_value=[])
     def test_skills_list(self, mock_fn) -> None:
         args = _ns(project_skills_action="list")
         result = run_skills_command(args)
         assert result["ok"] is True
         assert result["action"] == "skills.list"
 
-    @patch("agentplane.cli.project.write_skill_export")
-    @patch("agentplane.cli.project.export_skill_surface", return_value={"skills": []})
+    @patch("agentplane.cli.project_commands.write_skill_export")
+    @patch("agentplane.cli.project_commands.export_skill_surface", return_value={"skills": []})
     def test_skills_export(self, mock_export, mock_write) -> None:
         args = _ns(project_skills_action="export", output=None)
         result = run_skills_command(args)
         assert result["ok"] is True
         assert result["action"] == "skills.export"
 
-    @patch("agentplane.cli.project.write_skill_export")
-    @patch("agentplane.cli.project.export_skill_surface", return_value={"skills": []})
+    @patch("agentplane.cli.project_commands.write_skill_export")
+    @patch("agentplane.cli.project_commands.export_skill_surface", return_value={"skills": []})
     def test_skills_export_with_output(self, mock_export, mock_write, tmp_path: Path) -> None:
         out = tmp_path / "skills.json"
         args = _ns(project_skills_action="export", output=out)
@@ -310,7 +310,7 @@ class TestRunSkillsCommand:
         mock_write.assert_called_once()
         assert result["output"] is not None
 
-    @patch("agentplane.cli.project.skill_sync_report", return_value={"ok": True})
+    @patch("agentplane.cli.project_commands.skill_sync_report", return_value={"ok": True})
     def test_skills_sync(self, mock_fn) -> None:
         args = _ns(project_skills_action="sync")
         result = run_skills_command(args)
@@ -329,21 +329,21 @@ class TestRunSkillsCommand:
 
 
 class TestRunTopologyCommand:
-    @patch("agentplane.cli.project.build_topology")
+    @patch("agentplane.cli.project_commands.build_topology")
     def test_json_mode(self, mock_topo) -> None:
         mock_topo.return_value = {"targets": []}
         args = _ns(json_output=True)
         result = run_topology_command(args)
         assert result == {"targets": []}
 
-    @patch("agentplane.cli.project.build_topology")
+    @patch("agentplane.cli.project_commands.build_topology")
     def test_human_readable_no_targets(self, mock_topo, capsys) -> None:
         mock_topo.return_value = {"targets": []}
         args = _ns(json_output=False)
         run_topology_command(args)
         assert "No targets" in capsys.readouterr().out
 
-    @patch("agentplane.cli.project.build_topology")
+    @patch("agentplane.cli.project_commands.build_topology")
     def test_human_readable_with_targets(self, mock_topo, capsys) -> None:
         mock_topo.return_value = {
             "targets": [{

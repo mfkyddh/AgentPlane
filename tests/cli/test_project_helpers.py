@@ -35,7 +35,7 @@ def _fake_completed_process(
 
 class TestRunCheck:
     def test_success(self, tmp_path: Path) -> None:
-        with patch("agentplane.cli.project.subprocess.run", return_value=_fake_completed_process(0, "ok\n")):
+        with patch("agentplane.cli.project_checks.subprocess.run", return_value=_fake_completed_process(0, "ok\n")):
             result = _run_check("test", ["echo", "ok"], repo_root=tmp_path)
         assert result["ok"] is True
         assert result["name"] == "test"
@@ -43,14 +43,14 @@ class TestRunCheck:
         assert "ok" in result["stdout_tail"]
 
     def test_failure(self, tmp_path: Path) -> None:
-        with patch("agentplane.cli.project.subprocess.run", return_value=_fake_completed_process(1, "", "err")):
+        with patch("agentplane.cli.project_checks.subprocess.run", return_value=_fake_completed_process(1, "", "err")):
             result = _run_check("test", ["bad"], repo_root=tmp_path)
         assert result["ok"] is False
         assert result["returncode"] == 1
 
     def test_stdout_tail_truncated(self, tmp_path: Path) -> None:
         long_output = "\n".join(f"line{i}" for i in range(50))
-        with patch("agentplane.cli.project.subprocess.run", return_value=_fake_completed_process(0, long_output)):
+        with patch("agentplane.cli.project_checks.subprocess.run", return_value=_fake_completed_process(0, long_output)):
             result = _run_check("test", ["cmd"], repo_root=tmp_path)
         assert len(result["stdout_tail"]) == 20
 
@@ -62,13 +62,13 @@ class TestRunCheck:
 
 class TestRunSequenceCheck:
     def test_all_pass(self, tmp_path: Path) -> None:
-        with patch("agentplane.cli.project.subprocess.run", return_value=_fake_completed_process(0, "ok")):
+        with patch("agentplane.cli.project_checks.subprocess.run", return_value=_fake_completed_process(0, "ok")):
             result = _run_sequence_check("seq", [["cmd1"], ["cmd2"]], repo_root=tmp_path)
         assert result["ok"] is True
         assert len(result["steps"]) == 2
 
     def test_first_fails_stops(self, tmp_path: Path) -> None:
-        with patch("agentplane.cli.project.subprocess.run", return_value=_fake_completed_process(1, "", "fail")):
+        with patch("agentplane.cli.project_checks.subprocess.run", return_value=_fake_completed_process(1, "", "fail")):
             result = _run_sequence_check("seq", [["cmd1"], ["cmd2"]], repo_root=tmp_path)
         assert result["ok"] is False
         assert len(result["steps"]) == 1
@@ -162,7 +162,7 @@ class TestSplitRemoteBashRemainder:
 class TestProjectHelpersGolden:
     def test_run_check_and_wrap_roundtrip(self, tmp_path: Path) -> None:
         """Run check + wrap projection end-to-end."""
-        with patch("agentplane.cli.project.subprocess.run", return_value=_fake_completed_process(0, "done")):
+        with patch("agentplane.cli.project_checks.subprocess.run", return_value=_fake_completed_process(0, "done")):
             check = _run_check("build", ["make"], repo_root=tmp_path)
         assert check["ok"] is True
 
