@@ -65,6 +65,7 @@ class SecretsCliTests(unittest.TestCase):
             self.assertRegex(minio_values["MINIO_ROOT_USER"], r"^minioadmin_[a-z0-9]+_[0-9a-f]{8}$")
             self.assertRegex(minio_values["MINIO_ROOT_PASSWORD"], r"^[0-9a-f]{32}$")
 
+    @pytest.mark.integration_wsl
     def test_init_data_services_keeps_existing_files_without_force(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -89,6 +90,7 @@ class SecretsCliTests(unittest.TestCase):
             self.assertEqual("existing_user", postgres_values["POSTGRES_USER"])
             self.assertEqual("existing_password", postgres_values["POSTGRES_PASSWORD"])
 
+    @pytest.mark.integration_wsl
     def test_sync_layout_projects_backup_env_to_legacy_path_with_host_first_source_dir(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

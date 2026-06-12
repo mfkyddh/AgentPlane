@@ -27,6 +27,7 @@ from tests.support.app_delivery_targets import (
 pytestmark = pytest.mark.integration
 
 
+@pytest.mark.integration_wsl
 class TestAppDeliveryDeployRollbackCliTests(unittest.TestCase):
     def test_deploy_dry_run_stops_1panel_app_control_plane_for_sampleapi(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

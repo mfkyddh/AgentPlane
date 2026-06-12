@@ -11,6 +11,7 @@ from tests.support.app_object import run_cli, write_inventory_with_app
 pytestmark = pytest.mark.integration
 
 
+@pytest.mark.integration_wsl
 class AppObjectCliTests(unittest.TestCase):
     def test_app_object_get_returns_named_app_payload(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

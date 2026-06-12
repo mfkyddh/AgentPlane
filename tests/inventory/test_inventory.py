@@ -26,6 +26,7 @@ class InventoryGenerationTests(unittest.TestCase):
         self.assertIn("--dry-run", versioning_doc)
         self.assertIn("仅允许只读或 dry-run", versioning_doc)
 
+    @pytest.mark.integration_wsl
     def test_phase4_lane12_host_automation_search_acceptance_is_readonly(self) -> None:
         result = run_cli("infra", "automation", "search", "wsl", "--repo-root", str(REPO_ROOT), cwd=REPO_ROOT)
         self.assertEqual(result.returncode, 0, msg=result.stderr)
@@ -37,6 +38,7 @@ class InventoryGenerationTests(unittest.TestCase):
         self.assertIn("items", payload["payload"])
         self.assertGreaterEqual(len(payload["payload"]["items"]), 1)
 
+    @pytest.mark.integration_wsl
     def test_phase4_lane12_projection_ledger_refresh_acceptance_defaults_to_readonly(self) -> None:
         result = run_cli(
             "project", "projection", "ledger", "refresh", "--target", "wsl", "--repo-root", str(REPO_ROOT), cwd=REPO_ROOT
@@ -152,6 +154,7 @@ class InventoryGenerationTests(unittest.TestCase):
         self.assertEqual("wsl", payload.get("target"))
         self.assertIsInstance(payload["payload"], dict)
 
+    @pytest.mark.ssh_required
     def test_inventory_snapshot_preserves_automation_metadata(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -178,6 +181,7 @@ class InventoryGenerationTests(unittest.TestCase):
             self.assertIn("automations", payload)
             self.assertEqual("wsl-zzz-skills-sync", payload["automations"][0]["name"])
 
+    @pytest.mark.ssh_required
     def test_inventory_snapshot_preserves_host_truth_metadata(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

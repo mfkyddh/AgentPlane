@@ -163,6 +163,7 @@ class SshTargetTests(unittest.TestCase):
             self.assertEqual("unknown-host", target.alias)
             self.assertEqual("unknown-host", target.connection_target)
 
+    @pytest.mark.ssh_required
     def test_resolve_ssh_config_path_uses_main_repo_for_git_worktree(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             tmp_root = Path(tmp)
@@ -178,6 +179,7 @@ class SshTargetTests(unittest.TestCase):
 
             self.assertEqual(main_root / "secrets" / "ssh" / "config", config_path)
 
+    @pytest.mark.ssh_required
     def test_resolve_ssh_target_keeps_worktree_inventory_and_shared_ssh_config(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             tmp_root = Path(tmp)
