@@ -138,6 +138,7 @@ audience: both
 | B101 | run on ubuntu-only, add infra markers | 已完成 | — | pending (2026-06-12) |
 | B102 | run on ubuntu-only, add infra markers | 已完成 | — | pending (2026-06-12) |
 | B103 | run on ubuntu-only, add infra markers | 已完成 | — | pending (2026-06-12) |
+| B104 | run on ubuntu-only, add infra markers | 已完成 | — | pending (2026-06-12) |
 
 ---
 

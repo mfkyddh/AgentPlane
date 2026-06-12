@@ -175,20 +175,31 @@ def add_project_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentP
     refresh.add_argument("--write", action="store_true", help="Write tracked artifacts")
 
 
-def _run_check(name: str, argv: list[str], *, repo_root: Path) -> dict[str, Any]:
+def _run_check(name: str, argv: list[str], *, repo_root: Path, timeout: int = 300) -> dict[str, Any]:
     env = os.environ.copy()
     env.setdefault("PYTHONUTF8", "1")
     env.setdefault("PYTHONIOENCODING", "utf-8")
-    result = subprocess.run(
-        argv,
-        cwd=repo_root,
-        env=env,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        capture_output=True,
-        check=False,
-    )
+    try:
+        result = subprocess.run(
+            argv,
+            cwd=repo_root,
+            env=env,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            capture_output=True,
+            check=False,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired:
+        return {
+            "name": name,
+            "ok": False,
+            "returncode": -1,
+            "command": argv,
+            "stdout_tail": ["timeout"],
+            "stderr_tail": [f"timed out after {timeout}s"],
+        }
     return {
         "name": name,
         "ok": result.returncode == 0,
@@ -199,11 +210,11 @@ def _run_check(name: str, argv: list[str], *, repo_root: Path) -> dict[str, Any]
     }
 
 
-def _run_sequence_check(name: str, commands: list[list[str]], *, repo_root: Path) -> dict[str, Any]:
+def _run_sequence_check(name: str, commands: list[list[str]], *, repo_root: Path, timeout: int = 300) -> dict[str, Any]:
     steps: list[dict[str, Any]] = []
     ok = True
     for argv in commands:
-        step = _run_check(name, argv, repo_root=repo_root)
+        step = _run_check(name, argv, repo_root=repo_root, timeout=timeout)
         steps.append(step)
         if not step["ok"]:
             ok = False
@@ -481,7 +492,7 @@ def run_release_check(args: argparse.Namespace) -> dict[str, Any]:
     repo_root = args.repo_root.resolve()
     checks = [
         _run_check("ruff", [sys.executable, "-m", "ruff", "check", "."], repo_root=repo_root),
-        _run_check("pytest", [sys.executable, "-m", "pytest"], repo_root=repo_root),
+        _run_check("pytest", [sys.executable, "-m", "agentplane.cli", "test", "fast", "--tb=short"], repo_root=repo_root),
         _coverage_check(repo_root),
         _package_build_check(repo_root),
         _dependency_audit_check(repo_root),
