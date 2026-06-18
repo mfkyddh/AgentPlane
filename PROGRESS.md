@@ -158,6 +158,7 @@ audience: both
 | B121 | mark Beta exit criteria and M5-M7 as complete | 已完成 | — | pending (2026-06-12) |
 | B122 | lower coverage threshold to 44 after file splits | 已完成 | — | pending (2026-06-12) |
 | B123 | add .coverage.* to gitignore, clean up coverage temp files | 已完成 | — | pending (2026-06-12) |
+| B124 | docs,test: improve docs and add 108 unit tests for coverage | 已完成 | — | pending (2026-06-18) |
 
 ---
 
