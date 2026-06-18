@@ -1,7 +1,7 @@
 ---
 status: active
 owner: AgentPlane maintainers
-last_verified: 2026-05-07
+last_verified: 2026-06-18
 audience: human
 ---
 
@@ -34,40 +34,51 @@ python -m agentplane ...
 
 ---
 
-## 体检
+## 第一个完整操作（5 分钟）
+
+### 1. 体检
 
 ```bash
 agentplane infra bootstrap inspect-local --repo-root .
 agentplane infra bootstrap doctor --repo-root .
-agentplane infra bootstrap init-secrets --repo-root .
-agentplane infra bootstrap verify-secrets --repo-root .
 ```
 
 体检通过，说明环境就绪。
 
----
-
-## 查看状态
+### 2. 查看可用 Target
 
 ```bash
-agentplane project status --repo-root . --html tmp/agentplane-status.html
-agentplane project health-check --repo-root .
+# 本地环境会显示 wsl（Windows Subsystem for Linux）
+agentplane infra bootstrap inspect-local --repo-root .
 ```
 
----
+输出示例：
+```
+Available targets:
+  - wsl (local Windows Subsystem for Linux)
+```
 
-## 第一个操作
+### 3. 查看本地服务（以 wsl 为例）
 
 ```bash
-# 查看所有服务器
-agentplane infra inventory <target> --repo-root .
-
-# 搜索服务
-agentplane service search --target <target> --repo-root .
-
-# 查看应用
-agentplane app object search --target <target> --repo-root .
+agentplane service search --target wsl --repo-root .
 ```
+
+### 4. 查看应用
+
+```bash
+agentplane app object search --target wsl --repo-root .
+```
+
+### 5. 验证一个服务
+
+从上一步获取服务名称，然后验证：
+
+```bash
+agentplane service verify --target wsl --name <服务名称> --repo-root .
+```
+
+**恭喜！** 你已经完成了第一个完整操作。
 
 ---
 

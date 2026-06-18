@@ -6,20 +6,30 @@ from pathlib import Path
 from typing import Any
 
 from agentplane.domain.app.doc_sync import render_rollback_entry
-from agentplane.domain.app.runtime import (
-    _control_plane_transition_step,
-    _execute_step,
-    _local_backend_type,
-    _record_app_operation,
-    _target_ssh_target,
-)
 from agentplane.domain.app.runtime_helpers import _remote_compose_filename
 from agentplane.runtime.operations import next_operation_id
+
+
+def _get_runtime_helpers():
+    """Lazy import to avoid circular dependency."""
+    from agentplane.domain.app.runtime import (
+        _control_plane_transition_step,
+        _execute_step,
+        _local_backend_type,
+        _record_app_operation,
+        _target_ssh_target,
+    )
+
+    return _control_plane_transition_step, _execute_step, _local_backend_type, _record_app_operation, _target_ssh_target
 
 
 def rollback_app(
     contract: dict[str, Any], *, repo_root: Path, target: str, dry_run: bool, execute: bool
 ) -> dict[str, Any]:
+    _control_plane_transition_step, _execute_step, _local_backend_type, _record_app_operation, _target_ssh_target = (
+        _get_runtime_helpers()
+    )
+
     op_id = next_operation_id("rollback-app")
     rollback_entry = contract["rollback"]["previous_control_plane"]
     local_backend = _local_backend_type()

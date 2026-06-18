@@ -17,18 +17,26 @@ from agentplane.domain.app.artifacts import (
     artifact_output_path,
     require_artifact_first_contract,
 )
-from agentplane.domain.app.runtime import (
-    _record_app_operation,
-    _run,
-    _run_linux_backend_command,
-    _target_ssh_target,
-)
 from agentplane.domain.app.versioning import recommended_versions
 from agentplane.runtime.backends.ssh_linux import stream_docker_image
 from agentplane.runtime.operations import next_operation_id
 
 
+def _get_runtime_helpers():
+    """Lazy import to avoid circular dependency."""
+    from agentplane.domain.app.runtime import (
+        _record_app_operation,
+        _run,
+        _run_linux_backend_command,
+        _target_ssh_target,
+    )
+
+    return _record_app_operation, _run, _run_linux_backend_command, _target_ssh_target
+
+
 def _recommended_versions(contract: dict[str, Any], *, repo_root: Path) -> dict[str, Any]:
+    _, _run, _, _ = _get_runtime_helpers()
+
     def run_in_app_root(command: list[str], app_root: Path) -> CompletedProcess[str]:
         return _run(command, cwd=app_root)
 
@@ -55,6 +63,8 @@ def build_artifact(
     auto_version: bool,
     dry_run: bool,
 ) -> dict[str, Any]:
+    _record_app_operation, _, _run_linux_backend_command, _ = _get_runtime_helpers()
+
     contract_spec = require_artifact_first_contract(contract)
     app_root = Path(contract["_meta"]["app_root"])
     output_path = artifact_output_path(app_root, contract_spec)
@@ -165,6 +175,8 @@ def package_runtime(
     auto_version: bool,
     dry_run: bool,
 ) -> dict[str, Any]:
+    _record_app_operation, _, _run_linux_backend_command, _ = _get_runtime_helpers()
+
     contract_spec = require_artifact_first_contract(contract)
     app_root = Path(contract["_meta"]["app_root"])
     output_path = artifact_output_path(app_root, contract_spec)
@@ -246,9 +258,17 @@ def package_runtime(
 
 
 def ship_image(
-    contract: dict[str, Any], *, repo_root: Path, target: str, image_ref: str | None, archive_dir: Path, dry_run: bool,
+    contract: dict[str, Any],
+    *,
+    repo_root: Path,
+    target: str,
+    image_ref: str | None,
+    archive_dir: Path,
+    dry_run: bool,
     _streamer=stream_docker_image,
 ) -> dict[str, Any]:
+    _record_app_operation, _, _, _target_ssh_target = _get_runtime_helpers()
+
     op_id = next_operation_id("ship-image")
     if not image_ref:
         raise ValueError("ship-image 必须显式传入 image_ref")

@@ -166,11 +166,11 @@ def test_run_step_with_backend_resolves_backend_from_host_profile(monkeypatch) -
             }
 
     class FakeRunner:
-        def execute(self, plan, *, bindings=None):  # noqa: ANN001
-            captured["backend_type"] = plan.backend_type
+        def execute_spec(self, spec, *, bindings=None):  # noqa: ANN001
+            captured["backend_type"] = spec.backend_type
             result = FakeResult()
-            result.backend_type = plan.backend_type
-            result.argv = plan.argv
+            result.backend_type = spec.backend_type
+            result.argv = spec.argv
             return result
 
     monkeypatch.setattr(
