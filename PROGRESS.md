@@ -182,6 +182,7 @@ audience: both
 | B133 | fix B130 coverage description, add B127/B128 deliverables, gitignore coverage_output.txt | 已完成 | — | pending (2026-06-24) |
 | B134 | correct error message assertions in runtime_build tests | 已完成 | — | pending (2026-06-24) |
 | B135 | add runtime_deploy.py tests with lazy import pattern | 已完成 | — | pending (2026-06-24) |
+| B136 | add delivery_handlers_deploy.py tests | 已完成 | — | pending (2026-06-24) |
 
 ---
 
