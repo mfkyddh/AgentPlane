@@ -394,3 +394,108 @@ class TestServer:
         client = TestClient(app)
         resp = client.get("/api/hosts", headers={"Authorization": "Bearer secret"})
         assert resp.status_code == 200
+
+
+# ---------------------------------------------------------------------------
+# api_dashboard.py
+# ---------------------------------------------------------------------------
+
+
+class TestApiDashboard:
+    def test_get_dashboard_returns_structure(self, tmp_path: Path) -> None:
+        from agentplane.web.api_dashboard import get_dashboard
+
+        result = get_dashboard(tmp_path)
+
+        assert "hosts" in result
+        assert "apps" in result
+        assert "operations" in result
+        assert "topology" in result
+        assert "domains" in result
+
+    def test_get_capabilities_returns_structure(self, tmp_path: Path) -> None:
+        from agentplane.web.api_dashboard import get_capabilities
+
+        result = get_capabilities()
+
+        # Should return either success structure with layers or error structure
+        assert "layers" in result or "error" in result
+
+    def test_get_server_detail_not_found(self, tmp_path: Path) -> None:
+        from agentplane.web.api_dashboard import get_server_detail
+
+        result = get_server_detail(tmp_path, "nonexistent")
+
+        assert result["error"] == "not_found"
+        assert result["target"] == "nonexistent"
+
+    def test_get_server_detail_with_inventory(self, tmp_path: Path) -> None:
+        from agentplane.web.api_dashboard import get_server_detail
+
+        # Create inventory
+        inv_dir = tmp_path / "inventory" / "servers" / "wsl"
+        inv_dir.mkdir(parents=True)
+        (inv_dir / "inventory.json").write_text(
+            json.dumps({
+                "hostname": "wsl-box",
+                "ssh": {"infra": "10.0.0.1"},
+                "label": "dev",
+                "provider": "local",
+                "services": ["nginx"],
+            }),
+            encoding="utf-8",
+        )
+
+        result = get_server_detail(tmp_path, "wsl")
+
+        assert result["target"] == "wsl"
+        assert result["hostname"] == "wsl-box"
+        assert result["ip"] == "10.0.0.1"
+
+    def test_get_app_detail_not_found(self, tmp_path: Path) -> None:
+        from agentplane.web.api_dashboard import get_app_detail
+
+        result = get_app_detail(tmp_path, "wsl", "nonexistent")
+
+        assert result["error"] == "not_found"
+
+    def test_get_audit_log_empty(self, tmp_path: Path) -> None:
+        from agentplane.web.api_dashboard import get_audit_log
+
+        result = get_audit_log(tmp_path)
+
+        assert result["entries"] == []
+        assert result["total"] == 0
+
+    def test_get_audit_log_with_entries(self, tmp_path: Path) -> None:
+        from agentplane.web.api_dashboard import get_audit_log
+
+        # Create ledger directory with entries
+        ledger_dir = tmp_path / "tmp" / "operation-ledger"
+        ledger_dir.mkdir(parents=True)
+        (ledger_dir / "2026-01-01.jsonl").write_text(
+            json.dumps({"timestamp": "2026-01-01T00:00:00Z", "target": "wsl", "action": "apply"}) + "\n",
+            encoding="utf-8",
+        )
+
+        result = get_audit_log(tmp_path)
+
+        assert len(result["entries"]) == 1
+        assert result["total"] == 1
+
+    def test_get_audit_log_with_target_filter(self, tmp_path: Path) -> None:
+        from agentplane.web.api_dashboard import get_audit_log
+
+        # Create ledger directory with entries
+        ledger_dir = tmp_path / "tmp" / "operation-ledger"
+        ledger_dir.mkdir(parents=True)
+        (ledger_dir / "2026-01-01.jsonl").write_text(
+            json.dumps({"timestamp": "2026-01-01T00:00:00Z", "target": "wsl", "action": "apply"}) + "\n" +
+            json.dumps({"timestamp": "2026-01-02T00:00:00Z", "target": "remote", "action": "deploy"}) + "\n",
+            encoding="utf-8",
+        )
+
+        result = get_audit_log(tmp_path, target="wsl")
+
+        assert len(result["entries"]) == 1
+        assert result["entries"][0]["target"] == "wsl"
