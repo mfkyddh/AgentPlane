@@ -10,6 +10,45 @@ audience: both
 
 里程碑记录。详细变更见 `git log`。
 
+## 1.0.0 — 2026-06-24
+
+**GA 正式发布**：从 Beta 到 Production/Stable 的里程碑。
+
+### 核心成就
+
+- **CLI 命令测试覆盖率 86%**：从 38% 提升到 86%，超过门禁 85%
+- **Beta 退出标准全部满足**：源文件 < 500 行、ruff 0 errors、CLI 覆盖率 > 85%
+- **测试套件稳定**：2290+ 测试通过，0 失败
+
+### 测试覆盖提升
+
+- runtime_deploy.py：42% → 91%（+49%）
+- delivery_handlers_deploy.py：8% → 86%（+78%）
+- delivery_handlers_candidate.py：27% → 92%（+65%）
+- delivery_handlers_planning.py：39% → 95%（+56%）
+- app.py CLI dispatch：58% → 90%（+32%）
+- project_checks.py：39% → 92%（+53%）
+- web.py CLI：31% → 100%（+69%）
+- ingress.py CLI：47% → 100%（+53%）
+
+### 新增测试文件
+
+- tests/app/test_runtime_deploy.py（15 tests）
+- tests/app/test_delivery_handlers_deploy.py（10 tests）
+- tests/cli/test_app_cli.py（40 tests）
+- tests/cli/test_project_helpers.py（44 tests）
+- tests/cli/test_web_cli.py（9 tests）
+- tests/cli/test_ingress_cli.py（21 tests）
+- tests/cli/test_infra_handlers.py（13 tests）
+- tests/cli/test_service.py（9 tests）
+
+### 门禁升级
+
+- 覆盖率门禁：44% → 85%
+- 版本状态：Beta → Production/Stable
+
+---
+
 ## 0.3.0 — 2026-06-11
 
 - 质量加固：测试金字塔修正（57 文件 e2e→integration），测试分布 unit 72% / integration 29% / e2e 1%
