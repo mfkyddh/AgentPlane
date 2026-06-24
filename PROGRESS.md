@@ -185,6 +185,7 @@ audience: both
 | B136 | add delivery_handlers_deploy.py tests | 已完成 | — | pending (2026-06-24) |
 | B137 | enhance delivery_handlers_candidate.py tests | 已完成 | — | pending (2026-06-24) |
 | B138 | enhance delivery_handlers_planning.py tests | 已完成 | — | pending (2026-06-24) |
+| B139 | enhance web.py tests with api_dashboard coverage | 已完成 | — | pending (2026-06-24) |
 
 ---
 
