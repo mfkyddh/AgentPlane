@@ -7,32 +7,72 @@ from typing import Any
 
 import yaml
 from agentplane.domain.app.contracts import has_public_ingress, public_sites
-from agentplane.domain.app.runtime import (
-    _control_plane_transition_step,
-    _execute_step,
-    _local_backend_type,
-    _production_network_preflight,
-    _record_app_operation,
-    _target_ssh_target,
-    render_runtime,
-)
-from agentplane.domain.app.runtime_helpers import (
-    _healthcheck_url,
-    _origin_health_wait_command,
-    _payload_path,
-    _remote_compose_filename,
-    _remote_env_parent,
-    _remote_env_path,
-    _runtime_container_name,
-    _service_env_path,
-)
-from agentplane.runtime.operations import next_operation_id
-from agentplane.runtime.wsl_bridge import windows_path_to_wsl_posix
+# Lazy imports to avoid circular dependency with runtime.py
+# runtime.py re-exports deploy_app and verify_app from this module
+def _get_runtime_helpers():
+    from agentplane.domain.app.runtime import (
+        _control_plane_transition_step,
+        _execute_step,
+        _local_backend_type,
+        _production_network_preflight,
+        _record_app_operation,
+        _target_ssh_target,
+        render_runtime,
+    )
+    from agentplane.domain.app.runtime_helpers import (
+        _healthcheck_url,
+        _origin_health_wait_command,
+        _payload_path,
+        _remote_compose_filename,
+        _remote_env_parent,
+        _remote_env_path,
+        _runtime_container_name,
+        _service_env_path,
+    )
+    from agentplane.runtime.operations import next_operation_id
+    from agentplane.runtime.wsl_bridge import windows_path_to_wsl_posix
+    
+    return {
+        '_control_plane_transition_step': _control_plane_transition_step,
+        '_execute_step': _execute_step,
+        '_local_backend_type': _local_backend_type,
+        '_production_network_preflight': _production_network_preflight,
+        '_record_app_operation': _record_app_operation,
+        '_target_ssh_target': _target_ssh_target,
+        'render_runtime': render_runtime,
+        '_healthcheck_url': _healthcheck_url,
+        '_origin_health_wait_command': _origin_health_wait_command,
+        '_payload_path': _payload_path,
+        '_remote_compose_filename': _remote_compose_filename,
+        '_remote_env_parent': _remote_env_parent,
+        '_remote_env_path': _remote_env_path,
+        '_runtime_container_name': _runtime_container_name,
+        '_service_env_path': _service_env_path,
+        'next_operation_id': next_operation_id,
+        'windows_path_to_wsl_posix': windows_path_to_wsl_posix,
+    }
 
 
 def deploy_app(
     contract: dict[str, Any], *, repo_root: Path, target: str, image_ref: str | None, dry_run: bool, execute: bool
 ) -> dict[str, Any]:
+    # Get all imported functions lazily to avoid circular dependency
+    helpers = _get_runtime_helpers()
+    next_operation_id = helpers['next_operation_id']
+    _local_backend_type = helpers['_local_backend_type']
+    render_runtime = helpers['render_runtime']
+    _record_app_operation = helpers['_record_app_operation']
+    _execute_step = helpers['_execute_step']
+    _target_ssh_target = helpers['_target_ssh_target']
+    _control_plane_transition_step = helpers['_control_plane_transition_step']
+    _production_network_preflight = helpers['_production_network_preflight']
+    _service_env_path = helpers['_service_env_path']
+    _remote_compose_filename = helpers['_remote_compose_filename']
+    _remote_env_path = helpers['_remote_env_path']
+    _remote_env_parent = helpers['_remote_env_parent']
+    _payload_path = helpers['_payload_path']
+    windows_path_to_wsl_posix = helpers['windows_path_to_wsl_posix']
+    
     op_id = next_operation_id("deploy-app")
     local_backend = _local_backend_type()
     if execute and dry_run:
@@ -250,6 +290,18 @@ def deploy_app(
 def verify_app(
     contract: dict[str, Any], *, repo_root: Path, target: str, dry_run: bool, execute: bool
 ) -> dict[str, Any]:
+    # Get all imported functions lazily to avoid circular dependency
+    helpers = _get_runtime_helpers()
+    next_operation_id = helpers['next_operation_id']
+    _local_backend_type = helpers['_local_backend_type']
+    _healthcheck_url = helpers['_healthcheck_url']
+    _runtime_container_name = helpers['_runtime_container_name']
+    _record_app_operation = helpers['_record_app_operation']
+    _execute_step = helpers['_execute_step']
+    _target_ssh_target = helpers['_target_ssh_target']
+    _origin_health_wait_command = helpers['_origin_health_wait_command']
+    _production_network_preflight = helpers['_production_network_preflight']
+    
     op_id = next_operation_id("verify-app")
     local_backend = _local_backend_type()
     if execute and dry_run:
