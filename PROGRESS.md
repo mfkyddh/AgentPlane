@@ -183,6 +183,7 @@ audience: both
 | B134 | correct error message assertions in runtime_build tests | 已完成 | — | pending (2026-06-24) |
 | B135 | add runtime_deploy.py tests with lazy import pattern | 已完成 | — | pending (2026-06-24) |
 | B136 | add delivery_handlers_deploy.py tests | 已完成 | — | pending (2026-06-24) |
+| B137 | enhance delivery_handlers_candidate.py tests | 已完成 | — | pending (2026-06-24) |
 
 ---
 
