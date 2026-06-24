@@ -13,6 +13,93 @@ from agentplane.runtime.host_profile import HostProfile
 from agentplane.runtime.platform import HostPlatform
 from tests.support.paths import REPO_ROOT
 
+
+# Unit tests for pure functions (no I/O)
+
+@pytest.mark.unit
+def test_build_live_gate_steps_raises_on_unsupported_profile() -> None:
+    from agentplane.domain.infra.live_gate import build_live_gate_steps
+
+    with pytest.raises(ValueError, match="unsupported live gate profile"):
+        build_live_gate_steps(Path("/"), profile="unsupported")
+
+
+@pytest.mark.unit
+def test_summarize_capabilities_returns_sorted_list() -> None:
+    from agentplane.domain.infra.live_gate import summarize_capabilities
+
+    steps = [
+        {"capabilities": ["docker", "ssh"]},
+        {"capabilities": ["uv", "docker"]},
+        {"capabilities": []},
+    ]
+
+    result = summarize_capabilities(steps)
+
+    assert result == ["docker", "ssh", "uv"]
+
+
+@pytest.mark.unit
+def test_summarize_capabilities_handles_missing_capabilities() -> None:
+    from agentplane.domain.infra.live_gate import summarize_capabilities
+
+    steps = [
+        {"key": "test"},  # No capabilities key
+        {"capabilities": ["docker"]},
+    ]
+
+    result = summarize_capabilities(steps)
+
+    assert result == ["docker"]
+
+
+@pytest.mark.unit
+def test_live_gate_step_to_payload() -> None:
+    from agentplane.domain.infra.live_gate import LiveGateStep
+
+    step = LiveGateStep(
+        key="test.step",
+        argv=("docker", "ps"),
+        capabilities=("docker",),
+        cwd=Path("/tmp"),
+        execution="linux-backend",
+        timeout=600,
+    )
+
+    result = step.to_payload()
+
+    assert result["key"] == "test.step"
+    assert result["argv"] == ["docker", "ps"]
+    assert result["cwd"] == str(Path("/tmp"))  # Platform-independent path comparison
+    assert result["capabilities"] == ["docker"]
+    assert result["execution"] == "linux-backend"
+    assert result["timeout"] == 600
+
+
+@pytest.mark.unit
+def test_cli_returns_correct_argv() -> None:
+    from agentplane.domain.infra.live_gate import _cli
+
+    result = _cli(Path("/tmp"), "infra", "health", "wsl")
+
+    assert result[0] == "uv"
+    assert result[1] == "run"
+    assert "--repo-root" in result
+    assert str(Path("/tmp")) in result  # Platform-independent path comparison
+
+
+@pytest.mark.unit
+def test_remote_cli_returns_correct_argv() -> None:
+    from agentplane.domain.infra.live_gate import _remote_cli
+
+    result = _remote_cli(Path("/tmp"), "prod0-main", "docker", "ps")
+
+    assert result[0] == "uv"
+    assert "prod0-main" in result
+    assert "--repo-root" in result
+
+
+# Integration tests
 pytestmark = pytest.mark.integration
 
 
