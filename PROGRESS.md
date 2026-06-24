@@ -181,6 +181,7 @@ audience: both
 | B132 | M2-P0e: CLI dispatch tests for infra cleanup/live-gate/firewall + web CLI entry | 待启动 | C4 | 目标 web.py 31% → 90%, infra_handlers 38% → 85%，预计 +120 行测试 |
 | B133 | fix B130 coverage description, add B127/B128 deliverables, gitignore coverage_output.txt | 已完成 | — | pending (2026-06-24) |
 | B134 | correct error message assertions in runtime_build tests | 已完成 | — | pending (2026-06-24) |
+| B135 | add runtime_deploy.py tests with lazy import pattern | 已完成 | — | pending (2026-06-24) |
 
 ---
 
