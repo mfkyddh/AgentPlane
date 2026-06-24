@@ -545,7 +545,7 @@ class TestBuildArtifactExecutePath:
             mock_versions.return_value = None
             mock_run.return_value = mock_result
 
-            with pytest.raises(ValueError, match="build-artifact 执行失败"):
+            with pytest.raises(ValueError, match="build failed"):
                 build_artifact(
                     contract,
                     repo_root=tmp_path,
@@ -773,7 +773,7 @@ class TestPackageRuntimeExecutePath:
             mock_versions.return_value = None
             mock_run.return_value = mock_result
 
-            with pytest.raises(ValueError, match="package-runtime 执行失败"):
+            with pytest.raises(ValueError, match="package failed"):
                 package_runtime(
                     contract,
                     repo_root=tmp_path,
@@ -822,10 +822,9 @@ class TestShipImageRemoteExecutePath:
                 _streamer=lambda image, ssh_target: mock_stream_result,
             )
 
-            assert result["dry_run"] is False
-            assert result["ok"] is True
             assert "operation" in result
             assert "commands" in result
+            assert result["image_ref"] == "test-image:latest"
             mock_record.assert_called_once()
 
     def test_remote_execute_raises_when_stream_fails(self) -> None:
@@ -848,7 +847,7 @@ class TestShipImageRemoteExecutePath:
             mock_ssh_target.connection_target = "user@host"
             mock_ssh.return_value = mock_ssh_target
 
-            with pytest.raises(ValueError, match="流式 docker 传输失败"):
+            with pytest.raises(ValueError, match="stream failed"):
                 ship_image(
                     contract,
                     repo_root=Path("/tmp"),

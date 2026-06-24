@@ -179,6 +179,7 @@ audience: both
 | B130 | M2-P0c: runtime_rollback.py rollback_app remote execute path (transition_step) | 待启动 | C4 | 目标 19% → 80%+，补 remote execute + transition_step 覆盖 |
 | B131 | M2-P0d: delivery_handlers_deploy/candidate/planning shared integration tests | 待启动 | C4 | 目标各模块 ≥ 75%，预计 +180 行测试 |
 | B132 | M2-P0e: CLI dispatch tests for infra cleanup/live-gate/firewall + web CLI entry | 待启动 | C4 | 目标 web.py 31% → 90%, infra_handlers 38% → 85%，预计 +120 行测试 |
+| B133 | fix B130 coverage description, add B127/B128 deliverables, gitignore coverage_output.txt | 已完成 | — | pending (2026-06-24) |
 
 ---
 
