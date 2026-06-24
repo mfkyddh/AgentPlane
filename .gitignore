@@ -34,6 +34,7 @@ __pycache__/
 .pytest_cache/
 .coverage
 .coverage.*
+coverage_output.txt
 node_modules/
 
 .venv/

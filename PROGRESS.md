@@ -26,6 +26,18 @@ audience: both
 | C1 | 核心 Skill 测试覆盖 | ✓ 完成 | 16 个 Skill 已评估：13 高覆盖，2 中覆盖，1 低覆盖（toolchain-setup），2 无 CLI 命令。测试覆盖率 56.52%，870 tests passed |
 | C2 | 文档覆盖目标用户场景 | ✓ 完成 | 5 份核心文档已重写 |
 | C3 | 真实应用全生命周期验证 | ✓ 完成 | sub2api 双环境验证通过，文档化已完成 |
+| C4 | Beta 退出：CLI 命令测试覆盖率 ≥ 90% | 进行中 | 当前 CLI 层模块覆盖 31%-99% 不等；M1 产出动词矩阵见 docs/runbooks/cli-verb-matrix.md；P0 冲刺聚焦 runtime_* / delivery_handlers_* / infra_handlers / web 薄弱路径 |
+
+## 当前冲刺
+
+**P0：CLI 命令覆盖率冲刺**（服务 C4）
+
+| Milestone | 目标 | 状态 |
+|-----------|------|------|
+| M1 | CLI 动词矩阵清单 | ✓ 完成（B127） |
+| M2 | P0 模块冲刺（runtime_build/deploy/rollback + delivery_handlers_* + infra cleanup/live-gate + web CLI） | 进行中 |
+| M3 | P1 模块补齐（service / app 入口 / project_checks / 剩余 handlers） | 待启动 |
+| M4 | 门禁升级（coverage gate 44% → 85%） | 待启动 |
 
 ---
 
@@ -160,6 +172,13 @@ audience: both
 | B123 | add .coverage.* to gitignore, clean up coverage temp files | 已完成 | — | pending (2026-06-12) |
 | B124 | docs,test: improve docs and add 108 unit tests for coverage | 已完成 | — | pending (2026-06-18) |
 | B125 | add 35 unit tests for shared handlers and wsl audit | 已完成 | — | pending (2026-06-18) |
+| B126 | add 11 unit tests for candidate and planning handlers | 已完成 | — | pending (2026-06-18) |
+| B127 | M1: CLI 动词矩阵清单（7 域 × 17 surface × 68 verb 盘点 + 优先级排序） | 已完成 | C1 | docs/runbooks/cli-verb-matrix.md（2026-06-22） |
+| B128 | M2-P0a: runtime_build.py execute-path tests (build_artifact/package_runtime/ship_image 真执行路径) | 进行中 | C4 | 目标 10% → 70%，预计 +150 行测试 |
+| B129 | M2-P0b: runtime_deploy.py deploy_app/verify_app wsl+remote execute paths | 待启动 | C4 | 目标 8% → 70%，预计 +200 行测试 |
+| B130 | M2-P0c: runtime_rollback.py rollback_app remote execute path (transition_step) | 待启动 | C4 | 目标 19% → 80%+，补 remote execute + transition_step 覆盖 |
+| B131 | M2-P0d: delivery_handlers_deploy/candidate/planning shared integration tests | 待启动 | C4 | 目标各模块 ≥ 75%，预计 +180 行测试 |
+| B132 | M2-P0e: CLI dispatch tests for infra cleanup/live-gate/firewall + web CLI entry | 待启动 | C4 | 目标 web.py 31% → 90%, infra_handlers 38% → 85%，预计 +120 行测试 |
 
 ---
 
