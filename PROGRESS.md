@@ -187,6 +187,7 @@ audience: both
 | B138 | enhance delivery_handlers_planning.py tests | 已完成 | — | pending (2026-06-24) |
 | B139 | enhance web.py tests with api_dashboard coverage | 已完成 | — | pending (2026-06-24) |
 | B140 | create tests/cli/test_infra_handlers.py | 已完成 | — | pending (2026-06-24) |
+| B141 | add unit tests for live_gate.py | 已完成 | — | pending (2026-06-24) |
 
 ---
 
