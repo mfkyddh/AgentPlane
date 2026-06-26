@@ -60,7 +60,7 @@ const OperationsComponent = {
                 <td>{{ op.object_type }}</td>
                 <td>{{ op.action }}</td>
                 <td>
-                  <span class="status-badge" :class="op.result === 'pass' ? 'success' : 'error'">
+                  <span class="status-badge" :class="resultBadgeClass(op.result)">
                     {{ op.result }}
                   </span>
                 </td>
@@ -260,6 +260,14 @@ const OperationsComponent = {
       }
     }
 
+    function resultBadgeClass(result) {
+      if (!result) return 'warning';
+      const r = String(result).toLowerCase();
+      if (['pass', 'passed', 'verified', 'queried', 'success', 'ok', 'done', 'completed', 'created', 'updated', 'deleted'].some(s => r.includes(s))) return 'success';
+      if (['fail', 'error', 'timeout', 'refused', 'denied'].some(s => r.includes(s))) return 'error';
+      return 'warning';
+    }
+
     function formatTime(ts) {
       if (!ts) return '-';
       try {
@@ -350,7 +358,7 @@ const OperationsComponent = {
       tab, loading, auditLoading, operations, auditEntries, targets,
       auditTarget, auditLimit, serviceTarget, serviceName,
       deployTarget, deployApp, rollbackTarget, rollbackApp,
-      actionResult, refreshOps, fetchAuditLog, formatTime,
+      actionResult, refreshOps, fetchAuditLog, formatTime, resultBadgeClass,
       servicePlan, serviceVerify, appDeploy, appRollback, t
     };
   }

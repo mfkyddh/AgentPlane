@@ -194,11 +194,12 @@ const TopologyViewComponent = {
     }
 
     function serviceStatusClass(status) {
-      if (!status) return 'unknown';
+      if (!status) return 'unchecked';
       const s = String(status).toLowerCase();
       if (s.includes('running') || s.includes('active')) return 'connected';
       if (s.includes('error') || s.includes('fail')) return 'error';
-      return 'unknown';
+      if (s === 'unknown') return 'unchecked';
+      return 'unchecked';
     }
 
     function formatTime(ts) {

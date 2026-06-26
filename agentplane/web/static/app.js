@@ -7,7 +7,10 @@ const { createApp, ref, computed, provide, inject, onMounted, nextTick, onUnmoun
 const _refreshCallbacks = new Set();
 
 function useDataPoller(refreshFn) {
-  onMounted(() => _refreshCallbacks.add(refreshFn));
+  onMounted(() => {
+    _refreshCallbacks.add(refreshFn);
+    refreshFn();  // Fetch immediately on mount so late-mounting components load data
+  });
   onUnmounted(() => _refreshCallbacks.delete(refreshFn));
 }
 
@@ -65,8 +68,6 @@ function createAgentPlaneApp() {
             }
           } catch { /* ignore */ }
         }, 5000);
-        // Initial fetch for all registered callbacks
-        for (const fn of _refreshCallbacks) fn();
       }
 
       function stopMtimePolling() {

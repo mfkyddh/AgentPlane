@@ -63,8 +63,15 @@ const DashboardComponent = {
         <!-- Stale data warning -->
         <div v-if="isDataStale" class="stale-data-banner">
           <svg viewBox="0 0 16 16" fill="currentColor" style="width:16px;height:16px;flex-shrink:0;"><path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm9-3a1 1 0 11-2 0 1 1 0 012 0zM8 7a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 018 7z"/></svg>
-          <span>{{ t('dashboard.stale_hint') || 'Data is outdated. Run:' }}</span>
-          <code>agentplane infra inventory &lt;target&gt; --repo-root . --write</code>
+          <div style="flex:1;">
+            <span>{{ t('dashboard.stale_hint') || 'Data is outdated. Run:' }}</span>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+              <code style="flex:1;">agentplane infra inventory &lt;target&gt; --repo-root . --write</code>
+              <button class="btn-ghost" style="font-size:11px;padding:2px 8px;" @click="copyRefreshCommand" :title="t('action.copy') || 'Copy'">
+                {{ commandCopied ? '✓' : '📋' }}
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- Domain health cards -->
@@ -359,6 +366,15 @@ const DashboardComponent = {
       return headers;
     }
 
+    const commandCopied = ref(false);
+    function copyRefreshCommand() {
+      const cmd = 'agentplane infra inventory <target> --repo-root . --write';
+      navigator.clipboard.writeText(cmd).then(() => {
+        commandCopied.value = true;
+        setTimeout(() => { commandCopied.value = false; }, 2000);
+      });
+    }
+
     async function fetchDashboard() {
       loadError.value = '';
       try {
@@ -416,7 +432,7 @@ const DashboardComponent = {
     function opResultClass(result) {
       if (!result) return 'neutral';
       const r = String(result).toLowerCase();
-      if (r.includes('success') || r.includes('ok') || r.includes('done')) return 'success';
+      if (r.includes('success') || r.includes('ok') || r.includes('done') || r.includes('pass') || r.includes('verified') || r.includes('queried') || r.includes('completed')) return 'success';
       if (r.includes('fail') || r.includes('error')) return 'fail';
       return 'neutral';
     }
@@ -427,11 +443,12 @@ const DashboardComponent = {
     }
 
     function serviceStatusClass(status) {
-      if (!status) return 'unknown';
+      if (!status) return 'unchecked';
       const s = String(status).toLowerCase();
       if (s.includes('running') || s.includes('active')) return 'connected';
       if (s.includes('error') || s.includes('fail')) return 'error';
-      return 'unknown';
+      if (s === 'unknown') return 'unchecked';
+      return 'unchecked';
     }
 
     function toggleTarget(target) {
@@ -470,6 +487,7 @@ const DashboardComponent = {
       fetchDashboard, toggleTarget, selectApp, closeDetail,
       formatRelativeTime, formatTime, truncateUrl,
       opResultClass, appStatusClass, serviceStatusClass, formatDetailVal,
+      commandCopied, copyRefreshCommand,
       t,
     };
   },
