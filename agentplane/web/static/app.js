@@ -58,6 +58,11 @@ function createAgentPlaneApp() {
       }
 
       function startMtimePolling() {
+        // Seed lastMtime to avoid redundant refresh on first poll cycle
+        apiFetch('/api/mtime').then(res => res.json()).then(data => {
+          lastMtime = data.mtime || 0;
+        }).catch(() => {});
+
         mtimePoller = setInterval(async () => {
           try {
             const res = await apiFetch('/api/mtime');

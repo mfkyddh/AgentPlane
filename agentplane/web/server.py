@@ -311,6 +311,11 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
     async def api_config():
         return {"requires_auth": token is not None}
 
+    @app.get("/favicon.ico")
+    async def favicon():
+        from starlette.responses import Response
+        return Response(status_code=204)
+
     @app.get("/")
     async def index():
         return FileResponse(str(STATIC_DIR / "index.html"))
