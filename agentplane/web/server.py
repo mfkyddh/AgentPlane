@@ -325,6 +325,8 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
         file_path = STATIC_DIR / filename
         if not file_path.is_file():
             return JSONResponse({"error": "not found"}, status_code=404)
-        return FileResponse(str(file_path))
+        response = FileResponse(str(file_path))
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        return response
 
     return app

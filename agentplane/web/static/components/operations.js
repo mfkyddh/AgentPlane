@@ -77,7 +77,7 @@ const OperationsComponent = {
           <div style="display:flex; gap:8px; align-items:center;">
             <select v-model="auditTarget" class="select-sm" @change="fetchAuditLog">
               <option value="">{{ t('operations.all_targets') || 'All Targets' }}</option>
-              <option v-for="t in targets" :key="t" :value="t">{{ t }}</option>
+              <option v-for="tgt in targets" :key="tgt" :value="tgt">{{ tgt }}</option>
             </select>
             <select v-model.number="auditLimit" class="select-sm" @change="fetchAuditLog">
               <option :value="50">50</option>
@@ -116,7 +116,7 @@ const OperationsComponent = {
                   <span v-else class="badge badge-success">LIVE</span>
                 </td>
                 <td>
-                  <span class="status-badge" :class="entry.result === 'pass' ? 'success' : 'error'">
+                  <span class="status-badge" :class="resultBadgeClass(entry.result)">
                     {{ entry.result }}
                   </span>
                 </td>
@@ -139,7 +139,7 @@ const OperationsComponent = {
               <div class="action-form">
                 <select v-model="serviceTarget" class="form-select">
                   <option value="">{{ t('operations.select_target') || 'Select Target' }}</option>
-                  <option v-for="t in targets" :key="t" :value="t">{{ t }}</option>
+                  <option v-for="tgt in targets" :key="tgt" :value="tgt">{{ tgt }}</option>
                 </select>
                 <input v-model="serviceName" class="form-input" :placeholder="t('operations.service_name') || 'Service Name'">
                 <div class="action-buttons">
@@ -159,7 +159,7 @@ const OperationsComponent = {
               <div class="action-form">
                 <select v-model="deployTarget" class="form-select">
                   <option value="">{{ t('operations.select_target') || 'Select Target' }}</option>
-                  <option v-for="t in targets" :key="t" :value="t">{{ t }}</option>
+                  <option v-for="tgt in targets" :key="tgt" :value="tgt">{{ tgt }}</option>
                 </select>
                 <input v-model="deployApp" class="form-input" :placeholder="t('operations.app_name') || 'App Name'">
                 <div class="action-buttons">
@@ -179,7 +179,7 @@ const OperationsComponent = {
               <div class="action-form">
                 <select v-model="rollbackTarget" class="form-select">
                   <option value="">{{ t('operations.select_target') || 'Select Target' }}</option>
-                  <option v-for="t in targets" :key="t" :value="t">{{ t }}</option>
+                  <option v-for="tgt in targets" :key="tgt" :value="tgt">{{ tgt }}</option>
                 </select>
                 <input v-model="rollbackApp" class="form-input" :placeholder="t('operations.app_name') || 'App Name'">
                 <div class="action-buttons">
@@ -204,7 +204,7 @@ const OperationsComponent = {
   `,
   setup() {
     const { t } = useI18n();
-    const authToken = inject('authToken');
+    const authToken = Vue.inject('authToken', Vue.ref(''));
     
     const tab = ref('history');
     const loading = ref(false);
@@ -349,7 +349,8 @@ const OperationsComponent = {
       }
     }
 
-    onMounted(() => {
+    // Shared polling — refresh both operations and audit log on data change
+    useDataPoller(() => {
       refreshOps();
       fetchAuditLog();
     });

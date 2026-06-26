@@ -30,7 +30,6 @@ function createAgentPlaneApp() {
 
       // i18n
       const { locale, t, toggleLocale } = useI18n();
-
       const viewLabel = computed(() => {
         const labels = { dashboard: t('topbar.overview'), topology: t('topbar.topology'), 'capability-map': t('topbar.capabilities'), chat: t('topbar.chat'), operations: t('topbar.operations') || 'Operations', logs: t('topbar.logs') || 'Live Logs' };
         return labels[view.value] || t('topbar.overview');
@@ -42,6 +41,9 @@ function createAgentPlaneApp() {
       });
 
       provide('authToken', authToken);
+
+      // Auto-close mobile sidebar on navigation
+      Vue.watch(view, () => { sidebarOpen.value = false; });
 
       let ws = null;
       let mtimePoller = null;
@@ -93,7 +95,8 @@ function createAgentPlaneApp() {
         };
 
         ws.onmessage = (event) => {
-          const msg = JSON.parse(event.data);
+          let msg;
+          try { msg = JSON.parse(event.data); } catch { return; }
 
           if (msg.type === 'auth_required') {
             if (!authenticated.value) {
@@ -185,6 +188,10 @@ function createAgentPlaneApp() {
       };
     },
   });
+
+  app.config.errorHandler = (err, instance, info) => {
+    console.error('[AgentPlane]', err, info);
+  };
 
   return app;
 }

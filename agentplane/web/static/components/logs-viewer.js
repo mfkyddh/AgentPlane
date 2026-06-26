@@ -77,7 +77,7 @@ const LogsViewerComponent = {
   `,
   setup() {
     const { t } = useI18n();
-    const authToken = inject('authToken');
+    const authToken = Vue.inject('authToken', Vue.ref(''));
     
     const targets = ref(['prod0-main', 'wsl']);
     const selectedTarget = ref('');
@@ -104,7 +104,7 @@ const LogsViewerComponent = {
       ws.onopen = () => {
         connected.value = true;
         connecting.value = false;
-        addLog('system', 'Connected to ' + containerName.value + ' on ' + selectedTarget.value);
+        addLog('system', t('logs.connected_to') + ' ' + containerName.value + ' @ ' + selectedTarget.value);
       };
       
       ws.onmessage = (event) => {
@@ -120,15 +120,15 @@ const LogsViewerComponent = {
         }
       };
       
-      ws.onerror = (error) => {
-        addLog('error', 'WebSocket error');
-        console.error('WebSocket error:', error);
+      ws.onerror = () => {
+        addLog('error', t('logs.ws_error') || 'WebSocket error');
+        console.error('Logs WebSocket error');
       };
       
       ws.onclose = () => {
         connected.value = false;
         connecting.value = false;
-        addLog('system', 'Disconnected');
+        addLog('system', t('logs.disconnected') || 'Disconnected');
       };
     }
     

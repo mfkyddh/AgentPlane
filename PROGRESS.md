@@ -190,6 +190,7 @@ audience: both
 | B141 | add unit tests for live_gate.py | 已完成 | — | pending (2026-06-24) |
 | B142 | create tests/cli/test_service.py | 已完成 | — | pending (2026-06-24) |
 | B143 | fix data polling, result badges, and service status display | 已完成 | — | pending (2026-06-26) |
+| B144 | eliminate double-fetch, add favicon, fix import sorting | 已完成 | — | pending (2026-06-26) |
 
 ---
 

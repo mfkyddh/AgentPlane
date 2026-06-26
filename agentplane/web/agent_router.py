@@ -11,9 +11,9 @@ from agentplane.domain.targets import FORMAL_TARGETS
 
 logger = logging.getLogger(__name__)
 
-ALLOWED_VERBS = {"search", "get", "verify", "health"}
+ALLOWED_VERBS = {"search", "get", "verify"}
 BLOCKED_VERBS = {"apply", "delete", "plan", "migrate", "deploy", "rollback"}
-CONFIRM_VERBS = {"plan", "apply"}  # Write operations that need user confirmation
+CONFIRM_VERBS = {"plan", "apply"}
 
 COMMAND_MAP = {
     "app search": lambda repo_root, args: search_apps(repo_root, *args),

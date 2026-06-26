@@ -10,7 +10,7 @@ const _i18nState = Vue.reactive({
 async function _loadLocale(locale) {
   if (_i18nState.messages[locale]) return _i18nState.messages[locale];
   try {
-    const res = await fetch('/static/i18n/' + locale + '.json');
+    const res = await fetch('/static/i18n/' + locale + '.json', { cache: 'no-store' });
     if (!res.ok) throw new Error('Failed to load ' + locale);
     _i18nState.messages[locale] = await res.json();
     return _i18nState.messages[locale];

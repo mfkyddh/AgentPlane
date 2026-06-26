@@ -130,5 +130,15 @@
   "logs.clear": "Clear",
   "logs.auto_scroll": "Auto Scroll",
   "logs.waiting": "Waiting for logs...",
-  "logs.not_connected": "Not connected. Select a target and container to start."
+  "logs.not_connected": "Not connected. Select a target and container to start.",
+  "logs.connected_to": "Connected to",
+  "logs.ws_error": "WebSocket error",
+
+  "time.just_now": "just now",
+  "time.min_ago": "m ago",
+  "time.hour_ago": "h ago",
+  "time.day_ago": "d ago",
+  "time.na": "N/A",
+
+  "action.copy": "Copy"
 }

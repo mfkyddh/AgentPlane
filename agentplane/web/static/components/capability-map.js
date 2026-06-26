@@ -27,13 +27,13 @@ const CapabilityMapComponent = {
             <div v-for="obj in layer.objects" :key="obj.id" class="cap-object">
               <div class="cap-object-header" @click="toggle(obj.id)">
                 <span class="cap-toggle">{{ expanded[obj.id] ? '▼' : '▶' }}</span>
-                <span class="cap-object-name">{{ obj.name }}</span>
+                <span class="cap-object-name">{{ locale === 'zh' ? obj.name : (obj.name_en || obj.name) }}</span>
                 <span class="cap-object-stats">{{ objectStats(obj) }}</span>
               </div>
               <div v-if="expanded[obj.id]" class="cap-object-body">
                 <div v-for="cap in obj.capabilities" :key="cap.id" class="cap-item">
                   <span class="cap-dot" :class="cap.status"></span>
-                  <span class="cap-item-name">{{ cap.name }}</span>
+                  <span class="cap-item-name">{{ locale === 'zh' ? cap.name : (cap.name_en || cap.name) }}</span>
                   <code v-if="cap.cli && cap.status === 'implemented'" class="cap-cli">{{ cap.cli }}</code>
                 </div>
               </div>
@@ -96,7 +96,7 @@ const CapabilityMapComponent = {
       return impl + '/' + obj.capabilities.length;
     }
 
-    onMounted(loadCapabilities);
+    useDataPoller(loadCapabilities);
 
     return { layers, loading, error, expanded, toggle, layerStats, objectStats, t, locale, domainIcon };
   },

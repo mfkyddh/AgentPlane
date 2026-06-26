@@ -104,11 +104,11 @@ const TopologyViewComponent = {
       </div>
 
       <!-- Detail panel -->
-      <div v-if="detailPanel.visible" class="detail-overlay" @click.self="closeDetail">
+      <div v-if="detailPanel.visible" class="detail-overlay" @click.self="closeDetail" @keydown.esc="closeDetail">
         <div class="detail-panel">
           <div class="detail-header">
             <span class="detail-title">{{ detailPanel.title }}</span>
-            <button class="detail-close" @click="closeDetail">&times;</button>
+            <button class="detail-close" @click="closeDetail" aria-label="Close detail panel">&times;</button>
           </div>
           <div class="detail-body">
             <div v-if="detailPanel.loading" class="skeleton-card">
@@ -187,6 +187,13 @@ const TopologyViewComponent = {
     }
 
     function closeDetail() { detailPanel.value.visible = false; }
+
+    function handleKeydown(e) {
+      if (e.key === 'Escape' && detailPanel.value.visible) closeDetail();
+    }
+
+    Vue.onMounted(() => document.addEventListener('keydown', handleKeydown));
+    Vue.onUnmounted(() => document.removeEventListener('keydown', handleKeydown));
 
     function appStatusClass(status) {
       if (!status || status === 'unknown') return 'unknown';

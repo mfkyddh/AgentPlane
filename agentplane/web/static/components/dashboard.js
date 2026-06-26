@@ -110,7 +110,7 @@ const DashboardComponent = {
                     <span class="status-dot" :class="target.status"></span>
                     <span class="topo-target-name">{{ target.target }}</span>
                     <span class="topo-target-meta">{{ target.hostname }} &middot; {{ target.ip || 'local' }}</span>
-                    <span class="topo-badge">{{ target.apps.length }} apps</span>
+                    <span class="topo-badge">{{ target.apps.length }} {{ t('topology.apps') }}</span>
                   </div>
                   <div v-if="expandedTargets.has(target.target)" class="topo-children">
                     <!-- Apps -->
@@ -154,7 +154,7 @@ const DashboardComponent = {
                   </div>
                 </div>
                 <div v-if="topology.generated_at" class="generated-ts">
-                  Generated {{ formatTime(topology.generated_at) }}
+                  {{ t('dashboard.generated') }} {{ formatTime(topology.generated_at) }}
                 </div>
               </div>
             </div>
@@ -265,11 +265,11 @@ const DashboardComponent = {
       </template>
 
       <!-- App detail panel overlay -->
-      <div v-if="detailPanel.visible" class="detail-overlay" @click.self="closeDetail">
+      <div v-if="detailPanel.visible" class="detail-overlay" @click.self="closeDetail" @keydown.esc="closeDetail">
         <div class="detail-panel">
           <div class="detail-header">
             <span class="detail-title">{{ detailPanel.title }}</span>
-            <button class="detail-close" @click="closeDetail">&times;</button>
+            <button class="detail-close" @click="closeDetail" aria-label="Close detail panel">&times;</button>
           </div>
           <div class="detail-body">
             <div v-if="detailPanel.loading" class="skeleton-card">
@@ -308,7 +308,7 @@ const DashboardComponent = {
     const appsWithUrl = computed(() => apps.value.filter(a => a.public_url).length);
     const latestOp = computed(() => operations.value.length > 0 ? operations.value[0] : null);
     const dataFreshness = computed(() => {
-      if (!latestOp.value || !latestOp.value.timestamp) return 'N/A';
+      if (!latestOp.value || !latestOp.value.timestamp) return t('time.na') || 'N/A';
       return formatRelativeTime(latestOp.value.timestamp);
     });
 
@@ -372,7 +372,7 @@ const DashboardComponent = {
       navigator.clipboard.writeText(cmd).then(() => {
         commandCopied.value = true;
         setTimeout(() => { commandCopied.value = false; }, 2000);
-      });
+      }).catch(() => { /* clipboard unavailable in insecure context */ });
     }
 
     async function fetchDashboard() {
@@ -407,12 +407,12 @@ const DashboardComponent = {
         const now = new Date();
         const diffMs = now - d;
         const diffMin = Math.floor(diffMs / 60000);
-        if (diffMin < 1) return 'just now';
-        if (diffMin < 60) return `${diffMin}m ago`;
+        if (diffMin < 1) return t('time.just_now');
+        if (diffMin < 60) return `${diffMin}${t('time.min_ago')}`;
         const diffHr = Math.floor(diffMin / 60);
-        if (diffHr < 24) return `${diffHr}h ago`;
+        if (diffHr < 24) return `${diffHr}${t('time.hour_ago')}`;
         const diffDay = Math.floor(diffHr / 24);
-        return `${diffDay}d ago`;
+        return `${diffDay}${t('time.day_ago')}`;
       } catch { return ts; }
     }
 
@@ -473,6 +473,13 @@ const DashboardComponent = {
     }
 
     function closeDetail() { detailPanel.value.visible = false; }
+
+    function handleKeydown(e) {
+      if (e.key === 'Escape' && detailPanel.value.visible) closeDetail();
+    }
+
+    Vue.onMounted(() => document.addEventListener('keydown', handleKeydown));
+    Vue.onUnmounted(() => document.removeEventListener('keydown', handleKeydown));
 
     function formatDetailVal(val) {
       if (val === null || val === undefined) return '-';

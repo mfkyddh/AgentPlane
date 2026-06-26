@@ -130,5 +130,15 @@
   "logs.clear": "清空",
   "logs.auto_scroll": "自动滚动",
   "logs.waiting": "等待日志...",
-  "logs.not_connected": "未连接。选择目标和容器后开始。"
+  "logs.not_connected": "未连接。选择目标和容器后开始。",
+  "logs.connected_to": "已连接到",
+  "logs.ws_error": "WebSocket 连接错误",
+
+  "time.just_now": "刚刚",
+  "time.min_ago": "分钟前",
+  "time.hour_ago": "小时前",
+  "time.day_ago": "天前",
+  "time.na": "N/A",
+
+  "action.copy": "复制"
 }
