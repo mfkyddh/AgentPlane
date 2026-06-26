@@ -64,11 +64,11 @@ const DashboardComponent = {
         <div v-if="isDataStale" class="stale-data-banner">
           <svg viewBox="0 0 16 16" fill="currentColor" style="width:16px;height:16px;flex-shrink:0;"><path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm9-3a1 1 0 11-2 0 1 1 0 012 0zM8 7a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 018 7z"/></svg>
           <div style="flex:1;">
-            <span>{{ t('dashboard.stale_hint') || 'Data is outdated. Run:' }}</span>
+            <span>{{ t('dashboard.stale_hint') }}</span>
             <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
               <code style="flex:1;">agentplane infra inventory &lt;target&gt; --repo-root . --write</code>
-              <button class="btn-ghost" style="font-size:11px;padding:2px 8px;" @click="copyRefreshCommand" :title="t('action.copy') || 'Copy'">
-                {{ commandCopied ? '✓' : '📋' }}
+              <button class="btn-ghost" style="font-size:11px;padding:2px 8px;" @click="copyCommand" :title="t('action.copy')">
+                {{ commandCopied ? '\\u2713' : '\\uD83D\\uDCCB' }}
               </button>
             </div>
           </div>
@@ -101,7 +101,12 @@ const DashboardComponent = {
                   <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8.5.75a.75.75 0 00-1.5 0v5.19L4.391 3.33a.75.75 0 10-1.06 1.061L5.939 7H.75a.75.75 0 000 1.5h5.19l-2.61 2.609a.75.75 0 101.061 1.06L7 9.561v5.189a.75.75 0 001.5 0V9.56l2.609 2.61a.75.75 0 101.06-1.061L9.561 8.5h5.189a.75.75 0 000-1.5H9.56l2.61-2.609a.75.75 0 00-1.061-1.06L8.5 5.939V.75z"/></svg>
                   {{ t('dashboard.resource_topo') }}
                 </div>
-                <span class="panel-count">{{ topology.targets.length }} {{ t('dashboard.targets') }}</span>
+                <div style="display:flex;gap:8px;align-items:center;">
+                  <button class="btn-ghost btn-sm" @click="toggleAllTargets" :title="allTargetsExpanded ? t('action.collapse_all') : t('action.expand_all')">
+                    {{ allTargetsExpanded ? t('action.collapse_all') : t('action.expand_all') }}
+                  </button>
+                  <span class="panel-count">{{ topology.targets.length }} {{ t('dashboard.targets') }}</span>
+                </div>
               </div>
               <div class="panel-body">
                 <div v-for="target in topology.targets" :key="target.target" class="topo-target">
@@ -130,14 +135,14 @@ const DashboardComponent = {
                           </div>
                           <a v-if="app.public_url" :href="app.public_url" target="_blank" class="topo-app-url"
                              @click.stop>{{ app.public_url }}</a>
-                          <div v-if="app.dependencies.length > 0" class="topo-deps">
+                          <div v-if="app.dependencies && app.dependencies.length > 0" class="topo-deps">
                             <span v-for="dep in app.dependencies" :key="dep.kind" class="topo-dep-tag">{{ dep.kind }}</span>
                           </div>
                         </div>
                       </div>
                     </div>
                     <!-- Services -->
-                    <div v-if="target.services.length > 0" class="topo-section">
+                    <div v-if="target.services && target.services.length > 0" class="topo-section">
                       <div class="topo-section-label">{{ t('dashboard.services') }}</div>
                       <div class="topo-app-grid">
                         <div v-for="svc in target.services" :key="svc.name" class="topo-svc-card">
@@ -147,14 +152,14 @@ const DashboardComponent = {
                         </div>
                       </div>
                     </div>
-                    <div v-if="target.apps.length === 0 && target.services.length === 0"
+                    <div v-if="(!target.apps || target.apps.length === 0) && (!target.services || target.services.length === 0)"
                          class="empty-state" style="padding:16px;">
                       <div class="empty-state-hint">{{ t('topology.no_items') }}</div>
                     </div>
                   </div>
                 </div>
                 <div v-if="topology.generated_at" class="generated-ts">
-                  {{ t('dashboard.generated') }} {{ formatTime(topology.generated_at) }}
+                  {{ t('dashboard.generated') }} {{ formatTimestamp(topology.generated_at) }}
                 </div>
               </div>
             </div>
@@ -172,15 +177,15 @@ const DashboardComponent = {
                 <table class="data-table">
                   <thead>
                     <tr>
-                      <th>App</th>
-                      <th>Target</th>
+                      <th @click="toggleSort('app')" class="sortable-th">App{{ sortIcon('app') }}</th>
+                      <th @click="toggleSort('target')" class="sortable-th">Target{{ sortIcon('target') }}</th>
                       <th>Service Key</th>
                       <th>Control Plane</th>
-                      <th>Public URL</th>
+                      <th @click="toggleSort('public_url')" class="sortable-th">Public URL{{ sortIcon('public_url') }}</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="app in apps" :key="app.app + app.target">
+                    <tr v-for="app in sortedApps" :key="app.app + app.target">
                       <td class="cell-primary">{{ app.app }}</td>
                       <td class="cell-mono">{{ app.target }}</td>
                       <td class="cell-mono">{{ app.service_key || '-' }}</td>
@@ -219,11 +224,12 @@ const DashboardComponent = {
                 <span class="panel-count">{{ hosts.length }}</span>
               </div>
               <div class="panel-body">
-                <div v-for="host in hosts" :key="host.target" class="host-card">
+                <div v-for="host in hosts" :key="host.target" class="host-card" @click="selectHost(host)">
                   <div class="host-card-row">
                     <span class="status-dot" :class="host.status"></span>
                     <span class="host-name">{{ host.hostname }}</span>
                     <span class="host-ip">{{ host.ip || 'local' }}</span>
+                    <button class="copy-btn" @click.stop="copyText(host.ip || host.hostname)" :title="t('action.copy')">&#x2398;</button>
                   </div>
                   <div class="host-meta">
                     <span class="host-meta-item">
@@ -231,7 +237,7 @@ const DashboardComponent = {
                       {{ host.label }}
                     </span>
                     <span v-if="host.provider" class="host-meta-item">{{ host.provider }}</span>
-                    <span v-if="host.last_seen" class="host-meta-item">{{ formatRelativeTime(host.last_seen) }}</span>
+                    <span v-if="host.last_seen" class="host-meta-item">{{ formatRelativeTime(host.last_seen, t) }}</span>
                   </div>
                 </div>
               </div>
@@ -248,7 +254,7 @@ const DashboardComponent = {
               </div>
               <div class="panel-body">
                 <div v-for="op in operations" :key="op.op_id" class="op-item">
-                  <span class="op-time">{{ formatRelativeTime(op.timestamp) }}</span>
+                  <span class="op-time">{{ formatRelativeTime(op.timestamp, t) }}</span>
                   <div class="op-body">
                     <div class="op-action">
                       <span class="op-target-tag">{{ op.target }}</span>
@@ -264,7 +270,7 @@ const DashboardComponent = {
         </div>
       </template>
 
-      <!-- App detail panel overlay -->
+      <!-- App / Host detail panel overlay -->
       <div v-if="detailPanel.visible" class="detail-overlay" @click.self="closeDetail" @keydown.esc="closeDetail">
         <div class="detail-panel">
           <div class="detail-header">
@@ -302,14 +308,15 @@ const DashboardComponent = {
     const loading = ref(true);
     const loadError = ref('');
     const expandedTargets = ref(new Set());
-    const detailPanel = ref({ visible: false, title: '', data: null, loading: false, error: '' });
+
+    const { detailPanel, openDetail, closeDetail } = useDetailPanel(authToken);
 
     const connectedHosts = computed(() => hosts.value.filter(h => h.status === 'connected').length);
     const appsWithUrl = computed(() => apps.value.filter(a => a.public_url).length);
     const latestOp = computed(() => operations.value.length > 0 ? operations.value[0] : null);
     const dataFreshness = computed(() => {
-      if (!latestOp.value || !latestOp.value.timestamp) return t('time.na') || 'N/A';
-      return formatRelativeTime(latestOp.value.timestamp);
+      if (!latestOp.value || !latestOp.value.timestamp) return t('time.na');
+      return formatRelativeTime(latestOp.value.timestamp, t);
     });
 
     const isDataStale = computed(() => {
@@ -335,7 +342,7 @@ const DashboardComponent = {
       }
       if (d.service) {
         cards.push({
-          key: 'service', icon: '⚙', name: t('domain.service'),
+          key: 'service', icon: '\u2699', name: t('domain.service'),
           metrics: [{ value: d.service.service_count || 0, label: t('domain.services_count') }],
         });
       }
@@ -360,25 +367,44 @@ const DashboardComponent = {
       return cards;
     });
 
-    function getAuthHeaders() {
-      const headers = {};
-      if (authToken.value) headers['Authorization'] = `Bearer ${authToken.value}`;
-      return headers;
+    // ── Sorting ──
+    const { toggleSort, sortIcon, sortItems } = useSortable('app');
+    const sortedApps = computed(() => sortItems(apps.value));
+
+    // ── Topology expand/collapse all ──
+    const allTargetsExpanded = computed(() =>
+      topology.value.targets.length > 0 && topology.value.targets.every(t => expandedTargets.value.has(t.target))
+    );
+
+    function toggleAllTargets() {
+      if (allTargetsExpanded.value) {
+        expandedTargets.value = new Set();
+      } else {
+        expandedTargets.value = new Set(topology.value.targets.map(t => t.target));
+      }
     }
 
     const commandCopied = ref(false);
-    function copyRefreshCommand() {
-      const cmd = 'agentplane infra inventory <target> --repo-root . --write';
-      navigator.clipboard.writeText(cmd).then(() => {
-        commandCopied.value = true;
-        setTimeout(() => { commandCopied.value = false; }, 2000);
-      }).catch(() => { /* clipboard unavailable in insecure context */ });
+    function copyCommand() {
+      copyToClipboard('agentplane infra inventory <target> --repo-root . --write').then(ok => {
+        if (ok) {
+          commandCopied.value = true;
+          showToast(t('toast.copied'), 'success', 1500);
+          setTimeout(() => { commandCopied.value = false; }, 2000);
+        }
+      });
+    }
+
+    function copyText(text) {
+      copyToClipboard(text).then(ok => {
+        if (ok) showToast(t('toast.copied'), 'success', 1500);
+      });
     }
 
     async function fetchDashboard() {
       loadError.value = '';
       try {
-        const res = await fetch('/api/dashboard', { headers: getAuthHeaders() });
+        const res = await apiFetch('/api/dashboard', authToken);
         if (!res.ok) throw new Error(t('error.api_failed'));
         const data = await res.json();
         hosts.value = data.hosts || [];
@@ -396,37 +422,22 @@ const DashboardComponent = {
       }
     }
 
-    // Shared polling
     useDataPoller(fetchDashboard);
 
-    // Helpers
-    function formatRelativeTime(ts) {
-      if (!ts) return '-';
-      try {
-        const d = new Date(ts);
-        const now = new Date();
-        const diffMs = now - d;
-        const diffMin = Math.floor(diffMs / 60000);
-        if (diffMin < 1) return t('time.just_now');
-        if (diffMin < 60) return `${diffMin}${t('time.min_ago')}`;
-        const diffHr = Math.floor(diffMin / 60);
-        if (diffHr < 24) return `${diffHr}${t('time.hour_ago')}`;
-        const diffDay = Math.floor(diffHr / 24);
-        return `${diffDay}${t('time.day_ago')}`;
-      } catch { return ts; }
+    function toggleTarget(target) {
+      if (expandedTargets.value.has(target)) {
+        expandedTargets.value.delete(target);
+      } else {
+        expandedTargets.value.add(target);
+      }
     }
 
-    function formatTime(ts) {
-      if (!ts) return '';
-      try { return new Date(ts).toLocaleString(); } catch { return ts; }
+    function selectApp(target, app) {
+      openDetail(`${app.app} (${target})`, `/api/apps/${target}/${app.app}`);
     }
 
-    function truncateUrl(url) {
-      if (!url) return '';
-      try {
-        const u = new URL(url);
-        return u.hostname + (u.pathname !== '/' ? u.pathname : '');
-      } catch { return url; }
+    function selectHost(host) {
+      openDetail(`${host.hostname} (${host.target})`, `/api/servers/${host.target}`);
     }
 
     function opResultClass(result) {
@@ -437,64 +448,16 @@ const DashboardComponent = {
       return 'neutral';
     }
 
-    function appStatusClass(status) {
-      if (!status || status === 'unknown') return 'unknown';
-      return 'connected';
-    }
-
-    function serviceStatusClass(status) {
-      if (!status) return 'unchecked';
-      const s = String(status).toLowerCase();
-      if (s.includes('running') || s.includes('active')) return 'connected';
-      if (s.includes('error') || s.includes('fail')) return 'error';
-      if (s === 'unknown') return 'unchecked';
-      return 'unchecked';
-    }
-
-    function toggleTarget(target) {
-      if (expandedTargets.value.has(target)) {
-        expandedTargets.value.delete(target);
-      } else {
-        expandedTargets.value.add(target);
-      }
-    }
-
-    async function selectApp(target, app) {
-      detailPanel.value = { visible: true, title: `${app.app} (${target})`, data: null, loading: true, error: '' };
-      try {
-        const res = await fetch(`/api/apps/${target}/${app.app}`, { headers: getAuthHeaders() });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        detailPanel.value.data = await res.json();
-      } catch (e) {
-        detailPanel.value.error = e.message;
-      } finally {
-        detailPanel.value.loading = false;
-      }
-    }
-
-    function closeDetail() { detailPanel.value.visible = false; }
-
-    function handleKeydown(e) {
-      if (e.key === 'Escape' && detailPanel.value.visible) closeDetail();
-    }
-
-    Vue.onMounted(() => document.addEventListener('keydown', handleKeydown));
-    Vue.onUnmounted(() => document.removeEventListener('keydown', handleKeydown));
-
-    function formatDetailVal(val) {
-      if (val === null || val === undefined) return '-';
-      if (typeof val === 'object') return JSON.stringify(val, null, 2);
-      return String(val);
-    }
-
     return {
       hosts, apps, operations, topology, domains, loading, loadError,
       expandedTargets, detailPanel,
       connectedHosts, appsWithUrl, latestOp, dataFreshness, isDataStale, domainCards,
-      fetchDashboard, toggleTarget, selectApp, closeDetail,
-      formatRelativeTime, formatTime, truncateUrl,
+      sortedApps, allTargetsExpanded,
+      fetchDashboard, toggleTarget, toggleAllTargets, selectApp, selectHost, closeDetail,
+      formatRelativeTime, formatTimestamp, truncateUrl,
       opResultClass, appStatusClass, serviceStatusClass, formatDetailVal,
-      commandCopied, copyRefreshCommand,
+      toggleSort, sortIcon,
+      commandCopied, copyCommand, copyText,
       t,
     };
   },

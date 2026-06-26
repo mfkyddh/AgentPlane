@@ -8,12 +8,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/tokens.css?v=2">
-  <link rel="stylesheet" href="/static/components/layout.css?v=2">
+  <link rel="stylesheet" href="/static/tokens.css?v=4">
+  <link rel="stylesheet" href="/static/components/layout.css?v=4">
   <script src="https://unpkg.com/vue@3.5.13/dist/vue.global.prod.js" crossorigin="anonymous"></script>
 </head>
 <body>
   <div id="app">
+    <a href="#main-content" class="skip-link">Skip to content</a>
     <!-- Pre-mount loading spinner (removed when Vue mounts) -->
     <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0d1117;">
       <div style="text-align:center;">
@@ -39,40 +40,40 @@
     <template v-else>
       <!-- Sidebar -->
       <div v-if="sidebarOpen" class="sidebar-backdrop" @click="sidebarOpen = false"></div>
-      <div class="sidebar" :class="{open: sidebarOpen}">
+      <div class="sidebar" :class="{open: sidebarOpen}" role="navigation" aria-label="Main navigation">
         <div class="sidebar-brand">
           <div class="sidebar-brand-icon">AP</div>
           <span class="sidebar-brand-text">AgentPlane</span>
         </div>
-        <div class="sidebar-nav">
-          <button class="nav-item" :class="{active: view === 'dashboard'}" @click="view = 'dashboard'" role="link">
+        <nav class="sidebar-nav" aria-label="Main navigation">
+          <button class="nav-item" :class="{active: view === 'dashboard'}" :aria-current="view === 'dashboard' ? 'page' : undefined" @click="view = 'dashboard'" role="link">
             <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 1.75V13.5h13.25a.75.75 0 010 1.5H.75a.75.75 0 01-.75-.75V1.75a.75.75 0 011.5 0zm14.28 2.53a.75.75 0 00-1.06-1.06L10 7.94 7.53 5.47a.75.75 0 00-1.06 0L3.22 8.72a.75.75 0 001.06 1.06L7 7.06l2.47 2.47a.75.75 0 001.06 0l5.25-5.25z"/></svg>
             {{ t('nav.overview') }}
           </button>
           <div class="sidebar-section-label">{{ t('nav.domains') }}</div>
-          <button class="nav-item" :class="{active: view === 'topology'}" @click="view = 'topology'" role="link">
+          <button class="nav-item" :class="{active: view === 'topology'}" :aria-current="view === 'topology' ? 'page' : undefined" @click="view = 'topology'" role="link">
             <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8.5.75a.75.75 0 00-1.5 0v5.19L4.391 3.33a.75.75 0 10-1.06 1.061L5.939 7H.75a.75.75 0 000 1.5h5.19l-2.61 2.609a.75.75 0 101.061 1.06L7 9.561v5.189a.75.75 0 001.5 0V9.56l2.609 2.61a.75.75 0 101.06-1.061L9.561 8.5h5.189a.75.75 0 000-1.5H9.56l2.61-2.609a.75.75 0 00-1.061-1.06L8.5 5.939V.75z"/></svg>
             {{ t('nav.topology') }}
           </button>
           <div class="sidebar-section-label">{{ t('nav.knowledge') }}</div>
-          <button class="nav-item" :class="{active: view === 'capability-map'}" @click="view = 'capability-map'" role="link">
+          <button class="nav-item" :class="{active: view === 'capability-map'}" :aria-current="view === 'capability-map' ? 'page' : undefined" @click="view = 'capability-map'" role="link">
             <svg viewBox="0 0 16 16" fill="currentColor"><path d="M6.122.392a1.75 1.75 0 013.756 0l.095.475a1.75 1.75 0 002.668.992l.406-.268a1.75 1.75 0 012.37 2.37l-.268.406a1.75 1.75 0 00.992 2.668l.475.095a1.75 1.75 0 010 3.756l-.475.095a1.75 1.75 0 00-.992 2.668l.268.406a1.75 1.75 0 01-2.37 2.37l-.406-.268a1.75 1.75 0 00-2.668.992l-.095.475a1.75 1.75 0 01-3.756 0l-.095-.475a1.75 1.75 0 00-2.668-.992l-.406.268a1.75 1.75 0 01-2.37-2.37l.268-.406a1.75 1.75 0 00-.992-2.668l-.475-.095a1.75 1.75 0 010-3.756l.475-.095a1.75 1.75 0 00.992-2.668l-.268-.406a1.75 1.75 0 012.37-2.37l.406.268a1.75 1.75 0 002.668-.992zM8 1.565a.25.25 0 00-.536.024l-.095.475a3.25 3.25 0 01-4.956 1.841l-.406-.268a.25.25 0 00-.339.339l.268.406A3.25 3.25 0 012.326 6.55l-.475.095a.25.25 0 00-.024.536l.475.095a3.25 3.25 0 011.841 4.956l-.268.406a.25.25 0 00.339.339l.406-.268a3.25 3.25 0 014.956 1.841l.095.475a.25.25 0 00.536-.024l.095-.475a3.25 3.25 0 014.956-1.841l.406.268a.25.25 0 00.339-.339l-.268-.406A3.25 3.25 0 0113.674 8.45l.475-.095a.25.25 0 00.024-.536l-.475-.095a3.25 3.25 0 01-1.841-4.956l.268-.406a.25.25 0 00-.339-.339l-.406.268A3.25 3.25 0 018.627 1.59zM8 5.5a2.5 2.5 0 100 5 2.5 2.5 0 000-5zM6.5 8a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z"/></svg>
             {{ t('nav.capabilities') }}
           </button>
-          <button class="nav-item" :class="{active: view === 'chat'}" @click="view = 'chat'" role="link">
+          <button class="nav-item" :class="{active: view === 'chat'}" :aria-current="view === 'chat' ? 'page' : undefined" @click="view = 'chat'" role="link">
             <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.75 1h8.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0110.25 10H7.061l-2.574 2.573A.25.25 0 014 12.354V10H1.75A1.75 1.75 0 010 8.25v-5.5C0 1.784.784 1 1.75 1zM1.5 2.75v5.5c0 .138.112.25.25.25h1a.75.75 0 01.75.75v2.19l2.72-2.72a.75.75 0 01.53-.22h3.5a.25.25 0 00.25-.25v-5.5a.25.25 0 00-.25-.25h-8.5a.25.25 0 00-.25.25zm13 2a.25.25 0 00-.25-.25h-.5a.75.75 0 010-1.5h.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0114.25 12H14v1.543a1.457 1.457 0 01-2.487 1.03L9.22 12.28a.75.75 0 111.06-1.06l2.22 2.22v-2.19a.75.75 0 01.75-.75h1a.25.25 0 00.25-.25v-5.5z"/></svg>
             {{ t('nav.chat') }}
           </button>
           <div class="sidebar-section-label">{{ t('nav.operations') }}</div>
-          <button class="nav-item" :class="{active: view === 'operations'}" @click="view = 'operations'" role="link">
+          <button class="nav-item" :class="{active: view === 'operations'}" :aria-current="view === 'operations' ? 'page' : undefined" @click="view = 'operations'" role="link">
             <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm9-3a1 1 0 11-2 0 1 1 0 012 0zM8 7a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 018 7z"/></svg>
             {{ t('nav.operations') }}
           </button>
-          <button class="nav-item" :class="{active: view === 'logs'}" @click="view = 'logs'" role="link">
+          <button class="nav-item" :class="{active: view === 'logs'}" :aria-current="view === 'logs' ? 'page' : undefined" @click="view = 'logs'" role="link">
             <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.75 1h8.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0110.25 10H7.061l-2.574 2.573A.25.25 0 014 12.354V10H1.75A1.75 1.75 0 010 8.25v-5.5C0 1.784.784 1 1.75 1z"/></svg>
             {{ t('nav.logs') }}
           </button>
-        </div>
+        </nav>
         <div class="sidebar-footer">
           <span class="sidebar-footer-version">{{ t('status.cli_first') }}</span>
           <button class="sidebar-locale-btn" @click="toggleLocale">{{ locale === 'zh' ? 'EN' : '中' }}</button>
@@ -84,7 +85,7 @@
       </div>
 
       <!-- Main content -->
-      <div class="main">
+      <div class="main" id="main-content" role="main">
         <div v-if="wsDisconnected" class="connection-banner" role="alert">
           {{ t('connection.lost') }}
         </div>
@@ -104,17 +105,41 @@
         </div>
         <component :is="currentView"></component>
       </div>
+
+      <!-- Toast notifications -->
+      <div class="toast-container" aria-live="polite">
+        <div v-for="toast in toasts" :key="toast.id" class="toast" :class="toast.type">
+          {{ toast.message }}
+        </div>
+      </div>
+
+      <!-- Keyboard shortcuts help modal -->
+      <div v-if="showShortcuts" class="modal-overlay" @click.self="showShortcuts = false" @keydown.esc="showShortcuts = false">
+        <div class="modal-box">
+          <div class="modal-header">
+            <span class="modal-title">{{ t('shortcuts.title') }}</span>
+            <button class="detail-close" @click="showShortcuts = false" aria-label="Close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="shortcut-row" v-for="s in shortcutList" :key="s.key">
+              <kbd>{{ s.key }}</kbd>
+              <span>{{ s.desc }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </template>
   </div>
 
-  <script src="/static/components/dashboard.js?v=2"></script>
-  <script src="/static/components/topology.js?v=2"></script>
-  <script src="/static/components/capability-map.js?v=2"></script>
-  <script src="/static/components/chat.js?v=2"></script>
-  <script src="/static/components/operations.js?v=2"></script>
-  <script src="/static/components/logs-viewer.js?v=2"></script>
-  <script src="/static/i18n/index.js?v=2"></script>
-  <script src="/static/app.js?v=2"></script>
+  <script src="/static/shared.js?v=4"></script>
+  <script src="/static/components/dashboard.js?v=4"></script>
+  <script src="/static/components/topology.js?v=4"></script>
+  <script src="/static/components/capability-map.js?v=4"></script>
+  <script src="/static/components/chat.js?v=4"></script>
+  <script src="/static/components/operations.js?v=4"></script>
+  <script src="/static/components/logs-viewer.js?v=4"></script>
+  <script src="/static/i18n/index.js?v=4"></script>
+  <script src="/static/app.js?v=4"></script>
   <script>
     const app = createAgentPlaneApp();
     app.component('dashboard-view', DashboardComponent);

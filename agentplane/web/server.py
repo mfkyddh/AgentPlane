@@ -249,36 +249,34 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
     @app.websocket("/ws/status")
     async def ws_status(websocket: WebSocket):
         await websocket.accept()
+        import asyncio as _aio
         try:
             while True:
                 dashboard = get_dashboard(repo_root)
                 await websocket.send_json({"type": "status", "payload": dashboard})
-                import asyncio
-                await asyncio.sleep(5)
+                await _aio.sleep(5)
         except WebSocketDisconnect:
             pass
 
     @app.websocket("/ws/logs/{target}/{container}")
     async def ws_logs(websocket: WebSocket, target: str, container: str):
         await websocket.accept()
+        import asyncio as _aio
+        import subprocess as _sub
         try:
-            import asyncio
-            import subprocess
-            
-            # Build SSH command to stream logs
             ssh_cmd = [
                 "ssh", "-o", "ControlMaster=auto", "-o", "ControlPersist=60s",
                 target, "docker", "logs", "-f", "--tail", "50", container
             ]
-            
-            process = subprocess.Popen(
+
+            process = _sub.Popen(
                 ssh_cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stdout=_sub.PIPE,
+                stderr=_sub.STDOUT,
                 text=True,
                 bufsize=1,
             )
-            
+
             try:
                 while True:
                     line = process.stdout.readline()
@@ -292,11 +290,11 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
                             "line": line.rstrip(),
                         }
                     })
-                    await asyncio.sleep(0.01)  # Small delay to prevent overwhelming
+                    await _aio.sleep(0.01)
             finally:
                 process.terminate()
                 process.wait()
-                
+
         except WebSocketDisconnect:
             if 'process' in locals():
                 process.terminate()

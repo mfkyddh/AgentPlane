@@ -9,16 +9,21 @@ const _refreshCallbacks = new Set();
 function useDataPoller(refreshFn) {
   onMounted(() => {
     _refreshCallbacks.add(refreshFn);
-    refreshFn();  // Fetch immediately on mount so late-mounting components load data
+    refreshFn();
   });
   onUnmounted(() => _refreshCallbacks.delete(refreshFn));
 }
+
+// ── Valid view names ──
+const VALID_VIEWS = ['dashboard', 'topology', 'capability-map', 'chat', 'operations', 'logs'];
 
 // ── App factory ──
 function createAgentPlaneApp() {
   const app = createApp({
     setup() {
-      const view = ref('dashboard');
+      // Initialize view from URL hash
+      const hashView = location.hash.replace('#', '');
+      const view = ref(VALID_VIEWS.includes(hashView) ? hashView : 'dashboard');
       const sidebarOpen = ref(false);
       const loading = ref(true);
       const loadError = ref('');
@@ -27,11 +32,15 @@ function createAgentPlaneApp() {
       const authenticated = ref(false);
       const authToken = ref('');
       const authError = ref('');
+      const showShortcuts = ref(false);
+
+      // Toast state (bridged from shared.js _toastState)
+      const toasts = computed(() => _toastState.toasts);
 
       // i18n
       const { locale, t, toggleLocale } = useI18n();
       const viewLabel = computed(() => {
-        const labels = { dashboard: t('topbar.overview'), topology: t('topbar.topology'), 'capability-map': t('topbar.capabilities'), chat: t('topbar.chat'), operations: t('topbar.operations') || 'Operations', logs: t('topbar.logs') || 'Live Logs' };
+        const labels = { dashboard: t('topbar.overview'), topology: t('topbar.topology'), 'capability-map': t('topbar.capabilities'), chat: t('topbar.chat'), operations: t('topbar.operations'), logs: t('topbar.logs') };
         return labels[view.value] || t('topbar.overview');
       });
 
@@ -40,10 +49,38 @@ function createAgentPlaneApp() {
         return map[view.value] || 'dashboard-view';
       });
 
+      const shortcutList = computed(() => [
+        { key: '?', desc: t('shortcuts.help') },
+        { key: 'r', desc: t('action.refresh') },
+        { key: '1', desc: t('topbar.overview') },
+        { key: '2', desc: t('topbar.topology') },
+        { key: '3', desc: t('topbar.capabilities') },
+        { key: '4', desc: t('topbar.chat') },
+        { key: '5', desc: t('topbar.operations') },
+        { key: '6', desc: t('topbar.logs') },
+      ]);
+
       provide('authToken', authToken);
 
-      // Auto-close mobile sidebar on navigation
-      Vue.watch(view, () => { sidebarOpen.value = false; });
+      // ── URL hash routing ──
+      function syncHashToView() {
+        const hash = location.hash.replace('#', '');
+        if (VALID_VIEWS.includes(hash) && hash !== view.value) {
+          view.value = hash;
+        }
+      }
+
+      // Sync view → URL hash
+      Vue.watch(view, (newView) => {
+        sidebarOpen.value = false;
+        if (location.hash !== '#' + newView) {
+          history.pushState(null, '', '#' + newView);
+        }
+      });
+
+      // Listen for browser back/forward
+      window.addEventListener('hashchange', syncHashToView);
+      window.addEventListener('popstate', syncHashToView);
 
       let ws = null;
       let mtimePoller = null;
@@ -51,7 +88,7 @@ function createAgentPlaneApp() {
       let reconnectDelay = 1000;
       const MAX_RECONNECT_DELAY = 30000;
 
-      function apiFetch(url) {
+      function apiFetchAuth(url) {
         const headers = {};
         if (authenticated.value && authToken.value) {
           headers['Authorization'] = `Bearer ${authToken.value}`;
@@ -60,14 +97,13 @@ function createAgentPlaneApp() {
       }
 
       function startMtimePolling() {
-        // Seed lastMtime to avoid redundant refresh on first poll cycle
-        apiFetch('/api/mtime').then(res => res.json()).then(data => {
+        apiFetchAuth('/api/mtime').then(res => res.json()).then(data => {
           lastMtime = data.mtime || 0;
         }).catch(() => {});
 
         mtimePoller = setInterval(async () => {
           try {
-            const res = await apiFetch('/api/mtime');
+            const res = await apiFetchAuth('/api/mtime');
             const data = await res.json();
             if (data.mtime > lastMtime) {
               lastMtime = data.mtime;
@@ -120,7 +156,6 @@ function createAgentPlaneApp() {
             return;
           }
 
-          // Forward chat messages to chat component via event
           window.dispatchEvent(new CustomEvent('ap-ws-message', { detail: msg }));
         };
 
@@ -134,7 +169,6 @@ function createAgentPlaneApp() {
         ws.onerror = () => { wsDisconnected.value = true; };
       }
 
-      // Listen for chat send events from ChatComponent
       window.addEventListener('ap-send-chat', (e) => {
         if (ws && ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({ type: 'chat_message', text: e.detail.text }));
@@ -156,9 +190,25 @@ function createAgentPlaneApp() {
 
       function refreshAll() {
         for (const fn of _refreshCallbacks) fn();
+        showToast(t('toast.refreshed'), 'success', 2000);
+      }
+
+      // ── Global keyboard shortcuts ──
+      function globalKeyDown(e) {
+        const tag = e.target.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target.isContentEditable) return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+        if (e.key === '?') { e.preventDefault(); showShortcuts.value = !showShortcuts.value; return; }
+        if (e.key === 'Escape' && showShortcuts.value) { showShortcuts.value = false; return; }
+        if (e.key === 'r' || e.key === 'R') { e.preventDefault(); refreshAll(); return; }
+
+        const viewMap = { '1': 'dashboard', '2': 'topology', '3': 'capability-map', '4': 'chat', '5': 'operations', '6': 'logs' };
+        if (viewMap[e.key]) { e.preventDefault(); view.value = viewMap[e.key]; }
       }
 
       onMounted(async () => {
+        document.addEventListener('keydown', globalKeyDown);
         try {
           const res = await fetch('/api/config');
           const config = await res.json();
@@ -176,6 +226,9 @@ function createAgentPlaneApp() {
       });
 
       onUnmounted(() => {
+        document.removeEventListener('keydown', globalKeyDown);
+        window.removeEventListener('hashchange', syncHashToView);
+        window.removeEventListener('popstate', syncHashToView);
         stopMtimePolling();
         if (ws) ws.close();
       });
@@ -185,6 +238,7 @@ function createAgentPlaneApp() {
         needsAuth, authenticated, authToken, authError,
         viewLabel, currentView, submitAuth, refreshAll,
         t, locale, toggleLocale,
+        toasts, showShortcuts, shortcutList,
       };
     },
   });

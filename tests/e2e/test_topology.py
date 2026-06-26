@@ -27,8 +27,11 @@ class TestTopology:
         topology_page.navigate()
         if topology_page.target_count() == 0:
             pytest.skip("No targets to expand")
+        # First target is auto-expanded on load; click to collapse
         topology_page.expand_target(0)
-        # After expand, should see children area
+        assert not topology_page.is_target_expanded(0)
+        # Click again to re-expand
+        topology_page.expand_target(0)
         assert topology_page.is_target_expanded(0)
 
     def test_refresh_loads_data(self, topology_page):

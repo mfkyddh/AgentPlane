@@ -140,5 +140,24 @@
   "time.day_ago": "天前",
   "time.na": "N/A",
 
-  "action.copy": "复制"
+  "action.copy": "复制",
+  "action.expand_all": "全部展开",
+  "action.collapse_all": "全部折叠",
+
+  "shortcuts.title": "键盘快捷键",
+  "shortcuts.help": "显示快捷键帮助",
+
+  "toast.refreshed": "数据已刷新",
+  "toast.copied": "已复制到剪贴板",
+
+  "topology.search": "搜索目标、主机、应用...",
+  "topology.no_match": "未找到匹配的目标",
+
+  "cap.search": "搜索能力...",
+  "cap.no_match": "未找到匹配的能力",
+
+  "operations.search": "搜索...",
+  "operations.no_match": "未找到匹配的记录",
+
+  "logs.lines": "行"
 }

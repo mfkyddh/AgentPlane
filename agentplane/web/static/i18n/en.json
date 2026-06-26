@@ -140,5 +140,24 @@
   "time.day_ago": "d ago",
   "time.na": "N/A",
 
-  "action.copy": "Copy"
+  "action.copy": "Copy",
+  "action.expand_all": "Expand All",
+  "action.collapse_all": "Collapse All",
+
+  "shortcuts.title": "Keyboard Shortcuts",
+  "shortcuts.help": "Show keyboard shortcuts",
+
+  "toast.refreshed": "Data refreshed",
+  "toast.copied": "Copied to clipboard",
+
+  "topology.search": "Search targets, hosts, apps...",
+  "topology.no_match": "No matching targets found",
+
+  "cap.search": "Search capabilities...",
+  "cap.no_match": "No matching capabilities found",
+
+  "operations.search": "Search...",
+  "operations.no_match": "No matching records found",
+
+  "logs.lines": "lines"
 }

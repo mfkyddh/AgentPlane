@@ -29,9 +29,10 @@ const ChatComponent = {
         </div>
       </div>
       <div class="chat-input-area">
-        <textarea class="chat-input" v-model="chatInput"
+        <textarea class="chat-input" v-model="chatInput" ref="chatInputEl"
                   :placeholder="t('chat.placeholder')"
                   @keydown.enter.exact.prevent="sendMessage"
+                  @input="autoResize"
                   rows="1"></textarea>
         <button class="chat-send" @click="sendMessage" :disabled="!chatInput.trim() || agentTyping">
           {{ t('action.send') }}
@@ -46,8 +47,16 @@ const ChatComponent = {
     const chatInput = ref('');
     const agentTyping = ref(false);
     const chatMessagesEl = ref(null);
+    const chatInputEl = ref(null);
 
-    // Listen for WebSocket messages forwarded from app.js
+    function autoResize() {
+      const el = chatInputEl.value;
+      if (el) {
+        el.style.height = 'auto';
+        el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+      }
+    }
+
     function onWsMessage(event) {
       const msg = event.detail;
 
@@ -126,9 +135,12 @@ const ChatComponent = {
         time: new Date().toLocaleTimeString(),
       });
       chatInput.value = '';
+      Vue.nextTick(() => {
+        if (chatInputEl.value) {
+          chatInputEl.value.style.height = 'auto';
+        }
+      });
 
-      // Access ws from the global app — use CustomEvent to request send
-      // Since ws is managed by app.js, dispatch an event
       window.dispatchEvent(new CustomEvent('ap-send-chat', { detail: { text } }));
 
       Vue.nextTick(() => {
@@ -139,8 +151,8 @@ const ChatComponent = {
     }
 
     return {
-      chatMessages, chatInput, agentTyping, chatMessagesEl,
-      sendMessage, t,
+      chatMessages, chatInput, agentTyping, chatMessagesEl, chatInputEl,
+      sendMessage, autoResize, t,
     };
   },
 };

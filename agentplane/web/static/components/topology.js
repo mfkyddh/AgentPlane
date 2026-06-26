@@ -1,16 +1,22 @@
 // AgentPlane — Topology view component
-// Standalone topology page with own data fetching
+// Standalone topology page with own data fetching, expand/collapse all, search
 
 const TopologyViewComponent = {
   template: `
     <div>
-      <!-- Refresh bar -->
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <!-- Header bar -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
         <div class="panel-title" style="margin-bottom:0; font-size:16px;">{{ t('topology.title') }}</div>
-        <button class="retry-btn" @click="fetchTopology" :disabled="loading"
-                style="border-color:var(--accent-green); color:var(--accent-green);">
-          {{ loading ? t('action.loading') : t('action.refresh') }}
-        </button>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input v-model="searchQuery" class="search-input" :placeholder="t('topology.search')" @input="filterTargets">
+          <button class="btn-ghost" @click="toggleAll" :disabled="topology.targets.length === 0">
+            {{ allExpanded ? t('action.collapse_all') : t('action.expand_all') }}
+          </button>
+          <button class="retry-btn" @click="fetchTopology" :disabled="loading"
+                  style="border-color:var(--accent-green); color:var(--accent-green);">
+            {{ loading ? t('action.loading') : t('action.refresh') }}
+          </button>
+        </div>
       </div>
 
       <!-- Loading -->
@@ -32,16 +38,15 @@ const TopologyViewComponent = {
       </div>
 
       <!-- Empty -->
-      <div v-else-if="topology.targets.length === 0" class="empty-state">
+      <div v-else-if="filteredTargets.length === 0" class="empty-state">
         <div class="empty-state-icon">&#x1F310;</div>
-        <div class="empty-state-title">{{ t('topology.no_targets') }}</div>
-        <div class="empty-state-hint" v-html="t('topology.no_targets_hint')"></div>
+        <div class="empty-state-title">{{ searchQuery ? t('topology.no_match') : t('topology.no_targets') }}</div>
+        <div class="empty-state-hint" v-if="!searchQuery" v-html="t('topology.no_targets_hint')"></div>
       </div>
 
       <!-- Topology tree -->
       <div v-else>
-        <div v-for="target in topology.targets" :key="target.target" class="topo-target">
-          <!-- Target header -->
+        <div v-for="target in filteredTargets" :key="target.target" class="topo-target">
           <div class="topo-target-header" @click="toggleTarget(target.target)">
             <span class="topo-expand">{{ expandedTargets.has(target.target) ? '&#x25BC;' : '&#x25B6;' }}</span>
             <span class="status-dot" :class="target.status"></span>
@@ -50,7 +55,6 @@ const TopologyViewComponent = {
             <span class="topo-badge">{{ target.apps.length }} {{ t('topology.apps') }}</span>
           </div>
 
-          <!-- Target details -->
           <div v-if="expandedTargets.has(target.target)" class="topo-children">
             <!-- Apps -->
             <div v-if="target.apps.length > 0" class="topo-section">
@@ -69,17 +73,15 @@ const TopologyViewComponent = {
                   </div>
                   <a v-if="app.public_url" :href="app.public_url" target="_blank" class="topo-app-url"
                      @click.stop>{{ app.public_url }}</a>
-                  <div v-if="app.dependencies.length > 0" class="topo-deps">
-                    <span v-for="dep in app.dependencies" :key="dep.kind" class="topo-dep-tag">
-                      {{ dep.kind }}
-                    </span>
+                  <div v-if="app.dependencies && app.dependencies.length > 0" class="topo-deps">
+                    <span v-for="dep in app.dependencies" :key="dep.kind" class="topo-dep-tag">{{ dep.kind }}</span>
                   </div>
                 </div>
               </div>
             </div>
 
             <!-- Services -->
-            <div v-if="target.services.length > 0" class="topo-section">
+            <div v-if="target.services && target.services.length > 0" class="topo-section">
               <div class="topo-section-label">{{ t('dashboard.services') }}</div>
               <div class="topo-app-grid">
                 <div v-for="svc in target.services" :key="svc.name" class="topo-svc-card">
@@ -90,16 +92,15 @@ const TopologyViewComponent = {
               </div>
             </div>
 
-            <div v-if="target.apps.length === 0 && target.services.length === 0"
+            <div v-if="(!target.apps || target.apps.length === 0) && (!target.services || target.services.length === 0)"
                  class="empty-state" style="padding:16px;">
               <div class="empty-state-hint">{{ t('topology.no_items') }}</div>
             </div>
           </div>
         </div>
 
-        <!-- Generated timestamp -->
         <div v-if="topology.generated_at" class="generated-ts">
-          {{ t('dashboard.generated') }} {{ formatTime(topology.generated_at) }}
+          {{ t('dashboard.generated') }} {{ formatTimestamp(topology.generated_at) }}
         </div>
       </div>
 
@@ -136,25 +137,41 @@ const TopologyViewComponent = {
     const loading = Vue.ref(false);
     const error = Vue.ref('');
     const expandedTargets = Vue.ref(new Set());
-    const detailPanel = Vue.ref({ visible: false, title: '', data: null, loading: false, error: '' });
+    const searchQuery = Vue.ref('');
+    const filteredTargets = Vue.ref([]);
 
-    function getAuthHeaders() {
-      const headers = {};
-      if (authToken.value) headers['Authorization'] = `Bearer ${authToken.value}`;
-      return headers;
+    const { detailPanel, openDetail, closeDetail } = useDetailPanel(authToken);
+
+    const allExpanded = computed(() =>
+      topology.value.targets.length > 0 && topology.value.targets.every(t => expandedTargets.value.has(t.target))
+    );
+
+    function filterTargets() {
+      const q = searchQuery.value.toLowerCase().trim();
+      if (!q) {
+        filteredTargets.value = topology.value.targets;
+      } else {
+        filteredTargets.value = topology.value.targets.filter(t =>
+          t.target.toLowerCase().includes(q) ||
+          (t.hostname && t.hostname.toLowerCase().includes(q)) ||
+          (t.ip && t.ip.includes(q)) ||
+          (t.apps && t.apps.some(a => a.app.toLowerCase().includes(q)))
+        );
+      }
     }
 
     async function fetchTopology() {
       loading.value = true;
       error.value = '';
       try {
-        const res = await fetch('/api/topology', { headers: getAuthHeaders() });
+        const res = await apiFetch('/api/topology', authToken);
         if (res.status === 401) { error.value = t('error.auth_required'); return; }
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
         topology.value = await res.json();
         if (topology.value.targets.length > 0 && expandedTargets.value.size === 0) {
           expandedTargets.value.add(topology.value.targets[0].target);
         }
+        filterTargets();
       } catch (e) {
         error.value = t('error.load_topology') + ': ' + e.message;
       } finally {
@@ -162,7 +179,6 @@ const TopologyViewComponent = {
       }
     }
 
-    // Shared polling
     useDataPoller(fetchTopology);
 
     function toggleTarget(target) {
@@ -173,57 +189,24 @@ const TopologyViewComponent = {
       }
     }
 
-    async function selectApp(target, app) {
-      detailPanel.value = { visible: true, title: `${app.app} (${target})`, data: null, loading: true, error: '' };
-      try {
-        const res = await fetch(`/api/apps/${target}/${app.app}`, { headers: getAuthHeaders() });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        detailPanel.value.data = await res.json();
-      } catch (e) {
-        detailPanel.value.error = e.message;
-      } finally {
-        detailPanel.value.loading = false;
+    function toggleAll() {
+      if (allExpanded.value) {
+        expandedTargets.value = new Set();
+      } else {
+        expandedTargets.value = new Set(topology.value.targets.map(t => t.target));
       }
     }
 
-    function closeDetail() { detailPanel.value.visible = false; }
-
-    function handleKeydown(e) {
-      if (e.key === 'Escape' && detailPanel.value.visible) closeDetail();
-    }
-
-    Vue.onMounted(() => document.addEventListener('keydown', handleKeydown));
-    Vue.onUnmounted(() => document.removeEventListener('keydown', handleKeydown));
-
-    function appStatusClass(status) {
-      if (!status || status === 'unknown') return 'unknown';
-      return 'connected';
-    }
-
-    function serviceStatusClass(status) {
-      if (!status) return 'unchecked';
-      const s = String(status).toLowerCase();
-      if (s.includes('running') || s.includes('active')) return 'connected';
-      if (s.includes('error') || s.includes('fail')) return 'error';
-      if (s === 'unknown') return 'unchecked';
-      return 'unchecked';
-    }
-
-    function formatTime(ts) {
-      if (!ts) return '';
-      try { return new Date(ts).toLocaleString(); } catch { return ts; }
-    }
-
-    function formatDetailVal(val) {
-      if (val === null || val === undefined) return '-';
-      if (typeof val === 'object') return JSON.stringify(val, null, 2);
-      return String(val);
+    function selectApp(target, app) {
+      openDetail(`${app.app} (${target})`, `/api/apps/${target}/${app.app}`);
     }
 
     return {
       topology, loading, error, expandedTargets, detailPanel,
-      fetchTopology, toggleTarget, selectApp, closeDetail,
-      appStatusClass, serviceStatusClass, formatTime, formatDetailVal,
+      searchQuery, filteredTargets, allExpanded,
+      fetchTopology, toggleTarget, toggleAll, selectApp, closeDetail,
+      filterTargets,
+      appStatusClass, serviceStatusClass, formatTimestamp, formatDetailVal,
       t,
     };
   },
