@@ -8,7 +8,7 @@ const TopologyViewComponent = {
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
         <div class="panel-title" style="margin-bottom:0; font-size:16px;">{{ t('topology.title') }}</div>
         <div style="display:flex; gap:8px; align-items:center;">
-          <input v-model="searchQuery" class="search-input" :placeholder="t('topology.search')" @input="filterTargets">
+          <input v-model="searchQuery" class="search-input" :placeholder="t('topology.search')" :aria-label="t('topology.search')">
           <button class="btn-ghost" @click="toggleAll" :disabled="topology.targets.length === 0">
             {{ allExpanded ? t('action.collapse_all') : t('action.expand_all') }}
           </button>
@@ -138,6 +138,7 @@ const TopologyViewComponent = {
     const error = Vue.ref('');
     const expandedTargets = Vue.ref(new Set());
     const searchQuery = Vue.ref('');
+    const debouncedSearch = useDebounce(searchQuery, 200);
     const filteredTargets = Vue.ref([]);
 
     const { detailPanel, openDetail, closeDetail } = useDetailPanel(authToken);
@@ -145,6 +146,9 @@ const TopologyViewComponent = {
     const allExpanded = computed(() =>
       topology.value.targets.length > 0 && topology.value.targets.every(t => expandedTargets.value.has(t.target))
     );
+
+    // Watch debounced search to trigger filtering
+    Vue.watch(debouncedSearch, filterTargets);
 
     function filterTargets() {
       const q = searchQuery.value.toLowerCase().trim();

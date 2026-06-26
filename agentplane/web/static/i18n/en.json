@@ -159,5 +159,11 @@
   "operations.search": "Search...",
   "operations.no_match": "No matching records found",
 
-  "logs.lines": "lines"
+  "logs.lines": "lines",
+  "logs.search": "Search logs...",
+  "logs.all_levels": "All Levels",
+  "logs.pause": "Pause",
+  "logs.resume": "Resume",
+  "logs.no_match": "No matching logs",
+  "logs.paused_hint": "Logs paused — new entries will not appear"
 }

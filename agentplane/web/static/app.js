@@ -62,6 +62,14 @@ function createAgentPlaneApp() {
 
       provide('authToken', authToken);
 
+      // Allow child components to navigate to a different view
+      function navigateToView(viewName) {
+        if (VALID_VIEWS.includes(viewName)) {
+          view.value = viewName;
+        }
+      }
+      provide('navigateToView', navigateToView);
+
       // ── URL hash routing ──
       function syncHashToView() {
         const hash = location.hash.replace('#', '');

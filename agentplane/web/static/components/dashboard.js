@@ -76,7 +76,7 @@ const DashboardComponent = {
 
         <!-- Domain health cards -->
         <div v-if="Object.keys(domains).length > 0" class="domain-health-row">
-          <div v-for="d in domainCards" :key="d.key" class="domain-card">
+          <div v-for="d in domainCards" :key="d.key" class="domain-card" @click="domainCardClick(d.key)" style="cursor:pointer;">
             <div class="domain-card-header">
               <span class="domain-card-icon">{{ d.icon }}</span>
               <span class="domain-card-name">{{ d.name }}</span>
@@ -298,6 +298,7 @@ const DashboardComponent = {
 
   setup() {
     const authToken = Vue.inject('authToken', Vue.ref(''));
+    const navigateToView = Vue.inject('navigateToView', function () {});
     const { t } = useI18n();
 
     const hosts = ref([]);
@@ -440,6 +441,11 @@ const DashboardComponent = {
       openDetail(`${host.hostname} (${host.target})`, `/api/servers/${host.target}`);
     }
 
+    function domainCardClick(key) {
+      var viewMap = { infra: 'topology', service: 'operations', app: 'topology', ingress: 'topology', project: 'capability-map' };
+      if (viewMap[key]) navigateToView(viewMap[key]);
+    }
+
     function opResultClass(result) {
       if (!result) return 'neutral';
       const r = String(result).toLowerCase();
@@ -453,7 +459,7 @@ const DashboardComponent = {
       expandedTargets, detailPanel,
       connectedHosts, appsWithUrl, latestOp, dataFreshness, isDataStale, domainCards,
       sortedApps, allTargetsExpanded,
-      fetchDashboard, toggleTarget, toggleAllTargets, selectApp, selectHost, closeDetail,
+      fetchDashboard, toggleTarget, toggleAllTargets, selectApp, selectHost, closeDetail, domainCardClick,
       formatRelativeTime, formatTimestamp, truncateUrl,
       opResultClass, appStatusClass, serviceStatusClass, formatDetailVal,
       toggleSort, sortIcon,

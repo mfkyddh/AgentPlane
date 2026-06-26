@@ -213,3 +213,15 @@ function copyToClipboard(text) {
   }
   return Promise.resolve(false);
 }
+
+// ── Debounce helper for search inputs ──
+function useDebounce(sourceRef, delay) {
+  var debounced = Vue.ref(sourceRef.value);
+  var timer = null;
+  Vue.watch(sourceRef, function (val) {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(function () { debounced.value = val; }, delay || 200);
+  });
+  Vue.onUnmounted(function () { if (timer) clearTimeout(timer); });
+  return debounced;
+}

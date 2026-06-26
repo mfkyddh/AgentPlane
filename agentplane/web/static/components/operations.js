@@ -38,7 +38,7 @@ const OperationsComponent = {
       <div v-if="tab === 'history'" class="panel">
         <div class="panel-header" style="border-bottom:none;padding-bottom:0;">
           <div class="panel-title">{{ t('operations.history') }}</div>
-          <input v-model="historySearch" class="search-input" :placeholder="t('operations.search')" style="width:200px;">
+          <input v-model="historySearch" class="search-input" :placeholder="t('operations.search')" :aria-label="t('operations.search')" style="width:200px;">
         </div>
         <div class="panel-body" style="padding:0;">
           <div v-if="loading" class="loading-state">
@@ -80,7 +80,7 @@ const OperationsComponent = {
         <div class="panel-header">
           <div class="panel-title">{{ t('operations.audit_log') }}</div>
           <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-            <input v-model="auditSearch" class="search-input" :placeholder="t('operations.search')" style="width:160px;">
+            <input v-model="auditSearch" class="search-input" :placeholder="t('operations.search')" :aria-label="t('operations.search')" style="width:160px;">
             <select v-model="auditTarget" class="select-sm" @change="fetchAuditLog">
               <option value="">{{ t('operations.all_targets') }}</option>
               <option v-for="tgt in targets" :key="tgt" :value="tgt">{{ tgt }}</option>
@@ -224,6 +224,8 @@ const OperationsComponent = {
     // Search
     const historySearch = ref('');
     const auditSearch = ref('');
+    const debouncedHistorySearch = useDebounce(historySearch, 200);
+    const debouncedAuditSearch = useDebounce(auditSearch, 200);
 
     // Sorting
     const opSort = useSortable('timestamp', 'desc');
@@ -249,7 +251,7 @@ const OperationsComponent = {
 
     // ── Filtered & sorted ops ──
     const filteredOps = computed(() => {
-      const q = historySearch.value.toLowerCase().trim();
+      const q = debouncedHistorySearch.value.toLowerCase().trim();
       if (!q) return operations.value;
       return operations.value.filter(op =>
         (op.target || '').toLowerCase().includes(q) ||
@@ -262,7 +264,7 @@ const OperationsComponent = {
     const sortedOps = computed(() => opSort.sortItems(filteredOps.value));
 
     const filteredAudit = computed(() => {
-      const q = auditSearch.value.toLowerCase().trim();
+      const q = debouncedAuditSearch.value.toLowerCase().trim();
       if (!q) return auditEntries.value;
       return auditEntries.value.filter(e =>
         (e.command || '').toLowerCase().includes(q) ||

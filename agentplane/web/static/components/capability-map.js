@@ -13,7 +13,7 @@ const CapabilityMapComponent = {
           <span class="cap-legend-item"><span class="cap-dot planned"></span> {{ t('cap.legend.planned') }}</span>
         </div>
         <div style="display:flex; gap:8px; align-items:center;">
-          <input v-model="searchQuery" class="search-input" :placeholder="t('cap.search')" @input="filterLayers">
+          <input v-model="searchQuery" class="search-input" :placeholder="t('cap.search')" :aria-label="t('cap.search')">
           <button class="btn-ghost" @click="toggleAll" :disabled="layers.length === 0">
             {{ allExpanded ? t('action.collapse_all') : t('action.expand_all') }}
           </button>
@@ -67,7 +67,11 @@ const CapabilityMapComponent = {
     const error = ref('');
     const expanded = reactive({});
     const searchQuery = ref('');
+    const debouncedSearch = useDebounce(searchQuery, 200);
     const filteredLayers = ref([]);
+
+    // Watch debounced search to trigger filtering
+    Vue.watch(debouncedSearch, filterLayers);
 
     const allExpanded = computed(() =>
       layers.value.length > 0 && layers.value.every(l => expanded[l.id])

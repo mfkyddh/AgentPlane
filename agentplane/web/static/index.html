@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/tokens.css?v=4">
-  <link rel="stylesheet" href="/static/components/layout.css?v=4">
+  <link rel="stylesheet" href="/static/tokens.css?v=5">
+  <link rel="stylesheet" href="/static/components/layout.css?v=5">
   <script src="https://unpkg.com/vue@3.5.13/dist/vue.global.prod.js" crossorigin="anonymous"></script>
 </head>
 <body>
@@ -97,8 +97,8 @@
             <div class="topbar-title">{{ viewLabel }}</div>
           </div>
           <div class="topbar-actions">
-            <button v-if="view !== 'chat'" class="btn-ghost" @click="refreshAll">
-              <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 2.5a5.487 5.487 0 00-4.131 1.869l1.204 1.204A.25.25 0 014.896 6H1.25A.25.25 0 011 5.75V2.104a.25.25 0 01.427-.177l1.38 1.38A7.002 7.002 0 0115 8a.75.75 0 01-1.5 0 5.5 5.5 0 00-5.5-5.5zM8 12.5a5.487 5.487 0 004.131-1.869l-1.204-1.204a.25.25 0 01.177-.427h3.646a.25.25 0 01.25.25v3.646a.25.25 0 01-.427.177l-1.38-1.38A7.002 7.002 0 011 8a.75.75 0 011.5 0 5.5 5.5 0 005.5 5.5z"/></svg>
+            <button v-if="view !== 'chat'" class="btn-ghost" @click="refreshAll" :aria-label="t('action.refresh')">
+              <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 2.5a5.487 5.487 0 00-4.131 1.869l1.204 1.204A.25.25 0 014.896 6H1.25A.25.25 0 011 5.75V2.104a.25.25 0 01.427-.177l1.38 1.38A7.002 7.002 0 0115 8a.75.75 0 01-1.5 0 5.5 5.5 0 00-5.5-5.5zM8 12.5a5.487 5.487 0 004.131-1.869l-1.204-1.204a.25.25 0 01.177-.427h3.646a.25.25 0 01.25.25v3.646a.25.25 0 01-.427.177l-1.38-1.38A7.002 7.002 0 011 8a.75.75 0 011.5 0 5.5 5.5 0 005.5 5.5z"/></svg>
               {{ t('action.refresh') }}
             </button>
           </div>
@@ -107,7 +107,7 @@
       </div>
 
       <!-- Toast notifications -->
-      <div class="toast-container" aria-live="polite">
+      <div class="toast-container" aria-live="polite" role="status" aria-label="Notifications">
         <div v-for="toast in toasts" :key="toast.id" class="toast" :class="toast.type">
           {{ toast.message }}
         </div>
@@ -131,15 +131,15 @@
     </template>
   </div>
 
-  <script src="/static/shared.js?v=4"></script>
-  <script src="/static/components/dashboard.js?v=4"></script>
-  <script src="/static/components/topology.js?v=4"></script>
-  <script src="/static/components/capability-map.js?v=4"></script>
-  <script src="/static/components/chat.js?v=4"></script>
-  <script src="/static/components/operations.js?v=4"></script>
-  <script src="/static/components/logs-viewer.js?v=4"></script>
-  <script src="/static/i18n/index.js?v=4"></script>
-  <script src="/static/app.js?v=4"></script>
+  <script src="/static/shared.js?v=5"></script>
+  <script src="/static/components/dashboard.js?v=5"></script>
+  <script src="/static/components/topology.js?v=5"></script>
+  <script src="/static/components/capability-map.js?v=5"></script>
+  <script src="/static/components/chat.js?v=5"></script>
+  <script src="/static/components/operations.js?v=5"></script>
+  <script src="/static/components/logs-viewer.js?v=5"></script>
+  <script src="/static/i18n/index.js?v=5"></script>
+  <script src="/static/app.js?v=5"></script>
   <script>
     const app = createAgentPlaneApp();
     app.component('dashboard-view', DashboardComponent);

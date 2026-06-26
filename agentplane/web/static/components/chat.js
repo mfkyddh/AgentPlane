@@ -1,5 +1,5 @@
 // AgentPlane — Chat component
-// WebSocket chat with agent
+// WebSocket chat with agent, message copy, command formatting
 
 const ChatComponent = {
   template: `
@@ -13,7 +13,12 @@ const ChatComponent = {
           <div>
             <div v-if="msg.rejected" class="message-rejected">{{ msg.text }}</div>
             <div v-else-if="msg.error" class="message-error">{{ msg.text }}</div>
-            <div v-else class="message-bubble">{{ msg.text }}</div>
+            <div v-else class="message-bubble">
+              <pre class="message-text">{{ msg.text }}</pre>
+              <button v-if="msg.role === 'agent'" class="msg-copy-btn" @click="copyMessage(msg)" :title="t('action.copy')">
+                {{ msg._copied ? '\\u2713' : '\\u2398' }}
+              </button>
+            </div>
             <div class="message-time">{{ msg.time }}</div>
           </div>
         </div>
@@ -55,6 +60,16 @@ const ChatComponent = {
         el.style.height = 'auto';
         el.style.height = Math.min(el.scrollHeight, 120) + 'px';
       }
+    }
+
+    function copyMessage(msg) {
+      copyToClipboard(msg.text).then(ok => {
+        if (ok) {
+          msg._copied = true;
+          showToast(t('toast.copied'), 'success', 1500);
+          setTimeout(() => { msg._copied = false; }, 2000);
+        }
+      });
     }
 
     function onWsMessage(event) {
@@ -152,7 +167,7 @@ const ChatComponent = {
 
     return {
       chatMessages, chatInput, agentTyping, chatMessagesEl, chatInputEl,
-      sendMessage, autoResize, t,
+      sendMessage, autoResize, copyMessage, t,
     };
   },
 };

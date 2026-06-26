@@ -21,9 +21,17 @@ class DashboardPage(BasePage):
     # ── Domain Health Cards ──
 
     def domain_card_count(self) -> int:
+        try:
+            self.page.wait_for_selector(".domain-card", timeout=5000)
+        except Exception:
+            pass
         return self.page.locator(".domain-card").count()
 
     def domain_card_names(self) -> list[str]:
+        try:
+            self.page.wait_for_selector(".domain-card-name", timeout=5000)
+        except Exception:
+            pass
         return self.page.locator(".domain-card-name").all_inner_texts()
 
     # ── Topology section ──

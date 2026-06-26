@@ -159,5 +159,11 @@
   "operations.search": "搜索...",
   "operations.no_match": "未找到匹配的记录",
 
-  "logs.lines": "行"
+  "logs.lines": "行",
+  "logs.search": "搜索日志...",
+  "logs.all_levels": "全部级别",
+  "logs.pause": "暂停",
+  "logs.resume": "继续",
+  "logs.no_match": "无匹配日志",
+  "logs.paused_hint": "日志已暂停，新日志不会显示"
 }
