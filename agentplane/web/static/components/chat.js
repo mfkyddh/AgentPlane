@@ -73,14 +73,17 @@ const ChatComponent = {
       </div>
       <button v-if="showScrollBtn" class="chat-scroll-btn" @click="scrollToBottom" :aria-label="'Scroll to bottom'">&#x25BC;</button>
       <div class="chat-input-area">
-        <button v-if="chatMessages.length > 0" class="btn-ghost btn-sm" @click="clearChat" :title="t('chat.clear')" style="flex-shrink:0;">
-          {{ t('chat.clear') }}
+        <button v-if="chatMessages.length > 0" class="btn-ghost btn-sm" :class="{ 'btn-confirm': confirmClear }" @click="clearChat" :title="t('chat.clear')" style="flex-shrink:0;">
+          {{ confirmClear ? t('chat.confirm_clear') : t('chat.clear') }}
         </button>
-        <textarea class="chat-input" v-model="chatInput" ref="chatInputEl"
-                  :placeholder="t('chat.placeholder')"
-                  @keydown="handleChatKeydown"
-                  @input="autoResize"
-                  rows="1"></textarea>
+        <div class="chat-input-wrap">
+          <textarea class="chat-input" v-model="chatInput" ref="chatInputEl"
+                    :placeholder="t('chat.placeholder')"
+                    @keydown="handleChatKeydown"
+                    @input="autoResize"
+                    rows="1" maxlength="2000"></textarea>
+          <span v-if="chatInput.length > 100" class="chat-char-count" :class="{ warn: chatInput.length > 1800 }">{{ chatInput.length }}/2000</span>
+        </div>
         <button class="chat-send" @click="sendMessage" :disabled="!chatInput.trim() || agentTyping">
           {{ t('action.send') }}
         </button>
@@ -164,7 +167,17 @@ const ChatComponent = {
       });
     }
 
+    const confirmClear = ref(false);
+    let _clearTimer = null;
+
     function clearChat() {
+      if (!confirmClear.value) {
+        confirmClear.value = true;
+        _clearTimer = setTimeout(() => { confirmClear.value = false; }, 3000);
+        return;
+      }
+      clearTimeout(_clearTimer);
+      confirmClear.value = false;
       chatMessages.value = [];
       _chatMessageStore = [];
       _chatId = 0;
@@ -285,7 +298,7 @@ const ChatComponent = {
 
     return {
       chatMessages, chatInput, agentTyping, chatMessagesEl, chatInputEl,
-      showScrollBtn, scrollToBottom, onChatScroll,
+      showScrollBtn, scrollToBottom, onChatScroll, confirmClear,
       sendMessage, autoResize, handleChatKeydown, copyMessage, clearChat,
       getMessageDate, chatSearch, filteredMessages,
       renderMessage: renderChatWithHighlight, t,

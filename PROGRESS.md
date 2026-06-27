@@ -191,6 +191,23 @@ audience: both
 | B142 | create tests/cli/test_service.py | 已完成 | — | pending (2026-06-24) |
 | B143 | fix data polling, result badges, and service status display | 已完成 | — | pending (2026-06-26) |
 | B144 | eliminate double-fetch, add favicon, fix import sorting | 已完成 | — | pending (2026-06-26) |
+| B145 | comprehensive i18n, accessibility, and code quality improvements | 已完成 | — | pending (2026-06-26) |
+| B146 | add shared utilities, hash routing, sorting, search, and keyboard shortcuts | 已完成 | — | pending (2026-06-26) |
+| B147 | add search debounce, domain navigation, ARIA, and UX polish | 已完成 | — | pending (2026-06-26) |
+| B148 | chat persistence, action feedback, and backend caching | 已完成 | — | pending (2026-06-27) |
+| B149 | result click-to-filter, chat enter-send, timing header | 已完成 | — | pending (2026-06-27) |
+| B150 | error handling, a11y, audit export, and UX polish | 已完成 | — | pending (2026-06-27) |
+| B151 | dashboard app search, polling optimization, error middleware | 已完成 | — | pending (2026-06-27) |
+| B152 | health endpoint, conditional scroll, tablet layout, ARIA polish | 已完成 | — | pending (2026-06-27) |
+| B153 | detail panel smart rendering, structured action results, sidebar ops cap | 已完成 | — | pending (2026-06-27) |
+| B154 | clickable stat cards, global loading bar, / search shortcut | 已完成 | — | pending (2026-06-27) |
+| B155 | log line numbers, chat code formatting, log download, a11y improvements | 已完成 | — | pending (2026-06-27) |
+| B156 | tab persistence, topology status summary, chat date separators | 已完成 | — | pending (2026-06-27) |
+| B157 | add chat search, host ARIA, log styling improvements | 已完成 | — | pending (2026-06-27) |
+| B158 | remove dead code, fix time formatting, improve UX | 已完成 | — | pending (2026-06-27) |
+| B159 | add useSearchFilter composable, operation confirmations, copy payload | 已完成 | — | pending (2026-06-27) |
+| B160 | improve dashboard empty states, add log line hover highlight | 已完成 | — | pending (2026-06-27) |
+| B161 | add search highlighting to chat messages | 已完成 | — | pending (2026-06-27) |
 
 ---
 

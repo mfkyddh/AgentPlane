@@ -492,6 +492,13 @@ mark { background: rgba(210, 153, 34, 0.35); color: var(--fg-primary); border-ra
   .typing-dot { animation: none; transform: scale(1); }
 }
 
+/* ── Topology copy button ── */
+.topo-copy-btn { display: inline-flex; margin-left: 4px; vertical-align: middle; opacity: 0; transition: opacity 0.15s; }
+.topo-target-header:hover .topo-copy-btn { opacity: 1; }
+
+/* ── Data table scroll wrapper ── */
+.data-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
 /* ── Chat search bar ── */
 .chat-search-bar { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-bottom: 1px solid var(--border-muted); }
 
@@ -503,3 +510,10 @@ mark { background: rgba(210, 153, 34, 0.35); color: var(--fg-primary); border-ra
 .chat-scroll-btn { position: absolute; bottom: 70px; right: 24px; z-index: 10; width: 32px; height: 32px; border-radius: 50%; background: var(--bg-overlay); border: 1px solid var(--border); color: var(--fg-secondary); cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; animation: toast-in 0.15s ease; }
 .chat-scroll-btn:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
 .chat-container { position: relative; }
+
+/* ── Chat input wrap + character counter ── */
+.chat-input-wrap { position: relative; flex: 1; display: flex; flex-direction: column; }
+.chat-input-wrap .chat-input { width: 100%; }
+.chat-char-count { position: absolute; bottom: 4px; right: 8px; font-size: 10px; font-family: var(--font-mono); color: var(--fg-muted); pointer-events: none; opacity: 0.6; }
+.chat-char-count.warn { color: var(--accent-yellow); opacity: 1; }
+.btn-confirm { border-color: var(--accent-red) !important; color: var(--accent-red) !important; }

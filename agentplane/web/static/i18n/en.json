@@ -68,6 +68,7 @@
   "chat.blocked": "Destructive operation blocked",
   "chat.error": "Unknown error",
   "chat.clear": "Clear Chat",
+  "chat.confirm_clear": "Confirm clear?",
   "chat.search": "Search messages...",
 
   "cap.title": "Capabilities",

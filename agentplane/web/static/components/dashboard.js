@@ -180,7 +180,8 @@ const DashboardComponent = {
                 <div v-if="filteredApps.length === 0" class="empty-state" style="padding:24px;">
                   {{ t('topology.no_match') }}
                 </div>
-                <table v-else class="data-table">
+                <div v-else class="data-table-wrap">
+                <table class="data-table">
                   <thead>
                     <tr>
                       <th @click="toggleSort('app')" class="sortable-th" :aria-sort="sortAria('app')">App{{ sortIcon('app') }}</th>
@@ -205,6 +206,7 @@ const DashboardComponent = {
                     </tr>
                   </tbody>
                 </table>
+                </div>
               </div>
             </div>
 

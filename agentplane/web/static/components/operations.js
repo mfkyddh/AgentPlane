@@ -54,7 +54,8 @@ const OperationsComponent = {
           <div v-else-if="filteredOps.length === 0" class="empty-state">
             {{ operations.length === 0 ? t('operations.no_history') : t('operations.no_match') }}
           </div>
-          <table v-else class="data-table">
+          <div v-else class="data-table-wrap">
+          <table class="data-table" role="table" :aria-label="t('operations.history')">
             <thead>
               <tr>
                 <th @click="opSort.toggleSort('timestamp')" class="sortable-th" :aria-sort="opSort.sortAria('timestamp')">{{ t('operations.time') }}{{ opSort.sortIcon('timestamp') }}</th>
@@ -80,6 +81,7 @@ const OperationsComponent = {
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
       </div>
 
@@ -115,7 +117,8 @@ const OperationsComponent = {
           <div v-else-if="filteredAudit.length === 0" class="empty-state">
             {{ auditEntries.length === 0 ? t('operations.no_audit') : t('operations.no_match') }}
           </div>
-          <table v-else class="data-table">
+          <div v-else class="data-table-wrap">
+          <table class="data-table" role="table" :aria-label="t('operations.audit_log')">
             <thead>
               <tr>
                 <th @click="auditSort.toggleSort('timestamp')" class="sortable-th" :aria-sort="auditSort.sortAria('timestamp')">{{ t('operations.time') }}{{ auditSort.sortIcon('timestamp') }}</th>
@@ -146,6 +149,7 @@ const OperationsComponent = {
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
       </div>
 
