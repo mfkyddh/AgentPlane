@@ -435,8 +435,12 @@ const OperationsComponent = {
     }
 
     useDataPoller(() => {
-      refreshOps();
-      if (tab.value === 'audit') fetchAuditLog();
+      if (tab.value === 'history' || operations.value.length === 0) {
+        refreshOps();
+      }
+      if (tab.value === 'audit') {
+        fetchAuditLog();
+      }
     });
 
     return {

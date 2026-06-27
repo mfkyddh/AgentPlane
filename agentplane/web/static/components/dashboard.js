@@ -171,10 +171,16 @@ const DashboardComponent = {
                   <svg viewBox="0 0 16 16" fill="currentColor"><path d="M0 1.75A.75.75 0 01.75 1h4.253c1.227 0 2.317.59 3 1.501A3.744 3.744 0 0111.006 1h4.245a.75.75 0 01.75.75v10.5a.75.75 0 01-.75.75h-4.507a2.25 2.25 0 00-1.591.659l-.622.621a.75.75 0 01-1.06 0l-.622-.621A2.25 2.25 0 005.258 13H.75a.75.75 0 01-.75-.75V1.75zm7.251 10.324l.004-5.073-.002-2.253A2.25 2.25 0 005.003 2.5H1.5v9h3.757a3.75 3.75 0 011.994.574zM8.755 4.75l-.004 7.322a3.752 3.752 0 011.992-.572H14.5v-9h-3.495a2.25 2.25 0 00-2.25 2.25z"/></svg>
                   {{ t('dashboard.apps') }}
                 </div>
-                <span class="panel-count">{{ apps.length }}</span>
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <input v-model="appSearch" class="search-input" :placeholder="t('topology.search')" :aria-label="t('topology.search')" style="width:160px;min-width:120px;">
+                  <span class="panel-count">{{ filteredApps.length }}/{{ apps.length }}</span>
+                </div>
               </div>
               <div class="panel-body">
-                <table class="data-table">
+                <div v-if="filteredApps.length === 0" class="empty-state" style="padding:24px;">
+                  {{ t('topology.no_match') }}
+                </div>
+                <table v-else class="data-table">
                   <thead>
                     <tr>
                       <th @click="toggleSort('app')" class="sortable-th" :aria-sort="sortAria('app')">App{{ sortIcon('app') }}</th>
@@ -368,9 +374,22 @@ const DashboardComponent = {
       return cards;
     });
 
-    // ── Sorting ──
+    // ── Sorting & Filtering ──
     const { toggleSort, sortIcon, sortAria, sortItems } = useSortable('app');
-    const sortedApps = computed(() => sortItems(apps.value));
+    const appSearch = ref('');
+    const debouncedAppSearch = useDebounce(appSearch, 200);
+
+    const filteredApps = computed(() => {
+      const q = debouncedAppSearch.value.toLowerCase().trim();
+      if (!q) return apps.value;
+      return apps.value.filter(a =>
+        (a.app || '').toLowerCase().includes(q) ||
+        (a.target || '').toLowerCase().includes(q) ||
+        (a.service_key || '').toLowerCase().includes(q) ||
+        (a.control_plane || '').toLowerCase().includes(q)
+      );
+    });
+    const sortedApps = computed(() => sortItems(filteredApps.value));
 
     // ── Topology expand/collapse all ──
     const allTargetsExpanded = computed(() =>
@@ -450,7 +469,7 @@ const DashboardComponent = {
       hosts, apps, operations, topology, domains, loading, loadError,
       expandedTargets, detailPanel,
       connectedHosts, appsWithUrl, latestOp, dataFreshness, isDataStale, domainCards,
-      sortedApps, allTargetsExpanded,
+      sortedApps, filteredApps, allTargetsExpanded, appSearch,
       fetchDashboard, toggleTarget, toggleAllTargets, selectApp, selectHost, closeDetail, domainCardClick,
       formatRelativeTime, formatTimestamp, truncateUrl,
       resultBadgeClass, appStatusClass, serviceStatusClass, formatDetailVal,

@@ -57,6 +57,23 @@ class TimingMiddleware(BaseHTTPMiddleware):
         return response
 
 
+class ErrorHandlingMiddleware(BaseHTTPMiddleware):
+    """Catch unhandled exceptions on /api/ routes and return 500 JSON."""
+
+    async def dispatch(self, request: Request, call_next):
+        import logging as _logging
+        try:
+            return await call_next(request)
+        except Exception:
+            _logging.getLogger(__name__).exception("Unhandled error on %s", request.url.path)
+            if request.url.path.startswith("/api/"):
+                return JSONResponse(
+                    {"error": "Internal server error"},
+                    status_code=500,
+                )
+            raise
+
+
 class TokenAuthMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, token: str) -> None:
         super().__init__(app)
@@ -76,6 +93,7 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
     if token is not None:
         app.add_middleware(TokenAuthMiddleware, token=token)
     app.add_middleware(TimingMiddleware)
+    app.add_middleware(ErrorHandlingMiddleware)
 
     @app.get("/api/dashboard")
     async def api_dashboard():
