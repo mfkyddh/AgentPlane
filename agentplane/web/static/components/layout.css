@@ -329,7 +329,8 @@ body { height: 100vh; overflow: hidden; }
 /* ── Log viewer ── */
 .log-connection-form { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .log-output { flex: 1; background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; overflow-y: auto; font-family: var(--font-mono); font-size: 12px; line-height: 1.6; min-height: 300px; max-height: 500px; }
-.log-line { display: flex; gap: 10px; padding: 2px 0; }
+.log-line { display: flex; gap: 10px; padding: 2px 0; transition: background 0.1s; }
+.log-line:hover { background: var(--bg-tertiary); border-radius: 2px; }
 .log-line.error { color: var(--accent-red); background: rgba(248, 81, 73, 0.05); border-radius: 2px; padding-left: 4px; padding-right: 4px; }
 .log-line.system { color: var(--accent-yellow); font-style: italic; }
 .log-time { color: var(--fg-muted); white-space: nowrap; flex-shrink: 0; }

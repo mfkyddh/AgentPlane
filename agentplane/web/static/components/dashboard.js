@@ -209,11 +209,23 @@ const DashboardComponent = {
             </div>
 
             <!-- Empty states -->
-            <div v-if="hosts.length === 0 && apps.length === 0" class="panel">
+            <div v-if="hosts.length === 0 && apps.length === 0 && topology.targets.length === 0" class="panel">
               <div class="empty-state">
                 <div class="empty-state-icon">&#x1F5A5;</div>
                 <div class="empty-state-title">{{ t('dashboard.no_resources') }}</div>
                 <div class="empty-state-hint" v-html="t('dashboard.no_resources_hint')"></div>
+              </div>
+            </div>
+            <div v-if="topology.targets.length === 0 && (hosts.length > 0 || apps.length > 0)" class="panel">
+              <div class="empty-state" style="padding:20px;">
+                <div class="empty-state-title">{{ t('dashboard.no_topology') }}</div>
+                <div class="empty-state-hint" v-html="t('dashboard.no_topology_hint')"></div>
+              </div>
+            </div>
+            <div v-if="apps.length === 0 && hosts.length > 0" class="panel">
+              <div class="empty-state" style="padding:20px;">
+                <div class="empty-state-title">{{ t('dashboard.no_apps') }}</div>
+                <div class="empty-state-hint" v-html="t('dashboard.no_apps_hint')"></div>
               </div>
             </div>
           </div>
