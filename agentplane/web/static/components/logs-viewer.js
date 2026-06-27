@@ -69,6 +69,9 @@ const LogsViewerComponent = {
             <button class="btn-ghost btn-sm" @click="copyLogs" :disabled="logs.length === 0">
               {{ t('action.copy') }}
             </button>
+            <button class="btn-ghost btn-sm" @click="downloadLogs" :disabled="logs.length === 0">
+              &#x2B07; {{ t('logs.download') }}
+            </button>
             <button class="btn-ghost btn-sm" @click="clearLogs">
               {{ t('logs.clear') }}
             </button>
@@ -86,6 +89,7 @@ const LogsViewerComponent = {
             {{ connected ? (logSearch ? t('logs.no_match') : t('logs.waiting')) : t('logs.not_connected') }}
           </div>
           <div v-for="(log, idx) in filteredLogs" :key="log._id" class="log-line" :class="log.type">
+            <span class="log-line-num">{{ idx + 1 }}</span>
             <span class="log-time">{{ formatLogTime(log.timestamp) }}</span>
             <span class="log-text" v-html="highlightSearch(log.line)"></span>
           </div>
@@ -238,6 +242,24 @@ const LogsViewerComponent = {
       });
     }
 
+    function downloadLogs() {
+      var items = filteredLogs.value.length > 0 ? filteredLogs.value : logs.value;
+      if (items.length === 0) return;
+      var text = items.map(function (l) {
+        return '[' + formatLogTime(l.timestamp) + '] [' + l.type.toUpperCase() + '] ' + l.line;
+      }).join('\n');
+      var blob = new Blob([text], { type: 'text/plain' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'logs-' + (selectedTarget.value || 'unknown') + '-' + new Date().toISOString().slice(0, 19).replace(/:/g, '-') + '.txt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast(t('logs.download_success') || 'Logs downloaded', 'success', 2000);
+    }
+
     onUnmounted(() => {
       _userDisconnected = true;
       if (_reconnectTimer) { clearTimeout(_reconnectTimer); _reconnectTimer = null; }
@@ -247,7 +269,7 @@ const LogsViewerComponent = {
     return {
       targets, selectedTarget, containerName, connected, connecting,
       logs, filteredLogs, autoScroll, logContainer, connect, disconnect,
-      clearLogs, copyLogs, formatLogTime, t,
+      clearLogs, copyLogs, downloadLogs, formatLogTime, t,
       logSearch, logLevelFilter, paused, togglePause, highlightSearch,
     };
   }

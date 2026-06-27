@@ -76,7 +76,7 @@ const DashboardComponent = {
 
         <!-- Domain health cards -->
         <div v-if="Object.keys(domains).length > 0" class="domain-health-row">
-          <div v-for="d in domainCards" :key="d.key" class="domain-card" @click="domainCardClick(d.key)" style="cursor:pointer;">
+          <div v-for="d in domainCards" :key="d.key" class="domain-card" @click="domainCardClick(d.key)" @keydown.enter="domainCardClick(d.key)" role="button" tabindex="0" style="cursor:pointer;">
             <div class="domain-card-header">
               <span class="domain-card-icon">{{ d.icon }}</span>
               <span class="domain-card-name">{{ d.name }}</span>

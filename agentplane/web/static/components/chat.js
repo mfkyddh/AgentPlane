@@ -11,6 +11,16 @@ function _trimChatMessages(msgs) {
   }
 }
 
+function _renderChatMessage(text) {
+  if (!text) return '';
+  var escaped = escapeHtml(text);
+  // Code blocks: ```...```
+  escaped = escaped.replace(/```([\s\S]*?)```/g, '<code class="chat-code-block">$1</code>');
+  // Inline code: `...`
+  escaped = escaped.replace(/`([^`]+)`/g, '<code class="chat-code-inline">$1</code>');
+  return escaped;
+}
+
 const ChatComponent = {
   template: `
     <div class="chat-container" style="flex:1;">
@@ -24,7 +34,7 @@ const ChatComponent = {
             <div v-if="msg.rejected" class="message-rejected">{{ msg.text }}</div>
             <div v-else-if="msg.error" class="message-error">{{ msg.text }}</div>
             <div v-else class="message-bubble">
-              <pre class="message-text">{{ msg.text }}</pre>
+              <pre class="message-text" v-html="renderMessage(msg.text)"></pre>
               <button v-if="msg.role === 'agent'" class="msg-copy-btn" @click="copyMessage(msg)" :title="t('action.copy')">
                 {{ msg._copied ? '\\u2713' : '\\u2398' }}
               </button>
@@ -226,7 +236,8 @@ const ChatComponent = {
     return {
       chatMessages, chatInput, agentTyping, chatMessagesEl, chatInputEl,
       showScrollBtn, scrollToBottom, onChatScroll,
-      sendMessage, autoResize, handleChatKeydown, copyMessage, clearChat, t,
+      sendMessage, autoResize, handleChatKeydown, copyMessage, clearChat,
+      renderMessage: _renderChatMessage, t,
     };
   },
 };

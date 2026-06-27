@@ -144,6 +144,8 @@
   "logs.connected_to": "已连接到",
   "logs.ws_error": "WebSocket 连接错误",
   "logs.reconnect_attempt": "正在尝试重新连接",
+  "logs.download": "下载",
+  "logs.download_success": "日志已下载",
 
   "time.just_now": "刚刚",
   "time.min_ago": "分钟前",

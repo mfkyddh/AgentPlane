@@ -144,6 +144,8 @@
   "logs.connected_to": "Connected to",
   "logs.ws_error": "WebSocket error",
   "logs.reconnect_attempt": "Attempting to reconnect",
+  "logs.download": "Download",
+  "logs.download_success": "Logs downloaded",
 
   "time.just_now": "just now",
   "time.min_ago": "m ago",
