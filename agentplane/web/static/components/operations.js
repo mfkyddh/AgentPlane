@@ -218,7 +218,7 @@ const OperationsComponent = {
           </div>
 
           <!-- Action Result -->
-          <div v-if="actionResult" class="action-result" :class="actionResult.ok ? 'success' : 'error'">
+          <div v-if="actionResult" ref="actionResultEl" class="action-result" :class="actionResult.ok ? 'success' : 'error'">
             <div class="action-result-header">
               <span class="action-result-status" :class="actionResult.ok ? 'success' : 'error'">
                 {{ actionResult.ok ? '\\u2713 ' + t('operations.success') : '\\u2717 ' + t('operations.failed') }}
@@ -274,6 +274,15 @@ const OperationsComponent = {
     const rollbackApp = ref('');
     const actionResult = ref(null);
     const actionLoading = ref(false);
+    const actionResultEl = ref(null);
+
+    function scrollToResult() {
+      nextTick(() => {
+        if (actionResultEl.value) {
+          actionResultEl.value.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      });
+    }
 
     // ── Dynamic targets from hosts API ──
     async function fetchTargets() {
@@ -365,6 +374,7 @@ const OperationsComponent = {
         showToast(e.message, 'error', 3000);
       } finally {
         actionLoading.value = false;
+        scrollToResult();
       }
     }
 
@@ -384,6 +394,7 @@ const OperationsComponent = {
         showToast(e.message, 'error', 3000);
       } finally {
         actionLoading.value = false;
+        scrollToResult();
       }
     }
 
@@ -404,6 +415,7 @@ const OperationsComponent = {
         showToast(e.message, 'error', 3000);
       } finally {
         actionLoading.value = false;
+        scrollToResult();
       }
     }
 
@@ -424,17 +436,14 @@ const OperationsComponent = {
         showToast(e.message, 'error', 3000);
       } finally {
         actionLoading.value = false;
+        scrollToResult();
       }
     }
 
     function exportAuditLog() {
       var url = '/api/audit-log/export?limit=' + auditLimit.value;
       if (auditTarget.value) url += '&target=' + auditTarget.value;
-      var headers = {};
-      if (authToken && authToken.value) {
-        headers['Authorization'] = 'Bearer ' + authToken.value;
-      }
-      fetch(url, { headers: headers }).then(function (res) {
+      apiFetch(url, authToken, { _timeout: 30000 }).then(function (res) {
         if (!res.ok) throw new Error('HTTP ' + res.status);
         return res.blob();
       }).then(function (blob) {

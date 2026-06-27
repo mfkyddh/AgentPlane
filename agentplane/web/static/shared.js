@@ -39,13 +39,16 @@ function formatRelativeTime(ts, t) {
     const d = new Date(ts);
     const now = new Date();
     const diffMs = now - d;
+    if (diffMs < 0) return t('time.just_now');
     const diffMin = Math.floor(diffMs / 60000);
     if (diffMin < 1) return t('time.just_now');
     if (diffMin < 60) return `${diffMin}${t('time.min_ago')}`;
     const diffHr = Math.floor(diffMin / 60);
     if (diffHr < 24) return `${diffHr}${t('time.hour_ago')}`;
     const diffDay = Math.floor(diffHr / 24);
-    return `${diffDay}${t('time.day_ago')}`;
+    if (diffDay < 365) return `${diffDay}${t('time.day_ago')}`;
+    const diffYear = Math.floor(diffDay / 365);
+    return `${diffYear}y ago`;
   } catch {
     return ts;
   }
@@ -202,37 +205,20 @@ function useSortable(defaultKey, defaultDir) {
 // ── Toast notification system ──
 var _toastState = Vue.reactive({ toasts: [] });
 var _toastId = 0;
+var _lastToast = { message: '', time: 0 };
 
 function showToast(message, type, duration) {
+  // Deduplication: skip identical messages within 2 seconds
+  var now = Date.now();
+  if (message === _lastToast.message && (now - _lastToast.time) < 2000) return;
+  _lastToast = { message: message, time: now };
+
   var id = ++_toastId;
   _toastState.toasts.push({ id: id, message: message, type: type || 'info', duration: duration || 3000 });
   setTimeout(function () {
     var idx = _toastState.toasts.findIndex(function (t) { return t.id === id; });
     if (idx >= 0) _toastState.toasts.splice(idx, 1);
   }, duration || 3000);
-}
-
-// ── Keyboard shortcuts composable ──
-function useKeyboardShortcuts(handlers) {
-  function onKeyDown(e) {
-    // Skip when focused on input/textarea
-    var tag = e.target.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target.isContentEditable) return;
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
-
-    var handler = handlers[e.key];
-    if (handler) {
-      e.preventDefault();
-      handler();
-    }
-  }
-
-  Vue.onMounted(function () {
-    document.addEventListener('keydown', onKeyDown);
-  });
-  Vue.onUnmounted(function () {
-    document.removeEventListener('keydown', onKeyDown);
-  });
 }
 
 // ── Copy to clipboard ──
