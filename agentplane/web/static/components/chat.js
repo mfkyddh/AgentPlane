@@ -1,5 +1,8 @@
 // AgentPlane — Chat component
 // WebSocket chat with agent, message copy, command formatting
+// Messages persist across view switches within a session
+
+var _chatMessageStore = [];
 
 const ChatComponent = {
   template: `
@@ -9,7 +12,7 @@ const ChatComponent = {
           <h3>{{ t('chat.title') }}</h3>
           <p v-html="t('chat.welcome')"></p>
         </div>
-        <div v-for="(msg, i) in chatMessages" :key="i" class="message" :class="msg.role">
+        <div v-for="(msg, i) in chatMessages" :key="msg._id || i" class="message" :class="msg.role">
           <div>
             <div v-if="msg.rejected" class="message-rejected">{{ msg.text }}</div>
             <div v-else-if="msg.error" class="message-error">{{ msg.text }}</div>
@@ -34,6 +37,9 @@ const ChatComponent = {
         </div>
       </div>
       <div class="chat-input-area">
+        <button v-if="chatMessages.length > 0" class="btn-ghost btn-sm" @click="clearChat" :title="t('chat.clear')" style="flex-shrink:0;">
+          {{ t('chat.clear') }}
+        </button>
         <textarea class="chat-input" v-model="chatInput" ref="chatInputEl"
                   :placeholder="t('chat.placeholder')"
                   @keydown.enter.exact.prevent="sendMessage"
@@ -48,11 +54,15 @@ const ChatComponent = {
 
   setup() {
     const { t } = useI18n();
-    const chatMessages = ref([]);
+    const chatMessages = ref(_chatMessageStore);
     const chatInput = ref('');
     const agentTyping = ref(false);
     const chatMessagesEl = ref(null);
     const chatInputEl = ref(null);
+    let _chatId = _chatMessageStore.length;
+
+    // Persist messages across view switches
+    Vue.watch(chatMessages, (val) => { _chatMessageStore = val; }, { deep: true });
 
     function autoResize() {
       const el = chatInputEl.value;
@@ -70,6 +80,12 @@ const ChatComponent = {
           setTimeout(() => { msg._copied = false; }, 2000);
         }
       });
+    }
+
+    function clearChat() {
+      chatMessages.value = [];
+      _chatMessageStore = [];
+      _chatId = 0;
     }
 
     function onWsMessage(event) {
@@ -108,6 +124,7 @@ const ChatComponent = {
           role: 'agent',
           text: `> ${msg.payload?.command || 'result'}\n${text}`,
           time: new Date().toLocaleTimeString(),
+          _id: ++_chatId,
         });
       } else if (msg.type === 'command_rejected') {
         chatMessages.value.push({
@@ -115,6 +132,7 @@ const ChatComponent = {
           text: msg.payload?.reason || t('chat.blocked'),
           rejected: true,
           time: new Date().toLocaleTimeString(),
+          _id: ++_chatId,
         });
       } else if (msg.type === 'error') {
         chatMessages.value.push({
@@ -122,6 +140,7 @@ const ChatComponent = {
           text: msg.payload?.reason || msg.payload?.message || t('chat.error'),
           error: true,
           time: new Date().toLocaleTimeString(),
+          _id: ++_chatId,
         });
       }
 
@@ -148,6 +167,7 @@ const ChatComponent = {
         role: 'user',
         text,
         time: new Date().toLocaleTimeString(),
+        _id: ++_chatId,
       });
       chatInput.value = '';
       Vue.nextTick(() => {
@@ -167,7 +187,7 @@ const ChatComponent = {
 
     return {
       chatMessages, chatInput, agentTyping, chatMessagesEl, chatInputEl,
-      sendMessage, autoResize, copyMessage, t,
+      sendMessage, autoResize, copyMessage, clearChat, t,
     };
   },
 };

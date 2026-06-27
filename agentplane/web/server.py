@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import hmac
 import json
 from pathlib import Path
@@ -114,8 +115,17 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
         return get_domain_project(repo_root)
 
     @app.get("/api/capabilities")
-    async def api_capabilities():
-        return get_capabilities()
+    async def api_capabilities(request: Request):
+        data = get_capabilities()
+        # ETag-based caching: hash the JSON payload
+        etag = hashlib.md5(json.dumps(data, sort_keys=True).encode()).hexdigest()[:16]
+        if_none_match = request.headers.get("if-none-match", "")
+        if if_none_match == etag:
+            return JSONResponse(None, status_code=304)
+        response = JSONResponse(data)
+        response.headers["ETag"] = etag
+        response.headers["Cache-Control"] = "public, max-age=60"
+        return response
 
     @app.post("/api/service/plan")
     async def api_service_plan(request: Request):
@@ -324,7 +334,10 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
         if not file_path.is_file():
             return JSONResponse({"error": "not found"}, status_code=404)
         response = FileResponse(str(file_path))
-        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        if filename.endswith((".js", ".css")):
+            response.headers["Cache-Control"] = "public, max-age=30"
+        else:
+            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
         return response
 
     return app

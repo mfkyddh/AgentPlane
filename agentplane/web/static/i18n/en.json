@@ -61,6 +61,7 @@
   "chat.processing": "Agent is processing...",
   "chat.blocked": "Destructive operation blocked",
   "chat.error": "Unknown error",
+  "chat.clear": "Clear Chat",
 
   "cap.title": "Capabilities",
   "cap.loading": "Failed to load capabilities",
@@ -117,6 +118,8 @@
   "operations.rollback": "Rollback",
   "operations.command": "Command",
   "operations.dry_run": "Dry Run",
+  "operations.success": "completed",
+  "operations.failed": "failed",
 
   "logs.title": "Live Logs",
   "logs.connected": "Connected",

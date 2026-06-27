@@ -149,11 +149,11 @@ const OperationsComponent = {
                 </select>
                 <input v-model="serviceName" class="form-input" :placeholder="t('operations.service_name')">
                 <div class="action-buttons">
-                  <button class="btn btn-primary" @click="servicePlan" :disabled="!serviceTarget || !serviceName">
-                    {{ t('operations.plan') }}
+                  <button class="btn btn-primary" @click="servicePlan" :disabled="!serviceTarget || !serviceName || actionLoading">
+                    {{ actionLoading ? t('action.loading') : t('operations.plan') }}
                   </button>
-                  <button class="btn btn-success" @click="serviceVerify" :disabled="!serviceTarget || !serviceName">
-                    {{ t('operations.verify') }}
+                  <button class="btn btn-success" @click="serviceVerify" :disabled="!serviceTarget || !serviceName || actionLoading">
+                    {{ actionLoading ? t('action.loading') : t('operations.verify') }}
                   </button>
                 </div>
               </div>
@@ -169,11 +169,11 @@ const OperationsComponent = {
                 </select>
                 <input v-model="deployApp" class="form-input" :placeholder="t('operations.app_name')">
                 <div class="action-buttons">
-                  <button class="btn btn-warning" @click="appDeploy(false)" :disabled="!deployTarget || !deployApp">
-                    {{ t('operations.deploy_dry') }}
+                  <button class="btn btn-warning" @click="appDeploy(false)" :disabled="!deployTarget || !deployApp || actionLoading">
+                    {{ actionLoading ? t('action.loading') : t('operations.deploy_dry') }}
                   </button>
-                  <button class="btn btn-danger" @click="appDeploy(true)" :disabled="!deployTarget || !deployApp">
-                    {{ t('operations.deploy') }}
+                  <button class="btn btn-danger" @click="appDeploy(true)" :disabled="!deployTarget || !deployApp || actionLoading">
+                    {{ actionLoading ? t('action.loading') : t('operations.deploy') }}
                   </button>
                 </div>
               </div>
@@ -189,11 +189,11 @@ const OperationsComponent = {
                 </select>
                 <input v-model="rollbackApp" class="form-input" :placeholder="t('operations.app_name')">
                 <div class="action-buttons">
-                  <button class="btn btn-warning" @click="appRollback(false)" :disabled="!rollbackTarget || !rollbackApp">
-                    {{ t('operations.rollback_dry') }}
+                  <button class="btn btn-warning" @click="appRollback(false)" :disabled="!rollbackTarget || !rollbackApp || actionLoading">
+                    {{ actionLoading ? t('action.loading') : t('operations.rollback_dry') }}
                   </button>
-                  <button class="btn btn-danger" @click="appRollback(true)" :disabled="!rollbackTarget || !rollbackApp">
-                    {{ t('operations.rollback') }}
+                  <button class="btn btn-danger" @click="appRollback(true)" :disabled="!rollbackTarget || !rollbackApp || actionLoading">
+                    {{ actionLoading ? t('action.loading') : t('operations.rollback') }}
                   </button>
                 </div>
               </div>
@@ -239,6 +239,7 @@ const OperationsComponent = {
     const rollbackTarget = ref('');
     const rollbackApp = ref('');
     const actionResult = ref(null);
+    const actionLoading = ref(false);
 
     // ── Dynamic targets from hosts API ──
     async function fetchTargets() {
@@ -314,6 +315,7 @@ const OperationsComponent = {
 
     async function servicePlan() {
       actionResult.value = null;
+      actionLoading.value = true;
       try {
         const res = await apiFetch('/api/service/plan', authToken, {
           method: 'POST',
@@ -321,13 +323,18 @@ const OperationsComponent = {
           body: JSON.stringify({ target: serviceTarget.value, name: serviceName.value, operation: 'restart' })
         });
         actionResult.value = await res.json();
+        showToast(t('operations.plan') + ' ' + (actionResult.value.ok ? t('operations.success') : t('operations.failed')), actionResult.value.ok ? 'success' : 'error', 3000);
       } catch (e) {
         actionResult.value = { ok: false, error: e.message };
+        showToast(e.message, 'error', 3000);
+      } finally {
+        actionLoading.value = false;
       }
     }
 
     async function serviceVerify() {
       actionResult.value = null;
+      actionLoading.value = true;
       try {
         const res = await apiFetch('/api/service/verify', authToken, {
           method: 'POST',
@@ -335,13 +342,18 @@ const OperationsComponent = {
           body: JSON.stringify({ target: serviceTarget.value, name: serviceName.value })
         });
         actionResult.value = await res.json();
+        showToast(t('operations.verify') + ' ' + (actionResult.value.ok ? t('operations.success') : t('operations.failed')), actionResult.value.ok ? 'success' : 'error', 3000);
       } catch (e) {
         actionResult.value = { ok: false, error: e.message };
+        showToast(e.message, 'error', 3000);
+      } finally {
+        actionLoading.value = false;
       }
     }
 
     async function appDeploy(execute) {
       actionResult.value = null;
+      actionLoading.value = true;
       try {
         const res = await apiFetch('/api/app/delivery/deploy', authToken, {
           method: 'POST',
@@ -349,13 +361,18 @@ const OperationsComponent = {
           body: JSON.stringify({ target: deployTarget.value, app: deployApp.value, execute: execute })
         });
         actionResult.value = await res.json();
+        showToast(t('operations.app_deploy') + ' ' + (actionResult.value.ok ? t('operations.success') : t('operations.failed')), actionResult.value.ok ? 'success' : 'error', 3000);
       } catch (e) {
         actionResult.value = { ok: false, error: e.message };
+        showToast(e.message, 'error', 3000);
+      } finally {
+        actionLoading.value = false;
       }
     }
 
     async function appRollback(execute) {
       actionResult.value = null;
+      actionLoading.value = true;
       try {
         const res = await apiFetch('/api/app/delivery/rollback', authToken, {
           method: 'POST',
@@ -363,8 +380,12 @@ const OperationsComponent = {
           body: JSON.stringify({ target: rollbackTarget.value, app: rollbackApp.value, execute: execute })
         });
         actionResult.value = await res.json();
+        showToast(t('operations.app_rollback') + ' ' + (actionResult.value.ok ? t('operations.success') : t('operations.failed')), actionResult.value.ok ? 'success' : 'error', 3000);
       } catch (e) {
         actionResult.value = { ok: false, error: e.message };
+        showToast(e.message, 'error', 3000);
+      } finally {
+        actionLoading.value = false;
       }
     }
 
@@ -377,7 +398,7 @@ const OperationsComponent = {
       tab, loading, auditLoading, operations, auditEntries, targets,
       auditTarget, auditLimit, serviceTarget, serviceName,
       deployTarget, deployApp, rollbackTarget, rollbackApp,
-      actionResult, refreshOps, fetchAuditLog, formatTimestamp, resultBadgeClass,
+      actionResult, actionLoading, refreshOps, fetchAuditLog, formatTimestamp, resultBadgeClass,
       servicePlan, serviceVerify, appDeploy, appRollback, t,
       historySearch, auditSearch,
       filteredOps, sortedOps, filteredAudit, sortedAudit,

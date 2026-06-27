@@ -61,6 +61,7 @@
   "chat.processing": "Agent 处理中...",
   "chat.blocked": "危险操作已拦截",
   "chat.error": "未知错误",
+  "chat.clear": "清空对话",
 
   "cap.title": "能力地图",
   "cap.loading": "加载能力地图失败",
@@ -117,6 +118,8 @@
   "operations.rollback": "回滚",
   "operations.command": "命令",
   "operations.dry_run": "模拟运行",
+  "operations.success": "成功",
+  "operations.failed": "失败",
 
   "logs.title": "实时日志",
   "logs.connected": "已连接",
