@@ -29,7 +29,7 @@ const DashboardComponent = {
       <template v-else>
         <!-- KPI Stats -->
         <div class="stats-row">
-          <div class="stat-card">
+          <div class="stat-card" @click="navigateToView('topology')" style="cursor:pointer;">
             <div class="stat-label">{{ t('dashboard.hosts') }}</div>
             <div class="stat-value blue">{{ hosts.length }}</div>
             <div class="stat-detail">
@@ -37,7 +37,7 @@ const DashboardComponent = {
               <span v-else>{{ t('dashboard.no_hosts') }}</span>
             </div>
           </div>
-          <div class="stat-card">
+          <div class="stat-card" @click="navigateToView('topology')" style="cursor:pointer;">
             <div class="stat-label">{{ t('dashboard.apps') }}</div>
             <div class="stat-value green">{{ apps.length }}</div>
             <div class="stat-detail">
@@ -45,7 +45,7 @@ const DashboardComponent = {
               <span v-else>{{ t('dashboard.no_apps') }}</span>
             </div>
           </div>
-          <div class="stat-card">
+          <div class="stat-card" @click="navigateToView('operations')" style="cursor:pointer;">
             <div class="stat-label">{{ t('dashboard.operations') }}</div>
             <div class="stat-value cyan">{{ operations.length }}</div>
             <div class="stat-detail">
@@ -53,7 +53,7 @@ const DashboardComponent = {
               <span v-else>{{ t('dashboard.no_ops') }}</span>
             </div>
           </div>
-          <div class="stat-card">
+          <div class="stat-card" @click="navigateToView('operations')" style="cursor:pointer;">
             <div class="stat-label">{{ t('dashboard.freshness') }}</div>
             <div class="stat-value yellow" style="font-size:20px;">{{ dataFreshness }}</div>
             <div class="stat-detail">{{ t('dashboard.last_update') }}</div>

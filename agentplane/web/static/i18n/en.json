@@ -158,6 +158,7 @@
 
   "shortcuts.title": "Keyboard Shortcuts",
   "shortcuts.help": "Show keyboard shortcuts",
+  "shortcuts.search_focus": "Focus search box",
 
   "toast.refreshed": "Data refreshed",
   "toast.copied": "Copied to clipboard",

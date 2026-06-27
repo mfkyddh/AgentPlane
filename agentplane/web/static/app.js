@@ -31,6 +31,7 @@ function createAgentPlaneApp() {
       const authToken = ref('');
       const authError = ref('');
       const showShortcuts = ref(false);
+      const globalLoading = ref(false);
 
       // Toast state (bridged from shared.js _toastState)
       const toasts = computed(() => _toastState.toasts);
@@ -48,6 +49,7 @@ function createAgentPlaneApp() {
       });
 
       const shortcutList = computed(() => [
+        { key: '/', desc: t('shortcuts.search_focus') },
         { key: '?', desc: t('shortcuts.help') },
         { key: 'r', desc: t('action.refresh') },
         { key: '1', desc: t('topbar.overview') },
@@ -59,6 +61,7 @@ function createAgentPlaneApp() {
       ]);
 
       provide('authToken', authToken);
+      provide('globalLoading', globalLoading);
 
       // Allow child components to navigate to a different view
       function navigateToView(viewName) {
@@ -187,8 +190,10 @@ function createAgentPlaneApp() {
       }
 
       function refreshAll() {
+        globalLoading.value = true;
         for (const fn of _refreshCallbacks) fn();
         showToast(t('toast.refreshed'), 'success', 2000);
+        setTimeout(() => { globalLoading.value = false; }, 800);
       }
 
       // ── Global keyboard shortcuts ──
@@ -199,6 +204,12 @@ function createAgentPlaneApp() {
 
         if (e.key === '?') { e.preventDefault(); showShortcuts.value = !showShortcuts.value; return; }
         if (e.key === 'Escape' && showShortcuts.value) { showShortcuts.value = false; return; }
+        if (e.key === '/') {
+          e.preventDefault();
+          var searchInput = document.querySelector('.main .search-input:not([style*="display: none"])');
+          if (searchInput) searchInput.focus();
+          return;
+        }
         if (e.key === 'r' || e.key === 'R') { e.preventDefault(); refreshAll(); return; }
 
         const viewMap = { '1': 'dashboard', '2': 'topology', '3': 'capability-map', '4': 'chat', '5': 'operations', '6': 'logs' };
@@ -232,7 +243,7 @@ function createAgentPlaneApp() {
       });
 
       return {
-        view, sidebarOpen, wsDisconnected,
+        view, sidebarOpen, wsDisconnected, globalLoading,
         needsAuth, authenticated, authToken, authError,
         viewLabel, currentView, submitAuth, refreshAll,
         t, locale, toggleLocale,

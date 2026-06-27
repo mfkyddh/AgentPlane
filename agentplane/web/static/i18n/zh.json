@@ -158,6 +158,7 @@
 
   "shortcuts.title": "键盘快捷键",
   "shortcuts.help": "显示快捷键帮助",
+  "shortcuts.search_focus": "聚焦搜索框",
 
   "toast.refreshed": "数据已刷新",
   "toast.copied": "已复制到剪贴板",
