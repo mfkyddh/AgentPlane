@@ -38,7 +38,7 @@ const CapabilityMapComponent = {
       <div v-else-if="filteredLayers.length === 0" class="cap-error">{{ t('cap.no_match') }}</div>
       <div v-else class="cap-layers">
         <div v-for="layer in filteredLayers" :key="layer.id" class="cap-layer">
-          <div class="cap-layer-header" @click="toggle(layer.id)">
+          <div class="cap-layer-header" @click="toggle(layer.id)" :aria-expanded="!!expanded[layer.id]" role="button" tabindex="0" @keydown.enter="toggle(layer.id)" @keydown.space.prevent="toggle(layer.id)">
             <span class="cap-toggle">{{ expanded[layer.id] ? '\u25BC' : '\u25B6' }}</span>
             <span class="cap-domain-icon">{{ domainIcon(layer.id) }}</span>
             <span class="cap-layer-name">
@@ -49,7 +49,7 @@ const CapabilityMapComponent = {
           </div>
           <div v-if="expanded[layer.id]" class="cap-layer-body">
             <div v-for="obj in layer.objects" :key="obj.id" class="cap-object">
-              <div class="cap-object-header" @click="toggle(obj.id)">
+              <div class="cap-object-header" @click="toggle(obj.id)" :aria-expanded="!!expanded[obj.id]" role="button" tabindex="0" @keydown.enter="toggle(obj.id)" @keydown.space.prevent="toggle(obj.id)">
                 <span class="cap-toggle">{{ expanded[obj.id] ? '\u25BC' : '\u25B6' }}</span>
                 <span class="cap-object-name">{{ locale === 'zh' ? obj.name : (obj.name_en || obj.name) }}</span>
                 <span class="cap-object-stats">{{ objectStats(obj) }}</span>

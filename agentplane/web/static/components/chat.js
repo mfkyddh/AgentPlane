@@ -179,7 +179,11 @@ const ChatComponent = {
 
       Vue.nextTick(() => {
         if (chatMessagesEl.value) {
-          chatMessagesEl.value.scrollTop = chatMessagesEl.value.scrollHeight;
+          var el = chatMessagesEl.value;
+          var atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+          if (atBottom) {
+            el.scrollTop = el.scrollHeight;
+          }
         }
       });
     }

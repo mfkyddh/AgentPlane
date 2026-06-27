@@ -388,6 +388,11 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
     async def api_config():
         return {"requires_auth": token is not None}
 
+    @app.get("/api/health")
+    async def api_health():
+        import time as _time
+        return {"status": "ok", "timestamp": _time.time()}
+
     @app.get("/favicon.ico")
     async def favicon():
         from starlette.responses import Response
