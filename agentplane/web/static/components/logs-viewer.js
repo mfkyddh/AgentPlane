@@ -62,7 +62,7 @@ const LogsViewerComponent = {
               <option value="system">SYSTEM</option>
               <option value="output">OUTPUT</option>
             </select>
-            <span class="panel-count" v-if="filteredLogs.length > 0">{{ filteredLogs.length }}/{{ logs.length }} {{ t('logs.lines') }}</span>
+            <span class="panel-count" v-if="filteredLogs.length > 0" :style="logs.length > 800 ? 'color:var(--accent-yellow);' : ''">{{ filteredLogs.length }}/{{ logs.length }}{{ logs.length >= 1000 ? '/1000' : '' }} {{ t('logs.lines') }}</span>
             <button v-if="connected" class="btn-ghost btn-sm" @click="togglePause">
               {{ paused ? t('logs.resume') : t('logs.pause') }}
             </button>

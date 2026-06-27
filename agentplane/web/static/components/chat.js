@@ -42,7 +42,7 @@ const ChatComponent = {
         </button>
         <textarea class="chat-input" v-model="chatInput" ref="chatInputEl"
                   :placeholder="t('chat.placeholder')"
-                  @keydown.enter.exact.prevent="sendMessage"
+                  @keydown="handleChatKeydown"
                   @input="autoResize"
                   rows="1"></textarea>
         <button class="chat-send" @click="sendMessage" :disabled="!chatInput.trim() || agentTyping">
@@ -69,6 +69,14 @@ const ChatComponent = {
       if (el) {
         el.style.height = 'auto';
         el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+      }
+    }
+
+    function handleChatKeydown(e) {
+      // Enter without Shift sends; Shift+Enter inserts newline
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
       }
     }
 
@@ -187,7 +195,7 @@ const ChatComponent = {
 
     return {
       chatMessages, chatInput, agentTyping, chatMessagesEl, chatInputEl,
-      sendMessage, autoResize, copyMessage, clearChat, t,
+      sendMessage, autoResize, handleChatKeydown, copyMessage, clearChat, t,
     };
   },
 };

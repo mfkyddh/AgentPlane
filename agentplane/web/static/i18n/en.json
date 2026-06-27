@@ -120,6 +120,7 @@
   "operations.dry_run": "Dry Run",
   "operations.success": "completed",
   "operations.failed": "failed",
+  "operations.click_to_filter": "Click to filter by this result",
 
   "logs.title": "Live Logs",
   "logs.connected": "Connected",

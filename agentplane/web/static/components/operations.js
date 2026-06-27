@@ -65,7 +65,9 @@ const OperationsComponent = {
                 <td>{{ op.object_type }}</td>
                 <td>{{ op.action }}</td>
                 <td>
-                  <span class="status-badge" :class="resultBadgeClass(op.result)">
+                  <span class="status-badge" :class="resultBadgeClass(op.result)"
+                        style="cursor:pointer;" :title="t('operations.click_to_filter')"
+                        @click="historySearch = op.result">
                     {{ op.result }}
                   </span>
                 </td>
@@ -122,7 +124,9 @@ const OperationsComponent = {
                   <span v-else class="badge badge-success">LIVE</span>
                 </td>
                 <td>
-                  <span class="status-badge" :class="resultBadgeClass(entry.result)">
+                  <span class="status-badge" :class="resultBadgeClass(entry.result)"
+                        style="cursor:pointer;" :title="t('operations.click_to_filter')"
+                        @click="auditSearch = entry.result">
                     {{ entry.result }}
                   </span>
                 </td>

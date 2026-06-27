@@ -33,6 +33,19 @@ MAX_HISTORY = 20
 WS_MAX_BYTES = 64 * 1024  # 64KB
 
 
+class TimingMiddleware(BaseHTTPMiddleware):
+    """Add X-Response-Time header to all responses."""
+
+    async def dispatch(self, request: Request, call_next):
+        import time as _time
+
+        start = _time.monotonic()
+        response = await call_next(request)
+        elapsed_ms = (_time.monotonic() - start) * 1000
+        response.headers["X-Response-Time"] = f"{elapsed_ms:.1f}ms"
+        return response
+
+
 class TokenAuthMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, token: str) -> None:
         super().__init__(app)
@@ -51,6 +64,7 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
 
     if token is not None:
         app.add_middleware(TokenAuthMiddleware, token=token)
+    app.add_middleware(TimingMiddleware)
 
     @app.get("/api/dashboard")
     async def api_dashboard():
