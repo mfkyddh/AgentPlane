@@ -24,17 +24,32 @@ function _renderChatMessage(text) {
 const ChatComponent = {
   template: `
     <div class="chat-container" style="flex:1;">
+      <!-- Chat search bar -->
+      <div v-if="chatMessages.length > 3" class="chat-search-bar">
+        <input v-model="chatSearch" class="search-input" :placeholder="t('chat.search')" :aria-label="t('chat.search')" style="flex:1;min-width:120px;">
+        <span v-if="chatSearch.trim()" class="panel-count">{{ filteredMessages.length }}/{{ chatMessages.length }}</span>
+      </div>
       <div class="chat-messages" ref="chatMessagesEl" @scroll="onChatScroll">
         <div v-if="chatMessages.length === 0" class="chat-welcome">
           <h3>{{ t('chat.title') }}</h3>
           <p v-html="t('chat.welcome')"></p>
         </div>
-        <div v-for="(msg, i) in chatMessages" :key="msg._id || i">
+        <div v-for="(msg, i) in filteredMessages" :key="msg._id || i">
           <div v-if="getMessageDate(msg, i)" class="chat-date-separator">{{ getMessageDate(msg, i) }}</div>
           <div class="message" :class="msg.role">
             <div>
-              <div v-if="msg.rejected" class="message-rejected">{{ msg.text }}</div>
-              <div v-else-if="msg.error" class="message-error">{{ msg.text }}</div>
+              <div v-if="msg.rejected" class="message-rejected">
+                <pre class="message-text" v-html="renderMessage(msg.text)"></pre>
+                <button class="msg-copy-btn" @click="copyMessage(msg)" :title="t('action.copy')">
+                  {{ msg._copied ? '\\u2713' : '\\u2398' }}
+                </button>
+              </div>
+              <div v-else-if="msg.error" class="message-error">
+                <pre class="message-text" v-html="renderMessage(msg.text)"></pre>
+                <button class="msg-copy-btn" @click="copyMessage(msg)" :title="t('action.copy')">
+                  {{ msg._copied ? '\\u2713' : '\\u2398' }}
+                </button>
+              </div>
               <div v-else class="message-bubble">
                 <pre class="message-text" v-html="renderMessage(msg.text)"></pre>
                 <button v-if="msg.role === 'agent'" class="msg-copy-btn" @click="copyMessage(msg)" :title="t('action.copy')">
@@ -81,7 +96,15 @@ const ChatComponent = {
     const chatMessagesEl = ref(null);
     const chatInputEl = ref(null);
     const showScrollBtn = ref(false);
+    const chatSearch = ref('');
+    const debouncedChatSearch = useDebounce(chatSearch, 150);
     let _chatId = _chatMessageStore.length;
+
+    const filteredMessages = computed(() => {
+      const q = debouncedChatSearch.value.toLowerCase().trim();
+      if (!q) return chatMessages.value;
+      return chatMessages.value.filter(m => (m.text || '').toLowerCase().includes(q));
+    });
 
     // Persist messages across view switches
     Vue.watch(chatMessages, (val) => { _chatMessageStore = val; }, { deep: true });
@@ -249,7 +272,7 @@ const ChatComponent = {
       chatMessages, chatInput, agentTyping, chatMessagesEl, chatInputEl,
       showScrollBtn, scrollToBottom, onChatScroll,
       sendMessage, autoResize, handleChatKeydown, copyMessage, clearChat,
-      getMessageDate,
+      getMessageDate, chatSearch, filteredMessages,
       renderMessage: _renderChatMessage, t,
     };
   },

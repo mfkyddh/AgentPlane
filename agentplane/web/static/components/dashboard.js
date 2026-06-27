@@ -230,12 +230,12 @@ const DashboardComponent = {
                 <span class="panel-count">{{ hosts.length }}</span>
               </div>
               <div class="panel-body">
-                <div v-for="host in hosts" :key="host.target" class="host-card" @click="selectHost(host)">
+                <div v-for="host in hosts" :key="host.target" class="host-card" @click="selectHost(host)" @keydown.enter="selectHost(host)" @keydown.space.prevent="selectHost(host)" role="button" tabindex="0" :aria-label="host.hostname + ', ' + host.status + ', ' + (host.ip || 'local')">
                   <div class="host-card-row">
                     <span class="status-dot" :class="host.status"></span>
                     <span class="host-name">{{ host.hostname }}</span>
                     <span class="host-ip">{{ host.ip || 'local' }}</span>
-                    <button class="copy-btn" @click.stop="copyText(host.ip || host.hostname)" :title="t('action.copy')">&#x2398;</button>
+                    <button class="copy-btn" @click.stop="copyText(host.ip || host.hostname)" :title="t('action.copy')" :aria-label="t('action.copy') + ' ' + (host.ip || host.hostname)">&#x2398;</button>
                   </div>
                   <div class="host-meta">
                     <span class="host-meta-item">

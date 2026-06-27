@@ -330,10 +330,10 @@ body { height: 100vh; overflow: hidden; }
 .log-connection-form { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .log-output { flex: 1; background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; overflow-y: auto; font-family: var(--font-mono); font-size: 12px; line-height: 1.6; min-height: 300px; max-height: 500px; }
 .log-line { display: flex; gap: 10px; padding: 2px 0; }
-.log-line.error { color: var(--accent-red); }
+.log-line.error { color: var(--accent-red); background: rgba(248, 81, 73, 0.05); border-radius: 2px; padding-left: 4px; padding-right: 4px; }
 .log-line.system { color: var(--accent-yellow); font-style: italic; }
 .log-time { color: var(--fg-muted); white-space: nowrap; flex-shrink: 0; }
-.log-text { flex: 1; word-break: break-all; }
+.log-text { flex: 1; word-break: break-word; }
 .log-empty { color: var(--fg-muted); text-align: center; padding: 40px; }
 .toggle-label { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--fg-secondary); cursor: pointer; }
 .toggle-input { width: 14px; height: 14px; }
@@ -489,6 +489,13 @@ mark { background: rgba(210, 153, 34, 0.35); color: var(--fg-primary); border-ra
   .skeleton { animation: none; }
   .typing-dot { animation: none; transform: scale(1); }
 }
+
+/* ── Chat search bar ── */
+.chat-search-bar { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-bottom: 1px solid var(--border-muted); }
+
+/* ── Message rejected/error with copy button ── */
+.message-rejected, .message-error { position: relative; max-width: 75%; }
+.message-rejected:hover .msg-copy-btn, .message-error:hover .msg-copy-btn { opacity: 1; }
 
 /* ── Chat scroll-to-bottom button ── */
 .chat-scroll-btn { position: absolute; bottom: 70px; right: 24px; z-index: 10; width: 32px; height: 32px; border-radius: 50%; background: var(--bg-overlay); border: 1px solid var(--border); color: var(--fg-secondary); cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; animation: toast-in 0.15s ease; }

@@ -64,6 +64,7 @@
   "chat.blocked": "危险操作已拦截",
   "chat.error": "未知错误",
   "chat.clear": "清空对话",
+  "chat.search": "搜索消息...",
 
   "cap.title": "能力地图",
   "cap.loading": "加载能力地图失败",

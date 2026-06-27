@@ -62,8 +62,13 @@ function formatLogTime(ts) {
 
 // ── Status classification ──
 function appStatusClass(status) {
-  if (!status || status === 'unknown') return 'unknown';
-  return 'connected';
+  if (!status) return 'unknown';
+  const s = String(status).toLowerCase();
+  if (s === 'unknown') return 'unknown';
+  if (s.includes('stop') || s.includes('crash') || s.includes('exit') || s.includes('dead') || s.includes('error') || s.includes('fail')) return 'error';
+  if (s.includes('deploy') || s.includes('start') || s.includes('building') || s.includes('pending') || s.includes('restart')) return 'unknown';
+  if (s.includes('run') || s.includes('active') || s.includes('healthy') || s.includes('online') || s.includes('up') || s.includes('connect')) return 'connected';
+  return 'unknown';
 }
 
 function serviceStatusClass(status) {
