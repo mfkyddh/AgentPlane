@@ -8,6 +8,7 @@ const TopologyViewComponent = {
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
         <div class="panel-title" style="margin-bottom:0; font-size:16px;">{{ t('topology.title') }}</div>
         <div style="display:flex; gap:8px; align-items:center;">
+          <span v-if="topology.targets.length > 0" class="panel-count" style="margin-right:4px;">{{ connectedCount }}/{{ topology.targets.length }} {{ t('topology.connected') }}</span>
           <input v-model="searchQuery" class="search-input" :placeholder="t('topology.search')" :aria-label="t('topology.search')">
           <button class="btn-ghost" @click="toggleAll" :disabled="topology.targets.length === 0" :aria-expanded="allExpanded">
             {{ allExpanded ? t('action.collapse_all') : t('action.expand_all') }}
@@ -158,6 +159,10 @@ const TopologyViewComponent = {
       topology.value.targets.length > 0 && topology.value.targets.every(t => expandedTargets.value.has(t.target))
     );
 
+    const connectedCount = computed(() =>
+      topology.value.targets.filter(t => t.status === 'connected').length
+    );
+
     // Watch debounced search to trigger filtering
     Vue.watch(debouncedSearch, filterTargets);
 
@@ -224,7 +229,7 @@ const TopologyViewComponent = {
 
     return {
       topology, loading, error, expandedTargets, detailPanel,
-      searchQuery, filteredTargets, allExpanded,
+      searchQuery, filteredTargets, allExpanded, connectedCount,
       fetchTopology, toggleTarget, toggleAll, selectApp, closeDetail, copyDetailVal,
       filterTargets,
       appStatusClass, serviceStatusClass, resultBadgeClass, formatTimestamp, formatDetailVal, truncateUrl,

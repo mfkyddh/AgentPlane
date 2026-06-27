@@ -29,17 +29,20 @@ const ChatComponent = {
           <h3>{{ t('chat.title') }}</h3>
           <p v-html="t('chat.welcome')"></p>
         </div>
-        <div v-for="(msg, i) in chatMessages" :key="msg._id || i" class="message" :class="msg.role">
-          <div>
-            <div v-if="msg.rejected" class="message-rejected">{{ msg.text }}</div>
-            <div v-else-if="msg.error" class="message-error">{{ msg.text }}</div>
-            <div v-else class="message-bubble">
-              <pre class="message-text" v-html="renderMessage(msg.text)"></pre>
-              <button v-if="msg.role === 'agent'" class="msg-copy-btn" @click="copyMessage(msg)" :title="t('action.copy')">
-                {{ msg._copied ? '\\u2713' : '\\u2398' }}
-              </button>
+        <div v-for="(msg, i) in chatMessages" :key="msg._id || i">
+          <div v-if="getMessageDate(msg, i)" class="chat-date-separator">{{ getMessageDate(msg, i) }}</div>
+          <div class="message" :class="msg.role">
+            <div>
+              <div v-if="msg.rejected" class="message-rejected">{{ msg.text }}</div>
+              <div v-else-if="msg.error" class="message-error">{{ msg.text }}</div>
+              <div v-else class="message-bubble">
+                <pre class="message-text" v-html="renderMessage(msg.text)"></pre>
+                <button v-if="msg.role === 'agent'" class="msg-copy-btn" @click="copyMessage(msg)" :title="t('action.copy')">
+                  {{ msg._copied ? '\\u2713' : '\\u2398' }}
+                </button>
+              </div>
+              <div class="message-time">{{ msg.time }}</div>
             </div>
-            <div class="message-time">{{ msg.time }}</div>
           </div>
         </div>
         <div v-if="agentTyping" class="message agent">
@@ -127,6 +130,15 @@ const ChatComponent = {
       chatMessages.value = [];
       _chatMessageStore = [];
       _chatId = 0;
+    }
+
+    function getMessageDate(msg, idx) {
+      if (!msg.time) return '';
+      var msgDate = msg.time.split(',')[0] || msg.time;
+      if (idx === 0) return msgDate;
+      var prev = chatMessages.value[idx - 1];
+      var prevDate = prev.time ? (prev.time.split(',')[0] || prev.time) : '';
+      return msgDate !== prevDate ? msgDate : '';
     }
 
     function onWsMessage(event) {
@@ -237,6 +249,7 @@ const ChatComponent = {
       chatMessages, chatInput, agentTyping, chatMessagesEl, chatInputEl,
       showScrollBtn, scrollToBottom, onChatScroll,
       sendMessage, autoResize, handleChatKeydown, copyMessage, clearChat,
+      getMessageDate,
       renderMessage: _renderChatMessage, t,
     };
   },

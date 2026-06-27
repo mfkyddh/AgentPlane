@@ -2,6 +2,8 @@
 // Shows operation history, audit log, and provides action buttons
 // Dynamic targets, sortable tables, text search
 
+var _opsActiveTab = 'history';
+
 const OperationsComponent = {
   template: `
     <div style="flex:1; overflow-y:auto; display:flex; flex-direction:column; padding:20px;">
@@ -239,7 +241,7 @@ const OperationsComponent = {
     const { t } = useI18n();
     const authToken = Vue.inject('authToken', Vue.ref(''));
 
-    const tab = ref('history');
+    const tab = ref(_opsActiveTab);
     const loading = ref(false);
     const auditLoading = ref(false);
     const historyError = ref('');
@@ -249,6 +251,9 @@ const OperationsComponent = {
     const targets = ref([]);
     const auditTarget = ref('');
     const auditLimit = ref(100);
+
+    // Persist tab selection across view switches
+    Vue.watch(tab, (val) => { _opsActiveTab = val; });
 
     // Search
     const historySearch = ref('');
