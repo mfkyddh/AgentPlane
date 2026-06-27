@@ -126,6 +126,8 @@
   "operations.click_to_filter": "Click to filter by this result",
   "operations.confirm_deploy": "Confirm live deployment? This action will take effect immediately.",
   "operations.confirm_rollback": "Confirm live rollback? This action will take effect immediately.",
+  "operations.confirm_plan": "Confirm service plan? This will generate a change plan.",
+  "operations.confirm_verify": "Confirm service verify? This will validate the current deployment.",
   "operations.export": "Export",
   "operations.export_success": "Audit log exported",
   "operations.export_failed": "Export failed",

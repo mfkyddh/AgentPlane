@@ -229,6 +229,7 @@ const OperationsComponent = {
               {{ typeof actionResult.error === 'string' ? actionResult.error : JSON.stringify(actionResult.error) }}
             </div>
             <div v-if="actionResult.payload" class="action-result-payload">
+              <button class="btn-ghost btn-sm" @click="copyActionResult" style="margin-bottom:4px;">{{ resultCopied ? '\\u2713 ' + t('action.copy') : '\\u2398 ' + t('action.copy') }}</button>
               <pre>{{ JSON.stringify(actionResult.payload, null, 2) }}</pre>
             </div>
             <pre v-else-if="actionResult.evidence && actionResult.evidence.length > 0" class="action-result-evidence">{{ actionResult.evidence.join('\\n') }}</pre>
@@ -256,10 +257,10 @@ const OperationsComponent = {
     Vue.watch(tab, (val) => { _opsActiveTab = val; });
 
     // Search
-    const historySearch = ref('');
-    const auditSearch = ref('');
-    const debouncedHistorySearch = useDebounce(historySearch, 200);
-    const debouncedAuditSearch = useDebounce(auditSearch, 200);
+    var historyFilter = useSearchFilter(operations, ['target', 'object_type', 'action', 'result']);
+    var auditFilter = useSearchFilter(auditEntries, ['command', 'action', 'target', 'result']);
+    const historySearch = historyFilter.search;
+    const auditSearch = auditFilter.search;
 
     // Sorting
     const opSort = useSortable('timestamp', 'desc');
@@ -275,6 +276,18 @@ const OperationsComponent = {
     const actionResult = ref(null);
     const actionLoading = ref(false);
     const actionResultEl = ref(null);
+    const resultCopied = ref(false);
+
+    function copyActionResult() {
+      if (!actionResult.value || !actionResult.value.payload) return;
+      copyToClipboard(JSON.stringify(actionResult.value.payload, null, 2)).then(function (ok) {
+        if (ok) {
+          resultCopied.value = true;
+          showToast(t('toast.copied'), 'success', 1500);
+          setTimeout(function () { resultCopied.value = false; }, 2000);
+        }
+      });
+    }
 
     function scrollToResult() {
       nextTick(() => {
@@ -290,29 +303,11 @@ const OperationsComponent = {
     }
 
     // ── Filtered & sorted ops ──
-    const filteredOps = computed(() => {
-      const q = debouncedHistorySearch.value.toLowerCase().trim();
-      if (!q) return operations.value;
-      return operations.value.filter(op =>
-        (op.target || '').toLowerCase().includes(q) ||
-        (op.object_type || '').toLowerCase().includes(q) ||
-        (op.action || '').toLowerCase().includes(q) ||
-        (op.result || '').toLowerCase().includes(q)
-      );
-    });
+    const filteredOps = computed(() => historyFilter.filtered.value);
 
     const sortedOps = computed(() => opSort.sortItems(filteredOps.value));
 
-    const filteredAudit = computed(() => {
-      const q = debouncedAuditSearch.value.toLowerCase().trim();
-      if (!q) return auditEntries.value;
-      return auditEntries.value.filter(e =>
-        (e.command || '').toLowerCase().includes(q) ||
-        (e.action || '').toLowerCase().includes(q) ||
-        (e.target || '').toLowerCase().includes(q) ||
-        (e.result || '').toLowerCase().includes(q)
-      );
-    });
+    const filteredAudit = computed(() => auditFilter.filtered.value);
 
     const sortedAudit = computed(() => auditSort.sortItems(filteredAudit.value));
 
@@ -359,6 +354,7 @@ const OperationsComponent = {
     }
 
     async function servicePlan() {
+      if (!confirm(t('operations.confirm_plan'))) return;
       actionResult.value = null;
       actionLoading.value = true;
       try {
@@ -379,6 +375,7 @@ const OperationsComponent = {
     }
 
     async function serviceVerify() {
+      if (!confirm(t('operations.confirm_verify'))) return;
       actionResult.value = null;
       actionLoading.value = true;
       try {
@@ -473,7 +470,7 @@ const OperationsComponent = {
       tab, loading, auditLoading, historyError, auditError, operations, auditEntries, targets,
       auditTarget, auditLimit, serviceTarget, serviceName,
       deployTarget, deployApp, rollbackTarget, rollbackApp,
-      actionResult, actionLoading, refreshOps, fetchAuditLog, exportAuditLog, formatTimestamp, resultBadgeClass,
+      actionResult, actionLoading, resultCopied, copyActionResult, refreshOps, fetchAuditLog, exportAuditLog, formatTimestamp, resultBadgeClass,
       servicePlan, serviceVerify, appDeploy, appRollback, t,
       historySearch, auditSearch,
       filteredOps, sortedOps, filteredAudit, sortedAudit,

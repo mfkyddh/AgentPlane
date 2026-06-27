@@ -241,6 +241,22 @@ function useDebounce(sourceRef, delay) {
   return debounced;
 }
 
+// ── Reusable search filter composable ──
+function useSearchFilter(sourceRef, fields, delay) {
+  var search = Vue.ref('');
+  var debounced = useDebounce(search, delay || 200);
+  var filtered = Vue.computed(function () {
+    var q = debounced.value.toLowerCase().trim();
+    if (!q) return sourceRef.value;
+    return sourceRef.value.filter(function (item) {
+      return fields.some(function (f) {
+        return (item[f] || '').toString().toLowerCase().includes(q);
+      });
+    });
+  });
+  return { search: search, filtered: filtered };
+}
+
 // ── HTML escaping (used by logs, chat, etc.) ──
 function escapeHtml(str) {
   if (!str) return '';
