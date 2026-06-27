@@ -59,6 +59,7 @@
   "topology.apps": "apps",
   "topology.no_items": "No apps or services on this target",
   "topology.connected": "connected",
+  "topology.open_url": "Open",
 
   "chat.title": "Agent Chat",
   "chat.welcome": "Describe what you need in natural language.<br>The agent will translate your request into commands.<br><br>Example: <code>Check the status of sub2api on prod0-main</code><br><br>Only read-only operations are allowed in WebUI.<br>Destructive operations will be redirected to CLI.",

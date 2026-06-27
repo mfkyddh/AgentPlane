@@ -342,6 +342,7 @@ body { height: 100vh; overflow: hidden; }
 /* ── Focus-visible (keyboard accessibility) ── */
 :focus-visible { outline: 2px solid var(--accent-blue); outline-offset: 2px; }
 button:focus:not(:focus-visible), .nav-item:focus:not(:focus-visible), .tab-btn:focus:not(:focus-visible) { outline: none; }
+.topo-app-card:focus-visible, .host-card:focus-visible { outline: 2px solid var(--accent-blue); outline-offset: -2px; }
 .chat-input:focus-visible { outline: none; border-color: var(--accent-blue); box-shadow: 0 0 0 2px rgba(41, 121, 255, 0.3); }
 .form-select:focus-visible, .form-input:focus-visible { outline: none; border-color: var(--accent-blue); box-shadow: 0 0 0 2px rgba(41, 121, 255, 0.3); }
 .auth-input:focus-visible { outline: none; border-color: var(--accent-blue); box-shadow: 0 0 0 2px rgba(41, 121, 255, 0.3); }

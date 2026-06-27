@@ -59,6 +59,7 @@
   "topology.apps": "个应用",
   "topology.no_items": "此目标上无应用或服务",
   "topology.connected": "已连接",
+  "topology.open_url": "打开",
 
   "chat.title": "Agent 对话",
   "chat.welcome": "用自然语言描述你的需求。<br>Agent 会将你的请求转化为命令。<br><br>示例：<code>查看 prod0-main 上 sub2api 的状态</code><br><br>WebUI 仅允许只读操作。<br>危险操作将被重定向到 CLI。",

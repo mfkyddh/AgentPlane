@@ -62,7 +62,7 @@ const TopologyViewComponent = {
               <div class="topo-section-label">{{ t('dashboard.applications') }}</div>
               <div class="topo-app-grid">
                 <div v-for="app in target.apps" :key="app.app"
-                     class="topo-app-card" @click="selectApp(target.target, app)">
+                     class="topo-app-card" @click="selectApp(target.target, app)" @keydown.enter="selectApp(target.target, app)" @keydown.space.prevent="selectApp(target.target, app)" role="button" tabindex="0" :aria-label="app.app + ' on ' + target.target">
                   <div class="topo-app-name">
                     <span class="status-dot" :class="appStatusClass(app.status)"></span>
                     {{ app.app }}
@@ -73,7 +73,7 @@ const TopologyViewComponent = {
                     <span v-if="app.control_plane">{{ app.control_plane }}</span>
                   </div>
                   <a v-if="app.public_url" :href="app.public_url" target="_blank" class="topo-app-url"
-                     @click.stop>{{ app.public_url }}</a>
+                     @click.stop :aria-label="t('topology.open_url') + ' ' + app.app">{{ app.public_url }}</a>
                   <div v-if="app.dependencies && app.dependencies.length > 0" class="topo-deps">
                     <span v-for="dep in app.dependencies" :key="dep.kind" class="topo-dep-tag">{{ dep.kind }}</span>
                   </div>
