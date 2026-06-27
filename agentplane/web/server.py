@@ -33,6 +33,17 @@ MAX_HISTORY = 20
 WS_MAX_BYTES = 64 * 1024  # 64KB
 
 
+async def _safe_json_body(request: Request) -> dict | None:
+    """Parse JSON body safely, return None on failure."""
+    try:
+        body = await request.json()
+        if not isinstance(body, dict):
+            return None
+        return body
+    except Exception:
+        return None
+
+
 class TimingMiddleware(BaseHTTPMiddleware):
     """Add X-Response-Time header to all responses."""
 
@@ -79,12 +90,30 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
         return list_apps(repo_root)
 
     @app.get("/api/operations")
-    async def api_operations():
-        return list_operations(repo_root)
+    async def api_operations(limit: int = 200):
+        result = list_operations(repo_root)
+        if limit > 0:
+            result["operations"] = result.get("operations", [])[:min(limit, 500)]
+        return result
 
     @app.get("/api/audit-log")
     async def api_audit_log(limit: int = 100, target: str | None = None):
+        limit = max(1, min(limit, 500))
         return get_audit_log(repo_root, limit=limit, target=target)
+
+    @app.get("/api/audit-log/export")
+    async def api_audit_log_export(limit: int = 500, target: str | None = None):
+        """Download audit log as JSON file."""
+        from starlette.responses import Response as StarletteResponse
+
+        limit = max(1, min(limit, 500))
+        data = get_audit_log(repo_root, limit=limit, target=target)
+        content = json.dumps(data, indent=2, ensure_ascii=False)
+        return StarletteResponse(
+            content=content,
+            media_type="application/json",
+            headers={"Content-Disposition": "attachment; filename=audit-log.json"},
+        )
 
     @app.get("/api/mtime")
     async def api_mtime():
@@ -143,7 +172,9 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
 
     @app.post("/api/service/plan")
     async def api_service_plan(request: Request):
-        body = await request.json()
+        body = await _safe_json_body(request)
+        if body is None:
+            return JSONResponse({"error": "Invalid JSON body"}, status_code=400)
         target = body.get("target", "")
         name = body.get("name", "")
         operation = body.get("operation", "restart")
@@ -160,7 +191,9 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
 
     @app.post("/api/service/verify")
     async def api_service_verify(request: Request):
-        body = await request.json()
+        body = await _safe_json_body(request)
+        if body is None:
+            return JSONResponse({"error": "Invalid JSON body"}, status_code=400)
         target = body.get("target", "")
         name = body.get("name", "")
         if not target or not name:
@@ -176,11 +209,13 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
 
     @app.post("/api/app/delivery/deploy")
     async def api_app_delivery_deploy(request: Request):
-        body = await request.json()
+        body = await _safe_json_body(request)
+        if body is None:
+            return JSONResponse({"error": "Invalid JSON body"}, status_code=400)
         target = body.get("target", "")
-        app = body.get("app", "")
-        execute = body.get("execute", False)
-        if not target or not app:
+        app_name = body.get("app", "")
+        execute = bool(body.get("execute", False))
+        if not target or not app_name:
             return JSONResponse({"error": "target and app required"}, status_code=400)
         from types import SimpleNamespace
 
@@ -189,7 +224,7 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
             app_surface="delivery",
             app_delivery_action="deploy",
             target=target,
-            app=app,
+            app=app_name,
             repo_root=str(repo_root),
             app_repo_root_override=None,
             image_ref=None,
@@ -200,11 +235,13 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
 
     @app.post("/api/app/delivery/rollback")
     async def api_app_delivery_rollback(request: Request):
-        body = await request.json()
+        body = await _safe_json_body(request)
+        if body is None:
+            return JSONResponse({"error": "Invalid JSON body"}, status_code=400)
         target = body.get("target", "")
-        app = body.get("app", "")
-        execute = body.get("execute", False)
-        if not target or not app:
+        app_name = body.get("app", "")
+        execute = bool(body.get("execute", False))
+        if not target or not app_name:
             return JSONResponse({"error": "target and app required"}, status_code=400)
         from types import SimpleNamespace
 
@@ -213,7 +250,7 @@ def create_app(repo_root: Path, token: str | None = None) -> FastAPI:
             app_surface="delivery",
             app_delivery_action="rollback",
             target=target,
-            app=app,
+            app=app_name,
             repo_root=str(repo_root),
             app_repo_root_override=None,
             execute=execute,

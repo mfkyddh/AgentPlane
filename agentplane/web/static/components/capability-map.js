@@ -20,7 +20,20 @@ const CapabilityMapComponent = {
         </div>
       </div>
 
-      <div v-if="loading" class="cap-loading">{{ t('action.loading') }}</div>
+      <div v-if="loading" class="cap-loading">
+        <div class="skeleton-card" style="margin-bottom:8px;">
+          <div class="skeleton skeleton-line w60"></div>
+          <div class="skeleton skeleton-line w40"></div>
+        </div>
+        <div class="skeleton-card" style="margin-bottom:8px;">
+          <div class="skeleton skeleton-line w80"></div>
+          <div class="skeleton skeleton-line w60"></div>
+        </div>
+        <div class="skeleton-card">
+          <div class="skeleton skeleton-line w60"></div>
+          <div class="skeleton skeleton-line w40"></div>
+        </div>
+      </div>
       <div v-else-if="error" class="cap-error">{{ error }}</div>
       <div v-else-if="filteredLayers.length === 0" class="cap-error">{{ t('cap.no_match') }}</div>
       <div v-else class="cap-layers">

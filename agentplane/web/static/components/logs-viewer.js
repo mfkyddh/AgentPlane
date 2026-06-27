@@ -112,6 +112,10 @@ const LogsViewerComponent = {
     let _logId = 0;
 
     let ws = null;
+    let _reconnectTimer = null;
+    let _reconnectAttempts = 0;
+    const MAX_RECONNECT = 3;
+    let _userDisconnected = false;
 
     // Filtered logs computed
     const filteredLogs = computed(() => {
@@ -134,25 +138,13 @@ const LogsViewerComponent = {
       return escaped.replace(regex, '<mark>$1</mark>');
     }
 
-    function escapeHtml(str) {
-      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    }
-
-    function escapeRegex(str) {
-      return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    }
-
     function togglePause() {
       paused.value = !paused.value;
     }
 
     // Fetch dynamic targets
     async function fetchTargets() {
-      try {
-        const res = await apiFetch('/api/hosts', authToken);
-        const data = await res.json();
-        targets.value = (data.hosts || []).map(h => h.target).filter(Boolean);
-      } catch { /* keep empty */ }
+      targets.value = await fetchTargetList(authToken);
     }
 
     Vue.onMounted(fetchTargets);
@@ -164,6 +156,9 @@ const LogsViewerComponent = {
       logs.value = [];
       _logId = 0;
       paused.value = false;
+      _reconnectAttempts = 0;
+      _userDisconnected = false;
+      if (_reconnectTimer) { clearTimeout(_reconnectTimer); _reconnectTimer = null; }
 
       const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
       const wsUrl = `${proto}//${location.host}/ws/logs/${selectedTarget.value}/${containerName.value}`;
@@ -197,10 +192,20 @@ const LogsViewerComponent = {
         connected.value = false;
         connecting.value = false;
         addLog('system', t('logs.disconnected'));
+
+        // Auto-reconnect if not user-initiated
+        if (!_userDisconnected && _reconnectAttempts < MAX_RECONNECT) {
+          _reconnectAttempts++;
+          var delay = _reconnectAttempts * 2000;
+          addLog('system', t('logs.reconnect_attempt') + ' ' + _reconnectAttempts + '/' + MAX_RECONNECT);
+          _reconnectTimer = setTimeout(function () { connect(); }, delay);
+        }
       };
     }
 
     function disconnect() {
+      _userDisconnected = true;
+      if (_reconnectTimer) { clearTimeout(_reconnectTimer); _reconnectTimer = null; }
       if (ws) {
         ws.close();
         ws = null;
@@ -234,6 +239,8 @@ const LogsViewerComponent = {
     }
 
     onUnmounted(() => {
+      _userDisconnected = true;
+      if (_reconnectTimer) { clearTimeout(_reconnectTimer); _reconnectTimer = null; }
       disconnect();
     });
 

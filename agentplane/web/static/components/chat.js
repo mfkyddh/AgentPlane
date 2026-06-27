@@ -3,11 +3,18 @@
 // Messages persist across view switches within a session
 
 var _chatMessageStore = [];
+var CHAT_MAX_MESSAGES = 200;
+
+function _trimChatMessages(msgs) {
+  if (msgs.length > CHAT_MAX_MESSAGES) {
+    msgs.splice(0, msgs.length - CHAT_MAX_MESSAGES);
+  }
+}
 
 const ChatComponent = {
   template: `
     <div class="chat-container" style="flex:1;">
-      <div class="chat-messages" ref="chatMessagesEl">
+      <div class="chat-messages" ref="chatMessagesEl" @scroll="onChatScroll">
         <div v-if="chatMessages.length === 0" class="chat-welcome">
           <h3>{{ t('chat.title') }}</h3>
           <p v-html="t('chat.welcome')"></p>
@@ -36,6 +43,7 @@ const ChatComponent = {
           </div>
         </div>
       </div>
+      <button v-if="showScrollBtn" class="chat-scroll-btn" @click="scrollToBottom" :aria-label="'Scroll to bottom'">&#x25BC;</button>
       <div class="chat-input-area">
         <button v-if="chatMessages.length > 0" class="btn-ghost btn-sm" @click="clearChat" :title="t('chat.clear')" style="flex-shrink:0;">
           {{ t('chat.clear') }}
@@ -59,10 +67,25 @@ const ChatComponent = {
     const agentTyping = ref(false);
     const chatMessagesEl = ref(null);
     const chatInputEl = ref(null);
+    const showScrollBtn = ref(false);
     let _chatId = _chatMessageStore.length;
 
     // Persist messages across view switches
     Vue.watch(chatMessages, (val) => { _chatMessageStore = val; }, { deep: true });
+
+    function onChatScroll() {
+      if (!chatMessagesEl.value) return;
+      var el = chatMessagesEl.value;
+      var atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+      showScrollBtn.value = !atBottom;
+    }
+
+    function scrollToBottom() {
+      if (chatMessagesEl.value) {
+        chatMessagesEl.value.scrollTop = chatMessagesEl.value.scrollHeight;
+        showScrollBtn.value = false;
+      }
+    }
 
     function autoResize() {
       const el = chatInputEl.value;
@@ -152,6 +175,8 @@ const ChatComponent = {
         });
       }
 
+      _trimChatMessages(chatMessages.value);
+
       Vue.nextTick(() => {
         if (chatMessagesEl.value) {
           chatMessagesEl.value.scrollTop = chatMessagesEl.value.scrollHeight;
@@ -177,6 +202,7 @@ const ChatComponent = {
         time: new Date().toLocaleTimeString(),
         _id: ++_chatId,
       });
+      _trimChatMessages(chatMessages.value);
       chatInput.value = '';
       Vue.nextTick(() => {
         if (chatInputEl.value) {
@@ -195,6 +221,7 @@ const ChatComponent = {
 
     return {
       chatMessages, chatInput, agentTyping, chatMessagesEl, chatInputEl,
+      showScrollBtn, scrollToBottom, onChatScroll,
       sendMessage, autoResize, handleChatKeydown, copyMessage, clearChat, t,
     };
   },

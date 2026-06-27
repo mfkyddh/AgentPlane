@@ -45,17 +45,21 @@ const OperationsComponent = {
             <div class="skeleton skeleton-line w60"></div>
             <div class="skeleton skeleton-line w80"></div>
           </div>
+          <div v-else-if="historyError" class="error-state">
+            <div class="error-state-msg">{{ historyError }}</div>
+            <button class="retry-btn" @click="refreshOps">{{ t('action.retry') }}</button>
+          </div>
           <div v-else-if="filteredOps.length === 0" class="empty-state">
             {{ operations.length === 0 ? t('operations.no_history') : t('operations.no_match') }}
           </div>
           <table v-else class="data-table">
             <thead>
               <tr>
-                <th @click="opSort.toggleSort('timestamp')" class="sortable-th">{{ t('operations.time') }}{{ opSort.sortIcon('timestamp') }}</th>
-                <th @click="opSort.toggleSort('target')" class="sortable-th">{{ t('operations.target') }}{{ opSort.sortIcon('target') }}</th>
-                <th @click="opSort.toggleSort('object_type')" class="sortable-th">{{ t('operations.type') }}{{ opSort.sortIcon('object_type') }}</th>
-                <th @click="opSort.toggleSort('action')" class="sortable-th">{{ t('operations.action') }}{{ opSort.sortIcon('action') }}</th>
-                <th @click="opSort.toggleSort('result')" class="sortable-th">{{ t('operations.result') }}{{ opSort.sortIcon('result') }}</th>
+                <th @click="opSort.toggleSort('timestamp')" class="sortable-th" :aria-sort="opSort.sortAria('timestamp')">{{ t('operations.time') }}{{ opSort.sortIcon('timestamp') }}</th>
+                <th @click="opSort.toggleSort('target')" class="sortable-th" :aria-sort="opSort.sortAria('target')">{{ t('operations.target') }}{{ opSort.sortIcon('target') }}</th>
+                <th @click="opSort.toggleSort('object_type')" class="sortable-th" :aria-sort="opSort.sortAria('object_type')">{{ t('operations.type') }}{{ opSort.sortIcon('object_type') }}</th>
+                <th @click="opSort.toggleSort('action')" class="sortable-th" :aria-sort="opSort.sortAria('action')">{{ t('operations.action') }}{{ opSort.sortIcon('action') }}</th>
+                <th @click="opSort.toggleSort('result')" class="sortable-th" :aria-sort="opSort.sortAria('result')">{{ t('operations.result') }}{{ opSort.sortIcon('result') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -92,6 +96,9 @@ const OperationsComponent = {
               <option :value="100">100</option>
               <option :value="200">200</option>
             </select>
+            <button class="btn-ghost btn-sm" @click="exportAuditLog" :title="t('operations.export')">
+              &#x2B07; {{ t('operations.export') }}
+            </button>
           </div>
         </div>
         <div class="panel-body" style="padding:0;">
@@ -99,18 +106,22 @@ const OperationsComponent = {
             <div class="skeleton skeleton-line w60"></div>
             <div class="skeleton skeleton-line w80"></div>
           </div>
+          <div v-else-if="auditError" class="error-state">
+            <div class="error-state-msg">{{ auditError }}</div>
+            <button class="retry-btn" @click="fetchAuditLog">{{ t('action.retry') }}</button>
+          </div>
           <div v-else-if="filteredAudit.length === 0" class="empty-state">
             {{ auditEntries.length === 0 ? t('operations.no_audit') : t('operations.no_match') }}
           </div>
           <table v-else class="data-table">
             <thead>
               <tr>
-                <th @click="auditSort.toggleSort('timestamp')" class="sortable-th">{{ t('operations.time') }}{{ auditSort.sortIcon('timestamp') }}</th>
-                <th @click="auditSort.toggleSort('command')" class="sortable-th">{{ t('operations.command') }}{{ auditSort.sortIcon('command') }}</th>
-                <th @click="auditSort.toggleSort('action')" class="sortable-th">{{ t('operations.action') }}{{ auditSort.sortIcon('action') }}</th>
-                <th @click="auditSort.toggleSort('target')" class="sortable-th">{{ t('operations.target') }}{{ auditSort.sortIcon('target') }}</th>
+                <th @click="auditSort.toggleSort('timestamp')" class="sortable-th" :aria-sort="auditSort.sortAria('timestamp')">{{ t('operations.time') }}{{ auditSort.sortIcon('timestamp') }}</th>
+                <th @click="auditSort.toggleSort('command')" class="sortable-th" :aria-sort="auditSort.sortAria('command')">{{ t('operations.command') }}{{ auditSort.sortIcon('command') }}</th>
+                <th @click="auditSort.toggleSort('action')" class="sortable-th" :aria-sort="auditSort.sortAria('action')">{{ t('operations.action') }}{{ auditSort.sortIcon('action') }}</th>
+                <th @click="auditSort.toggleSort('target')" class="sortable-th" :aria-sort="auditSort.sortAria('target')">{{ t('operations.target') }}{{ auditSort.sortIcon('target') }}</th>
                 <th>{{ t('operations.dry_run') }}</th>
-                <th @click="auditSort.toggleSort('result')" class="sortable-th">{{ t('operations.result') }}{{ auditSort.sortIcon('result') }}</th>
+                <th @click="auditSort.toggleSort('result')" class="sortable-th" :aria-sort="auditSort.sortAria('result')">{{ t('operations.result') }}{{ auditSort.sortIcon('result') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -219,6 +230,8 @@ const OperationsComponent = {
     const tab = ref('history');
     const loading = ref(false);
     const auditLoading = ref(false);
+    const historyError = ref('');
+    const auditError = ref('');
     const operations = ref([]);
     const auditEntries = ref([]);
     const targets = ref([]);
@@ -247,11 +260,7 @@ const OperationsComponent = {
 
     // ── Dynamic targets from hosts API ──
     async function fetchTargets() {
-      try {
-        const res = await apiFetch('/api/hosts', authToken);
-        const data = await res.json();
-        targets.value = (data.hosts || []).map(h => h.target).filter(Boolean);
-      } catch { /* keep empty */ }
+      targets.value = await fetchTargetList(authToken);
     }
 
     // ── Filtered & sorted ops ──
@@ -283,15 +292,18 @@ const OperationsComponent = {
 
     async function refreshOps() {
       loading.value = true;
+      historyError.value = '';
       try {
         const [opsRes] = await Promise.all([
           apiFetch('/api/operations', authToken),
           fetchTargets(),
         ]);
+        if (!opsRes.ok) throw new Error('HTTP ' + opsRes.status);
         const data = await opsRes.json();
         operations.value = data.operations || [];
       } catch (e) {
-        console.error('Failed to fetch operations:', e);
+        historyError.value = t('error.load_failed') + ': ' + e.message;
+        showToast(t('error.load_failed'), 'error', 3000);
       } finally {
         loading.value = false;
       }
@@ -304,14 +316,17 @@ const OperationsComponent = {
 
     async function fetchAuditLog() {
       auditLoading.value = true;
+      auditError.value = '';
       try {
         let url = '/api/audit-log?limit=' + auditLimit.value;
         if (auditTarget.value) url += '&target=' + auditTarget.value;
         const res = await apiFetch(url, authToken);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
         auditEntries.value = data.entries || [];
       } catch (e) {
-        console.error('Failed to fetch audit log:', e);
+        auditError.value = t('error.load_failed') + ': ' + e.message;
+        showToast(t('error.load_failed'), 'error', 3000);
       } finally {
         auditLoading.value = false;
       }
@@ -356,6 +371,7 @@ const OperationsComponent = {
     }
 
     async function appDeploy(execute) {
+      if (execute && !confirm(t('operations.confirm_deploy'))) return;
       actionResult.value = null;
       actionLoading.value = true;
       try {
@@ -375,6 +391,7 @@ const OperationsComponent = {
     }
 
     async function appRollback(execute) {
+      if (execute && !confirm(t('operations.confirm_rollback'))) return;
       actionResult.value = null;
       actionLoading.value = true;
       try {
@@ -393,20 +410,44 @@ const OperationsComponent = {
       }
     }
 
+    function exportAuditLog() {
+      var url = '/api/audit-log/export?limit=' + auditLimit.value;
+      if (auditTarget.value) url += '&target=' + auditTarget.value;
+      var headers = {};
+      if (authToken && authToken.value) {
+        headers['Authorization'] = 'Bearer ' + authToken.value;
+      }
+      fetch(url, { headers: headers }).then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.blob();
+      }).then(function (blob) {
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'audit-log.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+        showToast(t('operations.export_success'), 'success', 2000);
+      }).catch(function (e) {
+        showToast(t('operations.export_failed'), 'error', 3000);
+      });
+    }
+
     useDataPoller(() => {
       refreshOps();
       if (tab.value === 'audit') fetchAuditLog();
     });
 
     return {
-      tab, loading, auditLoading, operations, auditEntries, targets,
+      tab, loading, auditLoading, historyError, auditError, operations, auditEntries, targets,
       auditTarget, auditLimit, serviceTarget, serviceName,
       deployTarget, deployApp, rollbackTarget, rollbackApp,
-      actionResult, actionLoading, refreshOps, fetchAuditLog, formatTimestamp, resultBadgeClass,
+      actionResult, actionLoading, refreshOps, fetchAuditLog, exportAuditLog, formatTimestamp, resultBadgeClass,
       servicePlan, serviceVerify, appDeploy, appRollback, t,
       historySearch, auditSearch,
       filteredOps, sortedOps, filteredAudit, sortedAudit,
-      opSort, auditSort, switchToAudit,
+      opSort, auditSort, switchToAudit, showToast,
     };
   }
 };

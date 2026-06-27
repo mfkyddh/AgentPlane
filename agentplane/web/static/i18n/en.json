@@ -121,6 +121,11 @@
   "operations.success": "completed",
   "operations.failed": "failed",
   "operations.click_to_filter": "Click to filter by this result",
+  "operations.confirm_deploy": "Confirm live deployment? This action will take effect immediately.",
+  "operations.confirm_rollback": "Confirm live rollback? This action will take effect immediately.",
+  "operations.export": "Export",
+  "operations.export_success": "Audit log exported",
+  "operations.export_failed": "Export failed",
 
   "logs.title": "Live Logs",
   "logs.connected": "Connected",
@@ -137,6 +142,7 @@
   "logs.not_connected": "Not connected. Select a target and container to start.",
   "logs.connected_to": "Connected to",
   "logs.ws_error": "WebSocket error",
+  "logs.reconnect_attempt": "Attempting to reconnect",
 
   "time.just_now": "just now",
   "time.min_ago": "m ago",

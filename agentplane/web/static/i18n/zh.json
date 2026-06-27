@@ -121,6 +121,11 @@
   "operations.success": "成功",
   "operations.failed": "失败",
   "operations.click_to_filter": "点击过滤此结果",
+  "operations.confirm_deploy": "确认执行实时部署？此操作将立即生效。",
+  "operations.confirm_rollback": "确认执行实时回滚？此操作将立即生效。",
+  "operations.export": "导出",
+  "operations.export_success": "审计日志已导出",
+  "operations.export_failed": "导出失败",
 
   "logs.title": "实时日志",
   "logs.connected": "已连接",
@@ -137,6 +142,7 @@
   "logs.not_connected": "未连接。选择目标和容器后开始。",
   "logs.connected_to": "已连接到",
   "logs.ws_error": "WebSocket 连接错误",
+  "logs.reconnect_attempt": "正在尝试重新连接",
 
   "time.just_now": "刚刚",
   "time.min_ago": "分钟前",

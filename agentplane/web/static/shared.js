@@ -11,10 +11,15 @@ function getAuthHeaders(authToken) {
   return headers;
 }
 
-// ── Authenticated fetch wrapper ──
+// ── Authenticated fetch wrapper with timeout ──
 function apiFetch(url, authToken, options) {
-  const opts = Object.assign({}, options);
+  var opts = Object.assign({}, options);
   opts.headers = Object.assign({}, opts.headers, getAuthHeaders(authToken));
+  if (!opts.signal) {
+    var controller = new AbortController();
+    opts.signal = controller.signal;
+    setTimeout(function () { controller.abort(); }, opts._timeout || 10000);
+  }
   return fetch(url, opts);
 }
 
@@ -153,6 +158,11 @@ function useSortable(defaultKey, defaultDir) {
     return sortDir.value === 'asc' ? ' \u25B2' : ' \u25BC';
   }
 
+  function sortAria(key) {
+    if (sortKey.value !== key) return 'none';
+    return sortDir.value === 'asc' ? 'ascending' : 'descending';
+  }
+
   function sortItems(items, customSort) {
     if (!sortKey.value || !items) return items;
     var dir = sortDir.value === 'asc' ? 1 : -1;
@@ -167,7 +177,7 @@ function useSortable(defaultKey, defaultDir) {
     });
   }
 
-  return { sortKey: sortKey, sortDir: sortDir, toggleSort: toggleSort, sortIcon: sortIcon, sortItems: sortItems };
+  return { sortKey: sortKey, sortDir: sortDir, toggleSort: toggleSort, sortIcon: sortIcon, sortAria: sortAria, sortItems: sortItems };
 }
 
 // ── Toast notification system ──
@@ -224,4 +234,23 @@ function useDebounce(sourceRef, delay) {
   });
   Vue.onUnmounted(function () { if (timer) clearTimeout(timer); });
   return debounced;
+}
+
+// ── HTML escaping (used by logs, chat, etc.) ──
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// ── Shared target fetcher (used by operations, logs) ──
+function fetchTargetList(authToken) {
+  return apiFetch('/api/hosts', authToken).then(function (res) {
+    return res.json();
+  }).then(function (data) {
+    return (data.hosts || []).map(function (h) { return h.target; }).filter(Boolean);
+  }).catch(function () { return []; });
 }

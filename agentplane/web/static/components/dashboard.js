@@ -102,7 +102,7 @@ const DashboardComponent = {
                   {{ t('dashboard.resource_topo') }}
                 </div>
                 <div style="display:flex;gap:8px;align-items:center;">
-                  <button class="btn-ghost btn-sm" @click="toggleAllTargets" :title="allTargetsExpanded ? t('action.collapse_all') : t('action.expand_all')">
+                  <button class="btn-ghost btn-sm" @click="toggleAllTargets" :title="allTargetsExpanded ? t('action.collapse_all') : t('action.expand_all')" :aria-expanded="allTargetsExpanded">
                     {{ allTargetsExpanded ? t('action.collapse_all') : t('action.expand_all') }}
                   </button>
                   <span class="panel-count">{{ topology.targets.length }} {{ t('dashboard.targets') }}</span>
@@ -110,7 +110,7 @@ const DashboardComponent = {
               </div>
               <div class="panel-body">
                 <div v-for="target in topology.targets" :key="target.target" class="topo-target">
-                  <div class="topo-target-header" @click="toggleTarget(target.target)">
+                  <div class="topo-target-header" @click="toggleTarget(target.target)" :aria-expanded="expandedTargets.has(target.target)" role="button" tabindex="0" @keydown.enter="toggleTarget(target.target)" @keydown.space.prevent="toggleTarget(target.target)">
                     <span class="topo-expand">{{ expandedTargets.has(target.target) ? '&#x25BC;' : '&#x25B6;' }}</span>
                     <span class="status-dot" :class="target.status"></span>
                     <span class="topo-target-name">{{ target.target }}</span>
@@ -177,11 +177,11 @@ const DashboardComponent = {
                 <table class="data-table">
                   <thead>
                     <tr>
-                      <th @click="toggleSort('app')" class="sortable-th">App{{ sortIcon('app') }}</th>
-                      <th @click="toggleSort('target')" class="sortable-th">Target{{ sortIcon('target') }}</th>
+                      <th @click="toggleSort('app')" class="sortable-th" :aria-sort="sortAria('app')">App{{ sortIcon('app') }}</th>
+                      <th @click="toggleSort('target')" class="sortable-th" :aria-sort="sortAria('target')">Target{{ sortIcon('target') }}</th>
                       <th>Service Key</th>
                       <th>Control Plane</th>
-                      <th @click="toggleSort('public_url')" class="sortable-th">Public URL{{ sortIcon('public_url') }}</th>
+                      <th @click="toggleSort('public_url')" class="sortable-th" :aria-sort="sortAria('public_url')">Public URL{{ sortIcon('public_url') }}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -261,7 +261,7 @@ const DashboardComponent = {
                       <span class="op-type-tag">{{ op.object_type }}</span>
                       {{ op.action }}
                     </div>
-                    <div class="op-result" :class="opResultClass(op.result)">{{ op.result }}</div>
+                    <div class="op-result" :class="resultBadgeClass(op.result)">{{ op.result }}</div>
                   </div>
                 </div>
               </div>
@@ -369,7 +369,7 @@ const DashboardComponent = {
     });
 
     // ── Sorting ──
-    const { toggleSort, sortIcon, sortItems } = useSortable('app');
+    const { toggleSort, sortIcon, sortAria, sortItems } = useSortable('app');
     const sortedApps = computed(() => sortItems(apps.value));
 
     // ── Topology expand/collapse all ──
@@ -446,14 +446,6 @@ const DashboardComponent = {
       if (viewMap[key]) navigateToView(viewMap[key]);
     }
 
-    function opResultClass(result) {
-      if (!result) return 'neutral';
-      const r = String(result).toLowerCase();
-      if (r.includes('success') || r.includes('ok') || r.includes('done') || r.includes('pass') || r.includes('verified') || r.includes('queried') || r.includes('completed')) return 'success';
-      if (r.includes('fail') || r.includes('error')) return 'fail';
-      return 'neutral';
-    }
-
     return {
       hosts, apps, operations, topology, domains, loading, loadError,
       expandedTargets, detailPanel,
@@ -461,8 +453,8 @@ const DashboardComponent = {
       sortedApps, allTargetsExpanded,
       fetchDashboard, toggleTarget, toggleAllTargets, selectApp, selectHost, closeDetail, domainCardClick,
       formatRelativeTime, formatTimestamp, truncateUrl,
-      opResultClass, appStatusClass, serviceStatusClass, formatDetailVal,
-      toggleSort, sortIcon,
+      resultBadgeClass, appStatusClass, serviceStatusClass, formatDetailVal,
+      toggleSort, sortIcon, sortAria,
       commandCopied, copyCommand, copyText,
       t,
     };

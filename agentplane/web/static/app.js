@@ -25,8 +25,6 @@ function createAgentPlaneApp() {
       const hashView = location.hash.replace('#', '');
       const view = ref(VALID_VIEWS.includes(hashView) ? hashView : 'dashboard');
       const sidebarOpen = ref(false);
-      const loading = ref(true);
-      const loadError = ref('');
       const wsDisconnected = ref(false);
       const needsAuth = ref(false);
       const authenticated = ref(false);
@@ -96,22 +94,14 @@ function createAgentPlaneApp() {
       let reconnectDelay = 1000;
       const MAX_RECONNECT_DELAY = 30000;
 
-      function apiFetchAuth(url) {
-        const headers = {};
-        if (authenticated.value && authToken.value) {
-          headers['Authorization'] = `Bearer ${authToken.value}`;
-        }
-        return fetch(url, { headers });
-      }
-
       function startMtimePolling() {
-        apiFetchAuth('/api/mtime').then(res => res.json()).then(data => {
+        apiFetch('/api/mtime', authToken).then(res => res.json()).then(data => {
           lastMtime = data.mtime || 0;
         }).catch(() => {});
 
         mtimePoller = setInterval(async () => {
           try {
-            const res = await apiFetchAuth('/api/mtime');
+            const res = await apiFetch('/api/mtime', authToken);
             const data = await res.json();
             if (data.mtime > lastMtime) {
               lastMtime = data.mtime;
@@ -242,7 +232,7 @@ function createAgentPlaneApp() {
       });
 
       return {
-        view, sidebarOpen, loading, loadError, wsDisconnected,
+        view, sidebarOpen, wsDisconnected,
         needsAuth, authenticated, authToken, authError,
         viewLabel, currentView, submitAuth, refreshAll,
         t, locale, toggleLocale,

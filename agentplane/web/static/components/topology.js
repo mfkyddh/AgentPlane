@@ -9,7 +9,7 @@ const TopologyViewComponent = {
         <div class="panel-title" style="margin-bottom:0; font-size:16px;">{{ t('topology.title') }}</div>
         <div style="display:flex; gap:8px; align-items:center;">
           <input v-model="searchQuery" class="search-input" :placeholder="t('topology.search')" :aria-label="t('topology.search')">
-          <button class="btn-ghost" @click="toggleAll" :disabled="topology.targets.length === 0">
+          <button class="btn-ghost" @click="toggleAll" :disabled="topology.targets.length === 0" :aria-expanded="allExpanded">
             {{ allExpanded ? t('action.collapse_all') : t('action.expand_all') }}
           </button>
           <button class="retry-btn" @click="fetchTopology" :disabled="loading"
@@ -47,7 +47,7 @@ const TopologyViewComponent = {
       <!-- Topology tree -->
       <div v-else>
         <div v-for="target in filteredTargets" :key="target.target" class="topo-target">
-          <div class="topo-target-header" @click="toggleTarget(target.target)">
+          <div class="topo-target-header" @click="toggleTarget(target.target)" :aria-expanded="expandedTargets.has(target.target)" role="button" tabindex="0" @keydown.enter="toggleTarget(target.target)" @keydown.space.prevent="toggleTarget(target.target)">
             <span class="topo-expand">{{ expandedTargets.has(target.target) ? '&#x25BC;' : '&#x25B6;' }}</span>
             <span class="status-dot" :class="target.status"></span>
             <span class="topo-target-name">{{ target.target }}</span>
