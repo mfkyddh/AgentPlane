@@ -106,6 +106,21 @@ const ChatComponent = {
       return chatMessages.value.filter(m => (m.text || '').toLowerCase().includes(q));
     });
 
+    function renderChatWithHighlight(text) {
+      var rendered = _renderChatMessage(text);
+      var q = debouncedChatSearch.value.trim();
+      if (!q) return rendered;
+      // Apply search highlight only to text outside of code tags
+      var escapedQ = escapeRegex(escapeHtml(q));
+      var regex = new RegExp('(' + escapedQ + ')', 'gi');
+      // Simple approach: highlight in the rendered output, skipping code blocks
+      var parts = rendered.split(/(<code[^>]*>[\s\S]*?<\/code>)/g);
+      return parts.map(function (part, i) {
+        if (part.startsWith('<code')) return part; // skip code blocks
+        return part.replace(regex, '<mark>$1</mark>');
+      }).join('');
+    }
+
     // Persist messages across view switches
     Vue.watch(chatMessages, (val) => { _chatMessageStore = val; }, { deep: true });
 
@@ -273,7 +288,7 @@ const ChatComponent = {
       showScrollBtn, scrollToBottom, onChatScroll,
       sendMessage, autoResize, handleChatKeydown, copyMessage, clearChat,
       getMessageDate, chatSearch, filteredMessages,
-      renderMessage: _renderChatMessage, t,
+      renderMessage: renderChatWithHighlight, t,
     };
   },
 };
