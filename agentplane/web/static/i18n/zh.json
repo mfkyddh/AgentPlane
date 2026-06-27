@@ -48,6 +48,7 @@
   "dashboard.no_resources_hint": "运行 <code>agentplane infra inventory &lt;target&gt;</code> 注册服务器",
   "dashboard.generated": "生成于",
   "dashboard.stale_hint": "数据已过期。运行以下命令刷新：",
+  "dashboard.view_all": "查看全部",
 
   "topology.title": "资源拓扑",
   "topology.no_targets": "未发现目标",
@@ -151,6 +152,7 @@
   "time.na": "N/A",
 
   "action.copy": "复制",
+  "action.dismiss": "关闭",
   "action.expand_all": "全部展开",
   "action.collapse_all": "全部折叠",
 

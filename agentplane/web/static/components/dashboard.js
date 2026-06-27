@@ -256,10 +256,10 @@ const DashboardComponent = {
                   <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"/></svg>
                   {{ t('dashboard.recent_ops') }}
                 </div>
-                <span class="panel-count">{{ operations.length }}</span>
+                <button class="btn-ghost btn-sm" @click="navigateToView('operations')">{{ t('dashboard.view_all') }}</button>
               </div>
               <div class="panel-body">
-                <div v-for="op in operations" :key="op.op_id" class="op-item">
+                <div v-for="op in sidebarOps" :key="op.op_id" class="op-item">
                   <span class="op-time">{{ formatRelativeTime(op.timestamp, t) }}</span>
                   <div class="op-body">
                     <div class="op-action">
@@ -291,10 +291,21 @@ const DashboardComponent = {
             </div>
             <div v-else-if="detailPanel.error" style="color:var(--accent-red);font-size:13px;">{{ detailPanel.error }}</div>
             <div v-else>
-              <div v-for="(val, key) in detailPanel.data" :key="key" class="detail-field">
-                <div class="detail-key">{{ key }}</div>
-                <div class="detail-val">{{ formatDetailVal(val) }}</div>
-              </div>
+              <template v-for="(val, key) in detailPanel.data" :key="key">
+                <div v-if="!isDetailHidden(key)" class="detail-field">
+                  <div class="detail-key">
+                    {{ key }}
+                    <button class="detail-copy-btn" @click="copyDetailVal(val)" :title="t('action.copy')">&#x2398;</button>
+                  </div>
+                  <div v-if="isDetailUrl(key, val)" class="detail-val">
+                    <a :href="val" target="_blank" class="cell-link">{{ truncateUrl(val) }}</a>
+                  </div>
+                  <div v-else-if="isDetailStatus(key)" class="detail-val">
+                    <span class="status-badge" :class="resultBadgeClass(val)">{{ val || '-' }}</span>
+                  </div>
+                  <div v-else class="detail-val">{{ formatDetailVal(val) }}</div>
+                </div>
+              </template>
             </div>
           </div>
         </div>
@@ -321,6 +332,7 @@ const DashboardComponent = {
     const connectedHosts = computed(() => hosts.value.filter(h => h.status === 'connected').length);
     const appsWithUrl = computed(() => apps.value.filter(a => a.public_url).length);
     const latestOp = computed(() => operations.value.length > 0 ? operations.value[0] : null);
+    const sidebarOps = computed(() => operations.value.slice(0, 5));
     const dataFreshness = computed(() => {
       if (!latestOp.value || !latestOp.value.timestamp) return t('time.na');
       return formatRelativeTime(latestOp.value.timestamp, t);
@@ -421,6 +433,12 @@ const DashboardComponent = {
       });
     }
 
+    function copyDetailVal(val) {
+      copyToClipboard(formatDetailVal(val)).then(ok => {
+        if (ok) showToast(t('toast.copied'), 'success', 1500);
+      });
+    }
+
     async function fetchDashboard() {
       loadError.value = '';
       try {
@@ -468,13 +486,15 @@ const DashboardComponent = {
     return {
       hosts, apps, operations, topology, domains, loading, loadError,
       expandedTargets, detailPanel,
-      connectedHosts, appsWithUrl, latestOp, dataFreshness, isDataStale, domainCards,
+      connectedHosts, appsWithUrl, latestOp, dataFreshness, isDataStale, domainCards, sidebarOps,
       sortedApps, filteredApps, allTargetsExpanded, appSearch,
       fetchDashboard, toggleTarget, toggleAllTargets, selectApp, selectHost, closeDetail, domainCardClick,
       formatRelativeTime, formatTimestamp, truncateUrl,
       resultBadgeClass, appStatusClass, serviceStatusClass, formatDetailVal,
+      isDetailUrl, isDetailStatus, isDetailHidden, copyDetailVal,
       toggleSort, sortIcon, sortAria,
       commandCopied, copyCommand, copyText,
+      navigateToView,
       t,
     };
   },

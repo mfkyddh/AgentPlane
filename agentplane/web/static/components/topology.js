@@ -119,10 +119,21 @@ const TopologyViewComponent = {
             </div>
             <div v-else-if="detailPanel.error" style="color:var(--accent-red);">{{ detailPanel.error }}</div>
             <div v-else>
-              <div v-for="(val, key) in detailPanel.data" :key="key" class="detail-field">
-                <div class="detail-key">{{ key }}</div>
-                <div class="detail-val">{{ formatDetailVal(val) }}</div>
-              </div>
+              <template v-for="(val, key) in detailPanel.data" :key="key">
+                <div v-if="!isDetailHidden(key)" class="detail-field">
+                  <div class="detail-key">
+                    {{ key }}
+                    <button class="detail-copy-btn" @click="copyDetailVal(val)" :title="t('action.copy')">&#x2398;</button>
+                  </div>
+                  <div v-if="isDetailUrl(key, val)" class="detail-val">
+                    <a :href="val" target="_blank" class="cell-link">{{ truncateUrl(val) }}</a>
+                  </div>
+                  <div v-else-if="isDetailStatus(key)" class="detail-val">
+                    <span class="status-badge" :class="resultBadgeClass(val)">{{ val || '-' }}</span>
+                  </div>
+                  <div v-else class="detail-val">{{ formatDetailVal(val) }}</div>
+                </div>
+              </template>
             </div>
           </div>
         </div>
@@ -205,12 +216,19 @@ const TopologyViewComponent = {
       openDetail(`${app.app} (${target})`, `/api/apps/${target}/${app.app}`);
     }
 
+    function copyDetailVal(val) {
+      copyToClipboard(formatDetailVal(val)).then(ok => {
+        if (ok) showToast(t('toast.copied'), 'success', 1500);
+      });
+    }
+
     return {
       topology, loading, error, expandedTargets, detailPanel,
       searchQuery, filteredTargets, allExpanded,
-      fetchTopology, toggleTarget, toggleAll, selectApp, closeDetail,
+      fetchTopology, toggleTarget, toggleAll, selectApp, closeDetail, copyDetailVal,
       filterTargets,
-      appStatusClass, serviceStatusClass, formatTimestamp, formatDetailVal,
+      appStatusClass, serviceStatusClass, resultBadgeClass, formatTimestamp, formatDetailVal, truncateUrl,
+      isDetailUrl, isDetailStatus, isDetailHidden,
       t,
     };
   },

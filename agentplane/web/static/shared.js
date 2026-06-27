@@ -92,6 +92,20 @@ function formatDetailVal(val) {
   return String(val);
 }
 
+function isDetailUrl(key, val) {
+  if (!val || typeof val !== 'string') return false;
+  return key === 'public_url' || key === 'url' || key === 'homepage' ||
+    (typeof val === 'string' && val.startsWith('https://'));
+}
+
+function isDetailStatus(key) {
+  return key === 'status' || key === 'result' || key === 'phase_status';
+}
+
+function isDetailHidden(key) {
+  return key === 'contract_file' || key === '_raw';
+}
+
 // ── URL helpers ──
 function truncateUrl(url) {
   if (!url) return '';

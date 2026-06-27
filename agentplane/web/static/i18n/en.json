@@ -48,6 +48,7 @@
   "dashboard.no_resources_hint": "Run <code>agentplane infra inventory &lt;target&gt;</code> to register a server",
   "dashboard.generated": "Generated",
   "dashboard.stale_hint": "Data is outdated. Run:",
+  "dashboard.view_all": "View All",
 
   "topology.title": "Resource Topology",
   "topology.no_targets": "No targets found",
@@ -151,6 +152,7 @@
   "time.na": "N/A",
 
   "action.copy": "Copy",
+  "action.dismiss": "Dismiss",
   "action.expand_all": "Expand All",
   "action.collapse_all": "Collapse All",
 

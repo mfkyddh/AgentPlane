@@ -217,7 +217,19 @@ const OperationsComponent = {
 
           <!-- Action Result -->
           <div v-if="actionResult" class="action-result" :class="actionResult.ok ? 'success' : 'error'">
-            <pre>{{ JSON.stringify(actionResult, null, 2) }}</pre>
+            <div class="action-result-header">
+              <span class="action-result-status" :class="actionResult.ok ? 'success' : 'error'">
+                {{ actionResult.ok ? '\\u2713 ' + t('operations.success') : '\\u2717 ' + t('operations.failed') }}
+              </span>
+              <button class="btn-ghost btn-sm" @click="actionResult = null" :title="t('action.dismiss')">&times;</button>
+            </div>
+            <div v-if="actionResult.error" class="action-result-error">
+              {{ typeof actionResult.error === 'string' ? actionResult.error : JSON.stringify(actionResult.error) }}
+            </div>
+            <div v-if="actionResult.payload" class="action-result-payload">
+              <pre>{{ JSON.stringify(actionResult.payload, null, 2) }}</pre>
+            </div>
+            <pre v-else-if="actionResult.evidence && actionResult.evidence.length > 0" class="action-result-evidence">{{ actionResult.evidence.join('\\n') }}</pre>
           </div>
         </div>
       </div>
